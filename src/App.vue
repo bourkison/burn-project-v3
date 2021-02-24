@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <div v-if="$store.state.userProfile">
-            <b-navbar toggleable="sm" variant="faded" type="light">
+            <b-navbar sticky class="nav" toggleable="sm" variant="faded" type="light">
                 <b-navbar-brand tag="h1" :to="'/'">Burn</b-navbar-brand>
 
                 <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -51,7 +51,9 @@
                     </b-modal>
                 </b-collapse>
             </b-navbar>
-            <router-view/>
+            <div>
+                <router-view/>
+            </div>
         </div>
         <div v-else>
             <b-container fluid>
@@ -74,3 +76,13 @@ export default {
     }
 }
 </script>
+
+<style>
+body {
+    background-color: rgba(203, 203, 210, 0.15) !important;
+}
+
+.nav {
+    background-color: #fff !important;
+}
+</style>

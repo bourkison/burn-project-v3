@@ -6,23 +6,28 @@
                 {{ postData.createdBy.username }}
             </div>
             <div v-else>
-                ...
+                Loading...
             </div>
         </template>
 
 
         <!-- Content -->
         <div v-if="!isLoading">
-            <b-carousel v-model="carouselModel" controls indicators :interval="0">
-                <b-carousel-slide v-for="img in imgUrls" :key="img" :img-src="img"/>
-            </b-carousel>
+            <div v-if="imgUrls.length > 1">
+                <b-carousel v-model="carouselModel" controls indicators :interval="0">
+                    <b-aspect><b-carousel-slide v-for="img in imgUrls" :key="img" :img-src="img"/></b-aspect>
+                </b-carousel>
+            </div>
+            <div v-else-if="imgUrls.length > 0">
+                <img :src="imgUrls[0]" />
+            </div>
 
             <b-card-body>
                 {{ postData.content }}
             </b-card-body>
         </div>
         <div v-else>
-            <b-spinner label="Spinning"></b-spinner>
+            <b-spinner />
         </div>
     </b-card>
 </template>
