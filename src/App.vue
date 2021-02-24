@@ -20,9 +20,14 @@
                     <b-navbar-nav class="ml-auto">
                         <b-nav-item><b-icon-chat-left font-scale="1.5"/></b-nav-item>
                         <b-nav-item><b-icon-bell font-scale="1.5"/></b-nav-item>
-                        <b-nav-item-dropdown>
+                        <b-nav-item-dropdown right>
                             <template #button-content>
-                                <b-icon-person-circle font-scale="1.5"/>
+                                <span v-if="$store.state.userProfile.docData.profilePhoto">
+                                    <b-avatar size="1.666em" :src="$store.state.userProfile.docData.profilePhoto" />
+                                </span>
+                                <span v-else>
+                                    <b-icon-person-circle font-scale="1.5"/>
+                                </span>
                             </template>
                             <b-dropdown-item :to="'/profile'">Profile</b-dropdown-item>
                             <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
@@ -46,13 +51,13 @@
                     </b-modal>
                 </b-collapse>
             </b-navbar>
+            <router-view/>
         </div>
         <div v-else>
             <b-container fluid>
                 <b-spinner label="Spinning"></b-spinner>
             </b-container>
         </div>
-        <router-view/>
     </div>
 </template>
 
