@@ -1,8 +1,8 @@
 <template>
-    <b-container >
+    <b-container v-if="!isLoading && exerciseExists">
         <b-row>
             <b-col sm="8">
-                <b-container v-if="!isLoading && exerciseExists" class="exerciseCard">
+                <b-container class="exerciseCard">
                     <b-card no-body>
                         <b-card-body>
                             <b-card-title>
@@ -27,7 +27,7 @@
                             </b-carousel>
                         </div>
                         <div v-else-if="imgUrls.length > 0">
-                            <img :src="imgUrls[0]" />
+                            <b-img :src="imgUrls[0]" fluid-grow />
                         </div>
                         <b-card-body>
                             <b-card-text>
@@ -35,13 +35,6 @@
                             </b-card-text>
                         </b-card-body>
                     </b-card>
-                </b-container>
-                <b-container v-else-if="!isLoading && !exerciseExists">
-                    <!-- 404 -->
-                    <div>Exercise does not exist!</div>
-                </b-container>
-                <b-container v-else>
-                    <div class="text-center"><b-spinner /></div>
                 </b-container>
             </b-col>
             <b-col sm="4">
@@ -84,6 +77,13 @@
                 </b-container>
             </b-col>
         </b-row>
+    </b-container>
+    <b-container v-else-if="!isLoading && !exerciseExists">
+        <!-- 404 -->
+        <div>Exercise does not exist!</div>
+    </b-container>
+    <b-container v-else>
+        <div style="margin-top:40px;" class="text-center"><b-spinner /></div>
     </b-container>
 </template>
 

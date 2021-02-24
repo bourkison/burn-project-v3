@@ -21,6 +21,6 @@ export default {
 
 <style scoped>
     .exercise {
-        margin-bottom: 40px;
+        margin-bottom: 25px;
     }
 </style>

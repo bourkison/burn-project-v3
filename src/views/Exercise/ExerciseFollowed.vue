@@ -1,30 +1,12 @@
 <template>
     <b-container>
-        <b-row>
-            <b-col sm="3">
-                <!-- 
-                    Add here: 
-                    - Links to Home, New, Discover
-                    - Filter by (tags)
-                -->
-            </b-col>
-            <b-col sm="6">
-                <b-container>
-                    <ExerciseFeed class="exerciseFeed" v-if="exercises.length > 0 && !isLoading" :exercises="exercises" />
-                    <div v-else-if="isLoading">
-                        <b-spinner />
-                    </div>
-                    <div v-else>
-                        <em>Looks like you haven't followed or created any exercises.</em>
-                    </div>
-                </b-container>
-            </b-col>
-            <b-col sm="3">
-                <!-- 
-                    Ads here.
-                 -->
-            </b-col>
-        </b-row>
+        <ExerciseFeed class="exerciseFeed" v-if="exercises.length > 0 && !isLoading" :exercises="exercises" />
+        <div v-else-if="isLoading">
+            <b-spinner />
+        </div>
+        <div v-else>
+            <em>Looks like you haven't followed or created any exercises.</em>
+        </div>
     </b-container>
 </template>
 
@@ -64,6 +46,8 @@ export default {
 </script>
 
 <style>
+
+.navCard,
 .exerciseFeed {
     margin-top: 40px;
 }

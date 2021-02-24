@@ -7,12 +7,13 @@
                 </b-carousel>
             </div>
             <div v-else-if="imgUrls.length > 0">
-                <img :src="imgUrls[0]" />
+                <b-img :src="imgUrls[0]" fluid-grow />
             </div>
             
             <b-card-body>
-                <b-card-title @click="$router.push('/exercises/' + exerciseId)">{{ exerciseData.name }}</b-card-title>
-                <b-card-text class="exerciseDescription" v-html="compiledMarkdown"></b-card-text>
+                <b-card-title><div><a @click="$router.push('/exercises/' + exerciseId)" class="componentLink">{{ exerciseData.name }}</a></div></b-card-title>
+                <b-card-sub-title></b-card-sub-title>
+                <Viewer :initialValue="exerciseData.description" />
             </b-card-body>
         </div>
         <div v-else>
@@ -24,12 +25,14 @@
 </template>
 
 <script>
-import * as marked from 'marked'
+import '@toast-ui/editor/dist/toastui-editor-viewer.css';
+
+import { Viewer } from '@toast-ui/vue-editor';
 import { db, storage } from '@/firebase'
 
 export default {
     name: 'ViewExerciseMin',
-    components: {},
+    components: { Viewer },
     props: {
         exerciseId: {
             required: true,
@@ -53,14 +56,7 @@ export default {
         }
     },
 
-    computed: {
-        compiledMarkdown: function() {
-            return marked(this.exerciseData.description);
-        }
-    },
-
     created: function() {
-        console.log(this.$props.exerciseId);
         // Download Exercise Data
         db.collection("exercises").doc(this.$props.exerciseId).get()
         .then(exerciseDoc => {
@@ -113,28 +109,8 @@ export default {
 </script>
 
 <style>
-.exerciseDescription h1 {
-    font-size: 1.5rem;
-}
-
-.exerciseDescription h2 {
-    font-size: 1.4rem;
-}
-
-.exerciseDescription h3 {
-    font-size: 1.3rem;
-}
-
-.exerciseDescription h4 {
-    font-size: 1.2rem;
-}
-
-.exerciseDescription h5 {
-    font-size: 1.1rem;
-}
-
-.exerciseDescription h6 {
-    font-size: 1;
+.componentLink {
+    cursor: pointer;
 }
 
 </style>
