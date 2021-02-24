@@ -33,12 +33,12 @@
                 <!-- Logged Out Nav -->
                 <b-collapse v-else id="nav-collapse" is-nav>
                     <b-navbar-nav>
-                        <b-nav-item v-b-modal.login-modal>Login</b-nav-item>
-                        <b-nav-item v-b-modal.signup-modal>Sign Up</b-nav-item>
+                        <b-nav-item @click="$bvModal.show('login-modal')">Login</b-nav-item>
+                        <b-nav-item @click="$bvModal.show('signup-modal')">Sign Up</b-nav-item>
                     </b-navbar-nav>
 
-                    <b-modal id="login-modal" title="Login">
-                        Login!
+                    <b-modal hide-footer id="login-modal" title="Login">
+                        <SignInForm  @signIn="signIn"/>
                     </b-modal>
 
                     <b-modal id="signup-modal" title="Sign Up">
@@ -58,9 +58,15 @@
 
 <script>
 import { auth } from '@/firebase'
+import SignInForm from '@/components/Auth/SignInForm.vue'
 
 export default {
+    components: { SignInForm },
     methods: {
+        signIn: function(form) {
+            auth.signInWithEmailAndPassword(form.email, form.password);
+        },
+
         signOut: function() {
             auth.signOut();
         }
