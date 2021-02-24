@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { auth } from '@/firebase'
+
 export default {
     name: 'SignIn',
     data() {
@@ -33,7 +35,17 @@ export default {
     methods: {
         signIn: function() {
             this.isLoading = true;
-            this.$emit("signIn", this.signInForm);
+
+            auth.signInWithEmailAndPassword(this.signInForm.email, this.signInForm.password)
+            .then(() => {
+                this.isLoading = false;
+                this.$emit("closeSignInModal");
+                this.$router.push("/");
+            })
+            .catch(e => {
+                console.error("Error signing in:", e);
+                this.isLoading = false;
+            });
         }
     }
 }

@@ -38,7 +38,7 @@
                     </b-navbar-nav>
 
                     <b-modal hide-footer id="login-modal" title="Login">
-                        <SignInForm  @signIn="signIn"/>
+                        <SignInForm  @closeSignInModal="$bvModal.hide('login-modal')"/>
                     </b-modal>
 
                     <b-modal id="signup-modal" title="Sign Up">
@@ -63,10 +63,6 @@ import SignInForm from '@/components/Auth/SignInForm.vue'
 export default {
     components: { SignInForm },
     methods: {
-        signIn: function(form) {
-            auth.signInWithEmailAndPassword(form.email, form.password);
-        },
-
         signOut: function() {
             auth.signOut();
         }
