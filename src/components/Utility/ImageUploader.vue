@@ -1,12 +1,12 @@
 <template>
     <div>
         <div>
-            <ImageSorter :imagesProp="editedFiles" @sort="sort" />
+            <ImageSorter :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
         </div>
         <div ref="mImgEdit" style="visibility:hidden;position:absolute;">
-            <ImageEditor :imagesToEdit="addedFiles" @addImage="addImage" />
+            <ImageEditor :imagesToAdd="addedFiles" :imagesToEdit="imagesToEdit" @addImage="addImage" />
         </div>
-        <b-form-file id="imageInput" v-model="addedFiles" multiple :state="inputFiles.length > 0" @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
+        <b-form-file id="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
         <!-- <div>
             <b-row>
                 <b-col v-for="(img, index) in sortedFiles" :key="index">
@@ -30,15 +30,17 @@ export default {
     components: { ImageEditor, ImageSorter },
     data() {
         return {
-            // inputFiles is all files.
-            inputFiles: [],
             // addedFiles is new files and gets passed to ImageEditor.
             addedFiles: [],
             // editedFiles is whats returned from Image Editor and gets passed to Sorter.
             editedFiles: [],
             // sortedFiles is whats returned from Sorter and is pushed to firebase.
             sortedFiles: [],
+            // imagesToEdit is an array of IDs thats passed to image editor that have already been passed through before.
+            imagesToEdit: [],
 
+
+            inputFiles: [],
             // Image iterator used for keeping track of images and allowed edit.
 
         }
@@ -55,8 +57,23 @@ export default {
         },
         
         addImage: function(data) {
+            delete data.edit;
+
             this.editedFiles.push(data);
             this.sortedFiles.push(data);
+        },
+
+        editImage: function(id) {
+            this.imagesToEdit.push(id);
+            this.deleteImage(id);
+        },
+
+        deleteImage: function(id) {
+            let editedIndex = this.editedFiles.findIndex(x => x.id === id);
+            let sortedIndex = this.sortedFiles.findIndex(x => x.id === id);
+
+            this.editedFiles.splice(editedIndex, 1);
+            this.sortedFiles.splice(sortedIndex, 1);
         },
 
         sort: function(arr) {

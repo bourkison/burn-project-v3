@@ -5,7 +5,7 @@
                 <b-card :img-src="img.url" img-top>
                     <b-card-text class="text-center">
                         <b-icon-pencil-square class="imgIcon" font-scale="1.3" @click="editImage(img.id)" />
-                        <b-icon-trash class="imgIcon" font-scale="1.3" />
+                        <b-icon-trash class="imgIcon" font-scale="1.3" @click="deleteImage(img.id)" />
                     </b-card-text>
                 </b-card>
             </b-col>
@@ -48,7 +48,11 @@ export default {
         },
 
         editImage: function(id) {
-            console.log("Editing:", id);
+            this.$emit("editImage", id);
+        },
+
+        deleteImage: function(id) {
+            this.$emit("deleteImage", id);
         }
     },
 

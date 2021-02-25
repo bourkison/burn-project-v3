@@ -4,7 +4,7 @@
             Here we input the images with visibility none so that we can grab the widths of them.
             As b-tabs sets to display none. 
         -->
-        <b-card no-body>
+        <b-card no-body no-title>
             <b-tabs ref="tabs" card fill>
                 <b-tab v-for="(image, index) in images" :title="`${(index + 1).toString()}`" :key="image.id">
                     <!-- <div class="text-center" v-if="loadingGetter(index)">
@@ -14,8 +14,9 @@
                         <img class="cropperImg" style="visibility:hidden;" :id="'cropper' + index" :src="image.url">
                     </div>
                     <div class="text-center buttons">
-                        <b-btn size="sm" variant="outline-danger" @click="deleteImage(index)">Cancel</b-btn>
-                        <b-btn size="sm" variant="outline-success" @click="addImage(index)">Add Image</b-btn>
+                        <b-btn size="sm" variant="outline-danger" @click="cancelImage(index, image.id)">Cancel</b-btn>
+                        <b-btn v-if="!image.edit" size="sm" variant="outline-success" @click="addImage(index)">Add Image</b-btn>
+                        <b-btn v-else size="sm" variant="outline-success" @click="addImage(index)">Edit Image</b-btn>
                     </div>
                 </b-tab>
             </b-tabs>
@@ -31,6 +32,10 @@ export default {
     name: 'ImageEditor',
     components: {},
     props: {
+        imagesToAdd: {
+            type: Array,
+            required: false
+        },
         imagesToEdit: {
             type: Array,
             required: false
@@ -79,6 +84,18 @@ export default {
 
             this.images.splice(index, 1);
 
+            this.rebuildCroppers();
+        },
+
+        cancelImage: function(index, id) {
+            this.images.splice(index, 1);
+            let inputIndex = this.inputImages.findIndex(x => x.id === id);
+            this.inputImages.splice(inputIndex, 1);
+
+            this.rebuildCroppers();
+        },
+
+        rebuildCroppers: function() {
             // Reload the image uploader.
             this.cropper.forEach(crop => {
                 crop.destroy();
@@ -97,10 +114,6 @@ export default {
                     i ++;
                 })
             })
-        },
-
-        deleteImage: function(id) {
-            console.log(id);
         },
 
         loadImage: async img => {
@@ -122,7 +135,7 @@ export default {
 
     },
     watch: {
-        imagesToEdit: function(n) {
+        imagesToAdd: function(n) {
             if (n.length > 0) {
                 let compressionPromises = [];
                 let readerPromises = [];
@@ -167,7 +180,7 @@ export default {
                         // This is the initial and wont get deleted so we can edit later on.
                         this.inputImages.push({ id: this.imageIncrementor, url: images[i].src, ratio: ratio });
                         // This is the one that is referenced in template.
-                        this.images.push({ id: this.imageIncrementor, url: images[i].src, ratio: ratio })
+                        this.images.push({ id: this.imageIncrementor, url: images[i].src, ratio: ratio, edit: false })
 
                         this.imageIncrementor ++;
 
@@ -180,6 +193,29 @@ export default {
                         })
 
                     }
+                })
+                .catch(e => {
+                    console.error("Error setting up for cropper.", e);
+                })
+            }
+        },
+
+        imagesToEdit: function(n) {
+            if (n.length > 0) {
+                // Only difference between inputImages and images is the edit key/value.
+                // Set that to true.
+                const image = this.inputImages.find(x => x.id === n[n.length - 1]);
+                image.edit = true;
+                this.images.push(image);
+
+
+                // Now set up the new cropper.
+                const width = this.$refs.tabs.$el.clientWidth - 48;                
+                this.$nextTick(() => {
+                    let imgEl = document.querySelector("#cropper" + (this.images.length - 1).toString());
+
+                    const height = width / image.ratio;
+                    this.setCropper(imgEl, this.images.length - 1, width, height)
                 })
             }
         }
