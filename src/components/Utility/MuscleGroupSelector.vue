@@ -3,11 +3,11 @@
         <MuscleGroup v-bind:editable="true" v-bind:selectedGroups="selectedMuscleGroups" @mgClick="muscleGroupClickHandler"></MuscleGroup>
 
         <div>
-            <b-badge v-for="muscleGroup in selectedMuscleGroups" class="mgBadge" @click="pillRemove(muscleGroup)" :key="muscleGroup">{{ muscleGroup }}</b-badge>
+            <b-badge v-for="muscleGroup in selectedMuscleGroups" class="mgBadge" @click="pillRemove(muscleGroup)" variant="dark" :key="muscleGroup">{{ muscleGroup }}</b-badge>
         </div>
 
         <div class="datalistCont">
-            <b-form-input list="inputList" id="inputWithList" autocomplete="off" v-model="inputText" @select="datalistAdd"></b-form-input>
+            <b-form-input list="inputList" id="inputWithList" :placeholder="selectedMuscleGroups.length > 0 ? '' : 'Select muscle groups...'" autocomplete="off" v-model="inputText" @select="datalistAdd"></b-form-input>
             <b-form-datalist id="inputList" :options="availableMuscleGroups"></b-form-datalist>
         </div>
 
@@ -94,6 +94,10 @@ export default {
     .muscleGroupsCont {
         margin-top: 10px;
         padding-top:10px
+    }
+
+    .mgBadge {
+        margin: 0 2px;
     }
 
     .mgBadge:hover {

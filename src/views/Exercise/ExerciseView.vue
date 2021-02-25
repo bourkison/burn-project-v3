@@ -31,7 +31,7 @@
                         </div>
                         <b-card-body>
                             <b-card-text>
-                                <div v-html="compiledMarkdown"></div>
+                                <Viewer :initialValue="exerciseData.description" />
                             </b-card-text>
                         </b-card-body>
                     </b-card>
@@ -88,14 +88,16 @@
 </template>
 
 <script>
+import '@toast-ui/editor/dist/toastui-editor-viewer.css';
+
+import { Viewer } from '@toast-ui/vue-editor'
 import { db, storage } from '@/firebase'
-import * as marked from 'marked'
 
 import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
 
 export default {
     name: 'ExerciseView',
-    components: { MuscleGroup },
+    components: { MuscleGroup, Viewer },
     data() {
         return {
             isLoading: true,
@@ -121,12 +123,6 @@ export default {
 
     beforeRouteUpdate: function(to, from, next) {
         next();
-    },
-
-    computed: {
-        compiledMarkdown: function() {
-            return marked(this.exerciseData.description);
-        }
     },
 
     methods: {

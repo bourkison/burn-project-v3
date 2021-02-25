@@ -27,7 +27,9 @@
             </b-card-body>
         </div>
         <div v-else>
-            <b-spinner />
+            <b-card-body>
+                <b-skeleton v-for="(index) in (Math.floor(Math.random() * 4) + 3)" :key="index" animation="wave" :width="(Math.floor(Math.random() * 50) + 50).toString() + '%'"></b-skeleton>
+            </b-card-body>
         </div>
     </b-card>
 </template>

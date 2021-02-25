@@ -12,8 +12,12 @@
                                 <b-form-group label="Name" label-for="nameInput">
                                     <b-form-input id="nameInput" v-model="exerciseForm.name" type="text" placeholder="Exercise Name" required />
                                 </b-form-group>
-                                <Editor @change="updateDescription" placeholder="Test" ref="toastuiEditor" :options="editorOptions" height="300px" initialEditType="wysiwyg" previewStyle="vertical" />
-                                <b-button type="Submit">Submit</b-button>
+                                <b-form-group label="Image/Video" label-for="imageInput">
+                                    <ImageUploader />
+                                </b-form-group>
+                                <b-form-group label="Description" label-for="descriptionInput">
+                                    <Editor @change="updateDescription" id="descriptionInput" placeholder="Test" ref="toastuiEditor" :options="editorOptions" height="300px" initialEditType="wysiwyg" previewStyle="vertical" />
+                                </b-form-group>
                             </b-form>
                         </b-card-body>
                     </b-card>
@@ -21,6 +25,13 @@
             </b-col>
             <b-col sm="4">
                 <b-container>
+                    <b-card class="difficultySelectCard" no-body>
+                        <b-card-body>
+                            <h5>Select Difficulty</h5>
+                            <DifficultySelector />
+                        </b-card-body>
+                    </b-card>
+                    
                     <b-card class="muscleGroupCard" no-body>
                         <b-card-body>
                             <h5>Muscle Groups</h5>
@@ -28,12 +39,15 @@
                         </b-card-body>
                     </b-card>
 
-                    <b-card class="difficultySelectCard" no-body>
-                        <b-card-body>
-                            <h5>Select Difficulty</h5>
-                            <DifficultySelector />
-                        </b-card-body>
-                    </b-card>
+                    
+                </b-container>
+            </b-col>
+        </b-row>
+        <b-row class="justify-content-md-center">
+            <b-col cols="12" md="auto">
+                <b-container class="buttonsCont">
+                    <b-button variant="outline-danger">Cancel</b-button>
+                    <b-button variant="outline-primary">Submit</b-button>
                 </b-container>
             </b-col>
         </b-row>
@@ -45,12 +59,13 @@ import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/vue-editor';
 
+import ImageUploader from '@/components/Utility/ImageUploader.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue';
 import DifficultySelector from '@/components/Utility/DifficultySelector.vue'
 
 export default {
     name: 'ExerciseNew',
-    components: { DifficultySelector, Editor, MuscleGroupSelector },
+    components: { DifficultySelector, Editor, ImageUploader, MuscleGroupSelector },
     data() {
         return {
             exerciseForm: {
@@ -104,7 +119,12 @@ export default {
 <style scoped>
 .newExerciseCard,
 .muscleGroupCard,
-.difficultySelectCard {
+.difficultySelectCard,
+.buttonsCont {
     margin-top: 25px;
+}
+
+.buttonsCont button {
+    margin: 0 3px;
 }
 </style>

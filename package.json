@@ -11,6 +11,7 @@
     "@toast-ui/vue-editor": "^2.5.1",
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
+    "cropperjs": "^1.5.11",
     "dayjs": "^1.10.4",
     "firebase": "^8.2.9",
     "lodash": "^4.17.21",
