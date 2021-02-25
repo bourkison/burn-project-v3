@@ -25,9 +25,10 @@
 
 <script>
 import Cropper from 'cropperjs'
+import imageCompression from 'browser-image-compression'
 
 export default {
-    name: 'MultipleImageEditor',
+    name: 'ImageEditor',
     components: {},
     props: {
         imagesToEdit: {
@@ -35,16 +36,10 @@ export default {
             required: false
         }
     },
-
-    created: function() {
-        console.log(this.$props.imagesToEdit);
-    },
-
     data() {
         return {
             isLoadingArr: [],
             inputURLs: [],
-
             cropper: [],
             isLoading: false,
         }
@@ -55,7 +50,6 @@ export default {
             setTimeout(() => {
                 // Element is set to hidden as default so loader can show without 
                 // not rendering the element due to v-if
-
                 this.cropper.push(new Cropper(el, {
                     scalable: false,
                     viewMode: 3,
@@ -66,7 +60,6 @@ export default {
                         el.style.visibility = "visible";
                         this.isLoadingArr[i] = false;
                         this.cropperSet ++;
-
                         console.log("Cropper ready!", this.isLoadingArr, i, el);
                     }),
                 }))
@@ -76,23 +69,9 @@ export default {
         setImageEl: function(i, ratio) {
             setTimeout(() => {
                 let imgEl = document.querySelector("#cropper" + i);
-                const imgCont = document.querySelector("#imgCont" + i);
-
-                // Need to change our reference to imgEl as IDs will change
-                // When we add and delete images.
-                const id = this.generateId(16);
-                console.log(imgEl);
-                imgEl.classList.add(id);
-                imgEl = document.querySelector('.' + id);
-
-                console.log(imgEl);
 
                 const width = this.$refs.tabs.$el.clientWidth - 48;
                 const height = width / ratio;
-
-                console.log(i, width, height);
-
-                console.log("Img el:", imgEl, "Img Cont:", imgCont, "ratio:", ratio);
 
                 this.setCropper(imgEl, i, width, height)
             }, 500)
@@ -100,48 +79,53 @@ export default {
 
         addImage: function(index) {
             const canvas = this.cropper[index].getCroppedCanvas();
-            this.$emit("addImage", canvas.toDataURL());
-
-            this.isLoadingArr.splice(index, 1);
+            this.$emit("addImage", canvas.toDataURL('png', 1.0));
             this.inputURLs.splice(index, 1);
-            this.cropper.splice(index, 1);
 
-            console.log(this.cropper);
+            this.cropper.forEach(crop => {
+                crop.destroy();
+            })
+
+            this.cropper = [];
+
+            const temp = this.inputURLs;
+            this.inputURLs = [];
+            this.isLoadingArr = [];
+
+            console.log("TEMP:", temp);
+            temp.forEach(url => {
+                this.buildCrop(url)
+            })
         },
 
-        generateId: function(n) {
-            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-            let id = '';
-            // 7 random characters
-            for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
-            }
-            return id;
-        }
-    },
+        buildCrop: function(e) {
+            let image = new Image();
+            image.src = e;
 
+            image.onload = i => {
+                const ratio = i.target.width / i.target.height;
+
+                this.inputURLs.push(i.target.src);
+                this.isLoadingArr.push(true);
+                this.isLoading = true;
+
+                this.setImageEl(this.inputURLs.length - 1, ratio);
+            }
+        },
+    },
     watch: {
         imagesToEdit: function(n) {
             if (n.length > 0) {
-                // Read the image and calculate the ratio in order to accurately set cropper later on.
+                // Before sending through to our build crop function, compress the image.
                 for (let i = 0; i < n.length; i ++) {
-                    let reader = new FileReader();
-                    reader.readAsDataURL(n[i]);
-
-                    reader.onload = e => {
-                        let image = new Image();
-                        image.src = e.target.result;
-
-                        image.onload = i => {
-                            const ratio = i.target.width / i.target.height;
-                            console.log("IMAGE", i);
-                            this.inputURLs.push(i.target.src);
-                            this.isLoadingArr.push(true);
-                            this.isLoading = true;
-
-                            this.setImageEl(this.inputURLs.length - 1, ratio);
+                    imageCompression(n[i], {maxSizeMB: 1, maxWidthOrHeight: 1920 })
+                    .then(file => {
+                        let reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = e => {
+                            this.buildCrop(e.target.result);
                         }
-                    }
+                    })
                 }
             }
         }
@@ -154,18 +138,15 @@ export default {
     width: 100% !important;
     height: auto !important;
 }
-
 .imgCont {
     margin: 0 auto;
     width: 100%;
     height: auto;
     visibility: visible;
 }
-
 .buttons {
     margin-top: 15px;
 }
-
 .buttons button {
     margin: 0 2px;
 }
