@@ -6,15 +6,15 @@
         -->
         <b-card no-body>
             <b-tabs ref="tabs" card fill>
-                <b-tab v-for="(image, index) in inputURLs" :title="`${(index + 1).toString()}`" :key="index">
+                <b-tab v-for="(image, index) in images" :title="`${(index + 1).toString()}`" :key="image.id">
                     <!-- <div class="text-center" v-if="loadingGetter(index)">
                         <b-spinner />
                     </div> -->
                     <div :id="'imgCont' + index" class="imgCont">
-                        <img class="cropperImg" style="visibility:hidden;" :id="'cropper' + index" :src="inputURLs[index]">
+                        <img class="cropperImg" style="visibility:hidden;" :id="'cropper' + index" :src="image.url">
                     </div>
                     <div class="text-center buttons">
-                        <b-btn size="sm" variant="outline-danger">Delete</b-btn>
+                        <b-btn size="sm" variant="outline-danger" @click="deleteImage(index)">Cancel</b-btn>
                         <b-btn size="sm" variant="outline-success" @click="addImage(index)">Add Image</b-btn>
                     </div>
                 </b-tab>
@@ -42,6 +42,11 @@ export default {
             inputURLs: [],
             cropper: [],
             isLoading: false,
+            inputImages: [],
+            images: [],
+
+            // Img incrementor:
+            imageIncrementor: 0,
         }
     },
 
@@ -63,70 +68,119 @@ export default {
                         console.log("Cropper ready!", this.isLoadingArr, i, el);
                     }),
                 }))
-            }, 500);
-        },
-
-        setImageEl: function(i, ratio) {
-            setTimeout(() => {
-                let imgEl = document.querySelector("#cropper" + i);
-
-                const width = this.$refs.tabs.$el.clientWidth - 48;
-                const height = width / ratio;
-
-                this.setCropper(imgEl, i, width, height)
-            }, 500)
+            }, 100);
         },
 
         addImage: function(index) {
             const canvas = this.cropper[index].getCroppedCanvas();
-            this.$emit("addImage", canvas.toDataURL('png', 1.0));
-            this.inputURLs.splice(index, 1);
+            const url = canvas.toDataURL('png', 1.0);
+            this.images[index].url = url;
+            this.$emit("addImage", this.images[index]);
 
+            this.images.splice(index, 1);
+
+            // Reload the image uploader.
             this.cropper.forEach(crop => {
                 crop.destroy();
             })
 
             this.cropper = [];
 
-            const temp = this.inputURLs;
-            this.inputURLs = [];
-            this.isLoadingArr = [];
-
-            console.log("TEMP:", temp);
-            temp.forEach(url => {
-                this.buildCrop(url)
+            // Rebuild croppers.
+            this.$nextTick(() => {
+                let i = 0;
+                const width = this.$refs.tabs.$el.clientWidth - 48;
+                this.images.forEach(image => {
+                    let imgEl = document.querySelector("#cropper" + i);
+                    const height = width / image.ratio;
+                    this.setCropper(imgEl, i, width, height)
+                    i ++;
+                })
             })
         },
 
-        buildCrop: function(e) {
-            let image = new Image();
-            image.src = e;
-
-            image.onload = i => {
-                const ratio = i.target.width / i.target.height;
-
-                this.inputURLs.push(i.target.src);
-                this.isLoadingArr.push(true);
-                this.isLoading = true;
-
-                this.setImageEl(this.inputURLs.length - 1, ratio);
-            }
+        deleteImage: function(id) {
+            console.log(id);
         },
+
+        loadImage: async img => {
+            return new Promise((resolve) => {
+                img.onload = async () => {
+                    console.log("Image Loaded");
+                    resolve(true);
+                };
+            });
+        },
+
+        readFileAsDataURL: async file => {
+            return new Promise((resolve) => {
+                let fileReader = new FileReader();
+                fileReader.onload = () => resolve(fileReader.result);
+                fileReader.readAsDataURL(file);
+            });
+        },
+
     },
     watch: {
         imagesToEdit: function(n) {
             if (n.length > 0) {
-                // Before sending through to our build crop function, compress the image.
+                let compressionPromises = [];
+                let readerPromises = [];
+                let imagePromises = [];
+                let images = [];
+
+                // First compress the imags.
                 for (let i = 0; i < n.length; i ++) {
-                    imageCompression(n[i], {maxSizeMB: 1, maxWidthOrHeight: 1920 })
-                    .then(file => {
-                        let reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = e => {
-                            this.buildCrop(e.target.result);
-                        }
-                    })
+                    compressionPromises.push(imageCompression(n[i], {maxSizeMB: 1, maxWidthOrHeight: 1920 }))
+                    this.isLoadingArr.push(true);
+                    this.isLoading = true;
                 }
+
+                // Once images compressed, convert to Data URLs.
+                Promise.all(compressionPromises)
+                .then(files => {
+                    files.forEach(file => {
+                        readerPromises.push(this.readFileAsDataURL(file));
+                    })
+
+                    return Promise.all(readerPromises);
+                })
+                // Once converted, put into an image so we can read ratio.
+                .then(urls => {
+                    urls.forEach(url => {
+                        let image = new Image();
+                        image.src = url;
+                        this.inputURLs.push(url)
+                        images.push(image);
+                        imagePromises.push(this.loadImage(image));
+                    })
+
+                    return Promise.all(imagePromises)
+                })
+                // Once image loaded, read the ratio.
+                .then(() => {
+                    const width = this.$refs.tabs.$el.clientWidth - 48;
+
+                    for (let i = 0; i < images.length; i ++) {
+                        const ratio = images[i].width / images[i].height;
+
+                        // This is the initial and wont get deleted so we can edit later on.
+                        this.inputImages.push({ id: this.imageIncrementor, url: images[i].src, ratio: ratio });
+                        // This is the one that is referenced in template.
+                        this.images.push({ id: this.imageIncrementor, url: images[i].src, ratio: ratio })
+
+                        this.imageIncrementor ++;
+
+                        this.$nextTick(() => {
+                            let imgEl = document.querySelector("#cropper" + i);
+
+                            const height = width / ratio;
+
+                            this.setCropper(imgEl, i, width, height)
+                        })
+
+                    }
+                })
             }
         }
     }
