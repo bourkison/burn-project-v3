@@ -7,7 +7,16 @@
         <b-card no-body>
             <b-tabs ref="tabs" card fill>
                 <b-tab v-for="(image, index) in inputURLs" :title="`${(index + 1).toString()}`" :key="index">
-                    <div :id="'imgCont' + index" class="imgCont"><img class="cropperImg" style="width:100%;height:auto;" :id="'cropper' + index" :src="inputURLs[index]"></div>
+                    <!-- <div class="text-center" v-if="loadingGetter(index)">
+                        <b-spinner />
+                    </div> -->
+                    <div :id="'imgCont' + index" class="imgCont">
+                        <img class="cropperImg" style="visibility:hidden;" :id="'cropper' + index" :src="inputURLs[index]">
+                    </div>
+                    <div class="text-center buttons">
+                        <b-btn size="sm" variant="outline-danger">Delete</b-btn>
+                        <b-btn size="sm" variant="outline-success" @click="addImage(index)">Add Image</b-btn>
+                    </div>
                 </b-tab>
             </b-tabs>
         </b-card>
@@ -33,40 +42,50 @@ export default {
 
     data() {
         return {
+            isLoadingArr: [],
             inputURLs: [],
 
             cropper: [],
+            isLoading: false,
         }
     },
 
     methods: {
-        setCropper: function(el, w, h) {
-            // console.log("Img el:", imgEl, "Img Cont:", imgCont, "hidden img el:", hiddenImgEl, "ratio:", ratio);
+        setCropper: function(el, i, w, h) {
             setTimeout(() => {
+                // Element is set to hidden as default so loader can show without 
+                // not rendering the element due to v-if
+
                 this.cropper.push(new Cropper(el, {
                     scalable: false,
                     viewMode: 3,
                     aspectRatio: 0.9,
                     minContainerWidth: w,
                     minContainerHeight: h,
-                    ready: (c => {
-                        console.log("Cropper ready!", c);
+                    ready: (() => {
+                        el.style.visibility = "visible";
+                        this.isLoadingArr[i] = false;
+                        this.cropperSet ++;
+
+                        console.log("Cropper ready!", this.isLoadingArr, i, el);
                     }),
-                    crop: (c => {
-                        // Get ID by removing first 7 letters ('cropper') from ID.
-                        const iterator = c.target.id.substring(7);
-                        console.log(iterator);
-                        // const canvas = this.cropper[iterator].getCroppedCanvas();
-                        // console.log(canvas.toDataURL());
-                    })
                 }))
             }, 500);
         },
 
         setImageEl: function(i, ratio) {
             setTimeout(() => {
-                const imgEl = document.querySelector("#cropper" + i);
+                let imgEl = document.querySelector("#cropper" + i);
                 const imgCont = document.querySelector("#imgCont" + i);
+
+                // Need to change our reference to imgEl as IDs will change
+                // When we add and delete images.
+                const id = this.generateId(16);
+                console.log(imgEl);
+                imgEl.classList.add(id);
+                imgEl = document.querySelector('.' + id);
+
+                console.log(imgEl);
 
                 const width = this.$refs.tabs.$el.clientWidth - 48;
                 const height = width / ratio;
@@ -75,22 +94,39 @@ export default {
 
                 console.log("Img el:", imgEl, "Img Cont:", imgCont, "ratio:", ratio);
 
-                this.setCropper(imgEl, width, height)
+                this.setCropper(imgEl, i, width, height)
             }, 500)
         },
+
+        addImage: function(index) {
+            const canvas = this.cropper[index].getCroppedCanvas();
+            this.$emit("addImage", canvas.toDataURL());
+
+            this.isLoadingArr.splice(index, 1);
+            this.inputURLs.splice(index, 1);
+            this.cropper.splice(index, 1);
+
+            console.log(this.cropper);
+        },
+
+        generateId: function(n) {
+            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+            let id = '';
+            // 7 random characters
+            for (let i = 0; i < n; i++) {
+                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+            }
+            return id;
+        }
     },
 
     watch: {
         imagesToEdit: function(n) {
-            if (n.length - this.inputURLs.length > 0) {
-                // First create object URLs for the cropper component.
-                // let i = 0;
-                let newImages = n.length - this.inputURLs.length;
-                console.log(newImages);
-
-                for (let i = 0; i < newImages; i ++) {
+            if (n.length > 0) {
+                // Read the image and calculate the ratio in order to accurately set cropper later on.
+                for (let i = 0; i < n.length; i ++) {
                     let reader = new FileReader();
-                    reader.readAsDataURL(n[this.inputURLs.length + i]);
+                    reader.readAsDataURL(n[i]);
 
                     reader.onload = e => {
                         let image = new Image();
@@ -100,29 +136,13 @@ export default {
                             const ratio = i.target.width / i.target.height;
                             console.log("IMAGE", i);
                             this.inputURLs.push(i.target.src);
+                            this.isLoadingArr.push(true);
+                            this.isLoading = true;
 
                             this.setImageEl(this.inputURLs.length - 1, ratio);
                         }
                     }
                 }
-
-                // n.forEach(imageFile => {
-                //     let reader = new FileReader();
-
-                //     reader.readAsDataURL(imageFile);
-
-                //     reader.onload = e => {
-                //         let image = new Image();
-                //         image.src = e.target.result;
-
-                //         image.onload = i => {
-                //             const ratio = i.target.width / i.target.height;
-                //             this.inputURLs.push(i.target.src);
-
-                //             this.setImageEl(this.inputURLs.length - 1, ratio);
-                //         }
-                //     }
-                // })
             }
         }
     }
@@ -140,5 +160,13 @@ export default {
     width: 100%;
     height: auto;
     visibility: visible;
+}
+
+.buttons {
+    margin-top: 15px;
+}
+
+.buttons button {
+    margin: 0 2px;
 }
 </style>
