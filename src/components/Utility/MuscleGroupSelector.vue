@@ -7,8 +7,8 @@
         </div>
 
         <div class="datalistCont">
-            <b-form-input list="inputList" id="inputWithList" :placeholder="selectedMuscleGroups.length > 0 ? '' : 'Select muscle groups...'" autocomplete="off" v-model="inputText" @select="datalistAdd"></b-form-input>
-            <b-form-datalist id="inputList" :options="availableMuscleGroups"></b-form-datalist>
+            <b-form-input list="muscleGroupList" id="inputWithList" :placeholder="selectedMuscleGroups.length > 0 ? '' : 'Select muscle groups...'" autocomplete="off" v-model="inputText" @select="datalistAdd"></b-form-input>
+            <b-form-datalist id="muscleGroupList" :options="availableMuscleGroups"></b-form-datalist>
         </div>
 
         
@@ -50,13 +50,15 @@ export default {
 
     methods: {
         datalistAdd: function(e) {
-            // Add selected to selectedMuscleGroups.
-            this.selectedMuscleGroups.push(e.target.value);
-            
-            // Remove from available.
-            this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== e.target.value);
+            if (this.inputText.trim() !== '') {
+                // Add selected to selectedMuscleGroups.
+                this.selectedMuscleGroups.push(e.target.value);
+                
+                // Remove from available.
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== e.target.value);
+            }
 
-            e.target.value = '';
+            this.inputText = '';
             // document.activeElement.blur();
         },
 
@@ -79,8 +81,12 @@ export default {
                 // Add to available.
                 this.availableMuscleGroups.push(id);
             }
+        },
+    },
 
-            this.$emit("mgCH", this.selectedMuscleGroups);
+    watch: {
+        selectedMuscleGroups: function() {
+            this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         }
     }
 }

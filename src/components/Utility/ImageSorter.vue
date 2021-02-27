@@ -36,6 +36,15 @@ export default {
         this.$props.imagesProp.forEach(img => {
             this.sortedImages.push(img);
         })
+
+        if (this.$props.imagesProp.length > 0) {
+            const sortableOptions = {
+                animation: 300,
+                onEnd: this.changeOrder
+            }
+
+            this.$nextTick(() => this.sortable = new Sortable(document.querySelector(".sortableCont"), sortableOptions));
+        }
     },
 
     methods: {

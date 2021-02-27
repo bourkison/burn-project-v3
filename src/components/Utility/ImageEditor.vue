@@ -7,9 +7,9 @@
         <b-card no-body no-title>
             <b-tabs ref="tabs" card fill>
                 <b-tab v-for="(image, index) in images" :title="`${(index + 1).toString()}`" :key="image.id">
-                    <!-- <div class="text-center" v-if="loadingGetter(index)">
+                    <div class="text-center" v-if="isLoadingArr[index]">
                         <b-spinner />
-                    </div> -->
+                    </div>
                     <div :id="'imgCont' + index" class="imgCont">
                         <img class="cropperImg" style="visibility:hidden;" :id="'cropper' + index" :src="image.url">
                     </div>
@@ -68,9 +68,13 @@ export default {
                     minContainerHeight: h,
                     ready: (() => {
                         el.style.visibility = "visible";
-                        this.isLoadingArr[i] = false;
+                        this.isLoading = false;
                         this.cropperSet ++;
                         console.log("Cropper ready!", this.isLoadingArr, i, el);
+
+                        this.$nextTick(() => {
+                            this.isLoadingArr[i] = false;
+                        })
                     }),
                 }))
             }, 100);
@@ -93,6 +97,7 @@ export default {
             this.inputImages.splice(inputIndex, 1);
 
             this.rebuildCroppers();
+            this.$emit("cancelEdit");
         },
 
         rebuildCroppers: function() {
@@ -102,14 +107,30 @@ export default {
             })
 
             this.cropper = [];
+            this.isLoadingArr = [];
 
             // Rebuild croppers.
             this.$nextTick(() => {
                 let i = 0;
-                const width = this.$refs.tabs.$el.clientWidth - 48;
                 this.images.forEach(image => {
-                    let imgEl = document.querySelector("#cropper" + i);
-                    const height = width / image.ratio;
+                    const imgEl = document.querySelector("#cropper" + i);
+                    const imgCont = document.querySelector("#imgCont" + i);
+
+                    let width = this.$refs.tabs.$el.clientWidth - 48;
+
+                    this.isLoadingArr.push(true);
+                    let height = width / image.ratio;
+
+                    if (height > 600) {
+                        height = 600;
+                        width = height * image.ratio
+
+                        imgCont.style.height = "600px";
+                        imgCont.style.width = width + "px";
+                    }
+
+                    console.log(height);
+
                     this.setCropper(imgEl, i, width, height)
                     i ++;
                 })
@@ -142,11 +163,12 @@ export default {
                 let imagePromises = [];
                 let images = [];
 
+                this.isLoading = true;
+
                 // First compress the imags.
                 for (let i = 0; i < n.length; i ++) {
                     compressionPromises.push(imageCompression(n[i], {maxSizeMB: 1, maxWidthOrHeight: 1920 }))
                     this.isLoadingArr.push(true);
-                    this.isLoading = true;
                 }
 
                 // Once images compressed, convert to Data URLs.
@@ -172,9 +194,9 @@ export default {
                 })
                 // Once image loaded, read the ratio.
                 .then(() => {
-                    const width = this.$refs.tabs.$el.clientWidth - 48;
 
                     for (let i = 0; i < images.length; i ++) {
+                        let width = this.$refs.tabs.$el.clientWidth - 48;
                         const ratio = images[i].width / images[i].height;
 
                         // This is the initial and wont get deleted so we can edit later on.
@@ -185,10 +207,21 @@ export default {
                         this.imageIncrementor ++;
 
                         this.$nextTick(() => {
-                            let imgEl = document.querySelector("#cropper" + i);
+                            const imgEl = document.querySelector("#cropper" + i);
+                            const imgCont = document.querySelector("#imgCont" + i);
 
-                            const height = width / ratio;
+                            let height = width / ratio;
 
+                            if (height > 600) {
+                                console.log("TOO HIGH", height, i);
+                                height = 600;
+                                width = height * ratio
+
+                                imgCont.style.height = "600px";
+                                imgCont.style.width = width + "px";
+                            }
+
+                            console.log("Setting cropper", imgEl, i, width, height);
                             this.setCropper(imgEl, i, width, height)
                         })
 
@@ -206,15 +239,29 @@ export default {
                 // Set that to true.
                 const image = this.inputImages.find(x => x.id === n[n.length - 1]);
                 image.edit = true;
-                this.images.push(image);
+                this.images.push(JSON.parse(JSON.stringify(image)));
 
 
                 // Now set up the new cropper.
-                const width = this.$refs.tabs.$el.clientWidth - 48;                
+                let width = this.$refs.tabs.$el.clientWidth - 48;                
                 this.$nextTick(() => {
-                    let imgEl = document.querySelector("#cropper" + (this.images.length - 1).toString());
+                    const imgEl = document.querySelector("#cropper" + (this.images.length - 1).toString());
+                    const imgCont = document.querySelector("#imgCont" + (this.images.length - 1).toString());
 
-                    const height = width / image.ratio;
+
+                    let height = width / image.ratio;
+
+                    if (height > 600) {
+                        console.log("TOO HIGH", height);
+                        height = 600;
+                        width = height * image.ratio
+
+                        imgCont.style.height = "600px";
+                        imgCont.style.width = width + "px";
+                    }
+
+                    console.log(height);
+
                     this.setCropper(imgEl, this.images.length - 1, width, height)
                 })
             }

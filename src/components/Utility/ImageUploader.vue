@@ -1,23 +1,14 @@
 <template>
     <div>
         <div>
-            <ImageSorter :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
+            <ImageSorter v-if="editedFiles.length > 0" :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
         </div>
-        <div ref="mImgEdit" style="visibility:hidden;position:absolute;">
-            <ImageEditor :imagesToAdd="addedFiles" :imagesToEdit="imagesToEdit" @addImage="addImage" />
+        <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
+            <ImageEditor :imagesToAdd="addedFiles" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" />
         </div>
-        <b-form-file id="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
-        <!-- <div>
-            <b-row>
-                <b-col v-for="(img, index) in sortedFiles" :key="index">
-                    <b-card :img-src="img.url" img-top>
-                    <b-card-text class="text-center">
-                        {{ index }}
-                    </b-card-text>
-                </b-card>
-                </b-col>
-            </b-row>
-        </div> -->
+        <div class="imageInput">
+            <b-form-file class="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
+        </div>
     </div>
 </template>
 
@@ -39,33 +30,33 @@ export default {
             // imagesToEdit is an array of IDs thats passed to image editor that have already been passed through before.
             imagesToEdit: [],
 
-
-            inputFiles: [],
-            // Image iterator used for keeping track of images and allowed edit.
+            filesInEdit: 0,
 
         }
     },
     methods: {
         formatNames: function() {
-            return this.inputFiles.length === 1 ? this.inputFiles[0].name : `${ this.inputFiles.length } files selected`
+            return this.filesInEdit === 1 ? '1 file selected' : `${ this.filesInEdit } files selected`
         },
         
         handleFileUpload: function(e) {
-            e.target.files.forEach(file => {
-                this.inputFiles.push(file);
-            })
+            this.filesInEdit += e.target.files.length;
         },
         
         addImage: function(data) {
             delete data.edit;
+            delete data.ratio;
 
             this.editedFiles.push(data);
             this.sortedFiles.push(data);
+
+            this.filesInEdit --;
         },
 
         editImage: function(id) {
             this.imagesToEdit.push(id);
             this.deleteImage(id);
+            this.filesInEdit ++;
         },
 
         deleteImage: function(id) {
@@ -81,18 +72,35 @@ export default {
         }
     },
     watch: {
-        inputFiles: function() {
-            if (this.inputFiles.length > 0) {
+        filesInEdit: function() {
+            if (this.filesInEdit > 0) {
                 this.$refs.mImgEdit.style.visibility = "visible";
                 this.$refs.mImgEdit.style.position = "inherit";
+            } else {
+                this.$refs.mImgEdit.style.visibility = "hidden";
+                this.$refs.mImgEdit.style.position = "absolute";
             }
+        },
+
+        sortedFiles: function() {
+            let temp = [];
+
+            this.sortedFiles.forEach(file => {
+                temp.push(file.url);
+            }) 
+
+            this.$emit("updateImages", temp);
         }
     }
 }
 </script>
 
 <style scoped>
-#imageInput:hover {
-    cursor: pointer;
+.imageInput:hover {
+    cursor: pointer !important;
+}
+
+.imageEditor {
+    margin-bottom: 15px;
 }
 </style>

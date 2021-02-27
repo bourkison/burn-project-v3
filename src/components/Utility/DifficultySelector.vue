@@ -65,7 +65,7 @@ export default {
             }
 
             document.activeElement.blur();
-            this.$emit("setDifficulty", star + 1)
+            this.$emit("updateDifficult", star + 1)
         }
     }
 }
