@@ -25,8 +25,8 @@ export default {
         // Download relevant exercises.
         db.collection("exercises").get()
         .then(exercisesSnapshot => {
-            exercisesSnapshot.forEach(exercise => {
-                this.exercises.push(exercise.id);
+            exercisesSnapshot.forEach(exerciseDoc => {
+                this.exercises.push(exerciseDoc.id);
             })
 
             this.isLoading = false;
@@ -34,3 +34,9 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.exerciseFeed {
+    margin-top: 40px;
+}
+</style>

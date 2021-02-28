@@ -122,6 +122,7 @@ export default {
     },
 
     beforeRouteUpdate: function(to, from, next) {
+        this.downloadExercise();
         next();
     },
 

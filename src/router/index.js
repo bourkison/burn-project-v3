@@ -11,6 +11,11 @@ import ExerciseFollowed from '@/views/Exercise/ExerciseFollowed.vue'
 import ExerciseNew from '@/views/Exercise/ExerciseNew.vue'
 import ExerciseView from '@/views/Exercise/ExerciseView.vue'
 
+import Workout from '@/views/Workout/Workout.vue'
+import WorkoutDiscover from '@/views/Workout/WorkoutDiscover.vue'
+import WorkoutFollowed from '@/views/Workout/WorkoutFollowed.vue'
+import WorkoutView from '@/views/Workout/WorkoutView.vue'
+
 
 Vue.use(VueRouter)
 
@@ -72,6 +77,34 @@ const routes = [
             requiresAuth: true
         }
     },
+    {
+        path: '/workouts',
+        name: 'Workout',
+        component: Workout,
+        meta: {
+            requiresAuth: true
+        },
+        children: [
+            {
+                path: '/workouts/discover',
+                name: 'Discover Workouts',
+                component: WorkoutDiscover
+            },
+            {
+                path: '/workouts',
+                name: 'Followed Workouts',
+                component: WorkoutFollowed
+            }
+        ]
+    },
+    {
+        path: '/workouts/:workoutid',
+        name: 'View Workout',
+        component: WorkoutView,
+        meta: {
+            requiresAuth: true
+        }
+    }
     
 ]
 

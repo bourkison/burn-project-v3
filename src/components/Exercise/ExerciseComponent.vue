@@ -12,7 +12,7 @@
             
             <b-card-body>
                 <b-card-title><div><a @click="$router.push('/exercises/' + exerciseId)" class="componentLink">{{ exerciseData.name }}</a></div></b-card-title>
-                <b-card-sub-title></b-card-sub-title>
+                <b-card-sub-title>{{ exerciseData.createdBy.username }}</b-card-sub-title>
                 <Viewer :initialValue="exerciseData.description" />
             </b-card-body>
         </div>
@@ -31,7 +31,7 @@ import { Viewer } from '@toast-ui/vue-editor';
 import { db, storage } from '@/firebase'
 
 export default {
-    name: 'ViewExerciseMin',
+    name: 'ExerciseComponent',
     components: { Viewer },
     props: {
         exerciseId: {
@@ -61,6 +61,7 @@ export default {
         db.collection("exercises").doc(this.$props.exerciseId).get()
         .then(exerciseDoc => {
             this.exerciseData = exerciseDoc.data();
+            this.exerciseData.id = exerciseDoc.id
             let imageDownloadPromises = [];
 
             this.exerciseData.filePaths.forEach(filePath => {
@@ -78,10 +79,10 @@ export default {
             return db.collection("exercises").doc(this.$props.exerciseId).collection("counters").get()
         })
         .then(counterSnapshot => {
-            counterSnapshot.forEach(counter => {
-                this.likeCount += counter.data().likeCount;
-                this.commentCount += counter.data().commentCount;
-                this.followCount += counter.data().followCount;
+            counterSnapshot.forEach(counterDoc => {
+                this.likeCount += counterDoc.data().likeCount;
+                this.commentCount += counterDoc.data().commentCount;
+                this.followCount += counterDoc.data().followCount;
             })
 
             return this.checkIfUserLiked()
@@ -109,7 +110,7 @@ export default {
 </script>
 
 <style>
-.componentLink {
+.componentLink:hover {
     cursor: pointer;
 }
 

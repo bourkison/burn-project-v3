@@ -21,7 +21,6 @@ export default {
         return {
             isLoading: true,
             exercises: [], // Exercises from user doc.
-            errorMessage: ''
         }
     },
 
@@ -38,16 +37,13 @@ export default {
         })
         .catch(e => {
             this.isLoading = false;
-            this.errorMessage = "Error downloading exercises" + e;
-            console.log(this.errorMessage);
+            console.error("Error pulling workouts", e);
         })
     }
 }
 </script>
 
-<style>
-
-.navCard,
+<style scoped>
 .exerciseFeed {
     margin-top: 40px;
 }
