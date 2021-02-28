@@ -53,7 +53,7 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger">Cancel</b-button>
+                    <b-button variant="outline-danger" @click="$router.push('/exercises/' + newExerciseData.id)">Cancel</b-button>
                     <b-button variant="outline-primary" @click="updateExercise" :disabled="isUpdating">
                         <span v-if="isUpdating"><b-spinner small/></span>
                         <span v-else>Update</span>
@@ -85,6 +85,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            exerciseExists: false,
 
             oldExerciseData: {},
             nexExerciseData: {},
@@ -132,6 +133,8 @@ export default {
             db.collection("exercises").doc(this.$route.params.exerciseid).get()
             .then(exerciseDoc => {
                 if (exerciseDoc.exists) {
+                    this.exerciseExists = true;
+
                     this.oldExerciseData = exerciseDoc.data();
                     this.newExerciseData = exerciseDoc.data();
                     this.newExerciseData.id = exerciseDoc.id;
@@ -258,10 +261,13 @@ export default {
 .newExerciseCard,
 .muscleGroupCard,
 .difficultySelectCard,
-.buttonsCont,
 .descriptionCard,
 .tagSelectCard {
     margin-top: 25px;
+}
+
+.buttonsCont {
+    margin: 25px 0;
 }
 
 .buttonsCont button {

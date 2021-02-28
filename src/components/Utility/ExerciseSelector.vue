@@ -43,6 +43,12 @@ import Sortable from 'sortablejs'
 
 export default {
     name: 'ExerciseSelector',
+    props: {
+        initExercises: {
+            type: Array,
+            required: false
+        }
+    },
     data() {
         return {
             isLoading: true,
@@ -90,7 +96,65 @@ export default {
             return Promise.all(exerciseDownloadPromises);
         })
         .then(() => {
+            // Once exercises are downloaded, check for initExercises.
+            if (this.$props.initExercises) {
+                let initExercisePromises = [];
+
+                this.$props.initExercises.forEach(exercise => {
+                    // Check we haven't downloaded already (i.e. in followed or created exercises)
+                    let cIndex = this.createdExercises.findIndex(x => x.id === exercise.id);
+                    let fIndex;
+                    console.log(exercise);
+                    
+                    if (cIndex < 0) {
+                        fIndex = this.followedExercises.findIndex(x => x.id === exercise.id);
+                    }
+
+                    if (cIndex < 0 && fIndex < 0) {
+                        initExercisePromises.push(db.collection("exercises").doc(exercise.id).get()
+                        .then(exerciseDoc => {
+                            let data = exerciseDoc.data();
+                            data.id = exerciseDoc.id;
+                            return data;
+                        }))
+                    } else if (cIndex >= 0) {
+                        initExercisePromises.push(new Promise(resolve => {
+                            let data = this.createdExercises[cIndex];
+                            resolve(data);
+                        }));
+                    } else if (fIndex >= 0) {
+                        initExercisePromises.push(new Promise(resolve => {
+                            let data = this.followedExercises[fIndex];
+                            resolve(data);
+                        }));
+                    }
+                })
+
+                return Promise.all(initExercisePromises);
+            }
+        })
+        .then(exercises => {
+            if (exercises) {
+                exercises.forEach(exercise => {
+                    this.selectedExercises.push(exercise);
+                })
+            }
+        })
+        .then(() => {
             this.isLoading = false;
+            if (this.$props.initExercises) {
+                this.$nextTick(() => { 
+                    this.sortable = new Sortable(document.querySelector("#selectedContainer"), this.sortableOptions)
+                    this.$props.initExercises.forEach(exercise => {
+                        if (document.querySelector("#exercise-" + exercise.id)) {
+                            document.querySelector("#exercise-" + exercise.id).classList.add("active");
+                        }
+                    })
+                });
+            }
+        })
+        .catch(e => {
+            console.error("Error downloading exercises:", e);
         })
     },
 
@@ -121,7 +185,7 @@ export default {
 
     watch: {
         selectedExercises: function(n) {
-            if (n.length > 0 && !this.sortable) {
+            if (n.length > 0 && !this.sortable && !this.isLoading) {
                 this.$nextTick(() => { this.sortable = new Sortable(document.querySelector("#selectedContainer"), this.sortableOptions) });
             } else if (n.length == 0 && this.sortable) {
                 this.sortable = null;

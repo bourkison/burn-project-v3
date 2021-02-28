@@ -9,26 +9,26 @@
                 -->
                 <b-container>
                     <b-card class="navCard" no-body>
-                            <b-list-group>
-                                <b-list-group-item class="navItem" ref="homeWorkoutLink" @click="$router.push('/workouts')" href="#">
-                                    <div class="d-flex align-items-center">
-                                        Workouts
-                                        <b-icon-house class="ml-auto" />
-                                    </div>
-                                </b-list-group-item>
-                                <b-list-group-item class="navItem" ref="discoverWorkoutLink" @click="$router.push('/workouts/discover')" href="#">
-                                    <div class="d-flex align-items-center">
-                                        Discover
-                                        <b-icon-search class="ml-auto"/>
-                                    </div>
-                                </b-list-group-item>
-                                <b-list-group-item class="navItem" @click="$router.push('/workouts/new')" href="#">
-                                    <div class="d-flex align-items-center">
-                                        New
-                                        <b-icon-plus class="ml-auto"/>
-                                    </div>
-                                </b-list-group-item>
-                            </b-list-group>
+                        <b-list-group>
+                            <b-list-group-item class="navItem" ref="homeWorkoutLink" @click="$router.push('/workouts')" href="#">
+                                <div class="d-flex align-items-center">
+                                    Workouts
+                                    <b-icon-house class="ml-auto" />
+                                </div>
+                            </b-list-group-item>
+                            <b-list-group-item class="navItem" ref="discoverWorkoutLink" @click="$router.push('/workouts/discover')" href="#">
+                                <div class="d-flex align-items-center">
+                                    Discover
+                                    <b-icon-search class="ml-auto"/>
+                                </div>
+                            </b-list-group-item>
+                            <b-list-group-item class="navItem" @click="$router.push('/workouts/new')" href="#">
+                                <div class="d-flex align-items-center">
+                                    New
+                                    <b-icon-plus class="ml-auto"/>
+                                </div>
+                            </b-list-group-item>
+                        </b-list-group>
                     </b-card>
                 </b-container>
             </b-col>

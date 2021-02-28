@@ -21,7 +21,7 @@ export default {
     },
 
     created: function() {
-        db.collection("workouts").get()
+        db.collection("workouts").orderBy("createdAt", "desc").get()
         .then(workoutSnapshot => {
             workoutSnapshot.forEach(workoutDoc => {
                 this.workouts.push(workoutDoc.id)

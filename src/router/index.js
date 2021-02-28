@@ -13,6 +13,7 @@ import ExerciseView from '@/views/Exercise/ExerciseView.vue'
 
 import Workout from '@/views/Workout/Workout.vue'
 import WorkoutDiscover from '@/views/Workout/WorkoutDiscover.vue'
+import WorkoutEdit from '@/views/Workout/WorkoutEdit.vue'
 import WorkoutFollowed from '@/views/Workout/WorkoutFollowed.vue'
 import WorkoutNew from '@/views/Workout/WorkoutNew.vue'
 import WorkoutView from '@/views/Workout/WorkoutView.vue'
@@ -110,6 +111,14 @@ const routes = [
         path: '/workouts/:workoutid',
         name: 'View Workout',
         component: WorkoutView,
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/workouts/:workoutid/edit',
+        name: 'Edit Workout',
+        component: WorkoutEdit,
         meta: {
             requiresAuth: true
         }

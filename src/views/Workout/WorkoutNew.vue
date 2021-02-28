@@ -58,7 +58,7 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger">Cancel</b-button>
+                    <b-button variant="outline-danger" @click="$router.push('/workouts/')">Cancel</b-button>
                     <b-button variant="outline-primary" @click="createWorkout" :disabled="isCreating">
                         <span v-if="isCreating"><b-spinner small /></span>
                         <span v-else>Create</span>
@@ -71,6 +71,7 @@
 
 <script>
 import { Editor } from '@toast-ui/vue-editor'
+import { functions }  from '@/firebase'
 
 import ExerciseSelector from '@/components/Utility/ExerciseSelector.vue'
 import DifficultySelector from '@/components/Utility/DifficultySelector.vue'
@@ -120,10 +121,23 @@ export default {
     methods: {
         createWorkout: function() {
             this.isCreating = true;
+
+            const createWorkout = functions.httpsCallable("createWorkout");
+            const user = { username: this.$store.state.userProfile.docData.username, id: this.$store.state.userProfile.data.uid, profilePhoto: this.$store.state.userProfile.docData.profilePhoto };
+
+            createWorkout({ workoutForm: this.workoutForm, user: user })
+            .then(result => {
+                this.isCreating = false;
+                this.$router.push("/workouts/" + result.data.id);
+            })
+            .catch(e => {
+                console.log("Error creating workout:", e);
+                this.isCreating = false;
+            })
         },
 
-        updateDescription: function(description) {
-            this.workoutForm.description = description;
+        updateDescription: function() {
+            this.workoutForm.description = this.$refs.toastuiEditor.invoke('getMarkdown');
         },
 
         updateDifficulty: function(difficulty) {

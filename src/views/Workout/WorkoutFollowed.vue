@@ -25,7 +25,7 @@ export default {
     },
 
     created: function() {
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts").get()
+        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts").orderBy("createdAt", "desc").get()
         .then(workoutsSnapshot => {
             if (workoutsSnapshot.size > 0) {
                 workoutsSnapshot.forEach(workout => {
