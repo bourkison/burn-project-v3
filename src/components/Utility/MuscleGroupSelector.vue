@@ -22,7 +22,7 @@ export default {
     name: "MuscleGroupSelect",
     components: { MuscleGroup },
     props: {
-        selectedMgs: {
+        initMgs: {
             type: Array,
             required: false
         }
@@ -42,8 +42,13 @@ export default {
     mounted: function() {
         this.availableMuscleGroups = this.allMuscleGroups;
 
-        if (this.$props.selectedMgs) {
-            this.selectedMuscleGroups = this.$props.selectedMgs;
+        if (this.$props.initMgs) {
+            this.selectedMuscleGroups = this.$props.initMgs;
+
+            this.$props.initMgs.forEach(mg => {
+                // Remove from available.
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== mg);
+            })
         }
 
     },

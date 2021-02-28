@@ -6,6 +6,7 @@ import Home from '@/views/Home.vue'
 
 import Exercise from '@/views/Exercise/Exercise.vue'
 import ExerciseDiscover from '@/views/Exercise/ExerciseDiscover.vue'
+import ExerciseEdit from '@/views/Exercise/ExerciseEdit.vue'
 import ExerciseFollowed from '@/views/Exercise/ExerciseFollowed.vue'
 import ExerciseNew from '@/views/Exercise/ExerciseNew.vue'
 import ExerciseView from '@/views/Exercise/ExerciseView.vue'
@@ -51,6 +52,14 @@ const routes = [
         path: '/exercises/new',
         name: 'New Exercise',
         component: ExerciseNew,
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/exercises/:exerciseid/edit',
+        name: 'Edit Exercise',
+        component: ExerciseEdit,
         meta: {
             requiresAuth: true
         }

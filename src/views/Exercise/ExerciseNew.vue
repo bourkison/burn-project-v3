@@ -29,7 +29,7 @@
                 <b-container>
                     <b-card class="difficultySelectCard" no-body>
                         <b-card-body>
-                            <h5>Select Difficulty</h5>
+                            <h5>Difficulty</h5>
                             <DifficultySelector @updateDifficulty="updateDifficulty" />
                         </b-card-body>
                     </b-card>
@@ -135,7 +135,7 @@ export default {
             let imageUploadPromises = [];
             this.imagesToUpload.forEach(img => {
                 let imageRef = storage.ref("exercises/" + this.exerciseForm.id + "/images/" + Number(new Date()) + "-" + this.generateId(4));
-                imageUploadPromises.push(imageRef.putString(img, 'data_url'));
+                imageUploadPromises.push(imageRef.putString(img.url, 'data_url'));
                 this.exerciseForm.filePaths.push(imageRef.fullPath);
             })
 

@@ -14,11 +14,28 @@
 <script>
 export default {
     name: 'TagSelector',
+    props: {
+        initTags: {
+            type: Array,
+            required: false
+        }
+    },
     data() {
         return {
             inputText: '',
             selectedTags: [],
             tagOptions: ["Cardio", "Strength", "No Equipment"]
+        }
+    },
+
+    created: function() {
+        if (this.$props.initTags) {
+            this.$props.initTags.forEach(tag => {
+                this.selectedTags.push(tag);
+
+                // Remove from available (if it's there).
+                this.tagOptions = this.tagOptions.filter(x => x !== tag);
+            })
         }
     },
 

@@ -4,7 +4,7 @@
             <ImageSorter v-if="editedFiles.length > 0" :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
         </div>
         <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
-            <ImageEditor :imagesToAdd="addedFiles" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" />
+            <ImageEditor :imagesToAdd="addedFiles" :initId="initId" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" />
         </div>
         <div class="imageInput">
             <b-form-file class="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
@@ -19,6 +19,12 @@ import ImageSorter from '@/components/Utility/ImageSorter.vue'
 export default {
     name: 'ImageUploader',
     components: { ImageEditor, ImageSorter },
+    props: {
+        initImages: {
+            type: Array,
+            required: false
+        }
+    },
     data() {
         return {
             // addedFiles is new files and gets passed to ImageEditor.
@@ -30,10 +36,26 @@ export default {
             // imagesToEdit is an array of IDs thats passed to image editor that have already been passed through before.
             imagesToEdit: [],
 
+            // initId is the number of images passed at the start
+            // Used for determining new image IDs.
+            initId: 0,
+
             filesInEdit: 0,
 
         }
     },
+
+    created: function() {
+        if (this.$props.initImages) {
+            this.$props.initImages.forEach(img => {
+                this.sortedFiles.push(img);
+                this.editedFiles.push(img);
+            })
+
+            this.initId = this.$props.initImages.length;
+        }
+    },
+
     methods: {
         formatNames: function() {
             return this.filesInEdit === 1 ? '1 file selected' : `${ this.filesInEdit } files selected`
@@ -63,8 +85,32 @@ export default {
             let editedIndex = this.editedFiles.findIndex(x => x.id === id);
             let sortedIndex = this.sortedFiles.findIndex(x => x.id === id);
 
-            this.editedFiles.splice(editedIndex, 1);
-            this.sortedFiles.splice(sortedIndex, 1);
+            if (!this.sortedFiles[sortedIndex].editable) {
+                this.$bvModal.msgBoxConfirm("You are about to delete an image that you have already uploaded. Are you sure?", {
+                    title: 'Confirm',
+                    size: 'sm',
+                    buttonSize: 'sm',
+                    okVariant: 'danger',
+                    okTitle: 'Delete',
+                    cancelTitle: 'No',
+                    footerClass: 'p2',
+                    hideHeaderClose: false,
+                    centered: true
+                })
+                .then(value => {
+                    if (value) {
+                        this.$emit("deleteInitImage", this.sortedFiles[sortedIndex].path);
+                        this.editedFiles.splice(editedIndex, 1);
+                        this.sortedFiles.splice(sortedIndex, 1);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                })
+            } else {
+                this.editedFiles.splice(editedIndex, 1);
+                this.sortedFiles.splice(sortedIndex, 1);
+            }
         },
 
         sort: function(arr) {
@@ -83,13 +129,7 @@ export default {
         },
 
         sortedFiles: function() {
-            let temp = [];
-
-            this.sortedFiles.forEach(file => {
-                temp.push(file.url);
-            }) 
-
-            this.$emit("updateImages", temp);
+            this.$emit("updateImages", this.sortedFiles);
         }
     }
 }

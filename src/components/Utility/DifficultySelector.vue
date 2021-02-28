@@ -12,7 +12,7 @@
 export default {
     name: 'DifficultySelector',
     props: {
-        initialDifficulty: {
+        initDifficulty: {
             type: Number,
             required: false
         }
@@ -31,8 +31,8 @@ export default {
     },
 
     created: function() {
-        if (this.$props.initialDifficulty) {
-            this.starClick(this.$props.initialDifficulty - 1);
+        if (this.$props.initDifficulty) {
+            this.starClick(this.$props.initDifficulty - 1);
         }
     },
 
@@ -65,7 +65,7 @@ export default {
             }
 
             document.activeElement.blur();
-            this.$emit("updateDifficult", star + 1)
+            this.$emit("updateDifficulty", star + 1)
         }
     }
 }

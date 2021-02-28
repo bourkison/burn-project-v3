@@ -4,7 +4,7 @@
             <b-col v-for="(img, i) in imagesProp" :key="i" sm="4" class="sortableItem">
                 <b-card :img-src="img.url" img-top>
                     <b-card-text class="text-center">
-                        <b-icon-pencil-square class="imgIcon" font-scale="1.3" @click="editImage(img.id)" />
+                        <b-icon-pencil-square v-if="img.editable" class="imgIcon" font-scale="1.3" @click="editImage(img.id)" />
                         <b-icon-trash class="imgIcon" font-scale="1.3" @click="deleteImage(img.id)" />
                     </b-card-text>
                 </b-card>
@@ -61,6 +61,7 @@ export default {
         },
 
         deleteImage: function(id) {
+            console.log(id);
             this.$emit("deleteImage", id);
         }
     },

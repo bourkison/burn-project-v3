@@ -1,6 +1,6 @@
 <template>
     <b-container v-if="!isLoading && exerciseExists">
-        <b-row>
+        <b-row align-v="center">
             <b-col sm="8">
                 <b-container class="exerciseCard">
                     <b-card no-body>
@@ -9,7 +9,7 @@
                                 {{ exerciseData.name }}
                                 <b-dropdown right class="float-right" variant="outline">
                                     <span v-if="exerciseData.createdBy.id === this.$store.state.userProfile.data.uid">
-                                        <b-dropdown-item>Edit</b-dropdown-item>
+                                        <b-dropdown-item :to="'/exercises/' + exerciseData.id + '/edit'">Edit</b-dropdown-item>
                                         <b-dropdown-item variant="danger">Delete</b-dropdown-item>
                                     </span>
                                     <span v-else>
@@ -131,6 +131,7 @@ export default {
             .then(exerciseDoc => {
                 if (exerciseDoc.exists) {
                     this.exerciseData = exerciseDoc.data();
+                    this.exerciseData.id = exerciseDoc.id;
                     let imageDownloadPromises = [];
 
                     this.exerciseData.filePaths.forEach(filePath => {

@@ -39,6 +39,10 @@ export default {
         imagesToEdit: {
             type: Array,
             required: false
+        },
+        initId: {
+            type: Number,
+            required: false
         }
     },
     data() {
@@ -52,6 +56,12 @@ export default {
 
             // Img incrementor:
             imageIncrementor: 0,
+        }
+    },
+
+    created: function() {
+        if (this.$props.initId) {
+            this.imageIncrementor = this.$props.initId;
         }
     },
 
@@ -83,8 +93,12 @@ export default {
         addImage: function(index) {
             const canvas = this.cropper[index].getCroppedCanvas();
             const url = canvas.toDataURL('png', 1.0);
+            // IMAGES: { id, url, editable, path }
             this.images[index].url = url;
+            this.images[index].editable = true;
+            this.images[index].path = null;
             this.$emit("addImage", this.images[index]);
+            console.log("IMAGE ADD:", this.images[index]);
 
             this.images.splice(index, 1);
 
