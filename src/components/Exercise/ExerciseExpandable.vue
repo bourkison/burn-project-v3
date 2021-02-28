@@ -13,7 +13,7 @@
                 <div v-if="!isLoading">
                     <Viewer :initialValue="exerciseData.description" />
                 </div>
-                <div v-else>
+                <div v-else class="text-center">
                     <b-spinner small />
                 </div>
             </b-card-body>

@@ -25,6 +25,13 @@
                                 <div :id="workoutData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
                                     <ExerciseExpandable v-for="(exercise, index) in workoutData.exercises" :exercise="exercise" :accordionIndex="index" :workoutId="workoutData.id" :key="exercise.id" :lazy="false" />
                                 </div>
+
+                                <div class="text-center">
+                                    <b-button variant="outline-success" size="sm" class="text-center">
+                                        Start Workout    
+                                        <b-icon-play />
+                                    </b-button>
+                                </div>
                             </b-card-text>
                         </b-card-body>
                     </b-card>

@@ -10,6 +10,13 @@
                     </div>
                 </b-card-text>
                 <Viewer :initialValue="workoutData.description"/>
+
+                <div class="text-center">
+                    <b-button variant="outline-success" size="sm" class="text-center">
+                        Start Workout
+                        <b-icon-play />
+                    </b-button>
+                </div>
             </b-card-body>
         </div>
         <div v-else>

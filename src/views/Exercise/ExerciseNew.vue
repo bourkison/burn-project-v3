@@ -199,10 +199,13 @@ export default {
 .newExerciseCard,
 .muscleGroupCard,
 .difficultySelectCard,
-.buttonsCont,
 .descriptionCard,
 .tagSelectCard {
     margin-top: 25px;
+}
+
+.buttonsCont {
+    margin: 25px 0;
 }
 
 .buttonsCont button {
