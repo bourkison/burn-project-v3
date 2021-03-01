@@ -10,7 +10,7 @@
                 <span class="ml-auto text-muted">
                     <span class="count" @click="expandLikes">{{ likeCount }}&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>&nbsp;
                     <span class="count" @click="expandComments">{{ commentCount }}&nbsp;<span v-if="commentCount == 1">comment</span><span v-else>comments</span></span>&nbsp;
-                    <span class="count" v-if="followableComponent">{{ followCount }}&nbsp;<span v-if="followCount == 1">follow</span><span v-else>follows</span></span>
+                    <span class="count" @click="expandFollows" v-if="followableComponent">{{ followCount }}&nbsp;<span v-if="followCount == 1">follow</span><span v-else>follows</span></span>
                 </span>
             </b-col>
         </b-row>
@@ -18,8 +18,14 @@
             <b-container>
                 <div v-if="!isLoadingComments">
                     <b-list-group class="commentsContainer borderless" flush>
-                        <Comment v-for="comment in comments" :key="comment.id" :comment="comment" />
+                        <Comment v-for="comment in comments" :key="comment.id" :comment="comment" :collection="collection" :docId="docId" />
                     </b-list-group>
+                    <div class="text-center">
+                        <b-button v-if="commentCount > comments.length" @click="loadMoreComments" :disabled="isLoadingMoreComments" variant="outline" class="mb-2">
+                            <span v-if="isLoadingMoreComments"><b-spinner small /></span>
+                            <span v-else>More</span>
+                        </b-button>
+                    </div>
                 </div>
                 <div v-else>
                     <b-list-group class="commentsContainer">
@@ -41,6 +47,23 @@
                 <div v-if="!isLoadingLikes">
                     <b-list-group>
                         <UserList v-for="like in likes" :key="like.createdBy.id" :userData="like.createdBy" />
+                    </b-list-group>
+                </div>
+                <div v-else>
+                    <b-spinner />
+                </div>
+            </div>
+        </b-modal>
+
+        <b-modal :id="docId + '-followModal'" centered ok-only>
+            <template #modal-title>
+                Follows
+            </template>
+
+            <div class="d-block">
+                <div v-if="!isLoadingFollows">
+                    <b-list-group>
+                        <UserList v-for="follow in follows" :key="follow.createdBy.id" :userData="follow.createdBy" />
                     </b-list-group>
                 </div>
                 <div v-else>
@@ -84,6 +107,7 @@ export default {
             isLoadingLikes: false,
             isLoadingComments: false,
             isLoadingFollows: false,
+            isLoadingMoreComments: false,
 
             isLiked: '',
             isFollowed: '',
@@ -99,6 +123,8 @@ export default {
             likes: [],
             comments: [],
             follows: [],
+
+            lastLoadedComment: null,
         }
     },
 
@@ -179,7 +205,7 @@ export default {
                         }
                     })
                     .catch(e => {
-                        console.error("Error liking", this.docId, e);
+                        console.error("Error liking", this.$props.docId, e);
                         this.isLiked = '';
                         this.isLiking = false;
                     })
@@ -196,19 +222,19 @@ export default {
                     });
 
                     // Delete like.
+                    const temp = this.isLiked;
                     this.isLiked = '';
 
                     // Commit the batch.
                     batch.commit()
                     .then(() => {
                         this.isLiking = false;
-                        this.isLiked = '';
                         this.likeCount --;
                     })
                     .catch(e => {
                         console.error("Error unliking", this.$props.docId, e);
                         this.isLiking = false;
-                        this.isLiked = this.$props.docId;
+                        this.isLiked = temp;
                     })
                 }
             }
@@ -334,7 +360,30 @@ export default {
                     })
 
                     this.isLoadingComments = false;
+                    this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
                 })
+            }
+        },
+
+        expandFollows: function() {
+            if (this.followCount > 0) {
+                if (this.follows.length == 0) {
+                    this.isLoadingFollows = true;
+                    console.log("Downloading follows");
+
+                    db.collection(this.$props.collection).doc(this.$props.docId).collection("follows").get()
+                    .then(followSnapshot => {
+                        followSnapshot.forEach(follow => {
+                            this.follows.push(follow.data());
+                        })
+
+                        this.isLoadingFollows = false;
+                        console.log(this.follows);
+                        this.$bvModal.show(this.$props.docId + '-followModal');
+                    })
+                } else {
+                    this.$bvModal.show(this.$props.docId + '-followModal');
+                }   
             }
         },
 
@@ -342,6 +391,22 @@ export default {
             this.comments.unshift(comment);
             this.commentCount ++;
         },
+
+        loadMoreComments: function() {
+            this.isLoadingMoreComments = true;
+            
+            db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").orderBy("createdAt", "desc").startAfter(this.lastLoadedComment).limit(5).get()
+            .then(commentSnapshot => {
+                commentSnapshot.forEach(comment => {
+                    let data = comment.data();
+                    data.id = comment.id;
+                    this.comments.push(data);
+                })
+
+                this.isLoadingMoreComments = false;
+                this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
+            })
+        },  
 
         checkIfUserLiked: function() {
             return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.docId).get()

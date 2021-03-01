@@ -51,11 +51,6 @@ export default {
         return {
             isLoading: true,
             workoutData: {},
-
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
-            isLiked: ''
         }
     },
 

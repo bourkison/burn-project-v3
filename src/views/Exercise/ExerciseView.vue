@@ -2,7 +2,7 @@
     <b-container v-if="!isLoading && exerciseExists">
         <b-row align-v="center">
             <b-col sm="8">
-                <b-container class="exerciseCard">
+                <b-container class="exerciseCard mainCard">
                     <b-card no-body>
                         <b-card-body>
                             <b-card-title>
@@ -34,6 +34,7 @@
                                 <Viewer :initialValue="exerciseData.description" />
                             </b-card-text>
                         </b-card-body>
+                        <CommentSection :docId="exerciseData.id" collection="exercises" :followableComponent="true" />
                     </b-card>
                 </b-container>
             </b-col>
@@ -93,11 +94,12 @@ import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 import { Viewer } from '@toast-ui/vue-editor'
 import { db, storage } from '@/firebase'
 
+import CommentSection from '@/components/Comment/CommentSection.vue'
 import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
 
 export default {
     name: 'ExerciseView',
-    components: { MuscleGroup, Viewer },
+    components: { CommentSection, MuscleGroup, Viewer },
     data() {
         return {
             isLoading: true,
@@ -105,11 +107,6 @@ export default {
 
             exerciseData: {},
             imgUrls: [],
-
-            // Counters:
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
 
             // Bootstrap:
             carouselModel: 0,
@@ -153,39 +150,11 @@ export default {
                 })
 
                 this.exerciseExists = true;
-
-                // Pull like, comment and follow count.
-                return db.collection("exercises").doc(this.$route.params.exerciseid).collection("counters").get()
-
-            })
-            .then(counterSnapshot => {
-                counterSnapshot.forEach(counter => {
-                    console.log(counter.data().likeCount);
-                    this.likeCount += counter.data().likeCount;
-                    this.commentCount += counter.data().commentCount;
-                    this.followCount += counter.data().followCount;
-                })
-
-                return this.checkIfLiked()
-            })
-            .then(() => {
-                console.log(this.exerciseData);
                 this.isLoading = false;
             })
             .catch(e => {
                 console.error("Error downloading exercise:", e);
             })
-        },
-
-        checkIfLiked: function() {
-            // Check if the user has liked.
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$route.params.exerciseid).get().then(likeSnapshot => {
-                likeSnapshot.forEach(like => {
-                    if (like.exists) {
-                        this.isLiked = like.id;
-                    }
-                })
-            });
         },
     }
 }
@@ -194,6 +163,10 @@ export default {
 <style>
 .exerciseCard {
     margin-top: 20px;
+}
+
+.mainCard {
+    margin-bottom: 20px;
 }
 
 .tags {

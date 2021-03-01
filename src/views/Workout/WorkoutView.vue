@@ -2,7 +2,7 @@
     <b-container v-if="!isLoading && workoutExists">
         <b-row align-v="center">
             <b-col sm="8">
-                <b-container class="workoutCard">
+                <b-container class="workoutCard mainCard">
                     <b-card no-body>
                         <b-card-body>
                             <b-card-title>
@@ -97,13 +97,7 @@ export default {
         return {
             isLoading: true,
             workoutExists: false,
-
             workoutData: {},
-
-            // Counters:
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
 
             // Bootstrap:
             variants: ["success", "danger", "warning", "info", "dark"]
@@ -129,40 +123,16 @@ export default {
 
                     this.workoutExists = true;
 
-                    return db.collection("workouts").doc(this.$route.params.workoutid).collection("counters").get()
+                    this.isLoading = false;
                 } else {
                     this.workoutExists = false;
-                    this.isLoading = false;
-
                     throw new Error("Workout does not exist");
                 }
             })
-            .then(counterSnapshot => {
-                counterSnapshot.forEach(counter => {
-                    this.likeCount += counter.data().likeCount;
-                    this.commentCount += counter.data().commentCount;
-                    this.followCount += counter.data().followCount;
-                })
-
-                return this.checkIfLiked();
-            })
-            .then(() => {
-                this.isLoading = false;
-            })
             .catch(e => {
                 console.error("Error downloading workout", e);
+                this.isLoading = false;
             })
-        },
-
-        checkIfLiked: function() {
-            // Check if the user has liked.
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$route.params.workoutid).get().then(likeSnapshot => {
-                likeSnapshot.forEach(like => {
-                    if (like.exists) {
-                        this.isLiked = like.id;
-                    }
-                })
-            });
         },
     }
 }
@@ -175,6 +145,10 @@ export default {
 
 .tags {
     margin: 2px;
+}
+
+.mainCard {
+    margin-bottom: 20px;
 }
 
 .exerciseExpandableCont {

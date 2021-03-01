@@ -58,8 +58,6 @@ export default {
             isLoading: true,
             postData: {},
             imgUrls: [],
-            likeCount: 0,
-            commentCount: 0,
 
             // Bootstrap:
             carouselModel: 0
@@ -71,7 +69,6 @@ export default {
     },
 
     mounted: function() {
-        console.log("Props:", this.$props.postId);
         db.collection("posts").doc(this.$props.postId).get()
         .then(postDoc => {
             this.postData = postDoc.data();
@@ -84,28 +81,18 @@ export default {
                     imageDownloadPromises.push(storage.ref(imgPath).getDownloadURL());
                 })
 
-                Promise.all(imageDownloadPromises).then(imgUrls => {
+                return Promise.all(imageDownloadPromises).then(imgUrls => {
                     imgUrls.forEach(url => {
                         this.imgUrls.push(url);
                     })
-                    
-                    return this.checkIfLiked()
                 })
-            } else {
-                return this.checkIfLiked()
             }
         })
-        .then(() => {
-            // Pull like and comment count.
-            return db.collection("posts").doc(this.$props.docId).collection("counter").get()
-        })
-        .then(counterSnapshot => {
-            counterSnapshot.forEach(counter => {
-                this.likeCount += counter.data().likeCount;
-                this.commentCount += counter.data().commentCount;
+        .then(imgUrls => {
+            imgUrls.forEach(url => {
+                this.imgUrls.push(url);
             })
 
-            console.log(this.postData);
             this.isLoading = false;
             this.createdAtText = dayjs(dayjs.unix(this.postData.createdAt.seconds)).fromNow();
         })
@@ -113,19 +100,6 @@ export default {
             console.error("Error downloading post:", e);
             this.isLoading = false;
         })
-    },
-
-    methods: {
-        checkIfLiked: function() {
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.postId).get()
-            .then(likeSnapshot => {
-                likeSnapshot.forEach(like => {
-                    if (like.exists) {
-                        this.isLiked = like.id;
-                    }
-                })
-            })
-        }
     }
 }
 </script>

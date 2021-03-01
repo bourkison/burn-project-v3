@@ -49,11 +49,6 @@ export default {
             exerciseData: {},
             imgUrls: [],
 
-            // Counters:
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
-
             // Bootstrap:
             carouselModel: 0
         }
@@ -78,36 +73,11 @@ export default {
                 this.imgUrls.push(url);
             })
 
-            // Pull like, comment and follow count.
-            return db.collection("exercises").doc(this.$props.exerciseId).collection("counters").get()
-        })
-        .then(counterSnapshot => {
-            counterSnapshot.forEach(counterDoc => {
-                this.likeCount += counterDoc.data().likeCount;
-                this.commentCount += counterDoc.data().commentCount;
-                this.followCount += counterDoc.data().followCount;
-            })
-
-            return this.checkIfUserLiked()
-        })
-        .then(() => {
             this.isLoading = false;
         })
         .catch(e => {
             console.warn("Error downloading exercise data", e);
         })
-    },
-
-    methods: {
-        checkIfUserLiked: function() {
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.exerciseId).get().then(likeSnapshot => {
-                likeSnapshot.forEach(like => {
-                    if (like.exists) {
-                        this.isLiked = like.id;
-                    }
-                })
-            })
-        },
     },
 }
 </script>
