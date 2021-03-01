@@ -25,6 +25,7 @@
             <b-card-body>
                 {{ postData.content }}
             </b-card-body>
+            <CommentSection :docId="postData.id" collection="posts" :followableComponent="false" />
         </div>
         <div v-else>
             <b-card-body>
@@ -38,10 +39,13 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
+import CommentSection from '@/components/Comment/CommentSection.vue'
+
 import { db, storage } from '@/firebase'
 
 export default {
     name: 'PostComponent',
+    components: { CommentSection },
     props: {
         postId: {
             required: true,
@@ -71,6 +75,7 @@ export default {
         db.collection("posts").doc(this.$props.postId).get()
         .then(postDoc => {
             this.postData = postDoc.data();
+            this.postData.id = postDoc.id;
 
             if (this.postData.filePaths.length > 0) {
                 let imageDownloadPromises = [];

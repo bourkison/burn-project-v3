@@ -6,7 +6,7 @@
                     <b-card class="newExerciseCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{ newExerciseData.name ? newExerciseData.name : 'Update Exercise' }}
+                                {{ newExerciseData.name ? newExerciseData.name : oldExerciseData.name }}
                             </b-card-title>
                                 <b-form-group label="Name" label-for="nameInput">
                                     <b-form-input id="nameInput" v-model="newExerciseData.name" type="text" placeholder="Exercise Name" required />
@@ -88,7 +88,7 @@ export default {
             exerciseExists: false,
 
             oldExerciseData: {},
-            nexExerciseData: {},
+            newExerciseData: {},
 
             initImages: [],
             imagesToUpload: [],

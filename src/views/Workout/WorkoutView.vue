@@ -32,12 +32,12 @@
                                         <b-icon-play />
                                     </b-button>
                                 </div>
+                                <div class="mt-4">
+                                    <Viewer :initialValue="workoutData.description" />
+                                </div>
                             </b-card-text>
                         </b-card-body>
-                    </b-card>
-
-                    <b-card class="workoutCard">
-                        <Viewer :initialValue="workoutData.description" />
+                        <CommentSection :docId="workoutData.id" collection="workouts" :followableComponent="true" />
                     </b-card>
                 </b-container>
             </b-col>
@@ -86,12 +86,13 @@
 import { db } from '@/firebase'
 import { Viewer } from '@toast-ui/vue-editor'
 
+import CommentSection from '@/components/Comment/CommentSection.vue'
 import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
 import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
 
 export default {
     name: 'WorkoutView',
-    components: { Viewer, MuscleGroup, ExerciseExpandable },
+    components: { CommentSection, Viewer, MuscleGroup, ExerciseExpandable },
     data() {
         return {
             isLoading: true,

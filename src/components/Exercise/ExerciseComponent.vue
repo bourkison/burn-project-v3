@@ -15,6 +15,7 @@
                 <b-card-sub-title>{{ exerciseData.createdBy.username }}</b-card-sub-title>
                 <Viewer :initialValue="exerciseData.description" />
             </b-card-body>
+            <CommentSection :docId="exerciseData.id" collection="exercises" :followableComponent="true" />
         </div>
         <div v-else>
             <b-card-body>
@@ -25,14 +26,16 @@
 </template>
 
 <script>
-import '@toast-ui/editor/dist/toastui-editor-viewer.css';
+import '@toast-ui/editor/dist/toastui-editor-viewer.css'
 
-import { Viewer } from '@toast-ui/vue-editor';
+import { Viewer } from '@toast-ui/vue-editor'
 import { db, storage } from '@/firebase'
+
+import CommentSection from '@/components/Comment/CommentSection.vue'
 
 export default {
     name: 'ExerciseComponent',
-    components: { Viewer },
+    components: { CommentSection, Viewer },
     props: {
         exerciseId: {
             required: true,

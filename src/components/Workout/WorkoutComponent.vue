@@ -18,6 +18,7 @@
                     </b-button>
                 </div>
             </b-card-body>
+            <CommentSection :docId="workoutData.id" collection="workouts" :followableComponent="true" />
         </div>
         <div v-else>
             <b-card-body>
@@ -33,11 +34,12 @@ import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 import { Viewer } from '@toast-ui/vue-editor'
 import { db } from '@/firebase'
 
+import CommentSection from '@/components/Comment/CommentSection.vue'
 import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
 
 export default {
     name: 'WorkoutComponent',
-    components: { Viewer, ExerciseExpandable },
+    components: { Viewer, CommentSection, ExerciseExpandable },
     props: {
         workoutId: {
             required: true,
@@ -64,36 +66,12 @@ export default {
             this.workoutData.id = workoutDoc.id;
 
             // Pull like, comment and follow count.
-            return db.collection("workouts").doc(this.$props.workoutId).collection("counters").get()
-        })
-        .then(counterSnapshot => {
-            counterSnapshot.forEach(counterDoc => {
-                this.likeCount += counterDoc.data().likeCount;
-                this.commentCount += counterDoc.data().commentCount;
-                this.followCount += counterDoc.data().followCount;
-            })
-
-            return this.checkIfUserLiked()
-        })
-        .then(() => {
             this.isLoading = false;
         })
         .catch(e => {
             console.error("Error downloading workout data", e);
         })
-    },
-
-    methods: {
-        checkIfUserLiked: function() {
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.workoutId).get().then(likeSnapshot => {
-                likeSnapshot.forEach(like => {
-                    if (like.exists) {
-                        this.isLiked = like.id;
-                    }
-                })
-            })
-        },
-    },
+    }
 }
 </script>
 
