@@ -13,36 +13,66 @@
                     </b-card-text>
                 </b-card-body>
             </b-card>
-            <div class="exercisesCont sortableContainer mb-4">
+            <div class="exercisesCont sortableContainer mb-2">
                 <ExerciseRecorder v-for="(exercise, index) in burn.exercises" :key="exercise.id" @addSet="addSet" @removeSet="removeSet" :exercise="exercise" :previousExercise="previousBurn.exercises ? previousBurn.exercises[index] : null" />
             </div>
+            <b-card no-body class="mb-4">
+                <b-card-body>
+                    <b-card-text>
+                        <div class="text-center ">
+                            <b-button variant="outline-danger" class="mr-1" size="sm">Cancel</b-button>
+                            <b-button variant="outline-dark" class="ml-1 mr-1" size="sm">Add Exercise</b-button>
+                            <b-button class="ml-1" variant="outline-success" size="sm" @click="finishWorkout">Finish</b-button>
+                        </div>
+                    </b-card-text>
+                </b-card-body>
+            </b-card>
         </div>
         <div class="text-center" v-else>
             <b-spinner />
         </div>
         <b-modal id="startWorkoutModal" 
-                centered 
-                @hide="preventModal" 
-                @cancel="$router.push('/burn')"
-                @ok="startWorkout"
-                hide-header-close 
-                ok-title="START" 
-                ok-variant="success" 
-                cancel-title="GO BACK" 
-                cancel-variant="outline-dark" 
-                button-size="sm"
-            >
-                <template #modal-header>
-                    <h4>{{ burn.name }}</h4>
-                </template>
-                <div>
-                    <b-list-group>
-                        <b-list-group-item v-for="exercise in burn.exercises" :key="exercise.id">
-                            {{ exercise.name }}
-                        </b-list-group-item>
-                    </b-list-group>
-                </div>
-            </b-modal>
+            centered 
+            @hide="preventModal" 
+            @cancel="$router.push('/burn')"
+            @ok="startWorkout"
+            hide-header-close 
+            ok-title="START" 
+            ok-variant="success" 
+            cancel-title="GO BACK" 
+            cancel-variant="outline-dark" 
+            button-size="sm"
+        >
+            <template #modal-header>
+                <h4>{{ burn.name }}</h4>
+            </template>
+            <div>
+                <b-list-group>
+                    <b-list-group-item v-for="exercise in burn.exercises" :key="exercise.id">
+                        {{ exercise.name }}
+                    </b-list-group-item>
+                </b-list-group>
+            </div>
+        </b-modal>
+
+        <b-modal id="endWorkoutModal"
+            centered
+            @ok="uploadWorkout"
+            @hide="cancelFinish"
+            ok-title="FINISH WORKOUT"
+            ok-variant="success"
+            cancel-title="GO BACK"
+            cancel-variant="outline-dark"
+            button-size="sm"
+        >
+            <template #modal-header>
+                <h4>End Workout</h4>
+            </template>
+
+            <div>
+                Deleting.
+            </div>
+        </b-modal>
     </b-container>
 </template>
 
@@ -58,6 +88,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            isFinishing: false,
             workoutCommenced: false,
 
             burn: {},
@@ -83,7 +114,6 @@ export default {
         this.resetVariables();
         next();
         this.downloadWorkouts();
-        console.log("QUERY", this.$route.query);
     },
 
     created: function() {
@@ -108,7 +138,7 @@ export default {
                             name: data.name
                         },
                         name: data.name,
-                        notes: data.notes
+                        notes: "",
                     }
 
                     // Check if user has done this workout before (so we can populate previousBurn).
@@ -127,6 +157,7 @@ export default {
                                     name: data.workout.name
                                 },
                                 name: data.name,
+                                duration: data.duration,
                                 notes: data.notes
                             }
                         })
@@ -155,6 +186,7 @@ export default {
                             name: data2.workout.name
                         },
                         name: data2.name,
+                        duration: data2.duration,
                         notes: data2.notes
                     }
                 }))
@@ -209,6 +241,55 @@ export default {
             }
         },
 
+        finishWorkout: function() {
+            this.isFinishing = true;
+            this.finishTime = new Date().getTime();
+            this.$bvModal.show("endWorkoutModal")
+        },
+
+        uploadWorkout: function() {
+            // Set the burn up correctly.
+            let payload = JSON.parse(JSON.stringify(this.burn));
+
+            payload.exercises.forEach(exercise => {
+                exercise.sets.forEach(set => {
+                    if (!set.kg) {
+                        set.kg = 0;
+                    } else {
+                        set.kg = Number(set.kg);
+                    }
+
+                    if (!set.measureAmount) {
+                        set.measureAmount = 0;
+                    } else {
+                        set.measureAmount = Number(set.measureAmount);
+                    }
+                })
+
+                if (!exercise.notes) {
+                    exercise.notes = "";
+                }
+            })
+
+            payload.createdAt = new Date();
+            payload.duration = this.finishTime - this.startTime;
+
+            // Upload the burn.
+            db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").add(payload)
+            .then(() => {
+                this.$router.push("/burn/recent");
+            })
+            .catch(e => {
+                console.error(e);
+            })
+        },
+
+        cancelFinish: function() {
+            this.isFinishing = false;
+            this.finishTime = 0;
+            this.timerCount();
+        },
+
         timerCount: function() {
             const now = new Date().getTime();
             let duration = now - this.startTime;
@@ -217,10 +298,12 @@ export default {
             let minutes = (Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60))).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
             let seconds = (Math.floor((duration % (1000 * 60)) / 1000)).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
 
-            if (!hours) {
-                this.timeString = minutes + ":" + seconds;
-            } else {
-                this.timeString = hours + ":" + minutes + ":" + seconds;
+            if (!this.isFinishing) {
+                if (!hours) {
+                    this.timeString = minutes + ":" + seconds;
+                } else {
+                    this.timeString = hours + ":" + minutes + ":" + seconds;
+                }
             }
         },
 
