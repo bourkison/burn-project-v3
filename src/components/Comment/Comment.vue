@@ -1,9 +1,9 @@
 <template>
     <b-list-group-item class="d-flex p-2" style="border:none;">
-        <b-avatar class="mr-2 mt-2" size="2rem" :src="comment.createdBy.profilePhoto" />
+        <b-avatar :to="'/' + comment.createdBy.username" class="mr-2 mt-2" size="2rem" :src="comment.createdBy.profilePhoto" />
         <div style="width: 100%" class="bg-light rounded p-2">
             <div>
-                <span>{{ comment.createdBy.username }}</span>
+                <router-link :to="'/' + comment.createdBy.username" class="text-dark font-weight-bold">{{ comment.createdBy.username }}</router-link>
                 <b-dropdown class="float-right" variant="outline">
                     <span v-if="comment.createdBy.id === $store.state.userProfile.data.uid">
                         <b-dropdown-item>Edit</b-dropdown-item>
@@ -12,22 +12,47 @@
                 </b-dropdown>
             </div>
             <div class="content">{{ comment.content }}</div>
-            <div class="like pl-1 d-flex">
+            <div class="like pl-1 pr-1 d-flex">
                 <div align-v="center">
                     <b-icon-heart v-if="!isLiked" class="icon" @click="toggleLike" font-scale=".8" />
                     <b-icon-heart-fill v-else variant="danger" class="icon" @click="toggleLike" font-scale=".8" />
-                    <span class="ml-1 text-muted count" style="font-size:12px;">{{ likeCount }}&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>
+                    <span class="ml-1 text-muted count" style="font-size:12px;" @click="expandLikes"><span v-if="!isLoading">{{ likeCount }}</span><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>
                 </div>
+                <span class="ml-auto text-muted" style="font-size: 12px;">
+                    {{ createdAtText }}
+                </span>
             </div>
         </div>
+
+        <b-modal :id="comment.id + '-commentLikeModal'" centered ok-only>
+            <template #modal-title>
+                Likes
+            </template>
+
+            <div class="d-block">
+                <div v-if="!isLoadingLikes">
+                    <b-list-group>
+                        <UserList v-for="like in likes" :key="like.createdBy.id" :userData="like.createdBy" />
+                    </b-list-group>
+                </div>
+                <div v-else>
+                    <b-spinner />
+                </div>
+            </div>
+        </b-modal>
     </b-list-group-item>
 </template>
 
 <script>
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import { db, fv } from '@/firebase'
+
+import UserList from '@/components/User/UserList.vue'
 
 export default {
     name: 'Comment',
+    components: { UserList },
     props: {
         comment: {
             type: Object,
@@ -44,31 +69,45 @@ export default {
     },
     data() {
         return {
+            isLoading: true,
+            isLoadingLikes: false,
             isLiking: false,
             isLiked: '',
             likeCount: 0,
+
+            likes: [],
+            createdAtText: '...',
 
             numShards: 10,
         }
     },
 
     created: function() {
+        dayjs.extend(relativeTime);
+
+        let promises = [];
         // Download likes.
-        db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").doc(this.$props.comment.id).collection("counters").get()
+        promises.push(db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").doc(this.$props.comment.id).collection("counters").get()
         .then(counterSnapshot => {
             counterSnapshot.forEach(counter => {
                 this.likeCount += counter.data().likeCount;
             })
-        })
+        }))
 
         // Check if liked.
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.comment.id).get()
+        promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.comment.id).get()
         .then(likeSnapshot => {
             likeSnapshot.forEach(like => {
                 if (like.exists) {
                     this.isLiked = like.id;
                 }
             })
+        }))
+
+        Promise.all(promises)
+        .then(() => {
+            this.createdAtText = dayjs(dayjs.unix(this.$props.comment.createdAt.seconds)).fromNow();
+            this.isLoading = false;
         })
     },
 
@@ -149,6 +188,28 @@ export default {
                         this.isLiked = temp;
                     })
                 }
+            }
+        },
+
+        expandLikes: function() {
+            if (this.likeCount > 0) {
+                if (this.likes.length == 0) {
+                    this.isLoadingLikes = true;
+                    console.log("Downloading likes");
+
+                    db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").doc(this.$props.comment.id).collection("likes").get()
+                    .then(likeSnapshot => {
+                        likeSnapshot.forEach(like => {
+                            this.likes.push(like.data());
+                        })
+
+                        this.isLoadingLikes = false;
+                        console.log(this.likes);
+                        this.$bvModal.show(this.$props.comment.id + '-commentLikeModal');
+                    })
+                } else {
+                    this.$bvModal.show(this.$props.comment.id + '-commentLikeModal');
+                }   
             }
         },
 

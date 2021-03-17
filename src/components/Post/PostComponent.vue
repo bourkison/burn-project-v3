@@ -88,11 +88,7 @@ export default {
                 })
             }
         })
-        .then(imgUrls => {
-            imgUrls.forEach(url => {
-                this.imgUrls.push(url);
-            })
-
+        .then(() => {
             this.isLoading = false;
             this.createdAtText = dayjs(dayjs.unix(this.postData.createdAt.seconds)).fromNow();
         })

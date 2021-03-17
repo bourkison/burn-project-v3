@@ -3,14 +3,14 @@
         <b-row>
             <b-col sm="12" align-v="center" class="d-flex">
                 <span>
-                    <b-icon-heart class="icon" font-scale="1.4" v-if="!isLiked" @click="toggleLike" /><b-icon-heart-fill class="icon" font-scale="1.4" variant="danger" v-else @click="toggleLike" />
-                    <b-icon-chat class="icon" font-scale="1.4" @click="expandComments" />
-                    <span v-if="isFollowable"><b-icon-plus-square class="icon" font-scale="1.4" v-if="!isFollowed" @click="toggleFollow" /><b-icon-plus-square-fill class="icon" font-scale="1.4" variant="success" v-else @click="toggleFollow" /></span>
+                    <b-icon-heart class="ml-1 mr-1 icon" font-scale="1.4" v-if="!isLiked" @click="toggleLike" /><b-icon-heart-fill class="ml-1 mr-1 icon" font-scale="1.4" variant="danger" v-else @click="toggleLike" />
+                    <b-icon-chat class="ml-1 mr-1 icon" font-scale="1.4" @click="expandComments" />
+                    <span v-if="isFollowable"><b-icon-plus-square class="ml-1 mr-1 icon" font-scale="1.4" v-if="!isFollowed" @click="toggleFollow" /><b-icon-plus-square-fill class="ml-1 mr-1 icon" font-scale="1.4" variant="success" v-else @click="toggleFollow" /></span>
                 </span>
                 <span class="ml-auto text-muted">
-                    <span class="count" @click="expandLikes">{{ likeCount }}&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>&nbsp;
-                    <span class="count" @click="expandComments">{{ commentCount }}&nbsp;<span v-if="commentCount == 1">comment</span><span v-else>comments</span></span>&nbsp;
-                    <span class="count" @click="expandFollows" v-if="followableComponent">{{ followCount }}&nbsp;<span v-if="followCount == 1">follow</span><span v-else>follows</span></span>
+                    <span class="count" @click="expandLikes"><span v-if="!isLoading">{{ likeCount }}</span><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>&nbsp;
+                    <span class="count" @click="expandComments"><span v-if="!isLoading">{{ commentCount }}</span><span v-else>...</span>&nbsp;<span v-if="commentCount == 1">comment</span><span v-else>comments</span></span>&nbsp;
+                    <span class="count" @click="expandFollows" v-if="followableComponent"><span v-if="!isLoading">{{ followCount }}</span><span v-else>...</span>&nbsp;<span v-if="followCount == 1">follow</span><span v-else>follows</span></span>
                 </span>
             </b-col>
         </b-row>
@@ -470,10 +470,6 @@ export default {
 
     .commentsContainer {
         padding: 10px;
-    }
-
-    .icon {
-        margin: 0 5px;
     }
 
     .icon:hover {

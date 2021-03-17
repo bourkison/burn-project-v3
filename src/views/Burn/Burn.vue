@@ -2,43 +2,38 @@
     <b-container>
         <b-row>
             <b-col sm="3">
-                <!-- 
-                    Add here: 
-                    - Links to Home, New, Discover
-                    - Filter by (tags)
-                -->
                 <b-container>
                     <b-card class="navCard" no-body>
                         <b-list-group>
-                            <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" to="/burn" active-class="unset" exact-active-class="active">
                                 <div class="d-flex align-items-center">
-                                    Workouts
+                                    Burn
                                     <b-icon-house class="ml-auto" />
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/workouts/discover" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" to="/burn/recent" active-class="unset" exact-active-class="active">
                                 <div class="d-flex align-items-center">
-                                    Discover
-                                    <b-icon-search class="ml-auto"/>
+                                    Recent
+                                    <b-icon-search class="ml-auto" />
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/workouts/new" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" to="/burn/new">
                                 <div class="d-flex align-items-center">
-                                    New
-                                    <b-icon-plus class="ml-auto"/>
+                                    New Burn
+                                    <b-icon-plus class="ml-auto" />
                                 </div>
                             </b-list-group-item>
                         </b-list-group>
                     </b-card>
                 </b-container>
             </b-col>
+
             <b-col sm="6">
-                <router-view></router-view>
+                <router-view class="centerCol"></router-view>
             </b-col>
+
             <b-col sm="3">
-                <!-- 
-                    Ads here.
-                 -->
+                <!--  -->
             </b-col>
         </b-row>
     </b-container>
@@ -46,12 +41,16 @@
 
 <script>
 export default {
-    name: 'Workout',
+    name: 'Burn',
 }
 </script>
 
 <style scoped>
 .navCard {
+    margin-top: 40px;
+}
+
+.centerCol {
     margin-top: 40px;
 }
 </style>

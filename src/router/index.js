@@ -4,6 +4,10 @@ import firebase from 'firebase'
 
 import Home from '@/views/Home.vue'
 
+import Burn from '@/views/Burn/Burn.vue'
+import BurnNew from '@/views/Burn/BurnNew.vue'
+import BurnView from '@/views/Burn/BurnView.vue'
+
 import Exercise from '@/views/Exercise/Exercise.vue'
 import ExerciseDiscover from '@/views/Exercise/ExerciseDiscover.vue'
 import ExerciseEdit from '@/views/Exercise/ExerciseEdit.vue'
@@ -35,6 +39,7 @@ const routes = [
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
     },
+    // EXERCISES
     {
         path: '/exercises',
         name: 'Exercise',
@@ -79,6 +84,7 @@ const routes = [
             requiresAuth: true
         }
     },
+    // WORKOUTS
     {
         path: '/workouts',
         name: 'Workout',
@@ -122,8 +128,28 @@ const routes = [
         meta: {
             requiresAuth: true
         }
-    }
-    
+    },
+    // BURN
+    {
+        path: '/burn',
+        name: 'Burn',
+        component: Burn,
+        meta: {
+            requiresAuth: true
+        },
+        children: [
+            {
+                path: '/burn/new',
+                name: 'New Burn',
+                component: BurnNew
+            },
+            {
+                path: '/burn',
+                name: 'Burn View',
+                component: BurnView
+            }
+        ]
+    },
 ]
 
 const router = new VueRouter({

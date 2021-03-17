@@ -2,7 +2,7 @@
     <b-card no-body>
         <div v-if="!isLoading">
             <b-card-body>
-                <b-card-title><a @click="$router.push('/workouts/' + workoutId)" class="componentLink">{{ workoutData.name }}</a></b-card-title>
+                <b-card-title><router-link :to="'/workouts/' + workoutId" class="componentLink">{{ workoutData.name }}</router-link></b-card-title>
                 <b-card-sub-title>{{ workoutData.createdBy.username }}</b-card-sub-title>
                 <b-card-text>
                     <div :id="workoutData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">

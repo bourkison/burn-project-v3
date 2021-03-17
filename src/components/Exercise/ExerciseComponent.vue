@@ -11,7 +11,7 @@
             </div>
             
             <b-card-body>
-                <b-card-title><div><a @click="$router.push('/exercises/' + exerciseId)" class="componentLink">{{ exerciseData.name }}</a></div></b-card-title>
+                <b-card-title><router-link :to="'/exercises/' + exerciseId">{{ exerciseData.name }}</router-link></b-card-title>
                 <b-card-sub-title>{{ exerciseData.createdBy.username }}</b-card-sub-title>
                 <Viewer :initialValue="exerciseData.description" />
             </b-card-body>

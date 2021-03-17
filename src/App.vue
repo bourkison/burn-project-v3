@@ -9,9 +9,9 @@
                 <!-- Logged In Nav -->
                 <b-collapse v-if="$store.state.userProfile.loggedIn" id="nav-collapse" is-nav>
                     <b-navbar-nav>
-                        <b-nav-item :to="'/exercises'">Exercises</b-nav-item>
-                        <b-nav-item :to="'/workouts'">Workouts</b-nav-item>
-                        <b-nav-item :to="'/burns'">Burns</b-nav-item>
+                        <b-nav-item to="/exercises">Exercises</b-nav-item>
+                        <b-nav-item to="/workouts">Workouts</b-nav-item>
+                        <b-nav-item to="/burn">Burns</b-nav-item>
                         <b-nav-form>
                             <b-form-input ref="searchInput" size="sm" placeholder="Search"></b-form-input>
                         </b-nav-form>
