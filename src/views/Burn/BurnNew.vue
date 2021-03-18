@@ -20,7 +20,7 @@
                 <b-card-body>
                     <b-card-text>
                         <div class="text-center ">
-                            <b-button variant="outline-danger" class="mr-1" size="sm">Cancel</b-button>
+                            <b-button variant="outline-danger" class="mr-1" size="sm" to="/burn">Cancel</b-button>
                             <b-button variant="outline-dark" class="ml-1 mr-1" size="sm">Add Exercise</b-button>
                             <b-button class="ml-1" variant="outline-success" size="sm" @click="finishWorkout">Finish</b-button>
                         </div>
@@ -37,9 +37,9 @@
             @cancel="$router.push('/burn')"
             @ok="startWorkout"
             hide-header-close 
-            ok-title="START" 
+            ok-title="Start" 
             ok-variant="success" 
-            cancel-title="GO BACK" 
+            cancel-title="Go Back" 
             cancel-variant="outline-dark" 
             button-size="sm"
         >
@@ -63,9 +63,9 @@
             centered
             @ok="uploadWorkout"
             @hide="cancelFinish"
-            ok-title="FINISH WORKOUT"
+            ok-title="Finish"
             ok-variant="success"
-            cancel-title="GO BACK"
+            cancel-title="Go Back"
             cancel-variant="outline-dark"
             button-size="sm"
         >
@@ -124,6 +124,30 @@ export default {
 
     created: function() {
         this.downloadWorkouts();
+    },
+
+    beforeRouteLeave: function(to, from, next) {
+        if (this.workoutCommenced) {
+            this.$bvModal.msgBoxConfirm('You are in the middle of a workout. Do you want to leave? All progress will be lost.', {
+                title: 'Leave Workout?',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                cancelVariant: 'outline-dark',
+                okTitle: 'OK',
+                cancelTitle: 'Go Back',
+                centered: true
+            })
+            .then(value => {
+                if (value) {
+                    next();
+                }
+            })
+            .catch(e => {
+                console.error(e);
+            })
+        } else {
+            next();
+        }
     },
 
     methods: {

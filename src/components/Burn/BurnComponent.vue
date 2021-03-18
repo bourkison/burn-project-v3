@@ -32,8 +32,8 @@
 
                 <div class="text-center mt-3">
                     <b-button variant="outline-success" size="sm" :to="'/burn/new?b=' + burn.id">
-                        <b-icon-plus />
-                        Workout
+                        Start Workout
+                        <b-icon-play />
                     </b-button>
                 </div>
             </b-card-text>

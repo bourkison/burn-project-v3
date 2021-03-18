@@ -27,7 +27,7 @@
                                 </div>
 
                                 <div class="text-center">
-                                    <b-button variant="outline-success" size="sm" class="text-center">
+                                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/burn/new?w=' + workoutData.id">
                                         Start Workout    
                                         <b-icon-play />
                                     </b-button>
