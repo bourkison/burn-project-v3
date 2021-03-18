@@ -6,6 +6,7 @@ import Home from '@/views/Home.vue'
 
 import Burn from '@/views/Burn/Burn.vue'
 import BurnNew from '@/views/Burn/BurnNew.vue'
+import BurnRecent from '@/views/Burn/BurnRecent.vue'
 import BurnView from '@/views/Burn/BurnView.vue'
 
 import Exercise from '@/views/Exercise/Exercise.vue'
@@ -144,12 +145,17 @@ const routes = [
                 component: BurnNew
             },
             {
+                path: '/burn/recent',
+                name: 'BurnRecent',
+                component: BurnRecent,
+            },
+            {
                 path: '/burn',
                 name: 'Burn View',
                 component: BurnView
-            }
+            },
         ]
-    },
+    }
 ]
 
 const router = new VueRouter({
