@@ -44,14 +44,18 @@
             button-size="sm"
         >
             <template #modal-header>
-                <h4>{{ burn.name }}</h4>
+                <h4 v-if="!emptyBurn">{{ burn.name }}</h4>
+                <h4 v-else>Empty Burn</h4>
             </template>
-            <div>
+            <div v-if="!emptyBurn">
                 <b-list-group>
                     <b-list-group-item v-for="exercise in burn.exercises" :key="exercise.id">
                         {{ exercise.name }}
                     </b-list-group-item>
                 </b-list-group>
+            </div>
+            <div v-else>
+                <p><em>Start an empty workout</em></p>
             </div>
         </b-modal>
 
@@ -70,7 +74,9 @@
             </template>
 
             <div>
-                Deleting.
+                <p>Would you like to save this burn under a new name?</p>
+                <p><em>(Names must be unique to appear seperately in Burn Home).</em></p>
+                <b-form-input v-model="burn.name"></b-form-input>
             </div>
         </b-modal>
     </b-container>
@@ -92,8 +98,8 @@ export default {
             workoutCommenced: false,
 
             burn: {},
-            originalBurn: {},
             previousBurn: {},
+            emptyBurn: true,
 
             startTime: 0,
             finishTime: 0,
@@ -124,7 +130,7 @@ export default {
         downloadWorkouts: function() {
             let promises = [];
 
-            // Build to Burn format based on if its a 
+            // Build to Burn format based on if its a workout or burn.
             if (this.$route.query.w) {
                 promises.push(db.collection("workouts").doc(this.$route.query.w).get()
                 .then(workoutDoc => {
@@ -161,7 +167,12 @@ export default {
                                 notes: data.notes
                             }
                         })
+                    } else {
+                        // User hasn't done this burn before.
+                        this.previousBurn = JSON.parse(JSON.stringify(this.burn));
                     }
+
+                    this.emptyBurn = false;
                 }))
             } else if (this.$route.query.b) {
                 promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").doc(this.$route.query.b).get()
@@ -189,6 +200,8 @@ export default {
                         duration: data2.duration,
                         notes: data2.notes
                     }
+
+                    this.emptyBurn = false;
                 }))
             }
 
@@ -227,8 +240,11 @@ export default {
         },
 
         startWorkout: function() {
-            this.originalBurn = JSON.parse(JSON.stringify(this.burn));
             this.startTime = new Date().getTime();
+
+            if (this.emptyBurn) {
+                this.burn.name = "New Workout";
+            }
 
             this.interval = setInterval(() => {
                 this.timerCount();
