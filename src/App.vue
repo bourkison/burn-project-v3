@@ -56,7 +56,7 @@
             </div>
         </div>
         <div v-else>
-            <b-container fluid>
+            <b-container fluid class="text-center p-5">
                 <b-spinner label="Spinning"></b-spinner>
             </b-container>
         </div>

@@ -1,5 +1,7 @@
 <template>
     <div class="postFeed">
+        <PostNew v-if="newPost" class="postNew" />
+
         <b-row v-for="post in posts" :key="post">
             <b-col sm="12">
                 <PostComponent :postId="post" class="post"/>
@@ -9,12 +11,12 @@
 </template>
 
 <script>
-// import PostNew from '@/components/Post/PostNew.vue'
+import PostNew from '@/components/Post/PostNew.vue'
 import PostComponent from '@/components/Post/PostComponent.vue'
 
 export default {
     name: 'Feed',
-    components: { PostComponent },
+    components: { PostComponent, PostNew },
     props: {
         posts: {
             type: Array,
@@ -35,7 +37,12 @@ export default {
 </script>
 
 <style scoped>
-    .post {
+    .postFeed {
+        margin-top: 40px;
+    }
+
+    .post,
+    .postNew {
         margin-bottom: 25px;
     }
 </style>

@@ -29,7 +29,7 @@
                 </b-card-text>
             </b-card-body>
 
-            <b-card-body v-else>
+            <b-card-body v-else class="text-center">
                 <b-spinner small />
             </b-card-body>
         </b-card>

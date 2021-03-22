@@ -17,7 +17,7 @@
                                     <b-icon-search class="ml-auto" />
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/burn/new">
+                            <b-list-group-item class="navItem" to="/burn/new" active-class="active" exact-active-class="active">
                                 <div class="d-flex align-items-center">
                                     New Burn
                                     <b-icon-plus class="ml-auto" />

@@ -1,6 +1,14 @@
 <template>
     <b-container>
-        <BurnComponent class="burn" v-for="burn in burns" :burn="burn" :key="burn.id" />
+        <div v-if="burns.length > 0 && !isLoading">
+            <BurnComponent class="burn" v-for="burn in burns" :burn="burn" :key="burn.id" />
+        </div>
+        <div v-else-if="!isLoading">
+            <p><em>Looks like you havent had any burns yet.</em></p>
+        </div>
+        <div v-else>
+            <b-spinner />
+        </div>
     </b-container>
 </template>
 
@@ -27,6 +35,11 @@ export default {
                 
                 this.burns.push(data);
             })
+
+            this.isLoading = false;
+        })
+        .catch(e => {
+            console.error(e);
         })
     }
 }
