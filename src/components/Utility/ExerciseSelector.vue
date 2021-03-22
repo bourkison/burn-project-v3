@@ -22,11 +22,11 @@
             <div v-if="selectedExercises.length > 0">
                 <h6>Selected Exercises</h6>
                 <b-list-group class="exerciseLists" id="selectedContainer">
-                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in selectedExercises" :key="exercise.id" @click="removeExercise(exercise)" href="#">
+                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in selectedExercises" :key="exercise.id">
                         <span>{{ exercise.name }}</span>
                         <span class="ml-auto" />
-                            <b-icon-x font-scale="1.2" class="ml-auto"/>
-                            <b-icon-grip-horizontal font-scale="1.2" class="sortableHandle" />
+                            <b-icon-grip-horizontal font-scale="1.2" class="ml-auto sortableHandle clickableIcon" />
+                            <b-icon-x font-scale="1.2" variant="danger" class="clickableIcon" @click="removeExercise(exercise)"/>
                     </b-list-group-item>
                 </b-list-group>
             </div>
@@ -203,7 +203,7 @@ export default {
     margin: 15px 0;
 }
 
-.sortableHandle:hover {
+.clickableIcon:hover {
     cursor: pointer;
 }
 </style>
