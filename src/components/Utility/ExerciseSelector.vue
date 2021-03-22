@@ -33,7 +33,7 @@
         </b-container>
     </div>
     <div v-else>
-
+        <b-spinner small />
     </div>
 </template>
 

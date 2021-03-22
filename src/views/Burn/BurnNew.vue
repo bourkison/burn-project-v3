@@ -19,7 +19,7 @@
             <b-card no-body class="mb-4">
                 <b-card-body>
                     <b-card-text>
-                        <div class="text-center ">
+                        <div class="text-center">
                             <b-button variant="outline-danger" class="mr-1" size="sm" to="/burn">Cancel</b-button>
                             <b-button variant="outline-dark" class="ml-1 mr-1" size="sm">Add Exercise</b-button>
                             <b-button class="ml-1" variant="outline-success" size="sm" @click="finishWorkout">Finish</b-button>
