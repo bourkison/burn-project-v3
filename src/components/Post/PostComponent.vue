@@ -23,7 +23,14 @@
             </div>
 
             <b-card-body>
-                {{ postData.content }}
+                <b-card-text>
+                    <div v-if="postData.share.type" class="mb-3">
+                        <div v-if="postData.share.type == 'exercises'">
+                            <ExerciseShare :exerciseId="postData.share.id" />
+                        </div>
+                    </div>
+                    {{ postData.content }}
+                </b-card-text>
             </b-card-body>
             <CommentSection :docId="postData.id" collection="posts" :followableComponent="false" />
         </div>
@@ -41,11 +48,13 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
 
+import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
+
 import { db, storage } from '@/firebase'
 
 export default {
     name: 'PostComponent',
-    components: { CommentSection },
+    components: { CommentSection, ExerciseShare },
     props: {
         postId: {
             required: true,
