@@ -12,7 +12,7 @@
                                     <b-form-input id="nameInput" v-model="exerciseForm.name" type="text" placeholder="Exercise Name" required />
                                 </b-form-group>
                                 <b-form-group label="Image/Video" label-for="imageInput">
-                                    <ImageUploader @updateImages="updateImages" />
+                                    <ImageUploader @updateImages="updateImages" :inlineDisplay="false" />
                                 </b-form-group>
                         </b-card-body>
                     </b-card>

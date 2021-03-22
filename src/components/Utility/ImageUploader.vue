@@ -6,8 +6,11 @@
         <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
             <ImageEditor :imagesToAdd="addedFiles" :initId="initId" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" />
         </div>
-        <div class="imageInput">
+        <div class="imageInput" v-if="!inlineDisplay">
             <b-form-file class="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
+        </div>
+        <div class="d-inline" v-else>
+            <input type="file" id="file-input" style="display: none;" multiple @change="handleFileUpload" />
         </div>
     </div>
 </template>
@@ -23,6 +26,10 @@ export default {
         initImages: {
             type: Array,
             required: false
+        },
+        inlineDisplay: {
+            type: Boolean,
+            required: true
         }
     },
     data() {
@@ -63,6 +70,14 @@ export default {
         
         handleFileUpload: function(e) {
             this.filesInEdit += e.target.files.length;
+
+            if (this.$props.inlineDisplay) {
+                this.addedFiles = [];
+
+                e.target.files.forEach(file => {
+                    this.addedFiles.push(file);
+                })
+            }
         },
         
         addImage: function(data) {
