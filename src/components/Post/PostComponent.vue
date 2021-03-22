@@ -38,6 +38,10 @@
                         <div v-else-if="postData.share.type == 'workout'">
                             <WorkoutShare :workoutId="postData.share.id" />
                         </div>
+
+                        <div v-else-if="postData.share.type == 'burn'">
+                            <BurnShare :burnId="postData.share.id" :userId="postData.createdBy.id" />
+                        </div>
                     </div>
                     {{ postData.content }}
                 </b-card-text>
@@ -58,6 +62,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
 
+import BurnShare from '@/components/Burn/BurnShare.vue'
 import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
 import WorkoutShare from '@/components/Workout/WorkoutShare.vue'
 
@@ -65,7 +70,7 @@ import { db, storage } from '@/firebase'
 
 export default {
     name: 'PostComponent',
-    components: { CommentSection, ExerciseShare, WorkoutShare },
+    components: { CommentSection, BurnShare, ExerciseShare, WorkoutShare },
     props: {
         postId: {
             required: true,

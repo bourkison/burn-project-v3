@@ -1,5 +1,5 @@
 <template>
-    <b-list-group-item>
+    <b-list-group-item :to="'/' + userData.username">
         <b-avatar class="mr-3" :src="userData.profilePhoto" />
         {{ userData.username }}
     </b-list-group-item>

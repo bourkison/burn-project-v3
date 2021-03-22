@@ -29,7 +29,7 @@
                                     <b-icon-person-circle font-scale="1.5"/>
                                 </span>
                             </template>
-                            <b-dropdown-item :to="'/profile'">Profile</b-dropdown-item>
+                            <b-dropdown-item :to="'/' + $store.state.userProfile.docData.username">Profile</b-dropdown-item>
                             <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
                         </b-nav-item-dropdown>
                     </b-navbar-nav>
