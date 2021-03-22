@@ -38,7 +38,7 @@
             </b-container>
         </b-collapse>
 
-        <b-modal :id="docId + '-likeModal'" centered ok-only>
+        <b-modal :id="docId + '-likeModal'" centered ok-only button-size="sm">
             <template #modal-title>
                 Likes
             </template>
@@ -55,7 +55,7 @@
             </div>
         </b-modal>
 
-        <b-modal :id="docId + '-followModal'" centered ok-only>
+        <b-modal :id="docId + '-followModal'" centered ok-only button-size="sm">
             <template #modal-title>
                 Follows
             </template>
