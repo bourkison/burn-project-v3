@@ -2,24 +2,37 @@
     <div>
         <b-form-input v-model="searchText" placeholder="Search exercises..." />
 
-        <div v-if="filteredCreatedExercises.length > 0" class="mt-3">
-            <h6>My Exercises</h6>
+        <div v-if="!isLoading">
+            <div v-if="filteredCreatedExercises.length > 0" class="mt-3">
+                <h6>My Exercises</h6>
 
-            <b-list-group class="exerciseLists">
-                <b-list-group-item class="d-flex" align-v="center" v-for="exercise in filteredCreatedExercises" :key="exercise.id" @click="selectExercise(exercise)" href="#">
-                    <div>{{ exercise.name }}</div>
-                </b-list-group-item>
-            </b-list-group>
+                <b-list-group class="exerciseLists">
+                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in filteredCreatedExercises" :key="exercise.id" @click="selectExercise(exercise)" href="#">
+                        <div>{{ exercise.name }}</div>
+                    </b-list-group-item>
+                </b-list-group>
+            </div>
+
+            <div v-if="filteredFollowedExercises.length > 0" class="mt-3">
+                <h6>Followed Exercises</h6>
+
+                <b-list-group class="exerciseLists">
+                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in filteredFollowedExercises" :key="exercise.id" @click="selectExercise(exercise)" href="#">
+                        <div>{{ exercise.name }}</div>
+                    </b-list-group-item>
+                </b-list-group>
+            </div>
+
+            <div v-if="createdExercises.length == 0 && followedExercises.length == 0" class="mt-3">
+                <em>Looks like you haven't created or followed any exercises!</em>
+            </div>
+
+            <div v-else-if="filteredCreatedExercises.length == 0 && filteredFollowedExercises.length == 0" class="mt-3">
+                <em>No exercises matching that search.</em>
+            </div>
         </div>
-
-        <div v-if="filteredFollowedExercises.length > 0" class="mt-3">
-            <h6>Followed Exercises</h6>
-
-            <b-list-group class="exerciseLists">
-                <b-list-group-item class="d-flex" align-v="center" v-for="exercise in filteredFollowedExercises" :key="exercise.id" @click="selectExercise(exercise)" href="#">
-                    <div>{{ exercise.name }}</div>
-                </b-list-group-item>
-            </b-list-group>
+        <div v-else class="text-center mt-3">
+            <b-spinner small />
         </div>
     </div>
 </template>
@@ -98,8 +111,7 @@ export default {
 
     methods: {
         selectExercise: function(exercise) {
-            // this.$emit("selectExercise", exercise);
-            console.log(exercise);
+            this.$emit("selectExercise", exercise);
         }
     }
 }

@@ -2,8 +2,15 @@
     <b-card no-body>
         <b-card-body>
             <b-card-text>
-                <b-form-textarea v-model="post.content" rows="3" no-resize placeholder="New post..."  />
                 <ImageUploader :inlineDisplay="true" />
+
+                <div v-if="post.share.type" class="mt-1 mb-3">
+                    <div v-if="post.share.type == 'exercises'">
+                        <ExerciseShare :exerciseId="post.share.id" />
+                    </div>  
+                </div>
+
+                <b-form-textarea v-model="post.content" rows="3" no-resize placeholder="New post..."  />
                 <div class="d-flex mt-1 p-1" align-v="center">
                     <div>
                         <label for="file-input">
@@ -23,15 +30,8 @@
             </b-card-text>
         </b-card-body>
 
-        <b-modal id="addExerciseModal"
-            centered
-            title="Exercises"
-            hide-footer
-            button-size="sm"
-        >
-            <div>
-                <ExerciseSearch @selectExercise="addExercise" />
-            </div>
+        <b-modal id="addExerciseModal" centered title="Exercises" hide-footer button-size="sm">
+            <ExerciseSearch @selectExercise="addExercise" />
         </b-modal>
     </b-card>
 </template>
@@ -40,22 +40,30 @@
 import ImageUploader from '@/components/Utility/ImageUploader.vue'
 
 import ExerciseSearch from '@/components/Exercise/ExerciseSearch.vue'
+import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
 
 export default {
     name: 'PostNew',
-    components: { ImageUploader, ExerciseSearch },
+    components: { ImageUploader, ExerciseSearch, ExerciseShare },
     data() {
         return {
             isPosting: false,
             post: {
-                content: ""
+                content: "",
+                filePaths: [],
+                share: {}
             }
         }
     },
 
     methods: {
         addExercise: function(exercise) {
-            console.log(exercise);
+            this.post.share = {
+                id: exercise.id,
+                type: "exercises"
+            }
+
+            this.$bvModal.hide("addExerciseModal");
         }
     }
 }
