@@ -81,10 +81,7 @@ export default {
                         this.isLoading = false;
                         this.cropperSet ++;
                         console.log("Cropper ready!", this.isLoadingArr, i, el);
-
-                        this.$nextTick(() => {
-                            this.isLoadingArr[i] = false;
-                        })
+                        this.$set(this.isLoadingArr, i, false);
                     }),
                 }))
             }, 100);
@@ -221,8 +218,9 @@ export default {
                         this.imageIncrementor ++;
 
                         this.$nextTick(() => {
-                            const imgEl = document.querySelector("#cropper" + i);
-                            const imgCont = document.querySelector("#imgCont" + i);
+                            let imageIndex = i + this.images.length - this.$props.imagesToAdd.length;
+                            const imgEl = document.querySelector("#cropper" + imageIndex);
+                            const imgCont = document.querySelector("#imgCont" + imageIndex);
 
                             let height = width / ratio;
 
@@ -236,7 +234,7 @@ export default {
                             }
 
                             console.log("Setting cropper", imgEl, i, width, height);
-                            this.setCropper(imgEl, i, width, height)
+                            this.setCropper(imgEl, imageIndex, width, height)
                         })
 
                     }

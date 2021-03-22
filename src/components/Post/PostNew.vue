@@ -3,6 +3,7 @@
         <b-card-body>
             <b-card-text>
                 <b-form-textarea v-model="post.content" rows="3" no-resize placeholder="New post..."  />
+                <ImageUploader />
                 <div class="d-flex mt-1 p-1" align-v="center">
                     <div>
                         <b-icon-card-image font-scale="1.2" class="mr-1 clickableIcon" />
@@ -20,8 +21,11 @@
 </template>
 
 <script>
+import ImageUploader from '@/components/Utility/ImageUploader.vue'
+
 export default {
     name: 'PostNew',
+    components: { ImageUploader },
     data() {
         return {
             post: {
