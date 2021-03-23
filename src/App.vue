@@ -42,7 +42,7 @@
                         <b-nav-item @click="$bvModal.show('signup-modal')">Sign Up</b-nav-item>
                     </b-navbar-nav>
 
-                    <b-modal hide-footer id="login-modal" title="Login">
+                    <b-modal hide-footer centered id="login-modal" title="Login">
                         <SignInForm  @closeSignInModal="$bvModal.hide('login-modal')"/>
                     </b-modal>
 

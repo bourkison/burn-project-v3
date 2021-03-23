@@ -268,8 +268,31 @@ export default {
                         notes: data2.notes
                     }
 
+                    // Generate a unique ID for each exercise (for the keys).
+                    // As we may have multiple of the same exercise, can not use ID as key.
+                    this.burn.exercises.forEach(exercise => {
+                        exercise.uid = this.generateId(16);
+                    })
+
+                    this.previousBurn.exercises.forEach(exercise => {
+                        exercise.uid = this.generateId(16);
+                    })
+
                     this.emptyBurn = false;
                 }))
+            } else {
+                this.emptyBurn = true;
+                this.burn = {
+                    exercises: [],
+                    name: "Empty Workout",
+                    notes: ""
+                }
+
+                this.previousBurn = {
+                    exercises: [],
+                    name: "Empty Workout",
+                    notes: ""
+                }
             }
 
             Promise.all(promises)
@@ -329,10 +352,6 @@ export default {
 
         startWorkout: function() {
             this.startTime = new Date().getTime();
-
-            if (this.emptyBurn) {
-                this.burn.name = "New Workout";
-            }
 
             this.interval = setInterval(() => {
                 this.timerCount();
