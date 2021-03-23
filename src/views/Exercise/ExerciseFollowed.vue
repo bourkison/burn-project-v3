@@ -77,7 +77,7 @@ export default {
                         this.moreToLoad = false;
                     }
 
-                    setTimeout(() => { this.isLoadingMore }, 500);
+                    setTimeout(() => { this.isLoadingMore = false }, 500);
                     this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
                 })
                 .catch(e => {
