@@ -4,16 +4,16 @@
             <div class="d-flex">
                 <h6>{{ exercise.name }}</h6>
                 <div class="ml-auto">
-                    <b-icon-chevron-expand @click="setsExpanded = !setsExpanded" class="mr-1 expandIcon" />
+                    <b-icon-chevron-expand @click="setsExpanded = !setsExpanded" class="mr-1 clickableIcon" />
                     <b-icon-grip-horizontal class="sortableIcon mr-1" />
-                    <b-icon-trash />
+                    <b-icon-trash @click="removeExercise" class="clickableIcon" />
                 </div>
             </div>
         </b-card-body>
 
         <b-collapse v-model="setsExpanded">
             <div class="pl-4 pr-4">
-                <b-form-textarea v-model="exercise.notes" rows="2" no-resize placeholder="Add exercise notes..."></b-form-textarea>
+                <b-form-textarea v-model="exercise.notes" rows="2" no-resize :placeholder="notesPlaceholder"></b-form-textarea>
             </div>
 
             <b-list-group flush class="sortableContainer mt-2">
@@ -90,6 +90,18 @@ export default {
         }
     },
 
+    computed: {
+        notesPlaceholder: function() {
+            if (this.$props.previousExercise) {
+                if (this.$props.previousExercise.notes.length) {
+                    return this.$props.previousExercise.notes;
+                }
+            }
+            
+            return "Add exercise notes..."
+        }
+    },
+
     methods: {
         addSet: function() {
             let d;
@@ -100,18 +112,22 @@ export default {
                 d = { kg: 0, measureAmount: 0, measureBy: "Reps" };
             }
 
-            this.$emit("addSet", this.$props.exercise.id, d);
+            this.$emit("addSet", this.$props.exercise.uid, d);
         },
 
         removeSet: function() {
-            this.$emit("removeSet", this.$props.exercise.id);
+            this.$emit("removeSet", this.$props.exercise.uid);
+        },
+
+        removeExercise: function() {
+            this.$emit("removeExercise", this.$props.exercise.uid)
         }
     }
 }
 </script>
 
 <style scoped>
-.expandIcon:hover {
+.clickableIcon:hover {
     cursor: pointer;
 }
 

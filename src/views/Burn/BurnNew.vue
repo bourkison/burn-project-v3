@@ -14,14 +14,14 @@
                 </b-card-body>
             </b-card>
             <div class="exercisesCont sortableContainer mb-2">
-                <ExerciseRecorder v-for="(exercise, index) in burn.exercises" :key="exercise.id" @addSet="addSet" @removeSet="removeSet" :exercise="exercise" :previousExercise="previousBurn.exercises ? previousBurn.exercises[index] : null" />
+                <ExerciseRecorder v-for="exercise in burn.exercises" :key="exercise.uid" @addSet="addSet" @removeSet="removeSet" @removeExercise="removeExercise" :exercise="exercise" :previousExercise="relevantPreviousBurn(exercise.uid)" />
             </div>
             <b-card no-body class="mb-4">
                 <b-card-body>
                     <b-card-text>
                         <div class="text-center">
                             <b-button variant="outline-danger" class="mr-1" size="sm" to="/burn">Cancel</b-button>
-                            <b-button variant="outline-dark" class="ml-1 mr-1" size="sm">Add Exercise</b-button>
+                            <b-button variant="outline-dark" class="ml-1 mr-1" size="sm" v-b-modal.searchExerciseModal>Add Exercise</b-button>
                             <b-button class="ml-1" variant="outline-success" size="sm" @click="finishWorkout">Finish</b-button>
                         </div>
                     </b-card-text>
@@ -31,6 +31,11 @@
         <div class="text-center" v-else>
             <b-spinner />
         </div>
+
+        <b-modal id="searchExerciseModal" centered title="Exercises" hide-footer button-size="sm">
+            <ExerciseSearch @selectExercise="addExercise" />
+        </b-modal>
+
         <b-modal id="startWorkoutModal" 
             centered 
             @hide="preventModal" 
@@ -49,7 +54,7 @@
             </template>
             <div v-if="!emptyBurn">
                 <b-list-group>
-                    <b-list-group-item v-for="exercise in burn.exercises" :key="exercise.id">
+                    <b-list-group-item v-for="(exercise, index) in burn.exercises" :key="index">
                         {{ exercise.name }}
                     </b-list-group-item>
                 </b-list-group>
@@ -87,10 +92,11 @@ import { db } from '@/firebase'
 import Sortable from 'sortablejs'
 
 import ExerciseRecorder from '@/components/Exercise/ExerciseRecorder.vue'
+import ExerciseSearch from '@/components/Exercise/ExerciseSearch.vue'
 
 export default {
     name: 'BurnNew',
-    components: { ExerciseRecorder },
+    components: { ExerciseRecorder, ExerciseSearch },
     data() {
         return {
             isLoading: true,
@@ -127,7 +133,7 @@ export default {
     },
 
     beforeRouteLeave: function(to, from, next) {
-        if (this.workoutCommenced) {
+        if (this.workoutCommenced && !this.isFinishing) {
             this.$bvModal.msgBoxConfirm('You are in the middle of a workout. Do you want to leave? All progress will be lost.', {
                 title: 'Leave Workout?',
                 buttonSize: 'sm',
@@ -171,6 +177,12 @@ export default {
                         notes: "",
                     }
 
+                    // Generate a unique ID for each exercise (for the keys).
+                    // As we may have multiple of the same exercise, can not use ID as key.
+                    this.burn.exercises.forEach(exercise => {
+                        exercise.uid = this.generateId(16);
+                    })
+
                     // Check if user has done this workout before (so we can populate previousBurn).
                     return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("workout.id", "==", this.$route.query.w).orderBy("createdAt", "desc").limit(1).get()
                 })
@@ -190,6 +202,37 @@ export default {
                                 duration: data.duration,
                                 notes: data.notes
                             }
+
+                            // Match up previous burn exercises with UID.
+                            // First loop through each previous burn exercise (no UID currently set).
+                            let i = 0;
+                            this.previousBurn.exercises.forEach(exercise => {
+                                // Now pull the index of every occurence of this exercise ID within previous burn exercises (current iterator will be one of these)
+                                const prevBurnMatchingExercisesIndices = this.previousBurn.exercises.map((x, i) => x.id === exercise.id ? i : '').filter(String)
+
+                                // Now filter burn exercises to just this exercise.
+                                const burnMatchingExercises = this.burn.exercises.filter(x => x.id === exercise.id);
+
+                                /*
+                                * In our array of indices, find what index i is currently at. 
+                                * This tells us how many of this exercise ID we have already set the UID for,
+                                * So we can ensure to grab the next UID and not duplicate.
+                                * i.e. if this is 2, then we have already set the 0th and 1st occurence of exercise.id within
+                                * this.burn.exercises and so must now set the second to avoid duplication.
+                                * VERY confusing stuff and could probably be cleaner but it works.
+                                */  
+                                const arrayOfIndicesIndex = prevBurnMatchingExercisesIndices.indexOf(i);
+
+                                if (burnMatchingExercises[arrayOfIndicesIndex]) {
+                                    this.previousBurn.exercises[i].uid = burnMatchingExercises[arrayOfIndicesIndex].uid;
+                                } else {
+                                    this.previousBurn.exercises[i].uid = this.generateId(16)
+                                }
+                              
+                                i ++;
+                            })
+
+                            
                         })
                     } else {
                         // User hasn't done this burn before.
@@ -237,17 +280,38 @@ export default {
             })
         },
 
-        addSet: function(id, set) {
-            const index = this.burn.exercises.findIndex(x => x.id == id);
+        addSet: function(uid, set) {
+            const index = this.burn.exercises.findIndex(x => x.uid == uid);
             this.burn.exercises[index].sets.push(set);
         },
 
-        removeSet: function(id) {
-            const index = this.burn.exercises.findIndex(x => x.id == id);
+        removeSet: function(uid) {
+            const index = this.burn.exercises.findIndex(x => x.uid == uid);
             
             if (this.burn.exercises[index].sets.length > 1) {
                 this.burn.exercises[index].sets.pop();
             }
+        },
+
+        addExercise: function(exercise) {
+            this.burn.exercises.push({
+                id: exercise.id,
+                name: exercise.name,
+                notes: "",
+                sets: [{
+                    kg: 0,
+                    measureAmount: 0,
+                    measureBy: exercise.measureBy
+                }],
+                uid: this.generateId(16)
+            })
+
+            this.$bvModal.hide("searchExerciseModal");
+        },
+
+        removeExercise: function(uid) {
+            const index = this.burn.exercises.findIndex(x => x.uid === uid);
+            this.burn.exercises.splice(index, 1);
         },
 
         changeOrder: function(e) {
@@ -352,6 +416,26 @@ export default {
                 e.preventDefault();
                 console.log("prevented");
             }
+        },
+
+        relevantPreviousBurn: function(uid) {
+            let temp = this.previousBurn.exercises.filter(x => x.uid === uid)
+
+            if (temp.length > 0) {
+                return temp[0];
+            } else {
+                return null;
+            }
+        },
+
+        generateId(n) {
+            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+            let id = '';
+            // 7 random characters
+            for (let i = 0; i < n; i++) {
+                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+            }
+            return id;
         }
     }
 }
