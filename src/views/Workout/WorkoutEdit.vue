@@ -58,7 +58,7 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger" @click="$router.push('/workouts/')">Cancel</b-button>
+                    <b-button variant="outline-danger" @click="$router.push('/workouts/' + newWorkoutData.id)">Cancel</b-button>
                     <b-button variant="outline-primary" @click="updateWorkout" :disabled="isUpdating">
                         <span v-if="isUpdating"><b-spinner small /></span>
                         <span v-else>Update</span>
