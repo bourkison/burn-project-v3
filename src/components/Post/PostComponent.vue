@@ -3,13 +3,27 @@
         <!-- Header -->
         <template #header>
             <div v-if="!isLoading" class="d-flex alignHeader" align-v="center">
-                <b-avatar :to="'/' + postData.createdBy.username" size="1.5rem" class="mr-1 disableAvatarHover" :src="postData.createdBy.profilePhoto" />
-                <span><router-link :to="'/' + postData.createdBy.username" class="text-dark username">{{ postData.createdBy.username }}</router-link>&#32;&nbsp; </span>
-                <span class="ml-1" v-if="postData.share.type">
-                    <span v-if="postData.share.type == 'exercise'">&nbsp;shared an <router-link :to="'/exercises/'+ postData.share.id">exercise</router-link>.</span>
-                    <span v-if="postData.share.type == 'workout'">&nbsp;shared a <router-link :to="'/workouts/'+ postData.share.id">workout</router-link>.</span>
-                    <span v-if="postData.share.type == 'burn'">&nbsp;shared a burn.</span>
-                </span>
+                <div class="d-flex centeredHeader" align-v="center">
+                    <b-avatar :to="'/' + postData.createdBy.username" size="1.5rem" class="mr-1 disableAvatarHover" :src="postData.createdBy.profilePhoto" />
+                    <span><router-link :to="'/' + postData.createdBy.username" class="text-dark username">{{ postData.createdBy.username }}</router-link>&#32;&nbsp; </span>
+                    <span class="ml-1" v-if="postData.share.type">
+                        <span v-if="postData.share.type == 'exercise'">&nbsp;shared an <router-link :to="'/exercises/'+ postData.share.id">exercise</router-link>.</span>
+                        <span v-if="postData.share.type == 'workout'">&nbsp;shared a <router-link :to="'/workouts/'+ postData.share.id">workout</router-link>.</span>
+                        <span v-if="postData.share.type == 'burn'">&nbsp;shared a burn.</span>
+                    </span>
+                </div>
+                <div class="d-flex ml-auto text-muted centeredHeader">
+                    <span class="createdAtText"><em>{{ createdAtText }}</em></span>
+                    <b-dropdown right variant="outline" size="sm" style="padding-top:1px;">
+                        <span v-if="postData.createdBy.id === $store.state.userProfile.data.uid">
+                            <b-dropdown-item>Edit</b-dropdown-item>
+                            <b-dropdown-item variant="danger">Delete</b-dropdown-item>
+                        </span>
+                        <span v-else>
+                            <b-dropdown-item variant="danger">Report</b-dropdown-item>
+                        </span>
+                    </b-dropdown>
+                </div>
             </div>
             <div v-else>
                 Loading...
@@ -83,6 +97,7 @@ export default {
             isLoading: true,
             postData: {},
             imgUrls: [],
+            createdAtText: '',
 
             // Bootstrap:
             carouselModel: 0
@@ -131,7 +146,16 @@ export default {
 }
 
 .alignHeader {
-    margin-left: -5px;
+    margin: 0 -5px;
+}
+
+.createdAtText {
+    font-size: 12px;
+    line-height: 24px;
+}
+
+.centeredHeader {
+    align-items: center;
 }
 </style>
 

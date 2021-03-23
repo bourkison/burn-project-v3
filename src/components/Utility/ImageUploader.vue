@@ -1,10 +1,10 @@
 <template>
     <div>
-        <div>
-            <ImageSorter v-if="editedFiles.length > 0" :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
-        </div>
         <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
             <ImageEditor :imagesToAdd="addedFiles" :initId="initId" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" :resetVariablesIncrementor="resetVariablesIncrementor" />
+        </div>
+        <div>
+            <ImageSorter v-if="editedFiles.length > 0" :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
         </div>
         <div class="imageInput" v-if="!inlineDisplay">
             <b-form-file class="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>

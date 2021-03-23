@@ -15,7 +15,7 @@
                                     <span v-else>
                                         <b-dropdown-item variant="danger">Report</b-dropdown-item>
                                     </span>
-                            </b-dropdown>
+                                </b-dropdown>
                             </b-card-title>
                             <b-card-sub-title>
                                 {{ exerciseData.createdBy.username }}
