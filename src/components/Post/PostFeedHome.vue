@@ -1,6 +1,7 @@
 <template>
     <div v-if="!isLoading" class="mb-4">
         <PostFeed @addPost="addPost" :posts="posts" :newPost="true"></PostFeed>
+        
         <div class="text-center" v-if="moreToLoad">
             <b-button @click="loadMorePosts" variant="outline-dark" size="sm" v-b-visible="loadMorePosts">
                 <span v-if="!isLoadingMore">Load More</span>
