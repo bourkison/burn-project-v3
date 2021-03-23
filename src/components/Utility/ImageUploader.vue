@@ -4,7 +4,7 @@
             <ImageSorter v-if="editedFiles.length > 0" :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
         </div>
         <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
-            <ImageEditor :imagesToAdd="addedFiles" :initId="initId" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" />
+            <ImageEditor :imagesToAdd="addedFiles" :initId="initId" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" :resetVariablesIncrementor="resetVariablesIncrementor" />
         </div>
         <div class="imageInput" v-if="!inlineDisplay">
             <b-form-file class="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
@@ -30,6 +30,10 @@ export default {
         inlineDisplay: {
             type: Boolean,
             required: true
+        },
+        resetVariablesIncrementor: {
+            type: Number,
+            required: false
         }
     },
     data() {
@@ -145,6 +149,18 @@ export default {
 
         sortedFiles: function() {
             this.$emit("updateImages", this.sortedFiles);
+        },
+
+        // Changed in PostNew. Is an indication to reset all variables within.
+        resetVariablesIncrementor: function() {
+            this.addedFiles = [];
+            this.editedFiles = [];
+            this.sortedFiles = [];
+            this.imagesToEdit = [];
+            this.initId = 0;
+            this.filesInEdit = 0;
+
+            console.log("Uploader reset");
         }
     }
 }

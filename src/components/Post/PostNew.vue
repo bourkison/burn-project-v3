@@ -2,7 +2,7 @@
     <b-card no-body>
         <b-card-body>
             <b-card-text>
-                <ImageUploader @updateImages="updateImages" :inlineDisplay="true" />
+                <ImageUploader @updateImages="updateImages" :inlineDisplay="true" :resetVariablesIncrementor="resetVariablesIncrementor" />
 
                 <div v-if="post.share.type" class="mt-1 mb-3">
                     <div class="text-right">
@@ -31,7 +31,7 @@
                         <b-icon-award v-b-modal.addBurnModal font-scale="1.2" class="mr-1 clickableIcon" />
                     </div>
                     <div class="ml-auto">
-                        <b-button size="sm" variant="outline" @click="isPosting = !isPosting">
+                        <b-button size="sm" variant="outline" @click="createPost">
                             <span v-if="!isPosting">Post</span>
                             <span v-else><b-spinner small /></span>
                         </b-button>
@@ -55,6 +55,8 @@
 </template>
 
 <script>
+import { storage, functions } from '@/firebase'
+
 import ImageUploader from '@/components/Utility/ImageUploader.vue'
 
 import BurnSearch from '@/components/Burn/BurnSearch.vue'
@@ -76,10 +78,50 @@ export default {
                 share: {}
             },
             imagesToUpload: [],
+
+            // Below iterator is watched by ImageUploader.
+            // On change, the ImageUploader resets variables.
+            resetVariablesIncrementor: 0,
         }
     },
 
     methods: {
+        createPost: function() {
+            this.isPosting = true;
+            let imageUploadPromises = [];
+
+            this.post.id = this.generateId(16);
+
+            // Upload images.
+            if (this.imagesToUpload.length > 0) {
+                this.imagesToUpload.forEach(image => {
+                    let imageRef = storage.ref("posts/" + this.post.id + "/images/" + Number(new Date()) + "-" + this.generateId(4));
+                    imageUploadPromises.push(imageRef.putString(image.url, 'data_url'));
+                    this.post.filePaths.push(imageRef.fullPath);
+                })
+            }
+
+            Promise.all(imageUploadPromises)
+            .then(() => {
+                // Once images uploaded, call New Post function.
+                const createPost = functions.httpsCallable("createPost");
+                const user = { username: this.$store.state.userProfile.docData.username, profilePhoto: this.$store.state.userProfile.docData.profilePhoto };
+
+                return createPost({ postForm: this.post, user: user });
+            })
+            .then(() => {
+                this.$emit("newPost", this.post);
+                this.isPosting = false;
+                this.resetVariablesIncrementor ++;
+                console.log("WTF", this.resetVariablesIncrementor);
+
+                this.resetVariables();
+            })
+            .catch(e => {
+                console.error("Error creating post:", e);
+            })
+        },
+
         addBurn: function(burn) {
             this.post.share = {
                 id: burn.id,
@@ -109,7 +151,27 @@ export default {
 
         updateImages: function(images) {
             this.imagesToUpload = images;
-        }
+        },
+
+        resetVariables: function() {
+            this.isPosting = false,
+            this.post = {
+                content: "",
+                filePaths: [],
+                share: {}
+            },
+            this.imagesToUpload = []
+        },
+
+        generateId(n) {
+            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+            let id = '';
+            // 7 random characters
+            for (let i = 0; i < n; i++) {
+                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+            }
+            return id;
+        },
 
     }
 }

@@ -43,6 +43,10 @@ export default {
         initId: {
             type: Number,
             required: false
+        },
+        resetVariablesIncrementor: {
+            type: Number,
+            required: false
         }
     },
     data() {
@@ -277,6 +281,20 @@ export default {
                     this.setCropper(imgEl, this.images.length - 1, width, height)
                 })
             }
+        },
+
+        // Altered in PostNew, and indicates a new post has been added, so all
+        // variables must be reset and we start again.
+        resetVariablesIncrementor: function() {
+            this.isLoadingArr = [];
+            this.inputURLs = [];
+            this.cropper = [];
+            this.isLoading = false;
+            this.inputImages = [];
+            this.images = [];
+            this.imageIncrementor = 0;
+
+            console.log("Editor reset");
         }
     }
 }
