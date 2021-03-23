@@ -81,7 +81,7 @@ export default {
                     this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
                 })
                 .catch(e => {
-                    console.error("Error downloading more workouts:", e);
+                    console.error("Error downloading more exercises:", e);
                 })
             }
         }

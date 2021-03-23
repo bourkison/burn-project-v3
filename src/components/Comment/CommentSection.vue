@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div v-else>
-                    <b-list-group class="commentsContainer">
+                    <b-list-group class="commentsContainer borderless" flush>
                         <b-list-group-item class="text-center">
                             <b-spinner small />
                         </b-list-group-item>
