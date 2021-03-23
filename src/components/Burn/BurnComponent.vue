@@ -3,7 +3,9 @@
         <b-card-body>
             <div class="d-flex" align-v="center">
                 <div><h5>{{ burn.name }}</h5></div>
-                <div class="ml-auto text-muted font-weight-light" align-v="center"><p class="subs">{{ durationText }} | {{ createdAtText }}</p></div>
+                <div class="ml-auto text-muted font-weight-light" align-v="center">
+                    <span class="subs">{{ durationText }} | {{ createdAtText }}</span>
+                </div>
             </div>
 
             <b-card-text class="mt-3">
@@ -14,24 +16,35 @@
                     <b-col cols="3">Reps</b-col>
                 </b-row>
 
-                <b-row class="text-center mt-1" v-for="(exercise, index) in burn.exercises" :key="index">
-                    <b-col cols="1">{{ exercise.sets.length }}</b-col>
+                <div v-for="(exercise, index) in burn.exercises" :key="index">
+                    <b-row class="text-center mt-1">
+                        <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + burn.id + index">{{ exercise.sets.length }}</b-col>
 
-                    <b-col cols="5">
-                        <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
-                    </b-col>
+                        <b-col cols="5">
+                            <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
+                        </b-col>
 
-                    <b-col cols="3">
-                        {{ exercise.sets[0].kg }}
-                    </b-col>
+                        <b-col cols="3">
+                            {{ exercise.sets[0].kg }}
+                        </b-col>
 
-                    <b-col cols="3">
-                        {{ exercise.sets[0].measureAmount }}
-                    </b-col>
-                </b-row>
+                        <b-col cols="3">
+                            {{ exercise.sets[0].measureAmount }}
+                        </b-col>
+                    </b-row>
+
+                    <b-collapse :id="'setsCollapse-' + burn.id + index">
+                        <b-row v-for="(set, index) in exercise.sets" :key="index" class="text-center mt-1 text-muted font-weight-light">
+                            <b-col cols="1"></b-col>
+                            <b-col cols="5">{{ index + 1 }}</b-col>
+                            <b-col cols="3">{{ exercise.sets[index].kg }}</b-col>
+                            <b-col cols="3">{{ exercise.sets[index].measureAmount }}</b-col>
+                        </b-row>
+                    </b-collapse>
+                </div>
 
                 <div class="text-center mt-3">
-                    <b-button variant="outline-success" size="sm" :to="'/burn/new?b=' + burn.id">
+                    <b-button class="ml-1" variant="outline-success" size="sm" :to="'/burn/new?b=' + burn.id">
                         Start Workout
                         <b-icon-play />
                     </b-button>
@@ -85,5 +98,10 @@ export default {
     font-size: 12px;
     line-height: 32px;
     margin: 0;
+}
+
+.setAmountHoverable:hover {
+    cursor: pointer;
+    text-decoration: underline;
 }
 </style>

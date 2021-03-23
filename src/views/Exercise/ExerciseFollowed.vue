@@ -4,7 +4,7 @@
             <ExerciseFeed class="exerciseFeed" :exercises="exercises" />
 
             <div class="text-center" v-if="moreToLoad">
-                <b-button @click="loadMoreExercises" variant="outline-dark" size="sm" v-b-visible="loadMoreExercises">
+                <b-button @click="loadMoreExercises" variant="outline-dark" size="sm" v-b-visible.200="loadMoreExercises">
                     <span v-if="!isLoadingMore">Load More</span>
                     <span v-else><b-spinner small /></span>
                 </b-button>
