@@ -8,21 +8,32 @@
                 <b-col cols="3">Reps</b-col>
             </b-row>
 
-            <b-row class="text-center mt-1" v-for="(exercise, index) in burn.exercises" :key="index">
-                <b-col cols="1">{{ exercise.sets.length }}</b-col>
+            <div v-for="(exercise, index) in burn.exercises" :key="index">
+                <b-row class="text-center mt-1">
+                    <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + burn.id + index">{{ exercise.sets.length }}</b-col>
 
-                <b-col cols="5">
-                    <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
-                </b-col>
+                    <b-col cols="5">
+                        <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
+                    </b-col>
 
-                <b-col cols="3">
-                    {{ exercise.sets[0].kg }}
-                </b-col>
+                    <b-col cols="3">
+                        {{ exercise.sets[0].kg }}
+                    </b-col>
 
-                <b-col cols="3">
-                    {{ exercise.sets[0].measureAmount }}
-                </b-col>
-            </b-row>
+                    <b-col cols="3">
+                        {{ exercise.sets[0].measureAmount }}
+                    </b-col>
+                </b-row>
+
+                <b-collapse :id="'setsCollapse-' + burn.id + index">
+                    <b-row v-for="(set, index) in exercise.sets" :key="index" class="text-center mt-1 text-muted font-weight-light">
+                        <b-col cols="1"></b-col>
+                        <b-col cols="5">{{ index + 1 }}</b-col>
+                        <b-col cols="3">{{ exercise.sets[index].kg }}</b-col>
+                        <b-col cols="3">{{ exercise.sets[index].measureAmount }}</b-col>
+                    </b-row>
+                </b-collapse>
+            </div>
         </div>
         <div v-else class="text-center">
             <b-spinner small />
@@ -75,3 +86,20 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.setAmountHoverable:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Disable highlight */
+.setAmountHoverable {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+</style>

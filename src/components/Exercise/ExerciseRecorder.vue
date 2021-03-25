@@ -4,7 +4,8 @@
             <div class="d-flex">
                 <h6>{{ exercise.name }}</h6>
                 <div class="ml-auto">
-                    <b-icon-chevron-expand @click="setsExpanded = !setsExpanded" class="mr-1 clickableIcon" />
+                    <b-icon-chevron-expand v-if="!setsExpanded" @click="setsExpanded = !setsExpanded" class="mr-1 clickableIcon" />
+                    <b-icon-chevron-contract v-else @click="setsExpanded = !setsExpanded" class="mr-1 clickableIcon" />
                     <b-icon-grip-horizontal class="sortableIcon mr-1" />
                     <b-icon-trash @click="removeExercise" class="clickableIcon" />
                 </div>

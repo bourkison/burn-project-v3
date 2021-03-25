@@ -231,7 +231,6 @@ export default {
                               
                                 i ++;
                             })
-
                             
                         })
                     } else {
@@ -359,9 +358,7 @@ export default {
 
             this.workoutCommenced = true;
             
-            if (this.burn.exercises.length > 0) {
-                this.$nextTick(() => { this.sortable = new Sortable(document.querySelector(".sortableContainer"), this.sortableOptions )})
-            }
+            this.$nextTick(() => { this.sortable = new Sortable(document.querySelector(".sortableContainer"), this.sortableOptions )})
         },
 
         finishWorkout: function() {
