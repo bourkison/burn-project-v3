@@ -16,6 +16,8 @@ import ExerciseFollowed from '@/views/Exercise/ExerciseFollowed.vue'
 import ExerciseNew from '@/views/Exercise/ExerciseNew.vue'
 import ExerciseView from '@/views/Exercise/ExerciseView.vue'
 
+import Profile from '@/views/User/Profile.vue'
+
 import Workout from '@/views/Workout/Workout.vue'
 import WorkoutDiscover from '@/views/Workout/WorkoutDiscover.vue'
 import WorkoutEdit from '@/views/Workout/WorkoutEdit.vue'
@@ -155,6 +157,13 @@ const routes = [
                 component: BurnView
             },
         ]
+    },
+
+    // USER + 404
+    {
+        path: '/:profileid',
+        name: 'Profile',
+        component: Profile,
     }
 ]
 
