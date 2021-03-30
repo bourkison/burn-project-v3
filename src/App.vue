@@ -46,8 +46,8 @@
                         <SignInForm  @closeSignInModal="$bvModal.hide('login-modal')"/>
                     </b-modal>
 
-                    <b-modal id="signup-modal" title="Sign Up">
-                        Sign Up!
+                    <b-modal id="signup-modal" hide-footer centered title="Sign Up">
+                        <SignUpForm />
                     </b-modal>
                 </b-collapse>
             </b-navbar>
@@ -66,9 +66,10 @@
 <script>
 import { auth } from '@/firebase'
 import SignInForm from '@/components/Auth/SignInForm.vue'
+import SignUpForm from '@/components/Auth/SignUpForm.vue'
 
 export default {
-    components: { SignInForm },
+    components: { SignInForm, SignUpForm },
     methods: {
         signOut: function() {
             auth.signOut();

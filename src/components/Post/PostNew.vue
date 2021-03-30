@@ -119,6 +119,7 @@ export default {
             })
             .catch(e => {
                 console.error("Error creating post:", e);
+                this.isPosting = false;
             })
         },
 

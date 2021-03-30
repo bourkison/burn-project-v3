@@ -15,8 +15,8 @@
                     </div>
                     <div class="text-center buttons">
                         <b-btn size="sm" variant="outline-danger" @click="cancelImage(index, image.id)">Cancel</b-btn>
-                        <b-btn v-if="!image.edit" size="sm" variant="outline-success" @click="addImage(index)">Add Image</b-btn>
-                        <b-btn v-else size="sm" variant="outline-success" @click="addImage(index)">Edit Image</b-btn>
+                        <b-btn v-if="!image.edit" size="sm" variant="outline-dark" @click="addImage(index)">Add Image</b-btn>
+                        <b-btn v-else size="sm" variant="outline-dark" @click="addImage(index)">Edit Image</b-btn>
                     </div>
                 </b-tab>
             </b-tabs>
@@ -30,7 +30,6 @@ import imageCompression from 'browser-image-compression'
 
 export default {
     name: 'ImageEditor',
-    components: {},
     props: {
         imagesToAdd: {
             type: Array,
