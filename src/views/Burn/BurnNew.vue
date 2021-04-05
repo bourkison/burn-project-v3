@@ -181,6 +181,7 @@ export default {
                     // As we may have multiple of the same exercise, can not use ID as key.
                     this.burn.exercises.forEach(exercise => {
                         exercise.uid = this.generateId(16);
+                        exercise.notes = "";
                     })
 
                     // Check if user has done this workout before (so we can populate previousBurn).
@@ -236,6 +237,7 @@ export default {
                     } else {
                         // User hasn't done this burn before.
                         this.previousBurn = JSON.parse(JSON.stringify(this.burn));
+                        console.log("User hasn't done this workout.");
                     }
 
                     this.emptyBurn = false;

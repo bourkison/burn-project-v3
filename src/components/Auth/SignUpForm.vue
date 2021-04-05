@@ -22,7 +22,7 @@
                     <b-input-group-append>
                         <b-button v-if="!checkingUsername && usernameUnique" variant="success" disabled><b-icon-check /></b-button>
                         <b-button v-else-if="!checkingUsername && !usernameUnique" variant="danger" disabled><b-icon-x /></b-button>
-                        <b-button v-else-if="checkingUsername" diasbled> <b-spinner small /></b-button>
+                        <b-button v-else-if="checkingUsername" disabled> <b-spinner small /></b-button>
                     </b-input-group-append>
                 </b-input-group>
             </b-form-group>

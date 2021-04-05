@@ -1,6 +1,7 @@
 <template>
     <div v-if="!isLoading" class="mb-4">
-        <PostFeed @addPost="addPost" :posts="posts" :newPost="true"></PostFeed>
+        <PostNew class="newPost" />
+        <PostFeed @addPost="addPost" :posts="posts" />
 
         <div class="text-center" v-if="moreToLoad">
             <b-button @click="loadMorePosts" variant="outline-dark" size="sm" v-b-visible.200="loadMorePosts">
@@ -14,11 +15,13 @@
 
 <script>
 import { db } from '@/firebase'
+
+import PostNew from '@/components/Post/PostNew.vue'
 import PostFeed from '@/components/Post/PostFeed.vue'
 
 export default {
     name: 'PostFeedHome',
-    components: { PostFeed },
+    components: { PostFeed, PostNew },
     data() {
         return {
             isLoading: true,
@@ -82,3 +85,10 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+    .newPost {
+        margin-top: 40px;
+        margin-bottom: 25px;
+    }
+</style>

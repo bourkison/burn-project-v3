@@ -94,7 +94,7 @@ export default {
     computed: {
         notesPlaceholder: function() {
             if (this.$props.previousExercise) {
-                if (this.$props.previousExercise.notes.length) {
+                if (this.$props.previousExercise.notes.length > 0) {
                     return this.$props.previousExercise.notes;
                 }
             }

@@ -1,10 +1,10 @@
 <template>
     <b-form @submit.prevent="signIn">
-        <b-form-group label="Email:" label-for="emailInput" description="We'll never share your email with anyone else.">
+        <b-form-group label="Email" label-for="emailInput">
             <b-form-input id="emailInput" v-model="signInForm.email" type="email" placeholder="Enter Email" required />
         </b-form-group>
 
-        <b-form-group label="Password:" label-for="passwordInput">
+        <b-form-group label="Password" label-for="passwordInput">
             <b-form-input id="passwordInput" v-model="signInForm.password" type="password" placeholder="Enter Password" required />
         </b-form-group>
 
