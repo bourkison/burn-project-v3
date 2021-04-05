@@ -109,12 +109,16 @@ export default {
     },
 
     beforeRouteUpdate: function(to, from, next) {
-        this.downloadWorkout();
         next();
+        this.downloadWorkout();
     },
 
     methods: {
         downloadWorkout: function() {
+            this.isLoading = true;
+            this.workoutExists = false;
+            this.workoutData = {};
+
             db.collection("workouts").doc(this.$route.params.workoutid).get()
             .then(workoutDoc => {
                 if (workoutDoc.exists) {

@@ -2,7 +2,7 @@
     <b-nav-form>
         <b-form-input v-model="searchText" @focus="showPopover" @change="showPopover" @blur="hidePopover" id="testInput" placeholder="Search exercises, workouts, users..." size="sm" debounce="250" />
 
-        <b-popover id="mainSearchPopover" target="testInput" :show.sync="displayPopover" placement="bottomright" custom-class="searchPopover">
+        <b-popover id="mainSearchPopover" target="testInput" :show.sync="displayPopover" placement="bottomright" triggers="manual" custom-class="searchPopover">
             <div v-if="!isLoading && searchText">
                 <div v-if="userResponses.length > 0" :class="(workoutResponses.length > 0 || exerciseResponses.length > 0) ? 'mb-2' : ''">
                     <h6>Users</h6>

@@ -119,12 +119,18 @@ export default {
     },
 
     beforeRouteUpdate: function(to, from, next) {
-        this.downloadExercise();
         next();
+        this.downloadExercise();
     },
 
     methods: {
         downloadExercise: function() {
+            this.isLoading = true;
+            this.exerciseExists = false;
+            this.exerciseData = {};
+            this.imgUrls = [];
+            this.carouselModel = 0;
+
             db.collection("exercises").doc(this.$route.params.exerciseid).get()
             .then(exerciseDoc => {
                 if (exerciseDoc.exists) {
