@@ -27,26 +27,43 @@ export default {
     },
 
     created: function() {
-        if (this.$route.params.profileid !== this.$store.state.userProfile.docData.username) {
-            db.collection("users").where("username", "==", this.$route.params.profileid).get()
-            .then(userSnapshot => {
-                if (userSnapshot.size > 0) {
-                    userSnapshot.forEach(user => {
-                        this.profile = user.data();
-                        this.profile.id = user.id;
-                        this.profileExists = true;
+        this.downloadUser();
+    },
+
+    beforeRouteUpdate: function(to, from, next) {
+        next();
+        this.downloadUser();
+    },
+
+    methods: {
+        downloadUser: function() {
+            this.isLoading = true;
+            this.profileExists = false;
+            this.profile = {};
+
+            if (!this.$store.state.userProfile.loggedIn) {
+                console.log("Not logged in");
+            } else if (this.$route.params.profileid !== this.$store.state.userProfile.docData.username) {
+                db.collection("users").where("username", "==", this.$route.params.profileid).get()
+                .then(userSnapshot => {
+                    if (userSnapshot.size > 0) {
+                        userSnapshot.forEach(user => {
+                            this.profile = user.data();
+                            this.profile.id = user.id;
+                            this.profileExists = true;
+                            this.isLoading = false;
+                        })
+                    } else {
+                        this.profileExists = false;
                         this.isLoading = false;
-                    })
-                } else {
-                    this.profileExists = false;
-                    this.isLoading = false;
-                }
-            })
-        } else {
-            this.profile = this.$store.state.userProfile.docData;
-            this.profile.id = this.$store.state.userProfile.data.uid;
-            this.profileExists = true;
-            this.isLoading = false;
+                    }
+                })
+            } else {
+                this.profile = this.$store.state.userProfile.docData;
+                this.profile.id = this.$store.state.userProfile.data.uid;
+                this.profileExists = true;
+                this.isLoading = false;
+            }
         }
     }
 }

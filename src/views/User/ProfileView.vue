@@ -20,7 +20,7 @@
                                 </div>
                             </b-card-title>
 
-                            <b-card-text class="mt-4">
+                            <b-card-text class="mt-4" v-if="isLoggedInUser">
                                 <PostNew />
                             </b-card-text>
                         </b-card-body>
@@ -68,29 +68,45 @@ export default {
     },
 
     created: function() {
-        if (this.$props.profile.id === this.$store.state.userProfile.data.uid) {
-            this.isLoggedInUser = true;
-        }
+        this.downloadPosts();
+    },
 
-        // Check if followed.
-        if (!this.isLoggedInUser) {
-            db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("following").doc(this.profile.id).get()
-            .then(followingDoc => {
-                if (followingDoc.exists) {
-                    this.isFollowing = true;
-                }
+    beforeRouteUpdate: function(to, from, next) {
+        next();
+        this.downloadPosts();
+    },
+
+    methods: {
+        downloadPosts: function() {
+            this.isLoading = true;
+            this.posts = [];
+            this.isFollowing = false;
+            this.isLoggedInUser = false;
+
+            if (this.$props.profile.id === this.$store.state.userProfile.data.uid) {
+                this.isLoggedInUser = true;
+            }
+
+            // Check if followed.
+            if (!this.isLoggedInUser) {
+                db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("following").doc(this.profile.id).get()
+                .then(followingDoc => {
+                    if (followingDoc.exists) {
+                        this.isFollowing = true;
+                    }
+                })
+            }
+
+            // Download posts.
+            db.collection("users").doc(this.profile.id).collection("posts").orderBy("createdAt", "desc").get()
+            .then(postSnapshot => {
+                postSnapshot.forEach(post => {
+                    this.posts.push(post.id);
+                })
+
+                this.isLoading = false;
             })
         }
-
-        // Download posts.
-        db.collection("users").doc(this.profile.id).collection("posts").orderBy("createdAt", "desc").get()
-        .then(postSnapshot => {
-            postSnapshot.forEach(post => {
-                this.posts.push(post.id);
-            })
-
-            this.isLoading = false;
-        })
     }
 }
 </script>

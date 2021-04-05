@@ -13,7 +13,7 @@
                     </span>
                 </div>
                 <div class="d-flex ml-auto text-muted centeredHeader">
-                    <span class="createdAtText"><em>{{ createdAtText }}</em></span>
+                    <span class="createdAtText" :title="Date(postData.createdAt).toLocaleString()"><em>{{ createdAtText }}</em></span>
                     <b-dropdown left variant="outline" size="sm" style="padding-top:1px;">
                         <span v-if="postData.createdBy.id === $store.state.userProfile.data.uid">
                             <b-dropdown-item>Edit</b-dropdown-item>

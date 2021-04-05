@@ -324,7 +324,7 @@ export default {
         },
 
         expandLikes: function() {
-            if (this.likeCount > 0) {
+            if (this.likeCount > 0 && !this.isLoadingLikes) {
                 if (this.likes.length == 0) {
                     this.isLoadingLikes = true;
                     console.log("Downloading likes");
@@ -366,7 +366,7 @@ export default {
         },
 
         expandFollows: function() {
-            if (this.followCount > 0) {
+            if (this.followCount > 0 && !this.isLoadingFollows) {
                 if (this.follows.length == 0) {
                     this.isLoadingFollows = true;
                     console.log("Downloading follows");

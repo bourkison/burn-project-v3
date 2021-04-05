@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@toast-ui/vue-editor": "^2.5.1",
+    "algoliasearch": "^4.8.6",
     "bootstrap-vue": "^2.21.2",
     "browser-image-compression": "^1.0.14",
     "core-js": "^3.6.5",

@@ -12,9 +12,10 @@
                         <b-nav-item to="/exercises">Exercises</b-nav-item>
                         <b-nav-item to="/workouts">Workouts</b-nav-item>
                         <b-nav-item to="/burn">Burns</b-nav-item>
-                        <b-nav-form>
+                        <MainSearch />
+                        <!-- <b-nav-form>
                             <b-form-input ref="searchInput" size="sm" placeholder="Search"></b-form-input>
-                        </b-nav-form>
+                        </b-nav-form> -->
                     </b-navbar-nav>
 
                     <b-navbar-nav class="ml-auto">
@@ -65,14 +66,18 @@
 
 <script>
 import { auth } from '@/firebase'
+
 import SignInForm from '@/components/Auth/SignInForm.vue'
 import SignUpForm from '@/components/Auth/SignUpForm.vue'
 
+import MainSearch from '@/components/Search/MainSearch.vue'
+
 export default {
-    components: { SignInForm, SignUpForm },
+    components: { MainSearch, SignInForm, SignUpForm },
     methods: {
         signOut: function() {
             auth.signOut();
+            this.$router.push("/");
         }
     }
 }
