@@ -33,7 +33,6 @@ export default {
     beforeRouteUpdate: function(to, from, next) {
         next();
         this.downloadUser();
-        console.log("PROFILE ROUTE UPDATE");
     },
 
     methods: {

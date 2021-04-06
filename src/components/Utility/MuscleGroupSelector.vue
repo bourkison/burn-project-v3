@@ -7,7 +7,7 @@
         </div>
 
         <div class="datalistCont">
-            <b-form-input list="muscleGroupList" id="inputWithList" :placeholder="selectedMuscleGroups.length > 0 ? '' : 'Select muscle groups...'" autocomplete="off" v-model="inputText" @select="datalistAdd"></b-form-input>
+            <b-form-input list="muscleGroupList" id="inputWithList" placeholder="Select muscle groups..." autocomplete="off" size="sm" v-model="inputText" @select="datalistAdd"></b-form-input>
             <b-form-datalist id="muscleGroupList" :options="availableMuscleGroups"></b-form-datalist>
         </div>
 
@@ -55,7 +55,7 @@ export default {
 
     methods: {
         datalistAdd: function(e) {
-            if (this.inputText.trim() !== '') {
+            if (this.inputText.trim() !== '' && this.availableMuscleGroups.includes(this.inputText)) {
                 // Add selected to selectedMuscleGroups.
                 this.selectedMuscleGroups.push(e.target.value);
                 

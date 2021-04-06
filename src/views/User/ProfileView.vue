@@ -11,14 +11,14 @@
                         <b-card-body>
                             <b-card-title class="d-flex center-aligned w-100">
                                 <b-avatar size="4rem" :src="profile.profilePhoto" />
-                                <div class="ml-4 text-center w-100">
+                                <div class="ml-3 text-center w-100">
                                     <div class="pb-1 border-bottom border-light">{{ profile.username }}</div>
                                     <div class="d-flex followCount border-bottom border-light">
                                         <div class="w-50 m0 border-right border-light pt-1 pb-1">{{ profile.followerCount }} followers</div>
                                         <div class="w-50 m0 pt-1 pb-1">{{ profile.followingCount }} following</div>
                                     </div>
                                     <div>
-                                        <div v-if="isLoggedInUser" class="ml-5 mr-5">
+                                        <div v-if="isLoggedInUser" class="ml-5 mr-5 pt-1">
                                             <b-button block variant="outline-dark" size="sm">Edit Profile</b-button>
                                         </div>
                                         <div v-else class="d-flex">

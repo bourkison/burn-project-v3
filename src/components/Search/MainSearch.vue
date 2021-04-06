@@ -1,5 +1,5 @@
 <template>
-    <b-nav-form>
+    <b-nav-form @submit.prevent="searchPage">
         <b-form-input v-model="searchText" @focus="showPopover" @change="showPopover" @blur="hidePopover" id="testInput" placeholder="Search exercises, workouts, users..." size="sm" debounce="250" />
 
         <b-popover id="mainSearchPopover" target="testInput" :show.sync="displayPopover" placement="bottomright" triggers="manual" custom-class="searchPopover">
@@ -7,7 +7,7 @@
                 <div v-if="userResponses.length > 0" :class="(workoutResponses.length > 0 || exerciseResponses.length > 0) ? 'mb-2' : ''">
                     <h6>Users</h6>
                     <b-list-group>
-                        <b-list-group-item v-for="user in userResponses" :key="user.id" :to="'/' + user.username" @click="logClick(user.username)" class="p-2">
+                        <b-list-group-item v-for="user in userResponses" :key="user.id" :to="'/' + user.username" class="p-2">
                             <b-avatar class="mr-2" :src="user.profilePhoto" />
                             {{ user.username }}
                         </b-list-group-item>
@@ -61,7 +61,7 @@ export default {
             // Bootstrap:
             displayPopover: false,
 
-            // ALGOLIA:
+            // Algolia:
             searchClient: algoliasearch(
                 "O9KO1L25CJ",
                 "e6492bc28cfda8670d4981bb26e4bbbd"
@@ -86,9 +86,13 @@ export default {
         hidePopover: function() {
             this.$nextTick(() => { this.displayPopover = false });
         },
-        
-        logClick: function(id) {
-            console.log(id)
+
+        searchPage: function() {
+            const encodedSearch = encodeURIComponent(this.searchText.trim());
+            this.displayPopover = false;
+            document.activeElement.blur();
+            
+            this.$router.push("/search?q=" + encodedSearch);
         }
     },
 

@@ -1,6 +1,19 @@
 <template>
     <div v-if="!isLoading" class="mb-4">
-        <PostNew class="newPost" />
+        <b-card no-body class="newPost">
+            <b-card-body>
+                <b-card-title>
+                    <div class="d-flex align-items">
+                        <b-avatar :src="$store.state.userProfile.docData.profilePhoto" />
+                        <div class="ml-2">Welcome, {{ $store.state.userProfile.docData.firstName }}</div>
+                    </div>
+                </b-card-title>
+                
+                <div class="mt-4">
+                    <PostNew />
+                </div>
+            </b-card-body>
+        </b-card>
         <PostFeed @addPost="addPost" :posts="posts" />
 
         <div class="text-center" v-if="moreToLoad">
@@ -88,7 +101,11 @@ export default {
 
 <style scoped>
     .newPost {
-        margin-top: 40px;
+        margin-top: 25px;
         margin-bottom: 25px;
+    }
+
+    .align-items {
+        align-items: center !important;
     }
 </style>

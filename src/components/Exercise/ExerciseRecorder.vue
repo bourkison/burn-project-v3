@@ -79,7 +79,7 @@ export default {
     },
     data() {
         return {
-            setsExpanded: false,
+            setsExpanded: true,
             previousExerciseStored: {}
         }
     },

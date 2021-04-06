@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <div v-if="$store.state.userProfile">
-            <b-navbar sticky class="nav" toggleable="sm" variant="faded" type="light">
+            <b-navbar sticky class="mainNav" toggleable="sm" variant="faded" type="light">
                 <b-navbar-brand tag="h1" :to="'/'">Burn</b-navbar-brand>
 
                 <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -88,7 +88,7 @@ body {
     background-color: rgba(203, 203, 210, 0.15) !important;
 }
 
-.nav {
+.mainNav {
     background-color: #fff !important;
 }
 </style>

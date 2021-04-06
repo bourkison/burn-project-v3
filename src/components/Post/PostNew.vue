@@ -1,44 +1,40 @@
 <template>
-    <b-card no-body>
-        <b-card-body>
-            <b-card-text>
-                <ImageUploader @updateImages="updateImages" :inlineDisplay="true" :resetVariablesIncrementor="resetVariablesIncrementor" />
+    <div>
+        <ImageUploader @updateImages="updateImages" :inlineDisplay="true" :resetVariablesIncrementor="resetVariablesIncrementor" />
 
-                <div v-if="post.share.type" class="mt-1 mb-3">
-                    <div class="text-right">
-                        <b-icon-x variant="danger" class="clickableIcon" @click="post.share = {}" />
-                    </div>
+        <div v-if="post.share.type" class="mt-1 mb-3">
+            <div class="text-right">
+                <b-icon-x variant="danger" class="clickableIcon" @click="post.share = {}" />
+            </div>
 
-                    <div v-if="post.share.type == 'exercise'">
-                        <ExerciseShare :exerciseId="post.share.id" />
-                    </div>
-                    <div v-else-if="post.share.type == 'workout'">
-                        <WorkoutShare :workoutId="post.share.id" />
-                    </div>
-                    <div v-else-if="post.share.type == 'burn'">
-                        <BurnShare :burnId="post.share.id" :userId="$store.state.userProfile.data.uid" />
-                    </div>
-                </div>
+            <div v-if="post.share.type == 'exercise'">
+                <ExerciseShare :exerciseId="post.share.id" />
+            </div>
+            <div v-else-if="post.share.type == 'workout'">
+                <WorkoutShare :workoutId="post.share.id" />
+            </div>
+            <div v-else-if="post.share.type == 'burn'">
+                <BurnShare :burnId="post.share.id" :userId="$store.state.userProfile.data.uid" />
+            </div>
+        </div>
 
-                <b-form-textarea v-model="post.content" rows="3" no-resize placeholder="New post..."  />
-                <div class="d-flex mt-1 p-1" align-v="center">
-                    <div>
-                        <label for="file-input">
-                            <b-icon-card-image font-scale="1.2" class="mr-1 clickableIcon" />
-                        </label>
-                        <b-icon-bicycle v-b-modal.addExerciseModal font-scale="1.2" class="mr-1 clickableIcon" />
-                        <b-icon-droplet v-b-modal.addWorkoutModal font-scale="1.2" class="mr-1 clickableIcon" />
-                        <b-icon-award v-b-modal.addBurnModal font-scale="1.2" class="mr-1 clickableIcon" />
-                    </div>
-                    <div class="ml-auto">
-                        <b-button size="sm" variant="outline" @click="createPost">
-                            <span v-if="!isPosting">Post</span>
-                            <span v-else><b-spinner small /></span>
-                        </b-button>
-                    </div>
-                </div>
-            </b-card-text>
-        </b-card-body>
+        <b-form-textarea v-model="post.content" rows="3" no-resize placeholder="New post..."  />
+        <div class="d-flex mt-1 p-1" align-v="center">
+            <div>
+                <label for="file-input">
+                    <b-icon-card-image font-scale="1.2" class="mr-1 clickableIcon" />
+                </label>
+                <b-icon-bicycle v-b-modal.addExerciseModal font-scale="1.2" class="mr-1 clickableIcon" />
+                <b-icon-droplet v-b-modal.addWorkoutModal font-scale="1.2" class="mr-1 clickableIcon" />
+                <b-icon-award v-b-modal.addBurnModal font-scale="1.2" class="mr-1 clickableIcon" />
+            </div>
+            <div class="ml-auto">
+                <b-button size="sm" variant="outline" @click="createPost">
+                    <span v-if="!isPosting">Post</span>
+                    <span v-else><b-spinner small /></span>
+                </b-button>
+            </div>
+        </div>
 
         <b-modal id="addExerciseModal" centered title="Exercises" hide-footer button-size="sm">
             <ExerciseSearch @selectExercise="addExercise" />
@@ -51,7 +47,7 @@
         <b-modal id="addBurnModal" centered title="Burns" hide-footer buttons-size="sm">
             <BurnSearch @selectBurn="addBurn" />
         </b-modal>
-    </b-card>
+    </div>
 </template>
 
 <script>

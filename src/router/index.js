@@ -18,7 +18,9 @@ import ExerciseView from '@/views/Exercise/ExerciseView.vue'
 
 import Profile from '@/views/User/Profile.vue'
 
-import Workout from '@/views/Workout/Workout.vue'
+import Search from '@/views/Utility/Search.vue'
+
+// import Workout from '@/views/Workout/Workout.vue'
 import WorkoutDiscover from '@/views/Workout/WorkoutDiscover.vue'
 import WorkoutEdit from '@/views/Workout/WorkoutEdit.vue'
 import WorkoutFollowed from '@/views/Workout/WorkoutFollowed.vue'
@@ -33,14 +35,6 @@ const routes = [
         path: '/',
         name: 'Home',
         component: Home
-    },
-    {
-        path: '/about',
-        name: 'About',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
     },
     // EXERCISES
     {
@@ -89,24 +83,20 @@ const routes = [
     },
     // WORKOUTS
     {
-        path: '/workouts',
-        name: 'Workout',
-        component: Workout,
+        path: '/workouts/discover',
+        name: 'Discover Workouts',
+        component: WorkoutDiscover,
         meta: {
             requiresAuth: true
-        },
-        children: [
-            {
-                path: '/workouts/discover',
-                name: 'Discover Workouts',
-                component: WorkoutDiscover
-            },
-            {
-                path: '/workouts',
-                name: 'Followed Workouts',
-                component: WorkoutFollowed
-            }
-        ]
+        }
+    },
+    {
+        path: '/workouts',
+        name: 'Followed Workouts',
+        component: WorkoutFollowed,
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: '/workouts/new',
@@ -158,7 +148,15 @@ const routes = [
             },
         ]
     },
-
+    // SEARCH
+    {
+        path: '/search',
+        name: 'Search',
+        component: Search,
+        meta: {
+            requiresAuth: true
+        }
+    },
     // USER + 404
     {
         path: '/:profileid',

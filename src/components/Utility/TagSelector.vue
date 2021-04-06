@@ -5,7 +5,7 @@
         </div>
 
         <div class="dataListCont">
-            <b-form-input list="tagList" id="inputWithList" placeholder="Add up to 5 tags..." autocomplete="off" v-model="inputText" @select="dataListAdd" @keydown="detectEnter"></b-form-input>
+            <b-form-input list="tagList" id="inputWithList" placeholder="Add up to 5 tags..." autocomplete="off" v-model="inputText" @select="dataListAdd" @keydown="detectEnter" size="sm"></b-form-input>
             <b-form-datalist id="tagList" :options="tagOptions"></b-form-datalist>
         </div>
     </div>
