@@ -123,7 +123,7 @@ export default {
         removeExercise: function() {
             this.$emit("removeExercise", this.$props.exercise.uid)
         }
-    }
+    },
 }
 </script>
 

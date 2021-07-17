@@ -7,7 +7,7 @@
                     - Links to Home, New, Discover
                     - Filter by (tags)
                 -->
-                <b-container>
+                <div>
                     <b-card class="navCard" no-body>
                         <b-list-group>
                             <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
@@ -42,7 +42,7 @@
                             </div>
                         </b-card-body>
                     </b-card>
-                </b-container>
+                </div>
             </b-col>
             <b-col sm="6">
                 <b-container>
@@ -68,6 +68,11 @@
                 <!-- 
                     Ads here.
                  -->
+                 <div class="adTestCont">
+                    <div class="adTest bg-warning text-center">
+                        Workout Home Ad Here.
+                    </div>
+                 </div>
             </b-col>
         </b-row>
     </b-container>
@@ -199,5 +204,19 @@ export default {
 .navCard,
 .workoutFeed {
     margin-top: 40px;
+}
+
+.adTestCont {
+    height: 1000px;
+}
+
+.adTest {
+    position: sticky;
+    top: 100px;
+    height: 250px;
+    width: 300px;
+    padding: 0;
+    margin-top: 40px;
+    line-height: 250px
 }
 </style>

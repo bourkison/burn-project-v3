@@ -36,6 +36,10 @@
                 <b-input-group>
                     <b-form-input id="passwordInput" v-model="signUpForm.password" type="password" placeholder="Password" required />
                     <b-form-input id="confPasswordInput" v-model="signUpForm.confPassword" type="password" placeholder="Confirm Password" required />
+                    <b-input-group-append>
+                        <b-button v-if="signUpForm.password === signUpForm.confPassword && signUpForm.password.length >= 8" variant="success" disabled><b-icon-check /></b-button>
+                        <b-button v-else variant="danger" disabled><b-icon-x /></b-button>
+                    </b-input-group-append>
                 </b-input-group>
             </b-form-group>
 

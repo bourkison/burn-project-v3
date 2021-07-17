@@ -39,7 +39,7 @@
                 </b-carousel>
             </div>
             <div v-else-if="imgUrls.length > 0">
-                <img :src="imgUrls[0]" />
+                <img class="w-100" :src="imgUrls[0]" />
             </div>
 
             <b-card-body>

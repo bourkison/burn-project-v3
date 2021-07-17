@@ -14,7 +14,7 @@
                 </b-card-body>
             </b-card>
             <div class="exercisesCont sortableContainer mb-2">
-                <ExerciseRecorder v-for="exercise in burn.exercises" :key="exercise.uid" @addSet="addSet" @removeSet="removeSet" @removeExercise="removeExercise" :exercise="exercise" :previousExercise="relevantPreviousBurn(exercise.uid)" />
+                <ExerciseRecorder v-for="exercise in burn.exercises" :key="exercise.uid" @addSet="addSet" @removeSet="removeSet" @removeExercise="removeExercise" :exercise="exercise" :previousExercise="relevantPreviousExercise(exercise.uid)" />
             </div>
             <b-card no-body class="mb-4">
                 <b-card-body>
@@ -182,6 +182,14 @@ export default {
                     this.burn.exercises.forEach(exercise => {
                         exercise.uid = this.generateId(16);
                         exercise.notes = "";
+
+                        if (!exercise.sets) {
+                            this.$set(exercise, 'sets', [{
+                                kg: 0, 
+                                measureAmount: 0, 
+                                measureBy: "Reps"
+                            }]);
+                        }
                     })
 
                     // Check if user has done this workout before (so we can populate previousBurn).
@@ -237,6 +245,11 @@ export default {
                     } else {
                         // User hasn't done this burn before.
                         this.previousBurn = JSON.parse(JSON.stringify(this.burn));
+
+                        this.previousBurn.exercises.forEach(exercise => {
+                            exercise.sets = [];
+                        })
+
                         console.log("User hasn't done this workout.");
                     }
 
@@ -246,7 +259,6 @@ export default {
                 promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").doc(this.$route.query.b).get()
                 .then(burnDoc => {
                     const data = burnDoc.data();
-                    const data2 = burnDoc.data();
 
                     this.burn = {
                         exercises: data.exercises,
@@ -258,27 +270,13 @@ export default {
                         notes: data.notes
                     },
 
-                    this.previousBurn = {
-                        exercises: data2.exercises,
-                        workout: {
-                            id: data2.workout.id,
-                            name: data2.workout.name
-                        },
-                        name: data2.name,
-                        duration: data2.duration,
-                        notes: data2.notes
-                    }
-
                     // Generate a unique ID for each exercise (for the keys).
                     // As we may have multiple of the same exercise, can not use ID as key.
                     this.burn.exercises.forEach(exercise => {
                         exercise.uid = this.generateId(16);
                     })
 
-                    this.previousBurn.exercises.forEach(exercise => {
-                        exercise.uid = this.generateId(16);
-                    })
-
+                    this.previousBurn = JSON.parse(JSON.stringify(this.burn));
                     this.emptyBurn = false;
                 }))
             } else {
@@ -326,9 +324,33 @@ export default {
                     kg: 0,
                     measureAmount: 0,
                     measureBy: exercise.measureBy
-                }],
-                uid: this.generateId(16)
+                }]
             })
+
+            // Match up with previousBurn UID (if applicable, else generate new one).
+
+            // Pull the index of every occurence of this exercise within current burn (will include this newly created one).
+            const burnMatchingExercises = this.burn.exercises.filter(x => x.id === exercise.id);
+
+            // Now pull all UIDs from previous burn of this exercise.
+            const prevBurnMatchingExerciseUIDs = this.previousBurn.exercises.filter(x => x.id === exercise.id).map(x => x.uid);
+
+            if (burnMatchingExercises.length > prevBurnMatchingExerciseUIDs.length) {
+                this.burn.exercises[this.burn.exercises.length - 1].uid = this.generateId(16);
+            } else {
+                // Check if this UID is in place.
+                let uidSet = false;
+                prevBurnMatchingExerciseUIDs.forEach(uid => {
+                    console.log("CHECKING ID:", uid, !burnMatchingExercises.some(x => x.uid === uid), uidSet);
+                    if (!burnMatchingExercises.some(x => x.uid === uid) && !uidSet) {
+                        console.log("Changing");
+                        this.burn.exercises[this.burn.exercises.length - 1].uid = uid;
+                        uidSet = true;
+                    }
+                })
+            }
+
+            console.log("BURN MATCH:", burnMatchingExercises, "PREV UIDs:", prevBurnMatchingExerciseUIDs);
 
             this.$bvModal.hide("searchExerciseModal");
         },
@@ -436,7 +458,7 @@ export default {
             }
         },
 
-        relevantPreviousBurn: function(uid) {
+        relevantPreviousExercise: function(uid) {
             let temp = this.previousBurn.exercises.filter(x => x.uid === uid)
 
             if (temp.length > 0) {

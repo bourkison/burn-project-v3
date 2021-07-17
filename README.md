@@ -22,3 +22,18 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## TODO
+
+### General
+* VideoJS support
+* Mobile CSS
+
+### Homepage
+* Statistics on left side.
+    * Weekly workouts
+
+
+### Post
+* Post Edit, Delete
+* Post New Icons

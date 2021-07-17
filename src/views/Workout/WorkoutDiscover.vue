@@ -2,12 +2,7 @@
 <b-container>
         <b-row>
             <b-col sm="3">
-                <!-- 
-                    Add here: 
-                    - Links to Home, New, Discover
-                    - Filter by (tags)
-                -->
-                <b-container>
+                <div>
                     <b-card class="navCard" no-body>
                         <b-list-group>
                             <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
@@ -52,7 +47,7 @@
                             </div>
                         </b-card-body>
                     </b-card>
-                </b-container>
+                </div>
             </b-col>
             <b-col sm="6">
                 <b-container>

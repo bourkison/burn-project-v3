@@ -13,7 +13,11 @@
                 </b-container>
             </b-col>
             <b-col sm="3">
-
+                <div class="adTestCont">
+                    <div class="adTest bg-warning text-center">
+                        Homepage Ad Here.
+                    </div>
+                 </div>
             </b-col>
         </b-row>
     </b-container>
@@ -27,3 +31,19 @@ export default {
     components: { PostFeedHome }
 }
 </script>
+
+<style scoped>
+.adTestCont {
+    height: 1000px;
+}
+
+.adTest {
+    position: sticky;
+    top: 100px;
+    height: 250px;
+    width: 300px;
+    padding: 0;
+    margin-top: 40px;
+    line-height: 250px
+}
+</style>
