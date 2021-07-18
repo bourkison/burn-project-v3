@@ -7,42 +7,40 @@
                     - Links to Home, New, Discover
                     - Filter by (tags)
                 -->
-                <div>
-                    <b-card class="navCard" no-body>
-                        <b-list-group>
-                            <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
-                                <div class="d-flex align-items-center">
-                                    Workouts
-                                    <b-icon-house class="ml-auto" />
-                                </div>
-                            </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/workouts/discover" active-class="unset" exact-active-class="active">
-                                <div class="d-flex align-items-center">
-                                    Discover
-                                    <b-icon-search class="ml-auto"/>
-                                </div>
-                            </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/workouts/new" active-class="unset" exact-active-class="active">
-                                <div class="d-flex align-items-center">
-                                    New
-                                    <b-icon-plus class="ml-auto"/>
-                                </div>
-                            </b-list-group-item>
-                        </b-list-group>
-                    </b-card>
-
-                    <b-card class="navCard" no-body>
-                        <b-card-body>
-                            <b-card-title>Filters</b-card-title>
-
-                            <div>
-                                <h6>Username</h6>
-                                <!-- <b-form-radio-group class="w-100" buttons stacked button-variant="outline-primary" :options="[{text: 'All', value: 'all'}, {text: 'Created', value: 'created'}, {text: 'Followed', value: 'followed'}]" /> -->
-                                <UsernameFilter />
+                <b-card class="navCard" no-body>
+                    <b-list-group>
+                        <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
+                            <div class="d-flex align-items-center">
+                                Workouts
+                                <b-icon-house class="ml-auto" />
                             </div>
-                        </b-card-body>
-                    </b-card>
-                </div>
+                        </b-list-group-item>
+                        <b-list-group-item class="navItem" to="/workouts/discover" active-class="unset" exact-active-class="active">
+                            <div class="d-flex align-items-center">
+                                Discover
+                                <b-icon-search class="ml-auto"/>
+                            </div>
+                        </b-list-group-item>
+                        <b-list-group-item class="navItem" to="/workouts/new" active-class="unset" exact-active-class="active">
+                            <div class="d-flex align-items-center">
+                                New
+                                <b-icon-plus class="ml-auto"/>
+                            </div>
+                        </b-list-group-item>
+                    </b-list-group>
+                </b-card>
+
+                <b-card class="navCard" no-body>
+                    <b-card-body>
+                        <b-card-title>Filters</b-card-title>
+
+                        <div>
+                            <h6>Username</h6>
+                            <!-- <b-form-radio-group class="w-100" buttons stacked button-variant="outline-primary" :options="[{text: 'All', value: 'all'}, {text: 'Created', value: 'created'}, {text: 'Followed', value: 'followed'}]" /> -->
+                            <UsernameFilter />
+                        </div>
+                    </b-card-body>
+                </b-card>
             </b-col>
             <b-col sm="6">
                 <b-container>

@@ -13,7 +13,6 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
 import BurnComponent from '@/components/Burn/BurnComponent'
 
 export default {
@@ -26,21 +25,14 @@ export default {
         }
     },
 
-    created: function() {
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").orderBy("createdAt", "desc").get()
-        .then(burnSnapshot => {
-            burnSnapshot.forEach(burn => {
-                const data = burn.data();
-                data.id = burn.id;
-                
-                this.burns.push(data);
-            })
+    created: async function() {
+        if (this.$store.state.userBurns === null) {
+            await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data)
+            .catch(e => { console.error(e) });
+        }
 
-            this.isLoading = false;
-        })
-        .catch(e => {
-            console.error(e);
-        })
+        this.burns = this.$store.state.userBurns;
+        this.isLoading = false;
     }
 }
 </script>

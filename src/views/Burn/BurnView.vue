@@ -55,7 +55,7 @@ export default {
         }
     },
 
-    created: function() {
+    created: async function() {
         dayjs.extend(relativeTime);
         let promises = [];
 
@@ -80,6 +80,11 @@ export default {
         }))
 
         // Then get user burns from store.
+        if (this.$store.state.userBurns === null) {
+            await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data)
+            .catch(e => { console.error(e) });
+        }
+
         let uniqueNames = [];
         this.$store.state.userBurns.forEach(burn => {
             let b = burn;
@@ -89,24 +94,7 @@ export default {
                 this.userBurns.push(b);
                 uniqueNames.push(b.name);
             }
-
         })
-        
-        // promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").orderBy("createdAt", "desc").get()
-        // .then(burnSnapshot => {
-        //     let uniqueNames = [];
-
-        //     burnSnapshot.forEach(burn => {
-        //         let data = burn.data();
-        //         data.id = burn.id;
-
-        //         if (!uniqueNames.includes(data.name)) {
-        //             data.createdAtText = dayjs(dayjs.unix(data.createdAt.seconds)).fromNow();
-        //             this.userBurns.push(data);
-        //             uniqueNames.push(data.name);
-        //         }
-        //     })
-        // }))
 
         Promise.all(promises)
         .then(() => {

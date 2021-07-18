@@ -7,6 +7,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
+        burnPromises: [],
         userProfile: null,
         userBurns: null,
     },
@@ -17,6 +18,10 @@ export default new Vuex.Store({
 
         setLoggedInUserBurns: function(state, burns) {
             state.userBurns = burns;
+        },
+
+        setLoadingBurns: function(state, promises) {
+            state.burnPromises = promises;
         }
     },
     actions: {
@@ -41,19 +46,33 @@ export default new Vuex.Store({
             }
         },
 
-        // Fetch burns for all the 
+        // As this function may get callled multiple times from different components,
+        // Store the promise in an array to avoid loading it multiple times.
         async fetchBurns({ commit }, user) {
-            const burnSnapshot = await db.collection("users").doc(user.uid).collection("burns").orderBy("createdAt", "desc").get();
-            let burns = [];
-            if (burnSnapshot.size > 0) {
-                burnSnapshot.forEach(burn => {
-                    let d = burn.data();
-                    d.id = burn.id;
-                    burns.push(d);
+            if (this.state.burnPromises.length === 0) {
+                commit('setLoadingBurns', [db.collection("users").doc(user.uid).collection("burns").orderBy("createdAt", "desc").get()]);
+
+                return Promise.all(this.state.burnPromises)
+                .then(responses => {
+                    responses.forEach(burnSnapshot => {
+                        let burns = [];
+                        if (burnSnapshot.size > 0) {
+                            burnSnapshot.forEach(burn => {
+                                let d = burn.data();
+                                d.id = burn.id;
+                                burns.push(d);
+                            })
+                        }
+
+                        commit('setLoggedInUserBurns', burns);
+                        commit('setLoadingBurns', []);
+                    })
+                })
+            } else {
+                return Promise.all(this.state.burnPromises).then(() => {
+                    commit('setLoadingBurns', []);
                 })
             }
-
-            commit('setLoggedInUserBurns', burns);
         }
     },
     modules: {

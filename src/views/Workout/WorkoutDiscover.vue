@@ -2,52 +2,50 @@
 <b-container>
         <b-row>
             <b-col sm="3">
-                <div>
-                    <b-card class="navCard" no-body>
-                        <b-list-group>
-                            <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
-                                <div class="d-flex align-items-center">
-                                    Workouts
-                                    <b-icon-house class="ml-auto" />
-                                </div>
-                            </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/workouts/discover" active-class="unset" exact-active-class="active">
-                                <div class="d-flex align-items-center">
-                                    Discover
-                                    <b-icon-search class="ml-auto"/>
-                                </div>
-                            </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/workouts/new" active-class="unset" exact-active-class="active">
-                                <div class="d-flex align-items-center">
-                                    New
-                                    <b-icon-plus class="ml-auto"/>
-                                </div>
-                            </b-list-group-item>
-                        </b-list-group>
-                    </b-card>
-
-                    <b-card class="navCard" no-body>
-                        <b-card-body>
-                            <b-card-title>Filter By</b-card-title>
-
-                            <div>
-                                <div>
-                                    <h6>Username</h6>
-                                    <UsernameFilter />
-                                </div>
-                                <div class="mt-3">
-                                    <h6>Muscle Groups</h6>
-                                    <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
-                                </div>
-
-                                <div class="mt-3">
-                                    <h6>Tags</h6>
-                                    <TagSelector />
-                                </div>
+                <b-card class="navCard" no-body>
+                    <b-list-group>
+                        <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
+                            <div class="d-flex align-items-center">
+                                Workouts
+                                <b-icon-house class="ml-auto" />
                             </div>
-                        </b-card-body>
-                    </b-card>
-                </div>
+                        </b-list-group-item>
+                        <b-list-group-item class="navItem" to="/workouts/discover" active-class="unset" exact-active-class="active">
+                            <div class="d-flex align-items-center">
+                                Discover
+                                <b-icon-search class="ml-auto"/>
+                            </div>
+                        </b-list-group-item>
+                        <b-list-group-item class="navItem" to="/workouts/new" active-class="unset" exact-active-class="active">
+                            <div class="d-flex align-items-center">
+                                New
+                                <b-icon-plus class="ml-auto"/>
+                            </div>
+                        </b-list-group-item>
+                    </b-list-group>
+                </b-card>
+
+                <b-card class="navCard" no-body>
+                    <b-card-body>
+                        <b-card-title>Filter By</b-card-title>
+
+                        <div>
+                            <div>
+                                <h6>Username</h6>
+                                <UsernameFilter />
+                            </div>
+                            <div class="mt-3">
+                                <h6>Muscle Groups</h6>
+                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
+                            </div>
+
+                            <div class="mt-3">
+                                <h6>Tags</h6>
+                                <TagSelector />
+                            </div>
+                        </div>
+                    </b-card-body>
+                </b-card>
             </b-col>
             <b-col sm="6">
                 <b-container>
