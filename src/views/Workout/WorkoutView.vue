@@ -106,6 +106,11 @@ export default {
 
     created: function() {
         this.downloadWorkout();
+
+        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("workout.id", "==", this.$route.params.workoutid).get()
+        .then(workoutSnapshot => {
+            console.log("TEST:", workoutSnapshot.size);
+        })
     },
 
     beforeRouteUpdate: function(to, from, next) {

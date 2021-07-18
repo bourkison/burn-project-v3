@@ -25,7 +25,7 @@ export default new Vuex.Store({
         },
 
         pushBurnToUserBurns: function(state, burn) {
-            state.userBurns.push(burn);
+            state.userBurns.unshift(burn);
         }
     },
     actions: {

@@ -2,7 +2,7 @@
     <b-card no-body>
         <b-card-body>
             <div v-if="!isLoading">
-                <b-card-title><h5>{{ selectedExercise.name }} One Rep Max</h5></b-card-title>
+                <b-card-title><h6>{{ selectedExercise.name }} One Rep Max</h6></b-card-title>
                 <canvas id="oneRepMaxChart"></canvas>
             </div>
             <div v-else class="align-items text-center">
@@ -37,7 +37,8 @@ export default {
             // Chart.js
             delayed: false,
             chartLabels: [],
-            chartData: []
+            chartDataORM: [],
+            chartDataReps: [],
         }
     },
 
@@ -67,11 +68,21 @@ export default {
                 datasets: [
                     {
                         label: "One Rep Maximum",
-                        data: this.chartData,
+                        data: this.chartDataORM,
                         backgroundColor: "#007bff",
                         borderColor: "#007bff",
-                        lineTension: 0,
+                        lineTension: 0.25,
                         pointBackgroundColor: "#007bff",
+                        yAxisID: "y"
+                    },
+                    {
+                        label: "Total Reps",
+                        type: 'bar',
+                        data: this.chartDataReps,
+                        backgroundColor: "rgba(0, 123, 255, 0.5)",
+                        borderColor: "#007bff",
+                        pointBackgroundColor: "#007bff",
+                        yAxisID: "y1"
                     }
                 ]
             }
@@ -103,9 +114,16 @@ export default {
                         }
                     },
                     y: {
-                        suggestedMax: 4,
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
                         grid: {
-                            display: false
+                            drawOnChartArea: false
                         }
                     }
                 }
@@ -154,14 +172,18 @@ export default {
                 
                 // Calculate 1RM for every set and sort.
                 let ormArr = [];
+                let repsCounter = 0;
+
                 this.selectedExercise.data[i].sets.forEach(set => {
                     ormArr.push(this.calcORM(set.kg, set.measureAmount));
+                    repsCounter += set.measureAmount;
                 })
 
                 ormArr.sort((a, b) => { b - a });
 
                 // Push the highest.
-                this.chartData.push(ormArr[0]);
+                this.chartDataORM.push(ormArr[0]);
+                this.chartDataReps.push(repsCounter);
             }
 
             this.isLoading = false;
@@ -170,6 +192,8 @@ export default {
         calcORM: function(amount, reps) {
             if (reps >= 30) {
                 return amount / 0.50;
+            } else if (reps <= 0 || amount <= 0) {
+                return 0;
             }
 
             switch(reps) {

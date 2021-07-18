@@ -2,7 +2,7 @@
     <b-container class="profileCont">
         <b-row>
             <b-col cols="3">
-
+                <RecentWorkoutsChart :userId="profile.id" />
             </b-col>
 
             <b-col cols="6">
@@ -70,9 +70,11 @@ import { db, fv } from '@/firebase'
 import PostNew from '@/components/Post/PostNew.vue'
 import PostFeed from '@/components/Post/PostFeed.vue'
 
+import RecentWorkoutsChart from '@/components/Charts/RecentWorkoutsChart.vue'
+
 export default {
     name: 'ProfileView',
-    components: { PostFeed, PostNew },
+    components: { PostFeed, PostNew, RecentWorkoutsChart },
     props: {
         profile: {
             type: Object,

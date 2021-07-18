@@ -1,10 +1,13 @@
 <template>
     <b-card no-body>
         <b-card-body>
-            <b-card-title><h5>Workouts per Week</h5></b-card-title>
+            <b-card-title><h6>Workouts per Week</h6></b-card-title>
 
-            <div v-if="!isLoading">
+            <div v-if="!isLoading && recentWorkouts">
                 <canvas id="recentWorkoutsChart"></canvas>
+            </div>
+            <div v-else-if="!isLoading && !recentWorkouts" class="align-items text-center text-muted small-font mt-3">
+                No recent workouts!
             </div>
             <div v-else class="align-items text-center">
                 <b-spinner small />
@@ -29,6 +32,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            recentWorkouts: false,
             amountOfValues: 6,
             burnData: [],
 
@@ -39,36 +43,40 @@ export default {
         }
     },
 
-    mounted: async function() {
-        this.chartLabels = this.buildDayLabels();
-
-        if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
-             db.collection("users").doc(this.$props.userId).collection("burns").where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
-            .then(burnSnapshot => {
-                burnSnapshot.forEach(burnDoc => {
-                    this.burnData.push(burnDoc.data());
-                })
-
-                this.buildChartData();
-            })
-        } else {
-            if (this.$store.state.userBurns === null) {
-                await this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data);
-            }
-
-            this.burnData = this.$store.state.userBurns.filter(x => { 
-                if (dayjs(this.chartLabels[0]).isBefore(dayjs(x.createdAt.toDate()))) {
-                    return true
-                } else {
-                    return false;
-                }
-            })
-
-            this.buildChartData();
-        }
+    mounted: function() {
+        this.commenceBuild();
     },
 
     methods: {
+        commenceBuild: async function() {
+            this.chartLabels = this.buildDayLabels();
+
+            if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
+                db.collection("users").doc(this.$props.userId).collection("burns").where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
+                .then(burnSnapshot => {
+                    burnSnapshot.forEach(burnDoc => {
+                        this.burnData.push(burnDoc.data());
+                    })
+
+                    this.buildChartData();
+                })
+            } else {
+                if (this.$store.state.userBurns === null) {
+                    await this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data);
+                }
+
+                this.burnData = this.$store.state.userBurns.filter(x => { 
+                    if (dayjs(this.chartLabels[0]).isBefore(dayjs(x.createdAt.toDate()))) {
+                        return true
+                    } else {
+                        return false;
+                    }
+                })
+
+                this.buildChartData();
+            }
+        },
+
         buildChart: function() {
             Chart.register(...registerables);
             let ctx = this.$el.querySelector("#recentWorkoutsChart");
@@ -136,10 +144,12 @@ export default {
             let arrayOfDates = [];
             let mondayThisWeek;
 
-            if (dayjs().day() === 0) {
-                mondayThisWeek = dayjs().subtract(1, 'week').day(1);
+            let today = dayjs().set('second', 0).set('minute', 0).set('hour', 0);
+
+            if (today.day() === 0) {
+                mondayThisWeek = today.subtract(1, 'week').day(1);
             } else {
-                mondayThisWeek = dayjs().day(1);
+                mondayThisWeek = today.day(1);
             }
 
             for (let i = this.amountOfValues - 1; i >= 0; i --) {
@@ -167,8 +177,29 @@ export default {
                 this.chartLabels[i] = dayjs(label).format("DD-MM");
             })
 
+            this.chartData.forEach(week => {
+                if (week > 0) {
+                    this.recentWorkouts = true;
+                }
+            })
+
             this.isLoading = false;
-            this.$nextTick(() => { this.buildChart() });
+
+            if (this.recentWorkouts) {
+                this.$nextTick(() => { this.buildChart() });
+            }
+        }
+    },
+
+    watch: {
+        userId: function() {
+            this.isLoading = true;
+            this.burnData = [];
+            this.delayed = false;
+            this.chartLabels = [];
+            this.chartData = [];
+            console.log("RESET");
+            this.$nextTick(() => { this.commenceBuild() });
         }
     }
 }
@@ -177,5 +208,9 @@ export default {
 <style scoped>
     .align-items {
         align-items: center !important;
+    }
+
+    .small-font {
+        font-size: 12px !important;
     }
 </style>

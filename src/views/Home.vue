@@ -2,6 +2,7 @@
     <b-container>
         <b-row>
             <b-col sm="3">
+                <QuickStart class="quickStart" />
                 <RecentWorkoutsChart class="recentWorkoutsChart" :userId="$store.state.userProfile.data.uid" />
                 <OneRepMaxExerciseChart class="oneRepMaxExerciseChart" :exercisePosition="0" :userId="$store.state.userProfile.data.uid" />
             </b-col>
@@ -25,13 +26,14 @@
 </template>
 
 <script>
+import QuickStart from '@/components/Utility/QuickStart.vue'
 import PostFeedHome from '@/components/Post/PostFeedHome.vue'
 import RecentWorkoutsChart from '@/components/Charts/RecentWorkoutsChart.vue'
 import OneRepMaxExerciseChart from '@/components/Charts/OneRepMaxExerciseChart.vue'
 
 export default {
     name: 'Home',
-    components: { OneRepMaxExerciseChart, PostFeedHome, RecentWorkoutsChart }
+    components: { OneRepMaxExerciseChart, PostFeedHome, RecentWorkoutsChart, QuickStart }
 }
 </script>
 
@@ -50,6 +52,7 @@ export default {
     line-height: 250px
 }
 
+.quickStart,
 .recentWorkoutsChart,
 .oneRepMaxExerciseChart {
     margin-top: 25px;

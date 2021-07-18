@@ -32,7 +32,7 @@
                     </b-list-group>
                 </div>
             </div>
-            <div v-else-if="!isLoading && !searchText">
+            <div v-else-if="!isLoading && !searchText.trim()">
                 <span><em>Search for users, exercises or workouts!</em></span>
             </div>
             <div v-else>
@@ -106,7 +106,7 @@ export default {
             this.exerciseResponses = [];
             this.workoutResponses = [];
 
-            if (this.searchText) {
+            if (this.searchText.trim()) {
                 searchPromises.push(this.userIndex.search(this.searchText).then(responses => {
                     responses.hits.forEach(hit => {
                         this.userResponses.push(hit);
