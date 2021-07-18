@@ -67,7 +67,7 @@
         <b-modal id="endWorkoutModal"
             centered
             @ok="uploadWorkout"
-            @hide="cancelFinish"
+            @hide ="cancelFinish"
             ok-title="Finish"
             ok-variant="success"
             cancel-title="Go Back"
@@ -420,7 +420,10 @@ export default {
 
             // Upload the burn.
             db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").add(payload)
-            .then(() => {
+            .then(d => {
+                console.log("BURN UPLOADED", d);
+                payload.id = d.id
+                this.$store.commit('pushBurnToUserBurns', payload);
                 this.$router.push("/burn/recent");
             })
             .catch(e => {
@@ -428,10 +431,12 @@ export default {
             })
         },
 
-        cancelFinish: function() {
-            this.isFinishing = false;
-            this.finishTime = 0;
-            this.timerCount();
+        cancelFinish: function(e) {
+            if (e.trigger !== "ok") {
+                this.isFinishing = false;
+                this.finishTime = 0;
+                this.timerCount();
+            }
         },
 
         timerCount: function() {

@@ -25,7 +25,7 @@
                     </b-list-group>
                 </b-card>
 
-                <RecentWorkoutsChart :userId="$store.state.userProfile.data.uid" />
+                <RecentWorkoutsChart class="recentWorkoutsChart" :userId="$store.state.userProfile.data.uid" />
             </b-col>
 
             <b-col sm="6">
@@ -33,7 +33,8 @@
             </b-col>
 
             <b-col sm="3">
-                <!--  -->
+                <OneRepMaxExerciseChart class="firstOneRepMaxExerciseChart" :exercisePosition="0" :userId="$store.state.userProfile.data.uid" />
+                <OneRepMaxExerciseChart class="oneRepMaxExerciseChart" :exercisePosition="1" :userId="$store.state.userProfile.data.uid" />
             </b-col>
         </b-row>
     </b-container>
@@ -41,19 +42,23 @@
 
 <script>
 import RecentWorkoutsChart from '@/components/Charts/RecentWorkoutsChart.vue'
+import OneRepMaxExerciseChart from '@/components/Charts/OneRepMaxExerciseChart.vue'
 
 export default {
     name: 'Burn',
-    components: { RecentWorkoutsChart }
+    components: { RecentWorkoutsChart, OneRepMaxExerciseChart }
 }
 </script>
 
 <style scoped>
-.navCard {
+.centerCol,
+.navCard,
+.firstOneRepMaxExerciseChart {
     margin-top: 40px;
 }
 
-.centerCol {
-    margin-top: 40px;
+.recentWorkoutsChart,
+.oneRepMaxExerciseChart {
+    margin-top: 25px;
 }
 </style>

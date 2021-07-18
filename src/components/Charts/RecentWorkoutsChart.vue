@@ -1,10 +1,10 @@
 <template>
-    <b-card class="homepageRecentWorkoutsCont" no-body>
+    <b-card no-body>
         <b-card-body>
             <b-card-title><h5>Workouts per Week</h5></b-card-title>
 
             <div v-if="!isLoading">
-                <canvas id="homepageRecentWorkouts"></canvas>
+                <canvas id="recentWorkoutsChart"></canvas>
             </div>
             <div v-else class="align-items text-center">
                 <b-spinner small />
@@ -39,7 +39,7 @@ export default {
         }
     },
 
-    mounted: function() {
+    mounted: async function() {
         this.chartLabels = this.buildDayLabels();
 
         if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
@@ -52,30 +52,26 @@ export default {
                 this.buildChartData();
             })
         } else {
-            let p = [];
             if (this.$store.state.userBurns === null) {
-                p.push(this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data))
+                await this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data);
             }
 
-            Promise.all(p)
-            .then(() => {
-                this.burnData = this.$store.state.userBurns.filter(x => { 
-                    if (dayjs(this.chartLabels[0]).isBefore(dayjs(x.createdAt.toDate()))) {
-                        return true
-                    } else {
-                        return false;
-                    }
-                })
-
-                this.buildChartData();
+            this.burnData = this.$store.state.userBurns.filter(x => { 
+                if (dayjs(this.chartLabels[0]).isBefore(dayjs(x.createdAt.toDate()))) {
+                    return true
+                } else {
+                    return false;
+                }
             })
+
+            this.buildChartData();
         }
     },
 
     methods: {
         buildChart: function() {
             Chart.register(...registerables);
-            let ctx = document.querySelector("#homepageRecentWorkouts");
+            let ctx = this.$el.querySelector("#recentWorkoutsChart");
             ctx.height = 400;
 
             let chartType = "bar";
@@ -92,7 +88,7 @@ export default {
                     }
                 ],
             };
-            var options = {
+            let options = {
                 animation: {
                     onComplete: () => {
                         this.delayed = true;
@@ -116,6 +112,7 @@ export default {
                             display: false
                         },
                         title: {
+                            display: true,
                             text: "Week Commencing"
                         }
                     },
@@ -178,10 +175,6 @@ export default {
 </script>
 
 <style scoped>
-    .homepageRecentWorkoutsCont {
-        margin-top: 25px;
-    }
-
     .align-items {
         align-items: center !important;
     }

@@ -22,6 +22,10 @@ export default new Vuex.Store({
 
         setLoadingBurns: function(state, promises) {
             state.burnPromises = promises;
+        },
+
+        pushBurnToUserBurns: function(state, burn) {
+            state.userBurns.push(burn);
         }
     },
     actions: {
@@ -48,7 +52,7 @@ export default new Vuex.Store({
 
         // As this function may get callled multiple times from different components,
         // Store the promise in an array to avoid loading it multiple times.
-        async fetchBurns({ commit }, user) {
+        fetchBurns: function({ commit }, user) {
             if (this.state.burnPromises.length === 0) {
                 commit('setLoadingBurns', [db.collection("users").doc(user.uid).collection("burns").orderBy("createdAt", "desc").get()]);
 
