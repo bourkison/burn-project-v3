@@ -25,6 +25,8 @@
                             </b-list-group-item>
                         </b-list-group>
                     </b-card>
+
+                    <RecentWorkoutsChart />
                 </b-container>
             </b-col>
 
@@ -40,8 +42,11 @@
 </template>
 
 <script>
+import RecentWorkoutsChart from '@/components/Charts/RecentWorkoutsChart.vue'
+
 export default {
     name: 'Burn',
+    components: { RecentWorkoutsChart }
 }
 </script>
 
