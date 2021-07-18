@@ -394,6 +394,7 @@ export default {
         uploadWorkout: function() {
             // Set the burn up correctly.
             let payload = JSON.parse(JSON.stringify(this.burn));
+            payload.exerciseIds = [];
 
             payload.exercises.forEach(exercise => {
                 exercise.sets.forEach(set => {
@@ -413,6 +414,10 @@ export default {
                 if (!exercise.notes) {
                     exercise.notes = "";
                 }
+
+                if (!payload.exerciseIds.includes(exercise.id)) {
+                    payload.exerciseIds.push(exercise.id);
+                }   
             })
 
             payload.createdAt = new Date();

@@ -1,65 +1,112 @@
 <template>
-    <b-card no-body>
-        <b-card-body>
-            <div v-if="!isLoading">
-                <b-card-title><h6>{{ selectedExercise.name }} One Rep Max</h6></b-card-title>
-                <canvas id="oneRepMaxChart"></canvas>
-            </div>
-            <div v-else class="align-items text-center">
-                <b-spinner small />
-            </div>
-        </b-card-body>
-    </b-card>
+    <div v-if="dataExists && !isLoading">
+        <canvas class="exerciseChart"></canvas>
+    </div>
+    <div v-else-if="isLoading">
+
+    </div>
+    <div v-else>
+
+    </div>
 </template>
 
 <script>
+// import { db } from '@/firebase'
 import dayjs from 'dayjs'
-import { Chart, registerables } from 'chart.js'
+import { Chart, registerables } from 'chart.js';
 
 export default {
-    name: 'OneRepMaxExerciseChart',
+    name: 'ExerciseChart',
     props: {
-        exercisePosition: {
-            type: Number,
-            required: true
-        },
-        userId: {
+        exerciseId: {
             type: String,
             required: true
         }
     },
     data() {
         return {
-            amountInChart: 8,
             isLoading: true,
-            selectedExercise: null,
+            amountInChart: 8,
+            burnData: [],
+            exerciseData: [],
+            dataExists: true,
+
+            // DATA:
+            weightLiftedData: [],
+            ormData: [],
+            repsData: [],
 
             // Chart.js
-            delayed: false,
-            chartLabels: [],
-            chartDataORM: [],
-            chartDataReps: [],
+            chartLabels: []
         }
     },
 
-    mounted: async function() {
-        if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
-            console.log("Not loading 1RM chart for this user.")
-        } else {
-            if (this.$store.state.userBurns === null) {
-                await this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data);
-            }
-
-            this.buildChartData();
-            this.$nextTick (() => { this.buildChart() });
-        }
+    created: async function() {
+        await this.getBurns();
+        this.buildOrmData();
+        this.buildRepsData();
+        this.buildWeightLiftedData();
+        this.buildLabels();
+        this.$nextTick (() => { this.buildChart() });
     },
 
     methods: {
+        getBurns: async function() {
+            if (this.$store.state.userBurns == null) {
+                await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data);
+            }
+
+            this.burnData = this.$store.state.userBurns.filter(x => { 
+                if (x.exerciseIds && x.exerciseIds.includes(this.$props.exerciseId)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+
+            // Push all sets from burn into an array.
+            // Do this way as there may be more than one of the same exercise within a burn.
+            this.burnData.forEach(burn => {
+                let exerciseArr = [];
+                burn.exercises.forEach(exercise => {
+                    if (exercise.id === this.$props.exerciseId) {
+                        console.log("EX:", exercise)
+                        exercise.sets.forEach(set => {
+                            exerciseArr.push(set);
+                        })
+                    }
+                })
+                this.exerciseData.push(exerciseArr);
+            })
+
+            this.dataExists = true;
+            this.isLoading = false;
+
+            // if (this.burnData.length < this.amountInChart) {
+            //     console.log(this.$props.exerciseId);
+            //     const burnSnapshot = await db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("exerciseIds", "array-contains", this.$props.exerciseId).orderBy("createdAt").limit(this.amountInChart).get();
+                
+            //     if (burnSnapshot.size > 0) {
+            //         burnSnapshot.forEach(burnDoc => {
+            //             this.burnData.push(burnDoc.data());
+            //         })
+            //     } else {
+            //         this.dataExists = false;
+            //     }
+            // } else {
+            //     this.dataExists = true;
+            // }
+        },
+
+        buildLabels: function() {
+            this.burnData.forEach(burn => {
+                this.chartLabels.push(dayjs(burn.createdAt.toDate()).format("DD-MM"));
+            })
+        },
+
         buildChart: function() {
             Chart.register(...registerables);
-            console.log(this.$el.querySelector("canvas"));
-            let ctx = this.$el.querySelector("#oneRepMaxChart");
+            let ctx = this.$el.querySelector(".exerciseChart");
             ctx.height = 300;
 
             let chartType = "line";
@@ -68,7 +115,7 @@ export default {
                 datasets: [
                     {
                         label: "One Rep Maximum",
-                        data: this.chartDataORM,
+                        data: this.ormData,
                         backgroundColor: "#007bff",
                         borderColor: "#007bff",
                         lineTension: 0.25,
@@ -78,7 +125,7 @@ export default {
                     {
                         label: "Total Reps",
                         type: 'bar',
-                        data: this.chartDataReps,
+                        data: this.repsData,
                         backgroundColor: "rgba(0, 123, 255, 0.5)",
                         borderColor: "#007bff",
                         pointBackgroundColor: "#007bff",
@@ -138,60 +185,41 @@ export default {
             const chart = new Chart(ctx, { type: chartType, data: chartData, options: options })
         },
 
-        buildChartData: function() {
-            let exerciseData = [];
+        buildWeightLiftedData: function() {
+            this.exerciseData.forEach(exercise => {
+                let weightLifted = 0;
 
-            // Group exercises rather than burns.
-            this.$store.state.userBurns.forEach(burn => {
-                burn.exercises.forEach(exercise => {
-                    if (exerciseData[exercise.id]) {
-                        exerciseData[exercise.id].push(exercise);
-                        exerciseData[exercise.id][exerciseData[exercise.id].length - 1].createdAt = burn.createdAt.toDate();
-                    } else {
-                        exerciseData[exercise.id] = [exercise];
-                        exerciseData[exercise.id][0].createdAt = burn.createdAt.toDate();
-                    }
+                exercise.forEach(set => {
+                    weightLifted += set.measureAmount * set.kg;
                 })
+
+                this.weightLiftedData.push(weightLifted);
             })
+        },
 
-            exerciseData = Object.entries(exerciseData);
-
-            // Now sort by amount done.
-            exerciseData.sort((a, b) => {
-                return b[1].length - a[1].length;
-            })
-
-            console.log(exerciseData);
-            this.selectedExercise = {
-                id: exerciseData[this.$props.exercisePosition][0],
-                name: exerciseData[this.$props.exercisePosition][1][0].name,
-                data: exerciseData[this.$props.exercisePosition][1]
-            }
-
-            if (this.amountInChart > this.selectedExercise.data.length) {
-                this.amountInChart = this.selectedExercise.data.length;
-            }
-
-            for (let i = this.amountInChart - 1; i >= 0; i --) {
-                this.chartLabels.push(dayjs(this.selectedExercise.data[i].createdAt).format("DD-MM"));
-                
-                // Calculate 1RM for every set and sort.
+        buildOrmData: function() {
+            this.exerciseData.forEach(exercise => {
                 let ormArr = [];
-                let repsCounter = 0;
 
-                this.selectedExercise.data[i].sets.forEach(set => {
-                    ormArr.push(this.calcORM(set.kg, set.measureAmount));
-                    repsCounter += set.measureAmount;
+                exercise.forEach(set => {
+                    ormArr.push(this.calcORM(set.kg, set.measureAmount))
                 })
 
                 ormArr.sort((a, b) => { b - a });
+                this.ormData.push(ormArr[0]);
+            })
+        },
 
-                // Push the highest.
-                this.chartDataORM.push(ormArr[0]);
-                this.chartDataReps.push(repsCounter);
-            }
+        buildRepsData: function() {
+            this.exerciseData.forEach(exercise => {
+                let totalReps = 0;
 
-            this.isLoading = false;
+                exercise.forEach(set => {
+                    totalReps += set.measureAmount;
+                })
+
+                this.repsData.push(totalReps);
+            })
         },
 
         calcORM: function(amount, reps) {
@@ -265,9 +293,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-    .align-items {
-        align-items: center !important;
-    }
-</style>

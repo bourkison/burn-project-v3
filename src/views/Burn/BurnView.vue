@@ -81,8 +81,7 @@ export default {
 
         // Then get user burns from store.
         if (this.$store.state.userBurns === null) {
-            await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data)
-            .catch(e => { console.error(e) });
+            await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data).catch(e => { console.error(e) });
         }
 
         let uniqueNames = [];

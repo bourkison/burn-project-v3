@@ -10,8 +10,6 @@
             <b-form-input list="muscleGroupList" id="inputWithList" placeholder="Select muscle groups..." autocomplete="off" size="sm" v-model="inputText" @select="datalistAdd"></b-form-input>
             <b-form-datalist id="muscleGroupList" :options="availableMuscleGroups"></b-form-datalist>
         </div>
-
-        
     </div>
 </template>
 

@@ -75,6 +75,14 @@
                             </b-card-text>
                         </b-card-body>
                     </b-card>
+
+                    <b-card no-body class="performanceChart">
+                        <b-card-body>
+                            <b-card-title>Your Performance</b-card-title>
+
+                            <ExerciseChart :exerciseId="exerciseData.id" />
+                        </b-card-body>
+                    </b-card>
                 </b-container>
             </b-col>
         </b-row>
@@ -95,11 +103,12 @@ import { Viewer } from '@toast-ui/vue-editor'
 import { db, storage } from '@/firebase'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
+import ExerciseChart from '@/components/Charts/ExerciseChart.vue'
 import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
 
 export default {
     name: 'ExerciseView',
-    components: { CommentSection, MuscleGroup, Viewer },
+    components: { CommentSection, MuscleGroup, Viewer, ExerciseChart },
     data() {
         return {
             isLoading: true,
@@ -167,7 +176,8 @@ export default {
 </script>
 
 <style>
-.exerciseCard {
+.exerciseCard,
+.performanceChart {
     margin-top: 20px;
 }
 
