@@ -79,22 +79,34 @@ export default {
             })
         }))
 
-        // Then download user burns.
-        promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").orderBy("createdAt", "desc").get()
-        .then(burnSnapshot => {
-            let uniqueNames = [];
+        // Then get user burns from store.
+        let uniqueNames = [];
+        this.$store.state.userBurns.forEach(burn => {
+            let b = burn;
 
-            burnSnapshot.forEach(burn => {
-                let data = burn.data();
-                data.id = burn.id;
+            if (!uniqueNames.includes(b.name)) {
+                b.createdAtText = dayjs(dayjs.unix(b.createdAt.seconds)).fromNow();
+                this.userBurns.push(b);
+                uniqueNames.push(b.name);
+            }
 
-                if (!uniqueNames.includes(data.name)) {
-                    data.createdAtText = dayjs(dayjs.unix(data.createdAt.seconds)).fromNow();
-                    this.userBurns.push(data);
-                    uniqueNames.push(data.name);
-                }
-            })
-        }))
+        })
+        
+        // promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").orderBy("createdAt", "desc").get()
+        // .then(burnSnapshot => {
+        //     let uniqueNames = [];
+
+        //     burnSnapshot.forEach(burn => {
+        //         let data = burn.data();
+        //         data.id = burn.id;
+
+        //         if (!uniqueNames.includes(data.name)) {
+        //             data.createdAtText = dayjs(dayjs.unix(data.createdAt.seconds)).fromNow();
+        //             this.userBurns.push(data);
+        //             uniqueNames.push(data.name);
+        //         }
+        //     })
+        // }))
 
         Promise.all(promises)
         .then(() => {

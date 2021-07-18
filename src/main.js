@@ -16,11 +16,11 @@ Vue.use(BootstrapVueIcons);
 Vue.config.productionTip = false
 
 new Vue({
-  router,
-  store,
-  render: h => h(App)
+    router,
+    store,
+    render: h => h(App)
 }).$mount('#app')
 
 auth.onAuthStateChanged(function(user) {
-  store.dispatch("fetchUser", user)
+    store.dispatch("fetchUser", user)
 })

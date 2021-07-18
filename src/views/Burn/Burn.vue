@@ -26,7 +26,7 @@
                         </b-list-group>
                     </b-card>
 
-                    <RecentWorkoutsChart />
+                    <RecentWorkoutsChart :userId="$store.state.userProfile.data.uid" />
                 </b-container>
             </b-col>
 

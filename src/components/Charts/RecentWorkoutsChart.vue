@@ -1,7 +1,7 @@
 <template>
     <b-card class="homepageRecentWorkoutsCont" no-body>
         <b-card-body>
-            <b-card-title><h5>Recent Workouts</h5></b-card-title>
+            <b-card-title><h5>Workouts per Week</h5></b-card-title>
 
             <div v-if="!isLoading">
                 <canvas id="homepageRecentWorkouts"></canvas>
@@ -20,10 +20,17 @@ import dayjs from 'dayjs'
 
 export default {
     name: 'RecentWorkoutsChart',
+    props: {
+        userId: {
+            type: String,
+            required: true
+        }
+    },
     data() {
         return {
             isLoading: true,
             amountOfValues: 6,
+            burnData: [],
 
             // Chart.js
             delayed: false,
@@ -34,35 +41,35 @@ export default {
 
     mounted: function() {
         this.chartLabels = this.buildDayLabels();
-        let burnData = [];
 
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
-        .then(burnSnapshot => {
-            burnSnapshot.forEach(burnDoc => {
-                burnData.push(burnDoc.data());
+        if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
+             db.collection("users").doc(this.$props.userId).collection("burns").where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
+            .then(burnSnapshot => {
+                burnSnapshot.forEach(burnDoc => {
+                    this.burnData.push(burnDoc.data());
+                })
+
+                this.buildChartData();
             })
+        } else {
+            let p = [];
+            if (this.$store.state.userBurns === null) {
+                p.push(this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data))
+            }
 
-            this.chartLabels.forEach((label, i) => {
-                let temp = burnData.filter(x => { 
-                    if (i !== this.chartLabels.length - 1) {
-                        if (dayjs(x.createdAt.toDate()).isAfter(dayjs(label)) && dayjs(x.createdAt.toDate()).isBefore(dayjs(this.chartLabels[i + 1]))) {
-                            return true;
-                        }
+            Promise.all(p)
+            .then(() => {
+                this.burnData = this.$store.state.userBurns.filter(x => { 
+                    if (dayjs(this.chartLabels[0]).isBefore(dayjs(x.createdAt.toDate()))) {
+                        return true
                     } else {
-                        if (dayjs(x.createdAt.toDate()).isAfter(dayjs(label))) {
-                            return true;
-                        }
+                        return false;
                     }
                 })
 
-                this.chartData.push(temp.length);
-                this.chartLabels[i] = dayjs(label).format("DD-MM");
+                this.buildChartData();
             })
-
-            console.log("LABELS:", this.chartLabels, "DATA", this.chartData);
-            this.isLoading = false;
-            this.$nextTick(() => { this.buildChart() });
-        })
+        }
     },
 
     methods: {
@@ -107,6 +114,9 @@ export default {
                     x: {
                         grid: {
                             display: false
+                        },
+                        title: {
+                            text: "Week Commencing"
                         }
                     },
                     y: {
@@ -140,6 +150,28 @@ export default {
             }
 
             return arrayOfDates;
+        },
+
+        buildChartData: function() {
+            this.chartLabels.forEach((label, i) => {
+                let temp = this.burnData.filter(x => { 
+                    if (i !== this.chartLabels.length - 1) {
+                        if (dayjs(x.createdAt.toDate()).isAfter(dayjs(label)) && dayjs(x.createdAt.toDate()).isBefore(dayjs(this.chartLabels[i + 1]))) {
+                            return true;
+                        }
+                    } else {
+                        if (dayjs(x.createdAt.toDate()).isAfter(dayjs(label))) {
+                            return true;
+                        }
+                    }
+                })
+
+                this.chartData.push(temp.length);
+                this.chartLabels[i] = dayjs(label).format("DD-MM");
+            })
+
+            this.isLoading = false;
+            this.$nextTick(() => { this.buildChart() });
         }
     }
 }
