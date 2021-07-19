@@ -39,10 +39,10 @@
                                 </div>
                             </b-col>
                             <b-col sm="3" class="p-0">
-                                <b-form-input type="text" v-model="set.kg" size="sm" placeholder="Kgs" style="width:100%;" class="text-center"></b-form-input>
+                                <b-form-input type="text" :value="set.kg" @input="setSetValue(index, 'kg', $event)" size="sm" placeholder="Kgs" style="width:100%;" class="text-center"></b-form-input>
                             </b-col>
                             <b-col sm="3" class="p-0">
-                                <b-form-input type="text" v-model="set.measureAmount" size="sm" placeholder="Reps" style="width:100%;" class="text-center"></b-form-input>
+                                <b-form-input type="text" :value="set.measureAmount" @input="setSetValue(index, 'measureAmount', $event)" size="sm" placeholder="Reps" style="width:100%;" class="text-center"></b-form-input>
                             </b-col>
                             <b-col sm="1" class="pl-2">
                                 <b-form-checkbox class="setCheck"></b-form-checkbox>
@@ -118,6 +118,11 @@ export default {
 
         removeSet: function() {
             this.$emit("removeSet", this.$props.exercise.uid);
+        },
+
+        setSetValue: function(index, key, e) {
+            console.log("EX REC", index, key, e);
+            this.$emit("setSetValue", this.$props.exercise.uid, index, key, e);
         },
 
         removeExercise: function() {
