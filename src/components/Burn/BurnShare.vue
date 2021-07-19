@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { userWorkoutsCollection } from '@/firebase'
 
 export default {
     name: 'BurnShare',
@@ -69,7 +69,7 @@ export default {
 
     methods: {
         downloadBurn: function() {
-            db.collection("users").doc(this.$props.userId).collection("burns").doc(this.$props.burnId).get()
+            userWorkoutsCollection().doc(this.$props.burnId).get()
             .then(burnDoc => {
                 this.burn = burnDoc.data();
                 this.burn.id = burnDoc.id;

@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { db, templatesCollection } from '@/firebase'
+import { templatesCollection, userWorkoutsCollection } from '@/firebase'
 import { Viewer } from '@toast-ui/vue-editor'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
@@ -107,7 +107,7 @@ export default {
     created: function() {
         this.downloadWorkout();
 
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("workout.id", "==", this.$route.params.workoutid).get()
+        userWorkoutsCollection().where("workout.id", "==", this.$route.params.workoutid).get()
         .then(workoutSnapshot => {
             console.log("TEST:", workoutSnapshot.size);
         })

@@ -11,7 +11,7 @@
 </template>
 
 <script>
-// import { db } from '@/firebase'
+// import { userWorkoutsCollection } from '@/firebase'
 import dayjs from 'dayjs'
 import { Chart, registerables } from 'chart.js';
 
@@ -84,7 +84,7 @@ export default {
 
             // if (this.burnData.length < this.amountInChart) {
             //     console.log(this.$props.exerciseId);
-            //     const burnSnapshot = await db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("exerciseIds", "array-contains", this.$props.exerciseId).orderBy("createdAt").limit(this.amountInChart).get();
+            //     const burnSnapshot = await userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("exerciseIds", "array-contains", this.$props.exerciseId).orderBy("createdAt").limit(this.amountInChart).get();
                 
             //     if (burnSnapshot.size > 0) {
             //         burnSnapshot.forEach(burnDoc => {

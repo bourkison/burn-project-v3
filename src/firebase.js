@@ -22,10 +22,13 @@ const fv = firebase.firestore.FieldValue;
 
 // Collections:
 const templatesCollection = () => {
-    return db.collection("templates");  
+    return db.collection("workouts");  
 }
 const userTemplatesCollection = (userId) => {
-    return db.collection("users").doc(userId).collection("templates");
+    return db.collection("users").doc(userId).collection("workouts");
+}
+const userWorkoutsCollection = (userId) => {
+    return db.collection("users").doc(userId).collection("burns")
 }
 
 // Set our functions region.
@@ -43,4 +46,4 @@ firebase.getCurrentUser = () => {
     })
 };
 
-export { db, auth, fv, storage, functions, templatesCollection, userTemplatesCollection }
+export { db, auth, fv, storage, functions, templatesCollection, userTemplatesCollection, userWorkoutsCollection }

@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { db, templatesCollection } from '@/firebase'
+import { templatesCollection, userWorkoutsCollection } from '@/firebase'
 import Sortable from 'sortablejs'
 
 import ExerciseRecorder from '@/components/Exercise/ExerciseRecorder.vue'
@@ -193,7 +193,7 @@ export default {
                     })
 
                     // Check if user has done this workout before (so we can populate previousBurn).
-                    return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").where("workout.id", "==", this.$route.query.w).orderBy("createdAt", "desc").limit(1).get()
+                    return userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("workout.id", "==", this.$route.query.w).orderBy("createdAt", "desc").limit(1).get()
                 })
                 .then(burnSnapshot => {
                     if (burnSnapshot.size > 0) {
@@ -256,7 +256,7 @@ export default {
                     this.emptyBurn = false;
                 }))
             } else if (this.$route.query.b) {
-                promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").doc(this.$route.query.b).get()
+                promises.push(userWorkoutsCollection(this.$store.state.userProfile.data.uid).doc(this.$route.query.b).get()
                 .then(burnDoc => {
                     const data = burnDoc.data();
 
@@ -424,7 +424,7 @@ export default {
             payload.duration = this.finishTime - this.startTime;
 
             // Upload the burn.
-            db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").add(payload)
+            userWorkoutsCollection(this.$store.state.userProfile.data.uid).add(payload)
             .then(d => {
                 console.log("BURN UPLOADED", d);
                 payload.id = d.id

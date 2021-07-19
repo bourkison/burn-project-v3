@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { userWorkoutsCollection } from '@/firebase'
 import { Chart, registerables } from 'chart.js'
 import dayjs from 'dayjs'
 
@@ -52,7 +52,7 @@ export default {
             this.chartLabels = this.buildDayLabels();
 
             if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
-                db.collection("users").doc(this.$props.userId).collection("burns").where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
+                userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
                 .then(burnSnapshot => {
                     burnSnapshot.forEach(burnDoc => {
                         this.burnData.push(burnDoc.data());

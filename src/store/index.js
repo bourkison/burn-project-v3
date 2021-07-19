@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { auth, db } from '../firebase'
+import { auth, db, userWorkoutsCollection } from '../firebase'
 import router from '../router'
 
 Vue.use(Vuex)
@@ -54,7 +54,7 @@ export default new Vuex.Store({
         // Store the promise in an array to avoid loading it multiple times.
         fetchBurns: function({ commit }, user) {
             if (this.state.burnPromises.length === 0) {
-                commit('setLoadingBurns', [db.collection("users").doc(user.uid).collection("burns").orderBy("createdAt", "desc").get()]);
+                commit('setLoadingBurns', [userWorkoutsCollection(user.uid).orderBy("createdAt", "desc").get()]);
 
                 return Promise.all(this.state.burnPromises)
                 .then(responses => {

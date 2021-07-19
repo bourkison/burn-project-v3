@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { userWorkoutsCollection } from '@/firebase'
 
 export default {
     name: 'BurnSearch',
@@ -32,7 +32,7 @@ export default {
     },
 
     created: function() {
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("burns").get()
+        userWorkoutsCollection(this.$store.state.userProfile.data.uid).get()
         .then(burnSnapshot => {
             // Only push most recent of each workout.
             let uniqueNames = [];
