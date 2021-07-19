@@ -27,7 +27,7 @@ export default {
         return {
             isLoading: true,
             amountInChart: 8,
-            burnData: [],
+            workoutData: [],
             exerciseData: [],
             dataExists: true,
 
@@ -42,7 +42,7 @@ export default {
     },
 
     created: async function() {
-        await this.getBurns();
+        await this.getWorkouts();
         this.buildOrmData();
         this.buildRepsData();
         this.buildWeightLiftedData();
@@ -51,12 +51,12 @@ export default {
     },
 
     methods: {
-        getBurns: async function() {
-            if (this.$store.state.userBurns == null) {
-                await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data);
+        getWorkouts: async function() {
+            if (this.$store.state.userWorkouts == null) {
+                await this.$store.dispatch('fetchWorkouts', this.$store.state.userProfile.data);
             }
 
-            this.burnData = this.$store.state.userBurns.filter(x => { 
+            this.workoutData = this.$store.state.userWorkouts.filter(x => { 
                 if (x.exerciseIds && x.exerciseIds.includes(this.$props.exerciseId)) {
                     return true;
                 } else {
@@ -64,11 +64,11 @@ export default {
                 }
             });
 
-            // Push all sets from burn into an array.
-            // Do this way as there may be more than one of the same exercise within a burn.
-            this.burnData.forEach(burn => {
+            // Push all sets from workout into an array.
+            // Do this way as there may be more than one of the same exercise within a workout.
+            this.workoutData.forEach(workout => {
                 let exerciseArr = [];
-                burn.exercises.forEach(exercise => {
+                workout.exercises.forEach(exercise => {
                     if (exercise.id === this.$props.exerciseId) {
                         console.log("EX:", exercise)
                         exercise.sets.forEach(set => {
@@ -82,13 +82,13 @@ export default {
             this.dataExists = true;
             this.isLoading = false;
 
-            // if (this.burnData.length < this.amountInChart) {
+            // if (this.workoutData.length < this.amountInChart) {
             //     console.log(this.$props.exerciseId);
-            //     const burnSnapshot = await userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("exerciseIds", "array-contains", this.$props.exerciseId).orderBy("createdAt").limit(this.amountInChart).get();
+            //     const workoutSnapshot = await userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("exerciseIds", "array-contains", this.$props.exerciseId).orderBy("createdAt").limit(this.amountInChart).get();
                 
-            //     if (burnSnapshot.size > 0) {
-            //         burnSnapshot.forEach(burnDoc => {
-            //             this.burnData.push(burnDoc.data());
+            //     if (workoutSnapshot.size > 0) {
+            //         workoutSnapshot.forEach(workoutDoc => {
+            //             this.workoutData.push(workoutDoc.data());
             //         })
             //     } else {
             //         this.dataExists = false;
@@ -99,8 +99,8 @@ export default {
         },
 
         buildLabels: function() {
-            this.burnData.forEach(burn => {
-                this.chartLabels.push(dayjs(burn.createdAt.toDate()).format("DD-MM"));
+            this.workoutData.forEach(workout => {
+                this.chartLabels.push(dayjs(workout.createdAt.toDate()).format("DD-MM"));
             })
         },
 

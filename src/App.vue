@@ -11,7 +11,7 @@
                     <b-navbar-nav>
                         <b-nav-item to="/exercises">Exercises</b-nav-item>
                         <b-nav-item to="/templates">Templates</b-nav-item>
-                        <b-nav-item to="/burn">Burns</b-nav-item>
+                        <b-nav-item to="/workout">Workouts</b-nav-item>
                         <MainSearch />
                         <!-- <b-nav-form>
                             <b-form-input ref="searchInput" size="sm" placeholder="Search"></b-form-input>

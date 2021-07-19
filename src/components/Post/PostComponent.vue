@@ -9,7 +9,7 @@
                     <span class="ml-1" v-if="postData.share.type">
                         <span v-if="postData.share.type == 'exercise'">&nbsp;shared an <router-link :to="'/exercises/'+ postData.share.id">exercise</router-link>.</span>
                         <span v-if="postData.share.type == 'template'">&nbsp;shared a <router-link :to="'/templates/'+ postData.share.id">template</router-link>.</span>
-                        <span v-if="postData.share.type == 'burn'">&nbsp;shared a burn.</span>
+                        <span v-if="postData.share.type == 'workout'">&nbsp;shared a workout.</span>
                     </span>
                 </div>
                 <div class="d-flex ml-auto text-muted centeredHeader">
@@ -53,8 +53,8 @@
                             <TemplateShare :templateId="postData.share.id" />
                         </div>
 
-                        <div v-else-if="postData.share.type == 'burn'">
-                            <BurnShare :burnId="postData.share.id" :userId="postData.createdBy.id" />
+                        <div v-else-if="postData.share.type == 'workout'">
+                            <WorkoutShare :workoutId="postData.share.id" :userId="postData.createdBy.id" />
                         </div>
                     </div>
                     {{ postData.content }}
@@ -76,7 +76,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
 
-import BurnShare from '@/components/Burn/BurnShare.vue'
+import WorkoutShare from '@/components/Workout/WorkoutShare.vue'
 import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
 import TemplateShare from '@/components/Template/TemplateShare.vue'
 
@@ -84,7 +84,7 @@ import { db, storage } from '@/firebase'
 
 export default {
     name: 'PostComponent',
-    components: { CommentSection, BurnShare, ExerciseShare, TemplateShare },
+    components: { CommentSection, WorkoutShare, ExerciseShare, TemplateShare },
     props: {
         postId: {
             required: true,

@@ -4,10 +4,10 @@ import firebase from 'firebase'
 
 import Home from '@/views/Home.vue'
 
-import Burn from '@/views/Burn/Burn.vue'
-import BurnNew from '@/views/Burn/BurnNew.vue'
-import BurnRecent from '@/views/Burn/BurnRecent.vue'
-import BurnView from '@/views/Burn/BurnView.vue'
+import Workout from '@/views/Workout/Workout.vue'
+import WorkoutNew from '@/views/Workout/WorkoutNew.vue'
+import WorkoutRecent from '@/views/Workout/WorkoutRecent.vue'
+import WorkoutView from '@/views/Workout/WorkoutView.vue'
 
 import Exercise from '@/views/Exercise/Exercise.vue'
 import ExerciseDiscover from '@/views/Exercise/ExerciseDiscover.vue'
@@ -122,29 +122,29 @@ const routes = [
             requiresAuth: true
         }
     },
-    // BURN
+    // WORKOUT
     {
-        path: '/burn',
-        name: 'Burn',
-        component: Burn,
+        path: '/workout',
+        name: 'Workout',
+        component: Workout,
         meta: {
             requiresAuth: true
         },
         children: [
             {
-                path: '/burn/new',
-                name: 'New Burn',
-                component: BurnNew
+                path: '/workout/new',
+                name: 'New Workout',
+                component: WorkoutNew
             },
             {
-                path: '/burn/recent',
-                name: 'BurnRecent',
-                component: BurnRecent,
+                path: '/workout/recent',
+                name: 'WorkoutRecent',
+                component: WorkoutRecent,
             },
             {
-                path: '/burn',
-                name: 'Burn View',
-                component: BurnView
+                path: '/workout',
+                name: 'Workout View',
+                component: WorkoutView
             },
         ]
     },

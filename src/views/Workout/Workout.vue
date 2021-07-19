@@ -4,21 +4,21 @@
             <b-col sm="3">
                 <b-card class="navCard" no-body>
                     <b-list-group>
-                        <b-list-group-item class="navItem" to="/burn" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/workout" active-class="unset" exact-active-class="active">
                             <div class="d-flex align-items-center">
-                                Burn
+                                Workout
                                 <b-icon-house class="ml-auto" />
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item class="navItem" to="/burn/recent" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/workout/recent" active-class="unset" exact-active-class="active">
                             <div class="d-flex align-items-center">
                                 Recent
                                 <b-icon-search class="ml-auto" />
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item class="navItem" to="/burn/new" active-class="active" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/workout/new" active-class="active" exact-active-class="active">
                             <div class="d-flex align-items-center">
-                                New Burn
+                                New Workout
                                 <b-icon-plus class="ml-auto" />
                             </div>
                         </b-list-group-item>
@@ -45,7 +45,7 @@ import RecentWorkoutsChart from '@/components/Charts/RecentWorkoutsChart.vue'
 import OneRepMaxExerciseChart from '@/components/Charts/OneRepMaxExerciseChart.vue'
 
 export default {
-    name: 'Burn',
+    name: 'Workout',
     components: { RecentWorkoutsChart, OneRepMaxExerciseChart }
 }
 </script>

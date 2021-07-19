@@ -46,8 +46,8 @@ export default {
         if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
             console.log("Not loading 1RM chart for this user.")
         } else {
-            if (this.$store.state.userBurns === null) {
-                await this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data);
+            if (this.$store.state.userWorkouts === null) {
+                await this.$store.dispatch("fetchWorkouts", this.$store.state.userProfile.data);
             }
 
             this.buildChartData();
@@ -141,15 +141,15 @@ export default {
         buildChartData: function() {
             let exerciseData = [];
 
-            // Group exercises rather than burns.
-            this.$store.state.userBurns.forEach(burn => {
-                burn.exercises.forEach(exercise => {
+            // Group exercises rather than workouts.
+            this.$store.state.userWorkouts.forEach(workout => {
+                workout.exercises.forEach(exercise => {
                     if (exerciseData[exercise.id]) {
                         exerciseData[exercise.id].push(exercise);
-                        exerciseData[exercise.id][exerciseData[exercise.id].length - 1].createdAt = burn.createdAt.toDate();
+                        exerciseData[exercise.id][exerciseData[exercise.id].length - 1].createdAt = workout.createdAt.toDate();
                     } else {
                         exerciseData[exercise.id] = [exercise];
-                        exerciseData[exercise.id][0].createdAt = burn.createdAt.toDate();
+                        exerciseData[exercise.id][0].createdAt = workout.createdAt.toDate();
                     }
                 })
             })

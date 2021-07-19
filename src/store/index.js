@@ -7,25 +7,25 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        burnPromises: [],
+        workoutPromises: [],
         userProfile: null,
-        userBurns: null,
+        userWorkouts: null,
     },
     mutations: {
         setLoggedInUser: function(state, user) {
             state.userProfile = user;
         },
 
-        setLoggedInUserBurns: function(state, burns) {
-            state.userBurns = burns;
+        setLoggedInUserWorkouts: function(state, workouts) {
+            state.userWorkouts = workouts;
         },
 
-        setLoadingBurns: function(state, promises) {
-            state.burnPromises = promises;
+        setLoadingWorkouts: function(state, promises) {
+            state.workoutPromises = promises;
         },
 
-        pushBurnToUserBurns: function(state, burn) {
-            state.userBurns.unshift(burn);
+        pushWorkoutToUserWorkouts: function(state, workout) {
+            state.userWorkouts.unshift(workout);
         }
     },
     actions: {
@@ -52,29 +52,29 @@ export default new Vuex.Store({
 
         // As this function may get callled multiple times from different components,
         // Store the promise in an array to avoid loading it multiple times.
-        fetchBurns: function({ commit }, user) {
-            if (this.state.burnPromises.length === 0) {
-                commit('setLoadingBurns', [userWorkoutsCollection(user.uid).orderBy("createdAt", "desc").get()]);
+        fetchWorkouts: function({ commit }, user) {
+            if (this.state.workoutPromises.length === 0) {
+                commit('setLoadingWorkouts', [userWorkoutsCollection(user.uid).orderBy("createdAt", "desc").get()]);
 
-                return Promise.all(this.state.burnPromises)
+                return Promise.all(this.state.workoutPromises)
                 .then(responses => {
-                    responses.forEach(burnSnapshot => {
-                        let burns = [];
-                        if (burnSnapshot.size > 0) {
-                            burnSnapshot.forEach(burn => {
-                                let d = burn.data();
-                                d.id = burn.id;
-                                burns.push(d);
+                    responses.forEach(workoutSnapshot => {
+                        let workouts = [];
+                        if (workoutSnapshot.size > 0) {
+                            workoutSnapshot.forEach(workout => {
+                                let d = workout.data();
+                                d.id = workout.id;
+                                workouts.push(d);
                             })
                         }
 
-                        commit('setLoggedInUserBurns', burns);
-                        commit('setLoadingBurns', []);
+                        commit('setLoggedInUserWorkouts', workouts);
+                        commit('setLoadingWorkouts', []);
                     })
                 })
             } else {
-                return Promise.all(this.state.burnPromises).then(() => {
-                    commit('setLoadingBurns', []);
+                return Promise.all(this.state.workoutPromises).then(() => {
+                    commit('setLoadingWorkouts', []);
                 })
             }
         }

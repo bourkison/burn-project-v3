@@ -2,16 +2,16 @@
     <b-container>
         <b-card no-body>
             <b-card-body v-if="!isLoading">
-                <b-card-title>Burns</b-card-title>
-                <b-form-input placeholder="Search for a burn or template..." v-model="searchText"></b-form-input>
+                <b-card-title>Workouts</b-card-title>
+                <b-form-input placeholder="Search for a workout or template..." v-model="searchText"></b-form-input>
                 <b-card-text>
                     <b-container class="mt-3">
-                        <div v-if="filteredBurns.length > 0">
-                            <h5>Recent Burns</h5>
+                        <div v-if="filteredWorkouts.length > 0">
+                            <h5>Recent Workouts</h5>
                             <b-list-group class="mt-2 mb-2">
-                                <b-list-group-item class="d-flex" align-v="center" :to="'/burn/new?b=' + burn.id" v-for="burn in filteredBurns" :key="burn.id">
-                                    <div>{{ burn.name }}</div>
-                                    <div class="ml-auto text-muted" style="font-size:12px;line-height:2;">{{ burn.createdAtText }}</div>
+                                <b-list-group-item class="d-flex" align-v="center" :to="'/workout/new?b=' + workout.id" v-for="workout in filteredWorkouts" :key="workout.id">
+                                    <div>{{ workout.name }}</div>
+                                    <div class="ml-auto text-muted" style="font-size:12px;line-height:2;">{{ workout.createdAtText }}</div>
                                 </b-list-group-item>
                             </b-list-group>
                         </div>
@@ -19,7 +19,7 @@
                         <div v-if="filteredTemplates.length > 0" class="mt-3">
                             <h5>Followed Templates</h5>
                             <b-list-group class="mt-2 mb-2">
-                                <b-list-group-item class="d-flex" align-v="center" :to="'/burn/new?w=' + template.id" v-for="template in filteredTemplates" :key="template.id">
+                                <b-list-group-item class="d-flex" align-v="center" :to="'/workout/new?w=' + template.id" v-for="template in filteredTemplates" :key="template.id">
                                     <div>{{ template.name }}</div>
                                     <div class="ml-auto text-muted" style="font-size:12px;line-height:2;">{{ template.createdBy.username }}</div>
                                 </b-list-group-item>
@@ -43,13 +43,13 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 export default {
-    name: 'BurnView',
+    name: 'WorkoutView',
     data() {
         return {
             isLoading: true,
 
             userTemplates: [],
-            userBurns: [],
+            userWorkouts: [],
 
             searchText: ''
         }
@@ -79,18 +79,18 @@ export default {
             })
         }))
 
-        // Then get user burns from store.
-        if (this.$store.state.userBurns === null) {
-            await this.$store.dispatch('fetchBurns', this.$store.state.userProfile.data).catch(e => { console.error(e) });
+        // Then get user workouts from store.
+        if (this.$store.state.userWorkouts === null) {
+            await this.$store.dispatch('fetchWorkouts', this.$store.state.userProfile.data).catch(e => { console.error(e) });
         }
 
         let uniqueNames = [];
-        this.$store.state.userBurns.forEach(burn => {
-            let b = burn;
+        this.$store.state.userWorkouts.forEach(workout => {
+            let b = workout;
 
             if (!uniqueNames.includes(b.name)) {
                 b.createdAtText = dayjs(dayjs.unix(b.createdAt.seconds)).fromNow();
-                this.userBurns.push(b);
+                this.userWorkouts.push(b);
                 uniqueNames.push(b.name);
             }
         })
@@ -98,19 +98,19 @@ export default {
         Promise.all(promises)
         .then(() => {
             this.isLoading = false;
-            console.log("Burns:", this.userBurns);
+            console.log("Workouts:", this.userWorkouts);
             console.log("Templates:", this.userTemplates);
         })
     },
 
     computed: {
-        filteredBurns: function() {
+        filteredWorkouts: function() {
             if (this.searchText) {
-                return this.userBurns.filter(recentBurn => {
-                    return recentBurn.name.toLowerCase().includes(this.searchText.toLowerCase());
+                return this.userWorkouts.filter(recentWorkout => {
+                    return recentWorkout.name.toLowerCase().includes(this.searchText.toLowerCase());
                 })
             } else {
-                return this.userBurns
+                return this.userWorkouts
             }
         },
 

@@ -1,12 +1,12 @@
 <template>
     <div>
-        <b-form-input v-model="searchText" placeholder="Search burns..." />
+        <b-form-input v-model="searchText" placeholder="Search workouts..." />
 
         <div v-if="!isLoading">
-            <div v-if="filteredBurns.length > 0" class="mt-3">
+            <div v-if="filteredWorkouts.length > 0" class="mt-3">
                 <b-list-group>
-                    <b-list-group-item class="d-flex" align-v="center" v-for="burn in filteredBurns" :key="burn.id" @click="selectBurn(burn)" href="#">
-                        <div>{{ burn.name }}</div>
+                    <b-list-group-item class="d-flex" align-v="center" v-for="workout in filteredWorkouts" :key="workout.id" @click="selectWorkout(workout)" href="#">
+                        <div>{{ workout.name }}</div>
                     </b-list-group-item>
                 </b-list-group>
             </div>
@@ -22,25 +22,25 @@
 import { userWorkoutsCollection } from '@/firebase'
 
 export default {
-    name: 'BurnSearch',
+    name: 'WorkoutSearch',
     data() {
         return {
             isLoading: true,
             searchText: '',
-            burns: []
+            workouts: []
         }
     },
 
     created: function() {
         userWorkoutsCollection(this.$store.state.userProfile.data.uid).get()
-        .then(burnSnapshot => {
+        .then(workoutSnapshot => {
             // Only push most recent of each workout.
             let uniqueNames = [];
-            burnSnapshot.forEach(burn => {
-                let data = burn.data();
+            workoutSnapshot.forEach(workout => {
+                let data = workout.data();
                 if (!uniqueNames.includes(data.name)) {
-                    data.id = burn.id;
-                    this.burns.push(data);
+                    data.id = workout.id;
+                    this.workouts.push(data);
                     uniqueNames.push(data.name)
                 }
             })
@@ -48,25 +48,25 @@ export default {
             this.isLoading = false;
         })
         .catch(e => {
-            console.error("Error downloading burns:", e);
+            console.error("Error downloading workouts:", e);
         })
     },
 
     computed: {
-        filteredBurns: function() {
+        filteredWorkouts: function() {
             if (this.searchText) {
-                return this.burns.filter(burn => {
-                    return burn.name.toLowerCase().includes(this.searchText.toLowerCase());
+                return this.workouts.filter(workout => {
+                    return workout.name.toLowerCase().includes(this.searchText.toLowerCase());
                 })
             } else {
-                return this.burns;
+                return this.workouts;
             }
         }
     },
 
     methods: {
-        selectBurn: function(burn) {
-            this.$emit("selectBurn", burn);
+        selectWorkout: function(workout) {
+            this.$emit("selectWorkout", workout);
         }
     }
 

@@ -34,7 +34,7 @@ export default {
             isLoading: true,
             recentWorkouts: false,
             amountOfValues: 6,
-            burnData: [],
+            workoutData: [],
 
             // Chart.js
             delayed: false,
@@ -53,19 +53,19 @@ export default {
 
             if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
                 userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("createdAt", ">=", this.chartLabels[0]).orderBy("createdAt").get()
-                .then(burnSnapshot => {
-                    burnSnapshot.forEach(burnDoc => {
-                        this.burnData.push(burnDoc.data());
+                .then(workoutSnapshot => {
+                    workoutSnapshot.forEach(workoutDoc => {
+                        this.workoutData.push(workoutDoc.data());
                     })
 
                     this.buildChartData();
                 })
             } else {
-                if (this.$store.state.userBurns === null) {
-                    await this.$store.dispatch("fetchBurns", this.$store.state.userProfile.data);
+                if (this.$store.state.userWorkouts === null) {
+                    await this.$store.dispatch("fetchWorkouts", this.$store.state.userProfile.data);
                 }
 
-                this.burnData = this.$store.state.userBurns.filter(x => { 
+                this.workoutData = this.$store.state.userWorkouts.filter(x => { 
                     if (dayjs(this.chartLabels[0]).isBefore(dayjs(x.createdAt.toDate()))) {
                         return true
                     } else {
@@ -161,7 +161,7 @@ export default {
 
         buildChartData: function() {
             this.chartLabels.forEach((label, i) => {
-                let temp = this.burnData.filter(x => { 
+                let temp = this.workoutData.filter(x => { 
                     if (i !== this.chartLabels.length - 1) {
                         if (dayjs(x.createdAt.toDate()).isAfter(dayjs(label)) && dayjs(x.createdAt.toDate()).isBefore(dayjs(this.chartLabels[i + 1]))) {
                             return true;
@@ -194,7 +194,7 @@ export default {
     watch: {
         userId: function() {
             this.isLoading = true;
-            this.burnData = [];
+            this.workoutData = [];
             this.delayed = false;
             this.chartLabels = [];
             this.chartData = [];

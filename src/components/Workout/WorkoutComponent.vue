@@ -2,7 +2,7 @@
     <b-card no-body>
         <b-card-body>
             <div class="d-flex" align-v="center">
-                <div><h5>{{ burn.name }}</h5></div>
+                <div><h5>{{ workout.name }}</h5></div>
                 <div class="ml-auto text-muted font-weight-light" align-v="center">
                     <span class="subs">{{ durationText }} | {{ createdAtText }}</span>
                 </div>
@@ -16,9 +16,9 @@
                     <b-col cols="3">Reps</b-col>
                 </b-row>
 
-                <div v-for="(exercise, index) in burn.exercises" :key="index">
+                <div v-for="(exercise, index) in workout.exercises" :key="index">
                     <b-row class="text-center mt-1">
-                        <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + burn.id + index">{{ exercise.sets.length }}</b-col>
+                        <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + workout.id + index">{{ exercise.sets.length }}</b-col>
 
                         <b-col cols="5">
                             <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
@@ -33,7 +33,7 @@
                         </b-col>
                     </b-row>
 
-                    <b-collapse :id="'setsCollapse-' + burn.id + index">
+                    <b-collapse :id="'setsCollapse-' + workout.id + index">
                         <b-row v-for="(set, index) in exercise.sets" :key="index" class="text-center mt-1 text-muted font-weight-light">
                             <b-col cols="1"></b-col>
                             <b-col cols="5">{{ index + 1 }}</b-col>
@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="text-center mt-3">
-                    <b-button class="ml-1" variant="outline-success" size="sm" :to="'/burn/new?b=' + burn.id">
+                    <b-button class="ml-1" variant="outline-success" size="sm" :to="'/workout/new?b=' + workout.id">
                         Start Workout
                         <b-icon-play />
                     </b-button>
@@ -59,9 +59,9 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 export default {
-    name: 'BurnComponent',
+    name: 'WorkoutComponent',
     props: {
-        burn: {
+        workout: {
             type: Object,
             required: true
         }
@@ -77,12 +77,12 @@ export default {
         dayjs.extend(relativeTime);
         
 
-        this.createdAtText = dayjs(dayjs.unix(this.$props.burn.createdAt.seconds)).fromNow();
+        this.createdAtText = dayjs(dayjs.unix(this.$props.workout.createdAt.seconds)).fromNow();
 
         // Duration text:
-        let hours = Math.floor((this.$props.burn.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
-        let minutes = (Math.floor((this.$props.burn.duration % (1000 * 60 * 60)) / (1000 * 60))).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
-        let seconds = (Math.floor((this.$props.burn.duration % (1000 * 60)) / 1000)).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+        let hours = Math.floor((this.$props.workout.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
+        let minutes = (Math.floor((this.$props.workout.duration % (1000 * 60 * 60)) / (1000 * 60))).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+        let seconds = (Math.floor((this.$props.workout.duration % (1000 * 60)) / 1000)).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
 
         if (!hours) {
             this.durationText = minutes + ":" + seconds;

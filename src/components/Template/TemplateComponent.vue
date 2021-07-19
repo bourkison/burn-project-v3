@@ -12,7 +12,7 @@
                 <Viewer :initialValue="templateData.description"/>
 
                 <div class="text-center">
-                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/burn/new?w=' + templateData.id">
+                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/workout/new?w=' + templateData.id">
                         Start Template
                         <b-icon-play />
                     </b-button>

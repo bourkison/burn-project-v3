@@ -8,9 +8,9 @@
                 <b-col cols="3">Reps</b-col>
             </b-row>
 
-            <div v-for="(exercise, index) in burn.exercises" :key="index">
+            <div v-for="(exercise, index) in workout.exercises" :key="index">
                 <b-row class="text-center mt-1">
-                    <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + burn.id + index">{{ exercise.sets.length }}</b-col>
+                    <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + workout.id + index">{{ exercise.sets.length }}</b-col>
 
                     <b-col cols="5">
                         <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
@@ -25,7 +25,7 @@
                     </b-col>
                 </b-row>
 
-                <b-collapse :id="'setsCollapse-' + burn.id + index">
+                <b-collapse :id="'setsCollapse-' + workout.id + index">
                     <b-row v-for="(set, index) in exercise.sets" :key="index" class="text-center mt-1 text-muted font-weight-light">
                         <b-col cols="1"></b-col>
                         <b-col cols="5">{{ index + 1 }}</b-col>
@@ -45,9 +45,9 @@
 import { userWorkoutsCollection } from '@/firebase'
 
 export default {
-    name: 'BurnShare',
+    name: 'WorkoutShare',
     props: {
-        burnId: {
+        workoutId: {
             type: String,
             required: true
         },
@@ -59,20 +59,20 @@ export default {
     data() {
         return {
             isLoading: true,
-            burn: {}
+            workout: {}
         }
     },
 
     created: function() {
-        this.downloadBurn();
+        this.downloadWorkout();
     },
 
     methods: {
-        downloadBurn: function() {
-            userWorkoutsCollection(this.$store.state.userProfile.data.uid).doc(this.$props.burnId).get()
-            .then(burnDoc => {
-                this.burn = burnDoc.data();
-                this.burn.id = burnDoc.id;
+        downloadWorkout: function() {
+            userWorkoutsCollection(this.$store.state.userProfile.data.uid).doc(this.$props.workoutId).get()
+            .then(workoutDoc => {
+                this.workout = workoutDoc.data();
+                this.workout.id = workoutDoc.id;
 
                 this.isLoading = false;
             })
@@ -80,8 +80,8 @@ export default {
     },
 
     watch: {
-        burnId: function() {
-            this.downloadBurn();
+        workoutId: function() {
+            this.downloadWorkout();
         }
     }
 }
