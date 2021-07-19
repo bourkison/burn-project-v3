@@ -54,6 +54,7 @@
             </b-navbar>
             <div>
                 <router-view/>
+                <WorkoutToast />
             </div>
         </div>
         <div v-else>
@@ -72,8 +73,10 @@ import SignUpForm from '@/components/Auth/SignUpForm.vue'
 
 import MainSearch from '@/components/Search/MainSearch.vue'
 
+import WorkoutToast from '@/components/Workout/WorkoutToast.vue'
+
 export default {
-    components: { MainSearch, SignInForm, SignUpForm },
+    components: { MainSearch, SignInForm, SignUpForm, WorkoutToast },
     methods: {
         signOut: function() {
             auth.signOut();

@@ -7,11 +7,17 @@
         </b-card>
         <div>
             <b-list-group>
-                <b-list-group-item to="/workout/new" class="s-font d-flex btr-0 align-items">
-                    <div>New Workout</div>
-                    <div class="ml-auto"><b-icon-plus /></div>
+                <b-list-group-item to="/workout/new" class="s-font btr-0">
+                    <div v-if="!$store.state.activeWorkout.workoutCommenced" class="d-flex align-items">
+                        <div>New Workout</div>
+                        <div class="ml-auto"><b-icon-plus /></div>
+                    </div>
+                    <div v-else class="d-flex align-items">
+                        <div>Resume Workout</div>
+                        <div class="ml-auto"><b-icon-play /></div>
+                    </div>
                 </b-list-group-item>
-                <b-list-group-item v-for="workout in recentWorkouts" :key="workout.id" :to="'/workout/new?b=' + workout.id" class="s-font d-flex align-items">
+                <b-list-group-item v-for="workout in recentWorkouts" :key="workout.id" :to="'/workout/new?b=' + workout.id" class="s-font d-flex align-items" :disabled="$store.state.activeWorkout.workoutCommenced">
                     <div>{{ workout.name }}</div>
                     <div class="ml-auto text-muted xs-font">{{ workout.createdAtText }}</div>
                 </b-list-group-item>

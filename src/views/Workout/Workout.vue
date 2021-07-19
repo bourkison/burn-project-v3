@@ -17,9 +17,13 @@
                             </div>
                         </b-list-group-item>
                         <b-list-group-item class="navItem" to="/workout/new" active-class="active" exact-active-class="active">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center" v-if="!$store.state.activeWorkout.workoutCommenced || $router.currentRoute.name === 'New Workout'">
                                 New Workout
                                 <b-icon-plus class="ml-auto" />
+                            </div>
+                            <div class="d-flex align-items-center" v-else>
+                                Resume Workout
+                                <b-icon-play class="ml-auto" />
                             </div>
                         </b-list-group-item>
                     </b-list-group>

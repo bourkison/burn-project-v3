@@ -1,6 +1,6 @@
 <template>
     <b-container>
-        <div v-if="workoutCommenced">
+        <div v-if="!isLoading">
             <b-card no-body>
                 <b-card-body>
                     <div class="d-flex">
@@ -20,7 +20,7 @@
                 <b-card-body>
                     <b-card-text>
                         <div class="text-center">
-                            <b-button variant="outline-danger" class="mr-1" size="sm" to="/workout">Cancel</b-button>
+                            <b-button variant="outline-danger" class="mr-1" size="sm" @click="cancelWorkout">Cancel</b-button>
                             <b-button variant="outline-dark" class="ml-1 mr-1" size="sm" v-b-modal.searchExerciseModal>Add Exercise</b-button>
                             <b-button class="ml-1" variant="outline-success" size="sm" @click="finishWorkout">Finish</b-button>
                         </div>
@@ -166,34 +166,25 @@ export default {
     },
 
     beforeRouteUpdate: function(to, from, next) {
-        this.resetVariables();
+        // this.resetVariables();
+        // this.downloadTemplates();
         next();
-        this.downloadTemplates();
     },
 
     created: function() {
-        this.downloadTemplates();
+        this.$store.commit('activeWorkout/setDisplayToast', false);
+
+        if (!this.workoutStore.workoutCommenced) {   
+            this.downloadTemplates();
+        } else {
+            this.isLoading = false;
+        }
     },
 
     beforeRouteLeave: function(to, from, next) {
         if (this.workoutCommenced && !this.isFinishing) {
-            this.$bvModal.msgBoxConfirm('You are in the middle of a workout. Do you want to leave? All progress will be lost.', {
-                title: 'Leave Workout?',
-                buttonSize: 'sm',
-                okVariant: 'danger',
-                cancelVariant: 'outline-dark',
-                okTitle: 'OK',
-                cancelTitle: 'Go Back',
-                centered: true
-            })
-            .then(value => {
-                if (value) {
-                    next();
-                }
-            })
-            .catch(e => {
-                console.error(e);
-            })
+            this.$store.commit('activeWorkout/setDisplayToast', true);
+            next();
         } else {
             next();
         }
@@ -439,6 +430,27 @@ export default {
             this.$store.commit('activeWorkout/setWorkoutCommenced', true);
             
             this.$nextTick(() => { this.sortable = new Sortable(document.querySelector(".sortableContainer"), this.sortableOptions )})
+        },
+
+        cancelWorkout: function() {
+            this.$bvModal.msgBoxConfirm('You are in the middle of a workout. Do you want to leave? All progress will be lost.', {
+                title: 'Leave Workout?',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                cancelVariant: 'outline-dark',
+                okTitle: 'OK',
+                cancelTitle: 'Go Back',
+                centered: true
+            })
+            .then(value => {
+                if (value) {
+                    this.$store.commit('activeWorkout/resetVariables');
+                    this.$router.push("/workout");
+                }
+            })
+            .catch(e => {
+                console.error(e);
+            })
         },
 
         finishWorkout: function() {

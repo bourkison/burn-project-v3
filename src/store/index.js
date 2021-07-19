@@ -14,7 +14,7 @@ const activeWorkoutModule = {
         workout: {},
         previousWorkout: {},
         emptyWorkout: true,
-
+        displayToast: false,
         startTime: 0,
         finishTime: 0,
         interval: null,
@@ -83,6 +83,10 @@ const activeWorkoutModule = {
             state.finishTime = finishTime;
         },
 
+        setDisplayToast: function(state, value) {
+            state.displayToast = value;
+        },
+
         setInterval: function(state, timer) {
             state.interval = window.setInterval(() => {
                 const now = new Date().getTime();
@@ -120,6 +124,8 @@ const activeWorkoutModule = {
         },
 
         resetVariables: function(state) {
+            window.clearInterval(state.interval);
+
             state.isFinishing = false;
             state.workoutCommenced = false;
             state.workout = {};
@@ -129,7 +135,7 @@ const activeWorkoutModule = {
             state.finishTime = 0;
             state.interval = null;
             state.timeString = "00:00";
-            window.clearInterval(state.interval);
+            state.displayToast = false;
         }
     },
 
