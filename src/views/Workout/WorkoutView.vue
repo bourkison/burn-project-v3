@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { db, templatesCollection } from '@/firebase'
 import { Viewer } from '@toast-ui/vue-editor'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
@@ -124,7 +124,7 @@ export default {
             this.workoutExists = false;
             this.workoutData = {};
 
-            db.collection("workouts").doc(this.$route.params.workoutid).get()
+            templatesCollection().doc(this.$route.params.workoutid).get()
             .then(workoutDoc => {
                 if (workoutDoc.exists) {
                     this.workoutData = workoutDoc.data();

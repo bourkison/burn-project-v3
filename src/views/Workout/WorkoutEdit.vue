@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { db, functions } from '@/firebase'
+import { functions, templatesCollection } from '@/firebase'
 import { Editor } from '@toast-ui/vue-editor'
 
 import TagSelector from '@/components/Utility/TagSelector.vue'
@@ -128,7 +128,7 @@ export default {
 
     methods: {
         downloadWorkout: function() {
-            db.collection("workouts").doc(this.$route.params.workoutid).get()
+            templatesCollection().doc(this.$route.params.workoutid).get()
             .then(workoutDoc => {
                 if (workoutDoc.exists) {
                     this.workoutExists = true;

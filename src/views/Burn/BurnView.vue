@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { templatesCollection, userTemplatesCollection } from '@/firebase'
 
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -60,12 +60,12 @@ export default {
         let promises = [];
 
         // First download user workouts.
-        promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts").orderBy("createdAt", "desc").get()
+        promises.push(userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").get()
         .then(workoutSnapshot => {
             let workoutPromises = [];
 
             workoutSnapshot.forEach(workout => {
-                workoutPromises.push(db.collection("workouts").doc(workout.id).get())
+                workoutPromises.push(templatesCollection().doc(workout.id).get())
             })
 
             return Promise.all(workoutPromises)

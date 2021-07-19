@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { workoutsCollection } from '@/firebase'
 
 import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
 
@@ -35,7 +35,7 @@ export default {
         downloadWorkout: function() {
             this.isLoading = true;
 
-            db.collection("workouts").doc(this.$props.workoutId).get()
+            workoutsCollection().doc(this.$props.workoutId).get()
             .then(workoutDoc => {
                 this.workout = workoutDoc.data();
                 this.workout.id = workoutDoc.id;

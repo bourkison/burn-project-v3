@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { db, templatesCollection } from '@/firebase'
 import Sortable from 'sortablejs'
 
 import ExerciseRecorder from '@/components/Exercise/ExerciseRecorder.vue'
@@ -162,7 +162,7 @@ export default {
 
             // Build to Burn format based on if its a workout or burn.
             if (this.$route.query.w) {
-                promises.push(db.collection("workouts").doc(this.$route.query.w).get()
+                promises.push(templatesCollection().doc(this.$route.query.w).get()
                 .then(workoutDoc => {
                     let data = workoutDoc.data();
                     data.id = workoutDoc.id;

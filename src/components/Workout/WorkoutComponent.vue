@@ -32,7 +32,7 @@
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 
 import { Viewer } from '@toast-ui/vue-editor'
-import { db } from '@/firebase'
+import { templatesCollection } from '@/firebase'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
 import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
@@ -55,7 +55,7 @@ export default {
     },
 
     created: function() {
-        db.collection("workouts").doc(this.$props.workoutId).get()
+        templatesCollection().doc(this.$props.workoutId).get()
         .then(workoutDoc => {
             this.workoutData = workoutDoc.data();
             this.workoutData.id = workoutDoc.id;

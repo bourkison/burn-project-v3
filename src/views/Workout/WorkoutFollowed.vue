@@ -77,7 +77,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { userTemplatesCollection } from '@/firebase'
 
 import WorkoutFeed from '@/components/Workout/WorkoutFeed.vue'
 import UsernameFilter from '@/components/Utility/UsernameFilter.vue'
@@ -104,7 +104,7 @@ export default {
     },
 
     created: function() {
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts").orderBy("createdAt", "desc").limit(5).get()
+        userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").limit(5).get()
         .then(workoutSnapshot => {
             if (workoutSnapshot.size > 0) {
                 workoutSnapshot.forEach(workout => {
@@ -137,7 +137,7 @@ export default {
         //     this.lastLoadedWorkout = null;
         //     this.isLoadingMore = true;
 
-        //     this.fbQuery = db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts");
+        //     this.fbQuery = userTemplatesCollection(this.$store.state.userProfile.data.uid);
 
         //     if (this.selectedMgs.length > 0) {
         //         this.fbQuery = this.fbQuery.where("muscleGroups", "array-contains-any", this.selectedMgs);
@@ -171,7 +171,7 @@ export default {
 
         loadMoreWorkouts: function() {
             if (!this.isLoadingMore) {
-                db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts").orderBy("createdAt", "desc").startAfter(this.lastLoadedWorkout).limit(5).get()
+                userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").startAfter(this.lastLoadedWorkout).limit(5).get()
                 .then(workoutSnapshot => {
                     workoutSnapshot.forEach(workout => {
                         this.workouts.push(workout.id);

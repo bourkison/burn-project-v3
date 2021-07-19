@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { templatesCollection } from '@/firebase'
 
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
 import TagSelector from '@/components/Utility/TagSelector.vue'
@@ -103,7 +103,7 @@ export default {
     },
 
     created: function() {
-        db.collection("workouts").orderBy("createdAt", "desc").limit(5).get()
+        templatesCollection().orderBy("createdAt", "desc").limit(5).get()
         .then(workoutSnapshot => {
             workoutSnapshot.forEach(workoutDoc => {
                 this.workouts.push(workoutDoc.id)
@@ -132,7 +132,7 @@ export default {
             this.lastLoadedWorkout = null;
             this.isLoadingMore = true;
 
-            this.fbQuery = db.collection("workouts");
+            this.fbQuery = templatesCollection();
 
             if (this.selectedMgs.length > 0) {
                 this.fbQuery = this.fbQuery.where("muscleGroups", "array-contains-any", this.selectedMgs);
@@ -165,7 +165,7 @@ export default {
 
         loadMoreWorkouts: function() {
             if (!this.isLoadingMore) {
-                db.collection("workouts").orderBy("createdAt", "desc").startAfter(this.lastLoadedWorkout).limit(5).get()
+                templatesCollection().collection("workouts").orderBy("createdAt", "desc").startAfter(this.lastLoadedWorkout).limit(5).get()
                 .then(workoutSnapshot => {
                     workoutSnapshot.forEach(workout => {
                         this.workouts.push(workout.id);

@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { db } from '@/firebase'
+import { templatesCollection, userTemplatesCollection } from '@/firebase'
 
 export default {
     name: 'WorkoutSearch',
@@ -47,21 +47,21 @@ export default {
     created: function() {
         let workoutDownloadPromises = [];
 
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("workouts").get()
+        userTemplatesCollection(this.$store.state.userProfile.data.uid).get()
         .then(workoutSnapshot => {
             workoutSnapshot.forEach(workoutDoc => {
                 let userWorkoutData = workoutDoc.data();
                 userWorkoutData.id = workoutDoc.id;
 
                 if (userWorkoutData.isFollow) {
-                    workoutDownloadPromises.push(db.collection("workouts").doc(userWorkoutData.id).get().then(workoutDoc => {
+                    workoutDownloadPromises.push(templatesCollection().doc(userWorkoutData.id).get().then(workoutDoc => {
                         let workoutData = workoutDoc.data();
                         workoutData.id = workoutDoc.id;
 
                         this.followedWorkouts.push(workoutData);
                     }))
                 } else {
-                    workoutDownloadPromises.push(db.collection("workouts").doc(userWorkoutData.id).get().then(workoutDoc => {
+                    workoutDownloadPromises.push(templatesCollection().doc(userWorkoutData.id).get().then(workoutDoc => {
                         let workoutData = workoutDoc.data();
                         workoutData.id = workoutDoc.id;
 

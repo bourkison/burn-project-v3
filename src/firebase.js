@@ -20,6 +20,14 @@ const auth = firebase.auth();
 const storage = firebase.storage();
 const fv = firebase.firestore.FieldValue;
 
+// Collections:
+const templatesCollection = () => {
+    return db.collection("templates");  
+}
+const userTemplatesCollection = (userId) => {
+    return db.collection("users").doc(userId).collection("templates");
+}
+
 // Set our functions region.
 var functions = firebase.app().functions("australia-southeast1");
 
@@ -35,4 +43,4 @@ firebase.getCurrentUser = () => {
     })
 };
 
-export { db, auth, fv, storage, functions }
+export { db, auth, fv, storage, functions, templatesCollection, userTemplatesCollection }
