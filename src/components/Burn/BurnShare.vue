@@ -69,7 +69,7 @@ export default {
 
     methods: {
         downloadBurn: function() {
-            userWorkoutsCollection().doc(this.$props.burnId).get()
+            userWorkoutsCollection(this.$store.state.userProfile.data.uid).doc(this.$props.burnId).get()
             .then(burnDoc => {
                 this.burn = burnDoc.data();
                 this.burn.id = burnDoc.id;

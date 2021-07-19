@@ -9,19 +9,19 @@
                 -->
                 <b-card class="navCard" no-body>
                     <b-list-group>
-                        <b-list-group-item class="navItem" to="/workouts" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/templates" active-class="unset" exact-active-class="active">
                             <div class="d-flex align-items-center">
-                                Workouts
+                                Templates
                                 <b-icon-house class="ml-auto" />
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item class="navItem" to="/workouts/discover" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/templates/discover" active-class="unset" exact-active-class="active">
                             <div class="d-flex align-items-center">
                                 Discover
                                 <b-icon-search class="ml-auto"/>
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item class="navItem" to="/workouts/new" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/templates/new" active-class="unset" exact-active-class="active">
                             <div class="d-flex align-items-center">
                                 New
                                 <b-icon-plus class="ml-auto"/>
@@ -44,11 +44,11 @@
             </b-col>
             <b-col sm="6">
                 <b-container>
-                    <div v-if="workouts.length > 0 && !isLoading" class="mb-4">
-                        <WorkoutFeed class="workoutFeed" :workouts="workouts" />
+                    <div v-if="templates.length > 0 && !isLoading" class="mb-4">
+                        <TemplateFeed class="templateFeed" :templates="templates" />
 
                         <div class="text-center" v-if="moreToLoad">
-                            <b-button @click="loadMoreWorkouts" variant="outline-dark" size="sm" v-b-visible.200="loadMoreWorkouts">
+                            <b-button @click="loadMoreTemplates" variant="outline-dark" size="sm" v-b-visible.200="loadMoreTemplates">
                                 <span v-if="!isLoadingMore">Load More</span>
                                 <span v-else><b-spinner small /></span>
                             </b-button>
@@ -58,7 +58,7 @@
                         <b-spinner />
                     </div>
                     <div v-else>
-                        <em>Looks like you haven't followed or created any workouts.</em>
+                        <em>Looks like you haven't followed or created any templates.</em>
                     </div>
                 </b-container>
             </b-col>
@@ -68,7 +68,7 @@
                  -->
                  <div class="adTestCont">
                     <div class="adTest bg-warning text-center">
-                        Workout Home Ad Here.
+                        Template Home Ad Here.
                     </div>
                  </div>
             </b-col>
@@ -79,16 +79,16 @@
 <script>
 import { userTemplatesCollection } from '@/firebase'
 
-import WorkoutFeed from '@/components/Workout/WorkoutFeed.vue'
+import TemplateFeed from '@/components/Template/TemplateFeed.vue'
 import UsernameFilter from '@/components/Utility/UsernameFilter.vue'
 
 export default {
-    name: 'WorkoutFollowed',
-    components: { WorkoutFeed, UsernameFilter },
+    name: 'TemplateFollowed',
+    components: { TemplateFeed, UsernameFilter },
     data() {
         return {
             isLoading: true,
-            workouts: [],
+            templates: [],
 
             // Firebase:
             fbQuery: null,
@@ -99,24 +99,24 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedWorkout: null,
+            lastLoadedTemplate: null,
         }
     },
 
     created: function() {
         userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").limit(5).get()
-        .then(workoutSnapshot => {
-            if (workoutSnapshot.size > 0) {
-                workoutSnapshot.forEach(workout => {
-                    this.workouts.push(workout.id);
+        .then(templateSnapshot => {
+            if (templateSnapshot.size > 0) {
+                templateSnapshot.forEach(template => {
+                    this.templates.push(template.id);
                 })
 
-                if (workoutSnapshot.size < 5) {
+                if (templateSnapshot.size < 5) {
                     this.moreToLoad = false;
                 }
 
                 setTimeout(() => { this.isLoadingMore = false }, 500);
-                this.lastLoadedWorkout = workoutSnapshot.docs[workoutSnapshot.size - 1];
+                this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
             } else {
                 this.moreToLoad = false;
             }
@@ -125,16 +125,16 @@ export default {
         })
         .catch(e => {
             this.isLoading = false;
-            console.error("Error getting workouts:", e);
+            console.error("Error getting templates:", e);
         })
     },
 
     methods: {
-        // getWorkouts: function() {
+        // getTemplates: function() {
         //     this.isLoading = true;
-        //     this.workouts = [];
+        //     this.templates = [];
         //     this.moreToLoad = true;
-        //     this.lastLoadedWorkout = null;
+        //     this.lastLoadedTemplate = null;
         //     this.isLoadingMore = true;
 
         //     this.fbQuery = userTemplatesCollection(this.$store.state.userProfile.data.uid);
@@ -144,18 +144,18 @@ export default {
         //     }
 
         //     this.fbQuery.orderBy("createdAt", "desc").limit(5).get()
-        //     .then(workoutSnapshot => {
-        //         if (workoutSnapshot.size > 0) {
-        //             workoutSnapshot.forEach(workout => {
-        //                 this.workouts.push(workout.id);
+        //     .then(templateSnapshot => {
+        //         if (templateSnapshot.size > 0) {
+        //             templateSnapshot.forEach(template => {
+        //                 this.templates.push(template.id);
         //             })
 
-        //             if (workoutSnapshot.size < 5) {
+        //             if (templateSnapshot.size < 5) {
         //                 this.moreToLoad = false;
         //             }
 
         //             setTimeout(() => { this.isLoadingMore = false }, 500);
-        //             this.lastLoadedWorkout = workoutSnapshot.docs[workoutSnapshot.size - 1];
+        //             this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
         //         } else {
         //             this.moreToLoad = false;
         //         }
@@ -164,35 +164,35 @@ export default {
         //     })
         //     .catch(e => {
         //         this.isLoading = false;
-        //         console.error("Error getting workouts:", e);
+        //         console.error("Error getting templates:", e);
         //     })
         // },
 
 
-        loadMoreWorkouts: function() {
+        loadMoreTemplates: function() {
             if (!this.isLoadingMore) {
-                userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").startAfter(this.lastLoadedWorkout).limit(5).get()
-                .then(workoutSnapshot => {
-                    workoutSnapshot.forEach(workout => {
-                        this.workouts.push(workout.id);
+                userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").startAfter(this.lastLoadedTemplate).limit(5).get()
+                .then(templateSnapshot => {
+                    templateSnapshot.forEach(template => {
+                        this.templates.push(template.id);
                     })
 
-                    if (workoutSnapshot.size < 5) {
+                    if (templateSnapshot.size < 5) {
                         this.moreToLoad = false;
                     }
 
                     setTimeout(() => { this.isLoadingMore = false }, 500);
-                    this.lastLoadedWorkout = workoutSnapshot.docs[workoutSnapshot.size - 1];
+                    this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
                 })
                 .catch(e => {
-                    console.error("Error downloading more workouts:", e);
+                    console.error("Error downloading more templates:", e);
                 })
             }
         },
 
         updateMuscleGroups: function(muscleGroups) {
             this.selectedMgs = muscleGroups;
-            // this.getWorkouts();
+            // this.getTemplates();
         }
     }
 }
@@ -200,7 +200,7 @@ export default {
 
 <style scoped>
 .navCard,
-.workoutFeed {
+.templateFeed {
     margin-top: 40px;
 }
 

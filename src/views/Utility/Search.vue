@@ -11,7 +11,7 @@
                                 <div class="text-center">
                                     <b-button pill :variant="tabIndex == 0 ? 'primary' : 'outline-primary'" @click="tabIndex=0" size="sm" class="mr-1">Users</b-button>
                                     <b-button pill :variant="tabIndex == 1 ? 'primary' : 'outline-primary'" @click="tabIndex=1" size="sm" class="ml-1 mr-1">Exercises</b-button>
-                                    <b-button pill :variant="tabIndex == 2 ? 'primary' : 'outline-primary'" @click="tabIndex=2" size="sm" class="ml-1">Workouts</b-button>
+                                    <b-button pill :variant="tabIndex == 2 ? 'primary' : 'outline-primary'" @click="tabIndex=2" size="sm" class="ml-1">Templates</b-button>
                                 </div>
 
                                 <div class="mt-3" v-if="!isLoading">
@@ -33,10 +33,10 @@
                                             </b-list-group>
                                         </b-tab>
 
-                                        <b-tab title="Workouts" lazy>
+                                        <b-tab title="Templates" lazy>
                                             <b-list-group>
-                                                <b-list-group-item v-for="workout in workoutResponses" :key="workout.objectID" :to="'/workouts/' + workout.objectID">
-                                                    {{ workout.name }}
+                                                <b-list-group-item v-for="template in templateResponses" :key="template.objectID" :to="'/templates/' + template.objectID">
+                                                    {{ template.name }}
                                                 </b-list-group-item>
                                             </b-list-group>
                                         </b-tab>
@@ -71,7 +71,7 @@ export default {
 
             userResponses: [],
             exerciseResponses: [],
-            workoutResponses: [],
+            templateResponses: [],
 
             tabIndex: 0,
 
@@ -82,7 +82,7 @@ export default {
             ),
             userIndex: null,
             exerciseIndex: null,
-            workoutIndex: null,
+            templateIndex: null,
         }
     },
 
@@ -91,7 +91,7 @@ export default {
 
         this.userIndex = this.searchClient.initIndex("users");
         this.exerciseIndex = this.searchClient.initIndex("exercises");
-        this.workoutIndex = this.searchClient.initIndex("workouts");
+        this.templateIndex = this.searchClient.initIndex("templates");
 
         this.searchAlgolia();
     },
@@ -113,7 +113,7 @@ export default {
 
             this.userResponses = [];
             this.exerciseResponses = [];
-            this.workoutResponses = [];
+            this.templateResponses = [];
 
             if (this.searchText) {
                 searchPromises.push(this.userIndex.search(this.searchText).then(responses => {
@@ -128,15 +128,15 @@ export default {
                     })
                 }))
 
-                searchPromises.push(this.workoutIndex.search(this.searchText).then(responses => {
+                searchPromises.push(this.templateIndex.search(this.searchText).then(responses => {
                     responses.hits.forEach(hit => {
-                        this.workoutResponses.push(hit);
+                        this.templateResponses.push(hit);
                     })
                 }))
 
                 Promise.all(searchPromises)
                 .then(() => {
-                    console.log("USER RESPONSES:", this.userResponses, "EXERCISE RESPONSES:", this.exerciseResponses, "WORKOUT RESPONSES:", this.workoutResponses);
+                    console.log("USER RESPONSES:", this.userResponses, "EXERCISE RESPONSES:", this.exerciseResponses, "TEMPLATE RESPONSES:", this.templateResponses);
                     this.isLoading = false;
                 })
             } else {

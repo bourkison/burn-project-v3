@@ -8,7 +8,7 @@
                     <span><router-link :to="'/' + postData.createdBy.username" class="text-dark username">{{ postData.createdBy.username }}</router-link>&#32;&nbsp; </span>
                     <span class="ml-1" v-if="postData.share.type">
                         <span v-if="postData.share.type == 'exercise'">&nbsp;shared an <router-link :to="'/exercises/'+ postData.share.id">exercise</router-link>.</span>
-                        <span v-if="postData.share.type == 'workout'">&nbsp;shared a <router-link :to="'/workouts/'+ postData.share.id">workout</router-link>.</span>
+                        <span v-if="postData.share.type == 'template'">&nbsp;shared a <router-link :to="'/templates/'+ postData.share.id">template</router-link>.</span>
                         <span v-if="postData.share.type == 'burn'">&nbsp;shared a burn.</span>
                     </span>
                 </div>
@@ -49,8 +49,8 @@
                             <ExerciseShare :exerciseId="postData.share.id" />
                         </div>
 
-                        <div v-else-if="postData.share.type == 'workout'">
-                            <WorkoutShare :workoutId="postData.share.id" />
+                        <div v-else-if="postData.share.type == 'template'">
+                            <TemplateShare :templateId="postData.share.id" />
                         </div>
 
                         <div v-else-if="postData.share.type == 'burn'">
@@ -78,13 +78,13 @@ import CommentSection from '@/components/Comment/CommentSection.vue'
 
 import BurnShare from '@/components/Burn/BurnShare.vue'
 import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
-import WorkoutShare from '@/components/Workout/WorkoutShare.vue'
+import TemplateShare from '@/components/Template/TemplateShare.vue'
 
 import { db, storage } from '@/firebase'
 
 export default {
     name: 'PostComponent',
-    components: { CommentSection, BurnShare, ExerciseShare, WorkoutShare },
+    components: { CommentSection, BurnShare, ExerciseShare, TemplateShare },
     props: {
         postId: {
             required: true,

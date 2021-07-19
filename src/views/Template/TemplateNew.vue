@@ -3,13 +3,13 @@
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container>
-                    <b-card class="newWorkoutCard" no-body>
+                    <b-card class="newTemplateCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{ workoutForm.name ? workoutForm.name : 'New Workout' }}
+                                {{ templateForm.name ? templateForm.name : 'New Template' }}
                             </b-card-title>
                             <b-form-group label="Name" label-for="nameInput">
-                                <b-form-input id="nameInput" v-model="workoutForm.name" type="text" placeholder="Workout Name" required />
+                                <b-form-input id="nameInput" v-model="templateForm.name" type="text" placeholder="Template Name" required />
                             </b-form-group>
                         </b-card-body>
                     </b-card>
@@ -58,8 +58,8 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger" @click="$router.push('/workouts/')">Cancel</b-button>
-                    <b-button variant="outline-primary" @click="createWorkout" :disabled="isCreating">
+                    <b-button variant="outline-danger" @click="$router.push('/templates/')">Cancel</b-button>
+                    <b-button variant="outline-primary" @click="createTemplate" :disabled="isCreating">
                         <span v-if="isCreating"><b-spinner small /></span>
                         <span v-else>Create</span>
                     </b-button>
@@ -79,13 +79,13 @@ import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
 import TagSelector from '@/components/Utility/TagSelector.vue'
 
 export default {
-    name: 'WorkoutNew',
+    name: 'TemplateNew',
     components: { Editor, DifficultySelector, TagSelector, ExerciseSelector, MuscleGroupSelector },
     data() {
         return {
             isLoading: true,
             isCreating: false,
-            workoutForm: {
+            templateForm: {
                 name: '',
                 description: '',
                 exercises: [],
@@ -119,37 +119,37 @@ export default {
     },
 
     methods: {
-        createWorkout: function() {
+        createTemplate: function() {
             this.isCreating = true;
 
-            const createWorkout = functions.httpsCallable("createWorkout");
+            const createTemplate = functions.httpsCallable("createTemplate");
             const user = { username: this.$store.state.userProfile.docData.username, id: this.$store.state.userProfile.data.uid, profilePhoto: this.$store.state.userProfile.docData.profilePhoto };
 
-            createWorkout({ workoutForm: this.workoutForm, user: user })
+            createTemplate({ templateForm: this.templateForm, user: user })
             .then(result => {
                 this.isCreating = false;
-                this.$router.push("/workouts/" + result.data.id);
+                this.$router.push("/templates/" + result.data.id);
             })
             .catch(e => {
-                console.log("Error creating workout:", e);
+                console.log("Error creating template:", e);
                 this.isCreating = false;
             })
         },
 
         updateDescription: function() {
-            this.workoutForm.description = this.$refs.toastuiEditor.invoke('getMarkdown');
+            this.templateForm.description = this.$refs.toastuiEditor.invoke('getMarkdown');
         },
 
         updateDifficulty: function(difficulty) {
-            this.workoutForm.difficulty = difficulty;
+            this.templateForm.difficulty = difficulty;
         },
 
         updateTags: function(tags) {
-            this.workoutForm.tags = tags;
+            this.templateForm.tags = tags;
         },
 
         updateMuscleGroups: function(mgs) {
-            this.workoutForm.muscleGroups = mgs;
+            this.templateForm.muscleGroups = mgs;
         },
 
         updateExercises: function(exercises) {
@@ -158,14 +158,14 @@ export default {
                 temp.push({ id: exercise.id, name: exercise.name })
             })
 
-            this.workoutForm.exercises = temp;
+            this.templateForm.exercises = temp;
         }
     }
 }
 </script>
 
 <style scoped>
-.newWorkoutCard,
+.newTemplateCard,
 .descriptionCard,
 .difficultySelectCard,
 .tagSelectCard,

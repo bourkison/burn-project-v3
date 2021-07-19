@@ -60,7 +60,7 @@ export default {
         })
         .catch(e => {
             this.isLoading = false;
-            console.error("Error pulling workouts", e);
+            console.error("Error pulling exercises", e);
         })
     },
 

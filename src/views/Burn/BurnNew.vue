@@ -125,11 +125,11 @@ export default {
     beforeRouteUpdate: function(to, from, next) {
         this.resetVariables();
         next();
-        this.downloadWorkouts();
+        this.downloadTemplates();
     },
 
     created: function() {
-        this.downloadWorkouts();
+        this.downloadTemplates();
     },
 
     beforeRouteLeave: function(to, from, next) {
@@ -157,19 +157,19 @@ export default {
     },
 
     methods: {
-        downloadWorkouts: function() {
+        downloadTemplates: function() {
             let promises = [];
 
-            // Build to Burn format based on if its a workout or burn.
+            // Build to Burn format based on if its a template or burn.
             if (this.$route.query.w) {
                 promises.push(templatesCollection().doc(this.$route.query.w).get()
-                .then(workoutDoc => {
-                    let data = workoutDoc.data();
-                    data.id = workoutDoc.id;
+                .then(templateDoc => {
+                    let data = templateDoc.data();
+                    data.id = templateDoc.id;
 
                     this.burn = {
                         exercises: data.exercises,
-                        workout: {
+                        template: {
                             id: data.id,
                             name: data.name
                         },
@@ -192,8 +192,8 @@ export default {
                         }
                     })
 
-                    // Check if user has done this workout before (so we can populate previousBurn).
-                    return userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("workout.id", "==", this.$route.query.w).orderBy("createdAt", "desc").limit(1).get()
+                    // Check if user has done this template before (so we can populate previousBurn).
+                    return userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("template.id", "==", this.$route.query.w).orderBy("createdAt", "desc").limit(1).get()
                 })
                 .then(burnSnapshot => {
                     if (burnSnapshot.size > 0) {
@@ -203,9 +203,9 @@ export default {
 
                             this.previousBurn = {
                                 exercises: data.exercises,
-                                workout: {
-                                    id: data.workout.id,
-                                    name: data.workout.name
+                                template: {
+                                    id: data.template.id,
+                                    name: data.template.name
                                 },
                                 name: data.name,
                                 duration: data.duration,
@@ -250,7 +250,7 @@ export default {
                             exercise.sets = [];
                         })
 
-                        console.log("User hasn't done this workout.");
+                        console.log("User hasn't done this template.");
                     }
 
                     this.emptyBurn = false;
@@ -262,9 +262,9 @@ export default {
 
                     this.burn = {
                         exercises: data.exercises,
-                        workout: {
-                            id: data.workout.id,
-                            name: data.workout.name
+                        template: {
+                            id: data.template.id,
+                            name: data.template.name
                         },
                         name: data.name,
                         notes: data.notes

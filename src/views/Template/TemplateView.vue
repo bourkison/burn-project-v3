@@ -1,15 +1,15 @@
 <template>
-    <b-container v-if="!isLoading && workoutExists">
+    <b-container v-if="!isLoading && templateExists">
         <b-row align-v="center">
             <b-col sm="8">
-                <b-container class="workoutCard mainCard">
+                <b-container class="templateCard mainCard">
                     <b-card no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{ workoutData.name }}
+                                {{ templateData.name }}
                                 <b-dropdown right class="float-right" variant="outline">
-                                    <span v-if="workoutData.createdBy.id === this.$store.state.userProfile.data.uid">
-                                        <b-dropdown-item :to="'/workouts/' + workoutData.id + '/edit'">Edit</b-dropdown-item>
+                                    <span v-if="templateData.createdBy.id === this.$store.state.userProfile.data.uid">
+                                        <b-dropdown-item :to="'/templates/' + templateData.id + '/edit'">Edit</b-dropdown-item>
                                         <b-dropdown-item variant="danger">Delete</b-dropdown-item>
                                     </span>
                                     <span v-else>
@@ -18,61 +18,61 @@
                                 </b-dropdown>
                             </b-card-title>
                             <b-card-sub-title>
-                                {{ workoutData.createdBy.username }}
+                                {{ templateData.createdBy.username }}
                             </b-card-sub-title>
 
                             <b-card-text>
-                                <div :id="workoutData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
-                                    <ExerciseExpandable v-for="(exercise, index) in workoutData.exercises" :exercise="exercise" :accordionIndex="index" :workoutId="workoutData.id" :key="exercise.id" :lazy="false" />
+                                <div :id="templateData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
+                                    <ExerciseExpandable v-for="(exercise, index) in templateData.exercises" :exercise="exercise" :accordionIndex="index" :templateId="templateData.id" :key="exercise.id" :lazy="false" />
                                 </div>
 
                                 <div class="text-center">
-                                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/burn/new?w=' + workoutData.id">
-                                        Start Workout    
+                                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/burn/new?w=' + templateData.id">
+                                        Start Template    
                                         <b-icon-play />
                                     </b-button>
                                 </div>
                                 <div class="mt-4">
-                                    <Viewer :initialValue="workoutData.description" />
+                                    <Viewer :initialValue="templateData.description" />
                                 </div>
                             </b-card-text>
                         </b-card-body>
-                        <CommentSection :docId="workoutData.id" collection="workouts" :followableComponent="true" />
+                        <CommentSection :docId="templateData.id" collection="templates" :followableComponent="true" />
                     </b-card>
                 </b-container>
             </b-col>
 
             <b-col sm="4">
-                <b-card no-body class="workoutCard">
+                <b-card no-body class="templateCard">
                     <b-card-body>
                         <b-card-title>
                             Difficulty
                         </b-card-title>
                         <b-card-text>
                             <div class="text-center stars">
-                                <b-icon-star-fill v-for="star in workoutData.difficulty" :key="star" font-scale="2" variant="warning"></b-icon-star-fill>
+                                <b-icon-star-fill v-for="star in templateData.difficulty" :key="star" font-scale="2" variant="warning"></b-icon-star-fill>
                             </div>
                         </b-card-text>
                     </b-card-body>
                 </b-card>
 
-                <b-card no-body class="workoutCard">
+                <b-card no-body class="templateCard">
                     <b-card-body>
                         <b-card-title>
                             Muscle Groups
                         </b-card-title>
-                        <MuscleGroup :selectedGroups="workoutData.muscleGroups" />
+                        <MuscleGroup :selectedGroups="templateData.muscleGroups" />
                     </b-card-body>
                 </b-card>
 
-                <b-card no-body class="workoutCard">
+                <b-card no-body class="templateCard">
                     <b-card-body>
                         <b-card-title>
                             Tags
                         </b-card-title>
                         <b-card-text>
                             <div style="text-center">
-                                <b-badge class="tags" v-for="(tag, index) in workoutData.tags" :key="index" :variant="variants[index]">{{ tag }}</b-badge>
+                                <b-badge class="tags" v-for="(tag, index) in templateData.tags" :key="index" :variant="variants[index]">{{ tag }}</b-badge>
                             </div>
                         </b-card-text>
                     </b-card-body>
@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { templatesCollection, userWorkoutsCollection } from '@/firebase'
+import { templatesCollection, userTemplatesCollection } from '@/firebase'
 import { Viewer } from '@toast-ui/vue-editor'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
@@ -91,13 +91,13 @@ import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
 import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
 
 export default {
-    name: 'WorkoutView',
+    name: 'TemplateView',
     components: { CommentSection, Viewer, MuscleGroup, ExerciseExpandable },
     data() {
         return {
             isLoading: true,
-            workoutExists: false,
-            workoutData: {},
+            templateExists: false,
+            templateData: {},
 
             // Bootstrap:
             variants: ["success", "danger", "warning", "info", "dark"]
@@ -105,41 +105,41 @@ export default {
     },
 
     created: function() {
-        this.downloadWorkout();
+        this.downloadTemplate();
 
-        userWorkoutsCollection().where("workout.id", "==", this.$route.params.workoutid).get()
-        .then(workoutSnapshot => {
-            console.log("TEST:", workoutSnapshot.size);
+        userTemplatesCollection().where("template.id", "==", this.$route.params.templateid).get()
+        .then(templateSnapshot => {
+            console.log("TEST:", templateSnapshot.size);
         })
     },
 
     beforeRouteUpdate: function(to, from, next) {
         next();
-        this.downloadWorkout();
+        this.downloadTemplate();
     },
 
     methods: {
-        downloadWorkout: function() {
+        downloadTemplate: function() {
             this.isLoading = true;
-            this.workoutExists = false;
-            this.workoutData = {};
+            this.templateExists = false;
+            this.templateData = {};
 
-            templatesCollection().doc(this.$route.params.workoutid).get()
-            .then(workoutDoc => {
-                if (workoutDoc.exists) {
-                    this.workoutData = workoutDoc.data();
-                    this.workoutData.id = workoutDoc.id;
+            templatesCollection().doc(this.$route.params.templateid).get()
+            .then(templateDoc => {
+                if (templateDoc.exists) {
+                    this.templateData = templateDoc.data();
+                    this.templateData.id = templateDoc.id;
 
-                    this.workoutExists = true;
+                    this.templateExists = true;
 
                     this.isLoading = false;
                 } else {
-                    this.workoutExists = false;
-                    throw new Error("Workout does not exist");
+                    this.templateExists = false;
+                    throw new Error("Template does not exist");
                 }
             })
             .catch(e => {
-                console.error("Error downloading workout", e);
+                console.error("Error downloading template", e);
                 this.isLoading = false;
             })
         },
@@ -148,7 +148,7 @@ export default {
 </script>
 
 <style scoped>
-.workoutCard {
+.templateCard {
     margin-top: 20px;
 }
 

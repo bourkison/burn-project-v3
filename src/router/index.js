@@ -20,12 +20,12 @@ import Profile from '@/views/User/Profile.vue'
 
 import Search from '@/views/Utility/Search.vue'
 
-// import Workout from '@/views/Workout/Workout.vue'
-import WorkoutDiscover from '@/views/Workout/WorkoutDiscover.vue'
-import WorkoutEdit from '@/views/Workout/WorkoutEdit.vue'
-import WorkoutFollowed from '@/views/Workout/WorkoutFollowed.vue'
-import WorkoutNew from '@/views/Workout/WorkoutNew.vue'
-import WorkoutView from '@/views/Workout/WorkoutView.vue'
+// import Template from '@/views/Template/Template.vue'
+import TemplateDiscover from '@/views/Template/TemplateDiscover.vue'
+import TemplateEdit from '@/views/Template/TemplateEdit.vue'
+import TemplateFollowed from '@/views/Template/TemplateFollowed.vue'
+import TemplateNew from '@/views/Template/TemplateNew.vue'
+import TemplateView from '@/views/Template/TemplateView.vue'
 
 
 Vue.use(VueRouter)
@@ -81,43 +81,43 @@ const routes = [
             requiresAuth: true
         }
     },
-    // WORKOUTS
+    // TEMPLATES
     {
-        path: '/workouts/discover',
-        name: 'Discover Workouts',
-        component: WorkoutDiscover,
+        path: '/templates/discover',
+        name: 'Discover Templates',
+        component: TemplateDiscover,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/workouts',
-        name: 'Followed Workouts',
-        component: WorkoutFollowed,
+        path: '/templates',
+        name: 'Followed Templates',
+        component: TemplateFollowed,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/workouts/new',
-        name: 'New Workout',
-        component: WorkoutNew,
+        path: '/templates/new',
+        name: 'New Template',
+        component: TemplateNew,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/workouts/:workoutid',
-        name: 'View Workout',
-        component: WorkoutView,
+        path: '/templates/:templateid',
+        name: 'View Template',
+        component: TemplateView,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/workouts/:workoutid/edit',
-        name: 'Edit Workout',
-        component: WorkoutEdit,
+        path: '/templates/:templateid/edit',
+        name: 'Edit Template',
+        component: TemplateEdit,
         meta: {
             requiresAuth: true
         }

@@ -10,8 +10,8 @@
             <div v-if="post.share.type == 'exercise'">
                 <ExerciseShare :exerciseId="post.share.id" />
             </div>
-            <div v-else-if="post.share.type == 'workout'">
-                <WorkoutShare :workoutId="post.share.id" />
+            <div v-else-if="post.share.type == 'template'">
+                <TemplateShare :templateId="post.share.id" />
             </div>
             <div v-else-if="post.share.type == 'burn'">
                 <BurnShare :burnId="post.share.id" :userId="$store.state.userProfile.data.uid" />
@@ -25,7 +25,7 @@
                     <b-icon-card-image font-scale="1.2" class="mr-1 clickableIcon" />
                 </label>
                 <b-icon-bicycle v-b-modal.addExerciseModal font-scale="1.2" class="mr-1 clickableIcon" />
-                <b-icon-droplet v-b-modal.addWorkoutModal font-scale="1.2" class="mr-1 clickableIcon" />
+                <b-icon-droplet v-b-modal.addTemplateModal font-scale="1.2" class="mr-1 clickableIcon" />
                 <b-icon-award v-b-modal.addBurnModal font-scale="1.2" class="mr-1 clickableIcon" />
             </div>
             <div class="ml-auto">
@@ -40,8 +40,8 @@
             <ExerciseSearch @selectExercise="addExercise" />
         </b-modal>
 
-        <b-modal id="addWorkoutModal" centered title="Workouts" hide-footer button-size="sm">
-            <WorkoutSearch @selectWorkout="addWorkout" />
+        <b-modal id="addTemplateModal" centered title="Templates" hide-footer button-size="sm">
+            <TemplateSearch @selectTemplate="addTemplate" />
         </b-modal>
 
         <b-modal id="addBurnModal" centered title="Burns" hide-footer buttons-size="sm">
@@ -59,12 +59,12 @@ import BurnSearch from '@/components/Burn/BurnSearch.vue'
 import BurnShare from '@/components/Burn/BurnShare.vue'
 import ExerciseSearch from '@/components/Exercise/ExerciseSearch.vue'
 import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
-import WorkoutSearch from '@/components/Workout/WorkoutSearch.vue'
-import WorkoutShare from '@/components/Workout/WorkoutShare.vue'
+import TemplateSearch from '@/components/Template/TemplateSearch.vue'
+import TemplateShare from '@/components/Template/TemplateShare.vue'
 
 export default {
     name: 'PostNew',
-    components: { ImageUploader, BurnSearch, BurnShare, ExerciseSearch, ExerciseShare, WorkoutSearch, WorkoutShare },
+    components: { ImageUploader, BurnSearch, BurnShare, ExerciseSearch, ExerciseShare, TemplateSearch, TemplateShare },
     data() {
         return {
             isPosting: false,
@@ -137,13 +137,13 @@ export default {
             this.$bvModal.hide("addExerciseModal");
         },
 
-        addWorkout: function(workout) {
+        addTemplate: function(template) {
             this.post.share = {
-                id: workout.id,
-                type: "workout"
+                id: template.id,
+                type: "template"
             }
 
-            this.$bvModal.hide("addWorkoutModal");
+            this.$bvModal.hide("addTemplateModal");
         },
 
         updateImages: function(images) {

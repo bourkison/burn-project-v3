@@ -1,14 +1,14 @@
 <template>
     <b-card no-body class="mb-1 exerciseExpandableItem">
         <b-card-header header-tag="header" class="p-1" role="tab">
-            <b-button block v-b-toggle="workoutId + '_' + accordionIndex + '_accordion'" variant="outlined" class="d-flex" size="sm">
+            <b-button block v-b-toggle="templateId + '_' + accordionIndex + '_accordion'" variant="outlined" class="d-flex" size="sm">
                 {{ exercise.name }}
                 <strong v-if="isVisible" aria-hidden="true" class="ml-auto">-</strong>
                 <strong v-else aria-hidden="true" class="ml-auto">+</strong>
             </b-button>
         </b-card-header>
 
-        <b-collapse :id="workoutId + '_' + accordionIndex + '_accordion'" accordion="my-accordion" role="tabpanel" v-model="isVisible">
+        <b-collapse :id="templateId + '_' + accordionIndex + '_accordion'" accordion="my-accordion" role="tabpanel" v-model="isVisible">
             <b-card-body>
                 <div v-if="!isLoading">
                     <Viewer :initialValue="exerciseData.description" />
@@ -37,7 +37,7 @@ export default {
             type: Number,
             required: true
         },
-        workoutId: {
+        templateId: {
             type: String,
             required: true
         },

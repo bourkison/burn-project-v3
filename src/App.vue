@@ -10,7 +10,7 @@
                 <b-collapse v-if="$store.state.userProfile.loggedIn" id="nav-collapse" is-nav>
                     <b-navbar-nav>
                         <b-nav-item to="/exercises">Exercises</b-nav-item>
-                        <b-nav-item to="/workouts">Workouts</b-nav-item>
+                        <b-nav-item to="/templates">Templates</b-nav-item>
                         <b-nav-item to="/burn">Burns</b-nav-item>
                         <MainSearch />
                         <!-- <b-nav-form>

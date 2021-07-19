@@ -2,23 +2,23 @@
     <b-card no-body>
         <div v-if="!isLoading">
             <b-card-body>
-                <b-card-title><router-link :to="'/workouts/' + workoutId" class="componentLink">{{ workoutData.name }}</router-link></b-card-title>
-                <b-card-sub-title>{{ workoutData.createdBy.username }}</b-card-sub-title>
+                <b-card-title><router-link :to="'/templates/' + templateId" class="componentLink">{{ templateData.name }}</router-link></b-card-title>
+                <b-card-sub-title>{{ templateData.createdBy.username }}</b-card-sub-title>
                 <b-card-text>
-                    <div :id="workoutData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
-                        <ExerciseExpandable v-for="(exercise, index) in workoutData.exercises" :exercise="exercise" :accordionIndex="index" :workoutId="workoutData.id" :key="exercise.id" :lazy="true" />
+                    <div :id="templateData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
+                        <ExerciseExpandable v-for="(exercise, index) in templateData.exercises" :exercise="exercise" :accordionIndex="index" :templateId="templateData.id" :key="exercise.id" :lazy="true" />
                     </div>
                 </b-card-text>
-                <Viewer :initialValue="workoutData.description"/>
+                <Viewer :initialValue="templateData.description"/>
 
                 <div class="text-center">
-                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/burn/new?w=' + workoutData.id">
-                        Start Workout
+                    <b-button variant="outline-success" size="sm" class="text-center" :to="'/burn/new?w=' + templateData.id">
+                        Start Template
                         <b-icon-play />
                     </b-button>
                 </div>
             </b-card-body>
-            <CommentSection :docId="workoutData.id" collection="workouts" :followableComponent="true" />
+            <CommentSection :docId="templateData.id" collection="templates" :followableComponent="true" />
         </div>
         <div v-else>
             <b-card-body>
@@ -38,10 +38,10 @@ import CommentSection from '@/components/Comment/CommentSection.vue'
 import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
 
 export default {
-    name: 'WorkoutComponent',
+    name: 'TemplateComponent',
     components: { Viewer, CommentSection, ExerciseExpandable },
     props: {
-        workoutId: {
+        templateId: {
             required: true,
             type: String
         }
@@ -50,21 +50,21 @@ export default {
     data() {
         return {
             isLoading: true,
-            workoutData: {},
+            templateData: {},
         }
     },
 
     created: function() {
-        templatesCollection().doc(this.$props.workoutId).get()
-        .then(workoutDoc => {
-            this.workoutData = workoutDoc.data();
-            this.workoutData.id = workoutDoc.id;
+        templatesCollection().doc(this.$props.templateId).get()
+        .then(templateDoc => {
+            this.templateData = templateDoc.data();
+            this.templateData.id = templateDoc.id;
 
             // Pull like, comment and follow count.
             this.isLoading = false;
         })
         .catch(e => {
-            console.error("Error downloading workout data", e);
+            console.error("Error downloading template data", e);
         })
     }
 }

@@ -3,13 +3,13 @@
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container>
-                    <b-card class="newWorkoutCard" no-body>
+                    <b-card class="newTemplateCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{ newWorkoutData.name ? newWorkoutData.name : oldWorkoutData.name }}
+                                {{ newTemplateData.name ? newTemplateData.name : oldTemplateData.name }}
                             </b-card-title>
                             <b-form-group label="Name" label-for="nameInput">
-                                <b-form-input id="nameInput" v-model="newWorkoutData.name" type="text" placeholder="Workout Name" required />
+                                <b-form-input id="nameInput" v-model="newTemplateData.name" type="text" placeholder="Template Name" required />
                             </b-form-group>
                         </b-card-body>
                     </b-card>
@@ -17,14 +17,14 @@
                     <b-card no-body class="exerciseSelectCard">
                         <b-card-body>
                             <h5>Exercises</h5>
-                            <ExerciseSelector @updateExercises="updateExercises" :initExercises="oldWorkoutData.exercises" />
+                            <ExerciseSelector @updateExercises="updateExercises" :initExercises="oldTemplateData.exercises" />
                         </b-card-body>
                     </b-card>
 
                     <b-card no-body class="descriptionCard">
                         <b-card-body>
                             <h5>Description</h5>
-                            <Editor @change="updateDescription" id="descriptionInput" ref="toastuiEditor" :options="editorOptions" :initialValue="oldWorkoutData.description" height="300px" initialEditType="wysiwyg" previewStyle="vertical" />
+                            <Editor @change="updateDescription" id="descriptionInput" ref="toastuiEditor" :options="editorOptions" :initialValue="oldTemplateData.description" height="300px" initialEditType="wysiwyg" previewStyle="vertical" />
                         </b-card-body>
                     </b-card>
                 </b-container>
@@ -35,21 +35,21 @@
                     <b-card class="difficultySelectCard" no-body>
                         <b-card-body>
                             <h5>Difficulty</h5>
-                            <DifficultySelector @updateDifficulty="updateDifficulty" :initDifficulty="oldWorkoutData.difficulty" />
+                            <DifficultySelector @updateDifficulty="updateDifficulty" :initDifficulty="oldTemplateData.difficulty" />
                         </b-card-body>
                     </b-card>
 
                     <b-card class="muscleGroupSelectCard" no-body>
                         <b-card-body>
                             <h5>Muscle Groups</h5>
-                            <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" :initMgs="oldWorkoutData.muscleGroups" />
+                            <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" :initMgs="oldTemplateData.muscleGroups" />
                         </b-card-body>
                     </b-card>
 
                     <b-card class="tagSelectCard" no-body>
                         <b-card-body>
                             <h5>Add Tags</h5>
-                            <TagSelector @updateTags="updateTags" :initTags="oldWorkoutData.tags" />
+                            <TagSelector @updateTags="updateTags" :initTags="oldTemplateData.tags" />
                         </b-card-body>
                     </b-card>
                 </b-container>
@@ -58,8 +58,8 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger" @click="$router.push('/workouts/' + newWorkoutData.id)">Cancel</b-button>
-                    <b-button variant="outline-primary" @click="updateWorkout" :disabled="isUpdating">
+                    <b-button variant="outline-danger" @click="$router.push('/templates/' + newTemplateData.id)">Cancel</b-button>
+                    <b-button variant="outline-primary" @click="updateTemplate" :disabled="isUpdating">
                         <span v-if="isUpdating"><b-spinner small /></span>
                         <span v-else>Update</span>
                     </b-button>
@@ -83,16 +83,16 @@ import ExerciseSelector from '@/components/Utility/ExerciseSelector.vue'
 
 
 export default {
-    name: 'WorkoutEdit',
+    name: 'TemplateEdit',
     components: { Editor, TagSelector, MuscleGroupSelector, DifficultySelector, ExerciseSelector },
     data() {
         return {
             isLoading: true,
-            workoutExists: false,
+            templateExists: false,
             isUpdating: false,
 
-            oldWorkoutData: {},
-            newWorkoutData: {},
+            oldTemplateData: {},
+            newTemplateData: {},
 
             // Editor:
             editorOptions: {
@@ -119,72 +119,72 @@ export default {
     },
 
     created: function() {
-        this.downloadWorkout();
+        this.downloadTemplate();
     },
 
     beforeRouteUpdate: function() {
-        this.downloadWorkout();
+        this.downloadTemplate();
     },
 
     methods: {
-        downloadWorkout: function() {
-            templatesCollection().doc(this.$route.params.workoutid).get()
-            .then(workoutDoc => {
-                if (workoutDoc.exists) {
-                    this.workoutExists = true;
+        downloadTemplate: function() {
+            templatesCollection().doc(this.$route.params.templateid).get()
+            .then(templateDoc => {
+                if (templateDoc.exists) {
+                    this.templateExists = true;
 
-                    this.oldWorkoutData = workoutDoc.data();
-                    this.newWorkoutData = workoutDoc.data();
-                    this.newWorkoutData.id = workoutDoc.id;
+                    this.oldTemplateData = templateDoc.data();
+                    this.newTemplateData = templateDoc.data();
+                    this.newTemplateData.id = templateDoc.id;
 
                     this.isLoading = false;
-                    console.log(this.oldWorkoutData.muscleGroups);
+                    console.log(this.oldTemplateData.muscleGroups);
                 } else {
-                    throw new Error("Workout does not exist");
+                    throw new Error("Template does not exist");
                 }
             })
             .catch(e => {
-                console.error("Error downloading workout", e);
+                console.error("Error downloading template", e);
             })
         },
 
-        updateWorkout: function() {
-            console.log(this.newWorkoutData);
+        updateTemplate: function() {
+            console.log(this.newTemplateData);
             this.isUpdating = true;
 
             let updateAlgolia;
-            if (this.newWorkoutData.name !== this.oldWorkoutData.name) {
+            if (this.newTemplateData.name !== this.oldTemplateData.name) {
                 updateAlgolia = true;
             } else {
                 updateAlgolia = false;
             }
 
-            const editWorkout = functions.httpsCallable("editWorkout");
-            editWorkout({ workoutForm: this.newWorkoutData, updateAlgolia: updateAlgolia })
+            const editTemplate = functions.httpsCallable("editTemplate");
+            editTemplate({ templateForm: this.newTemplateData, updateAlgolia: updateAlgolia })
             .then(result => {
                 this.isUpdating = false;
-                this.$router.push("/workouts/" + result.data.id);
+                this.$router.push("/templates/" + result.data.id);
             })
             .catch(e => {
-                console.error("Error updating workout:", e);
+                console.error("Error updating template:", e);
                 this.isUpdating = false;
             })
         },
 
         updateDescription: function() {
-            this.newWorkoutData.description = this.$refs.toastuiEditor.invoke('getMarkdown');
+            this.newTemplateData.description = this.$refs.toastuiEditor.invoke('getMarkdown');
         },
 
         updateTags: function(tags) {
-            this.newWorkoutData.tags = tags;
+            this.newTemplateData.tags = tags;
         },
 
         updateMuscleGroups: function(muscleGroups) {
-            this.newWorkoutData.muscleGroups = muscleGroups;
+            this.newTemplateData.muscleGroups = muscleGroups;
         },
 
         updateDifficulty: function(difficulty) {
-            this.newWorkoutData.difficulty = difficulty;
+            this.newTemplateData.difficulty = difficulty;
         },
 
         updateExercises: function(exercises) {
@@ -193,14 +193,14 @@ export default {
                 temp.push({ id: exercise.id, name: exercise.name });
             })
 
-            this.newWorkoutData.exercises = temp;
+            this.newTemplateData.exercises = temp;
         }
     }
 }
 </script>
 
 <style scoped>
-.newWorkoutCard,
+.newTemplateCard,
 .descriptionCard,
 .difficultySelectCard,
 .tagSelectCard,

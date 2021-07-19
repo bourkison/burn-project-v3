@@ -3,7 +3,7 @@
         <b-card no-body>
             <b-card-body v-if="!isLoading">
                 <b-card-title>Burns</b-card-title>
-                <b-form-input placeholder="Search for a burn or workout..." v-model="searchText"></b-form-input>
+                <b-form-input placeholder="Search for a burn or template..." v-model="searchText"></b-form-input>
                 <b-card-text>
                     <b-container class="mt-3">
                         <div v-if="filteredBurns.length > 0">
@@ -16,12 +16,12 @@
                             </b-list-group>
                         </div>
 
-                        <div v-if="filteredWorkouts.length > 0" class="mt-3">
-                            <h5>Followed Workouts</h5>
+                        <div v-if="filteredTemplates.length > 0" class="mt-3">
+                            <h5>Followed Templates</h5>
                             <b-list-group class="mt-2 mb-2">
-                                <b-list-group-item class="d-flex" align-v="center" :to="'/burn/new?w=' + workout.id" v-for="workout in filteredWorkouts" :key="workout.id">
-                                    <div>{{ workout.name }}</div>
-                                    <div class="ml-auto text-muted" style="font-size:12px;line-height:2;">{{ workout.createdBy.username }}</div>
+                                <b-list-group-item class="d-flex" align-v="center" :to="'/burn/new?w=' + template.id" v-for="template in filteredTemplates" :key="template.id">
+                                    <div>{{ template.name }}</div>
+                                    <div class="ml-auto text-muted" style="font-size:12px;line-height:2;">{{ template.createdBy.username }}</div>
                                 </b-list-group-item>
                             </b-list-group>
                         </div>
@@ -48,7 +48,7 @@ export default {
         return {
             isLoading: true,
 
-            userWorkouts: [],
+            userTemplates: [],
             userBurns: [],
 
             searchText: ''
@@ -59,22 +59,22 @@ export default {
         dayjs.extend(relativeTime);
         let promises = [];
 
-        // First download user workouts.
+        // First download user templates.
         promises.push(userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").get()
-        .then(workoutSnapshot => {
-            let workoutPromises = [];
+        .then(templateSnapshot => {
+            let templatePromises = [];
 
-            workoutSnapshot.forEach(workout => {
-                workoutPromises.push(templatesCollection().doc(workout.id).get())
+            templateSnapshot.forEach(template => {
+                templatePromises.push(templatesCollection().doc(template.id).get())
             })
 
-            return Promise.all(workoutPromises)
-            .then(workoutDocs => {
-                workoutDocs.forEach(workoutDoc => {
-                    let data = workoutDoc.data();
-                    data.id = workoutDoc.id;
+            return Promise.all(templatePromises)
+            .then(templateDocs => {
+                templateDocs.forEach(templateDoc => {
+                    let data = templateDoc.data();
+                    data.id = templateDoc.id;
 
-                    this.userWorkouts.push(data);
+                    this.userTemplates.push(data);
                 })
             })
         }))
@@ -99,7 +99,7 @@ export default {
         .then(() => {
             this.isLoading = false;
             console.log("Burns:", this.userBurns);
-            console.log("Workouts:", this.userWorkouts);
+            console.log("Templates:", this.userTemplates);
         })
     },
 
@@ -114,13 +114,13 @@ export default {
             }
         },
 
-        filteredWorkouts: function() {
+        filteredTemplates: function() {
             if (this.searchText) {
-                return this.userWorkouts.filter(workout => {
-                    return workout.name.toLowerCase().includes(this.searchText.toLowerCase());
+                return this.userTemplates.filter(template => {
+                    return template.name.toLowerCase().includes(this.searchText.toLowerCase());
                 })
             } else {
-                return this.userWorkouts;
+                return this.userTemplates;
             }
         }
     }
