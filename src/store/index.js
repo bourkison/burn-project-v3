@@ -59,7 +59,6 @@ const activeWorkoutModule = {
         },
 
         setSetValue: function(state, data) {
-            console.log("SET SET", data.exerciseIndex, data.setIndex, data.key, data.value);
             Vue.set(state.workout.exercises[data.exerciseIndex].sets[data.setIndex], data.key, data.value);
         },
 

@@ -10,6 +10,7 @@
   "dependencies": {
     "@toast-ui/vue-editor": "^2.5.1",
     "algoliasearch": "^4.8.6",
+    "amazon-cognito-identity-js": "^5.0.5",
     "bootstrap-vue": "^2.21.2",
     "browser-image-compression": "^1.0.14",
     "chart.js": "^3.4.1",
@@ -32,6 +33,7 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.11",
+    "webpack-cli": "^4.7.2"
   }
 }

@@ -67,6 +67,8 @@
 
 <script>
 import { auth } from '@/firebase'
+// import { CognitoUserPool } from 'amazon-cognito-identity-js'
+// import { config } from '@/config'
 
 import SignInForm from '@/components/Auth/SignInForm.vue'
 import SignUpForm from '@/components/Auth/SignUpForm.vue'
@@ -77,6 +79,16 @@ import WorkoutToast from '@/components/Workout/WorkoutToast.vue'
 
 export default {
     components: { MainSearch, SignInForm, SignUpForm, WorkoutToast },
+    created: function() {
+        // let poolData = {
+        //     UserPoolId: config.cognito.userPoolId,
+        //     ClientId: config.cognito.clientId
+        // }
+
+        // let userPool = new CognitoUserPool(poolData)
+
+        // console.log(userPool.getCurrentUser());
+    },
     methods: {
         signOut: function() {
             auth.signOut();
