@@ -1,7 +1,7 @@
 <template>
     <b-form @submit.prevent="signIn">
-        <b-form-group label="Email" label-for="emailInput">
-            <b-form-input id="emailInput" v-model="signInForm.email" type="email" placeholder="Enter Email" required />
+        <b-form-group label="Username" label-for="usernameInput">
+            <b-form-input id="usernameInput" v-model="signInForm.username" placeholder="Enter Username" required />
         </b-form-group>
 
         <b-form-group label="Password" label-for="passwordInput">
@@ -18,7 +18,9 @@
 </template>
 
 <script>
-import { auth } from '@/firebase'
+// import { auth } from '@/firebase'
+import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js'
+import { config } from '@/config'
 
 export default {
     name: 'SignIn',
@@ -26,26 +28,59 @@ export default {
         return {
             isLoading: false,
             signInForm: {
-                email: '',
+                username: '',
                 password: ''
             }
         }
     },
 
     methods: {
+        // signIn: function() {
+        //     this.isLoading = true;
+
+        //     auth.signInWithEmailAndPassword(this.signInForm.email, this.signInForm.password)
+        //     .then(() => {
+        //         this.isLoading = false;
+        //         this.$emit("closeSignInModal");
+        //         this.$router.push("/");
+        //     })
+        //     .catch(e => {
+        //         console.error("Error signing in:", e);
+        //         this.isLoading = false;
+        //     });
+        // }
+
         signIn: function() {
             this.isLoading = true;
 
-            auth.signInWithEmailAndPassword(this.signInForm.email, this.signInForm.password)
-            .then(() => {
-                this.isLoading = false;
-                this.$emit("closeSignInModal");
-                this.$router.push("/");
+            let poolData = config.cognito;
+            let userPool = new CognitoUserPool(poolData);
+
+            let userData = {
+                Username: this.signInForm.username,
+                Pool: userPool
+            };
+
+            let cognitoUser = new CognitoUser(userData);
+
+            let authenticationData = {
+                Username: this.signInForm.username,
+                Password: this.signInForm.password
+            }
+
+            let authenticationDetails = new AuthenticationDetails(authenticationData);
+
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: (result) => {
+                    console.log("SUCCESS", result);
+                },
+
+                onFailure: (err) => {
+                    alert(err.message || JSON.stringify(err));
+                }
             })
-            .catch(e => {
-                console.error("Error signing in:", e);
-                this.isLoading = false;
-            });
+
+
         }
     }
 }
