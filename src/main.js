@@ -3,7 +3,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
-import { auth } from '@/firebase'
+import Amplify from 'aws-amplify'
+import aws_exports from './aws-exports'
 
 import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
 
@@ -13,6 +14,8 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
 
+Amplify.configure(aws_exports);
+
 Vue.config.productionTip = false
 
 new Vue({
@@ -21,6 +24,8 @@ new Vue({
     render: h => h(App)
 }).$mount('#app')
 
-auth.onAuthStateChanged(function(user) {
-    store.dispatch("fetchUser", user)
-})
+// auth.onAuthStateChanged(function(user) {
+//     store.dispatch("fetchUser", user)
+// })
+
+store.dispatch("fetchUser");

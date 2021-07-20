@@ -1,0 +1,35 @@
+{
+  "paths": [
+    {
+      "name": "/user",
+      "lambdaFunction": "createUser",
+      "privacy": {
+        "open": true
+      },
+      "policyResourceName": "/user"
+    }
+  ],
+  "resourceName": "burnprojectapi",
+  "apiName": "burnprojectapi",
+  "functionArns": [
+    {
+      "lambdaFunction": "createUser"
+    }
+  ],
+  "privacy": {
+    "auth": 0,
+    "unauth": 0,
+    "authRoleName": "amplify-burnprojectv3-prod-141447-authRole",
+    "unAuthRoleName": "amplify-burnprojectv3-prod-141447-unauthRole"
+  },
+  "dependsOn": [
+    {
+      "category": "function",
+      "resourceName": "createUser",
+      "attributes": [
+        "Name",
+        "Arn"
+      ]
+    }
+  ]
+}

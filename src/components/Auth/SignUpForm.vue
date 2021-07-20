@@ -87,7 +87,10 @@
                 </b-form-group>
 
                 <div class="text-center">
-                    <b-button type="submit" variant="primary">Sign Up</b-button>
+                    <b-button type="submit" variant="primary" :disabled="isCreating">
+                        <span v-if="!isCreating">Sign Up</span>
+                        <span v-else><b-spinner small /></span>
+                    </b-button>
                 </div>
             </b-form>
         </div>
@@ -98,8 +101,14 @@
                 </b-form-group>
 
                 <div class="text-center">
-                    <b-button variant="outline-dark" @click="resendVerification">Resend</b-button>
-                    <b-button type="submit" variant="primary">Verify Email</b-button>
+                    <b-button variant="outline-dark" @click="resendVerification" :disabled="isResending">
+                        <span v-if="!isResending">Resend</span>
+                        <span v-else><b-spinner small /></span>
+                    </b-button>
+                    <b-button type="submit" variant="primary" :disabled="isVerifying">
+                        <span v-if="!isVerifying">Verify Email</span>
+                        <span v-else><b-spinner small /></span>
+                    </b-button>
                 </div>
             </b-form>
         </div>
@@ -109,8 +118,7 @@
 <script>
 // import { auth, db, functions, storage } from '@/firebase'
 import { db } from '@/firebase'
-import { config } from '@/config'
-import { CognitoUserPool, CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { Auth, API } from 'aws-amplify'
 
 
 import AvatarEditor from '@/components/Utility/AvatarEditor.vue'
@@ -120,7 +128,9 @@ export default {
     components: { AvatarEditor },
     data() {
         return {
-            isLoading: true,
+            isCreating: false,
+            isVerifying: false,
+            isResending: false,
 
             imageURL: null,
             fileInput: null,
@@ -137,7 +147,8 @@ export default {
                 height: '',
                 weight: '',
                 metric: true,
-                country: 'United States'
+                country: 'United States',
+                profilePhoto: '',
             },
 
             usernameUnique: false,
@@ -165,6 +176,10 @@ export default {
         usernameWatcherHandler: function() {
             return this.signUpForm.username;
         }
+    },
+
+    created: function() {
+        console.log(this.$store.state.apiName);
     },
 
     methods: {
@@ -241,106 +256,88 @@ export default {
         //     })
         // },
 
-        signUp: function() {
-            let poolData = config.cognito;
-            this.userPool = new CognitoUserPool(poolData);
+        signUp: async function() {
+            this.isCreating = true;
 
-            
-            let attributeEmail = new CognitoUserAttribute({
-                Name: 'email',
-                Value: this.signUpForm.email
-            })
-            let attributeDob = new CognitoUserAttribute({
-                Name: 'birthdate',
-                Value: this.signUpForm.dob
-            })
-            let attributeSurname = new CognitoUserAttribute({
-                Name: 'family_name',
-                Value: this.signUpForm.surname
-            })
-            let attributeFirtName = new CognitoUserAttribute({
-                Name: 'given_name',
-                Value: this.signUpForm.firstName
-            });
-            let attributeLocale = new CognitoUserAttribute({
-                Name: 'locale',
-                Value: this.signUpForm.country
-            });
-            let attributeGender = new CognitoUserAttribute({
-                Name: 'gender',
-                Value: this.signUpForm.gender
-            })
-            let attributePicture = new CognitoUserAttribute({
-                Name: 'picture',
-                Value: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png'
-            })
-
-            let attributeList = [attributeEmail, attributeDob, attributeSurname, attributeFirtName, attributeLocale, attributeGender, attributePicture];
-
-
-            this.userPool.signUp(this.signUpForm.username, this.signUpForm.password, attributeList, null, (e, result) => {
-                if (e) {
-                    alert (e.message || JSON.stringify(e));
-                    return;
+            Auth.signUp({
+                username: this.signUpForm.username,
+                password: this.signUpForm.password,
+                attributes: {
+                    email: this.signUpForm.email,
+                    birthdate: this.signUpForm.dob,
+                    gender: this.signUpForm.gender,
+                    given_name: this.signUpForm.firstName,
+                    family_name: this.signUpForm.surname
                 }
-
-                var cognitoUser = result.user;
-                this.cognitoUsername = cognitoUser.getUsername();
-
-                let userData = {
-                    Username: this.cognitoUsername,
-                    Pool: this.userPool
-                }
-
-                this.cognitoUser = new CognitoUser(userData);
-
+            })
+            .then(user => {
+                console.log("Success", user);
                 this.verifyingEmail = true;
+                this.cognitoUsername = user.user.username;
+                this.isCreating = false;
+
+                this.signUpForm.profilePhoto = this.uploadProfilePhoto(this.imageURL);
+                console.log(this.signUpForm);
+
+                // API.post(apiName, path, myInit)
+                // .then(response => {
+                //     console.log("API RESPONSE SUCCESS:", response);
+                // })
+                // .catch(err => {
+                //     console.log("API RESPONSE ERROR:", err.response);
+                // })
             })
+            .catch(err => {
+                this.isCreating = false;
+                alert(err.message || JSON.stringify(err))
+            })
+        },
+
+        uploadProfilePhoto: async function() {
+            let path = '/imageupload';
 
 
-            console.log(this.userPool);
+            const uploadUrl = await API.get('burnprojectapi', path).catch(err => { console.warn(err); });
+            console.log("API RESPONSE:", uploadUrl);
+            const response = await fetch(uploadUrl)
+            const blob = response.blob();
+
+            fetch(uploadUrl, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                },
+                body: blob
+            })
+            
+            return uploadUrl.split("?")[0];
         },
 
         verifyEmail: function() {
-            this.cognitoUser.confirmRegistration(this.verificationCode, true, (err, result) => {
-                if (err) {
-                    alert (err.message || JSON.stringify(err));
-                    return;
-                }
-
-                console.log("VERIFY RESULT:", result);
-                this.createSession();
+            this.isVerifying = true;
+            
+            Auth.confirmSignUp(this.cognitoUsername, this.verificationCode)
+            .then(() => {
+                this.isVerifying = false;
+                this.$store.dispatch('fetchUser', true);
+            })
+            .catch(err => {
+                this.isVerifying = false;
+                alert(err.message || JSON.stringify(err));
             })
         },
 
         resendVerification: function() {
-            this.cognitoUser.resendConfirmationCode((err, result) => {
-                if (err) {
-                    alert (err.message || JSON.stringify(err));
-                }
+            this.isResending = true;
 
-                console.log("RESEND RESULT:", result);
+            Auth.resendSignUp(this.cognitoUsername)
+            .then(() => {
+                console.log("Verification sent again.");
+                this.isResending = false;
             })
-        },
-
-        createSession: function() {
-            let authenticationData = {
-                Username: this.cognitoUsername,
-                Password: this.signUpForm.password
-            }
-            let authenticationDetails = new AuthenticationDetails(authenticationData);
-
-            this.cognitoUser.authenticateUser(authenticationDetails, {
-                onSuccess: (result) => {
-                    let accessToken = result.getAccessToken().getJwtToken();
-
-                    console.log("TOKEN:", accessToken);
-                },
-
-                onFailure: (err) => {
-                    alert(err.message || JSON.stringify(err));
-                }
-            })
+            .catch(err => {
+                alert(err.message || JSON.stringify(err));
+            });
         },
 
         selectCountry: function(country) {
