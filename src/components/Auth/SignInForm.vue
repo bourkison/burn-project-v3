@@ -24,7 +24,6 @@
 </template>
 
 <script>
-// import { auth } from '@/firebase'
 import { Auth } from 'aws-amplify'
 
 export default {
@@ -50,6 +49,7 @@ export default {
                     return Auth.rememberDevice()
                 }
 
+                this.$store.dispatch('fetchUser', false);
                 console.log(user);
             })
             .then(() => {

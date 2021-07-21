@@ -27,6 +27,22 @@
         "getImageUploadUrl": {
           "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
           "s3Key": "amplify-builds/getImageUploadUrl-65534551504166346c67-build.zip"
+        },
+        "getUser": {
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/getUser-556b38443056464c2f4c-build.zip"
+        },
+        "burnprojectv3mongooseModels": {
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/burnprojectv3mongooseModels-LambdaLayerVersionafff9b67-build.zip"
+        },
+        "createExercise": {
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/createExercise-416e3234544957723651-build.zip"
+        },
+        "getExercise": {
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/getExercise-6b43415466782f4c7174-build.zip"
         }
       }
     }

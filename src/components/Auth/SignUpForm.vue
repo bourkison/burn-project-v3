@@ -199,63 +199,6 @@ export default {
             this.fileInput = null;
         },
 
-        // signUp: function() {
-        //     this.isLoading = true;
-
-        //     let userId, imageRef;
-
-        //     auth.createUserWithEmailAndPassword(this.signUpForm.email, this.signUpForm.password)
-        //     .then(user => {
-        //         userId = user.user.uid;
-        //         if (this.imageURL) {
-        //             imageRef = storage.ref("users/" + user.user.uid + "/pp/" + (Number(new Date())).toString());
-        //             return imageRef.putString(this.imageURL, 'data_url');
-        //         } else {
-        //             console.log("No photo");
-        //         }
-        //     })
-        //     .then(() => {
-        //         if (imageRef) {
-        //             return imageRef.getDownloadURL().then(url => {
-        //                 this.signUpForm.profilePhoto = url;
-        //             })
-        //         }
-        //     })
-        //     .then(() => {
-        //         const createUser = functions.httpsCallable("createUser");
-
-        //         let userPayload = {
-        //             username: this.signUpForm.username,
-        //             firstName: this.signUpForm.firstName,
-        //             surname: this.signUpForm.surname,
-        //             dob: this.signUpForm.dob,
-        //             height: this.signUpForm.height,
-        //             weight: this.signUpForm.weight,
-        //             country: this.signUpForm.country,
-        //             metric: this.signUpForm.metric,
-        //             profilePhoto: this.signUpForm.profilePhoto,
-        //             gender: this.signUpForm.gender
-        //         }
-
-        //         return createUser({ userForm: userPayload, userId: userId });
-        //     })
-        //     .then(result => {
-        //         console.log("User created at:" + result.data.userId);
-        //         // As image upload process can take time, we need to sign in again
-        //         // As we have probably been auto signed out due to not having doc data.
-        //         if (!this.$store.state.userProfile.loggedIn) {
-        //             return auth.signInWithEmailAndPassword(this.signUpForm.email, this.signUpForm.password)
-        //         }
-        //     })
-        //     .then(() => {
-        //         this.isLoading = false;
-        //         this.closeSignUp();
-        //     })
-        //     .catch(e => {
-        //         console.error("Error creating user!", e);
-        //     })
-        // },
-
         signUp: async function() {
             this.isCreating = true;
 
@@ -270,42 +213,52 @@ export default {
                     family_name: this.signUpForm.surname
                 }
             })
-            .then(user => {
-                console.log("Success", user);
+            .then(async user => {
                 this.verifyingEmail = true;
                 this.cognitoUsername = user.user.username;
                 this.isCreating = false;
 
-                this.signUpForm.profilePhoto = this.uploadProfilePhoto(this.imageURL);
-                console.log(this.signUpForm);
+                this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL);
 
-                // API.post(apiName, path, myInit)
-                // .then(response => {
-                //     console.log("API RESPONSE SUCCESS:", response);
-                // })
-                // .catch(err => {
-                //     console.log("API RESPONSE ERROR:", err.response);
-                // })
+                const path = '/user';
+                const myInit = {
+                    body: {
+                        signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
+                    }
+                };
+
+                myInit.body.signUpForm.username = this.cognitoUsername
+
+                delete myInit.body.signUpForm.password;
+                delete myInit.body.signUpForm.confPassword;
+
+                return API.post(this.$store.state.apiName, path, myInit)
+            })
+            .then(response => {
+                console.log("SIGN UP SUCCESS:", response);
             })
             .catch(err => {
                 this.isCreating = false;
                 alert(err.message || JSON.stringify(err))
             })
+
+            
         },
 
-        uploadProfilePhoto: async function() {
-            let path = '/imageupload';
+        uploadProfilePhoto: async function(image) {
+            if (!image) {
+                return '';
+            }
 
+            const path = '/imageupload';
 
-            const uploadUrl = await API.get('burnprojectapi', path).catch(err => { console.warn(err); });
-            console.log("API RESPONSE:", uploadUrl);
-            const response = await fetch(uploadUrl)
-            const blob = response.blob();
+            const uploadUrl = await API.get(this.$store.state.apiName, path).catch(err => { console.warn(err); });
+            const blob = this.dataURLtoBlob(image);
 
             fetch(uploadUrl, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": "application/octet-stream"
                 },
                 body: blob
             })
@@ -318,8 +271,12 @@ export default {
             
             Auth.confirmSignUp(this.cognitoUsername, this.verificationCode)
             .then(() => {
+                return Auth.signIn(this.signUpForm.username, this.signUpForm.password)
+            })
+            .then(() => {
+                this.$emit("closeSignUpModal");
+                this.$store.dispatch('fetchUser', false);
                 this.isVerifying = false;
-                this.$store.dispatch('fetchUser', true);
             })
             .catch(err => {
                 this.isVerifying = false;
@@ -342,7 +299,17 @@ export default {
 
         selectCountry: function(country) {
             this.signUpForm.country = country;
+        },
+
+        dataURLtoBlob: function(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
         }
+
     },
 
     watch: {

@@ -48,7 +48,7 @@
                     </b-modal>
 
                     <b-modal id="signup-modal" hide-footer centered title="Sign Up">
-                        <SignUpForm />
+                        <SignUpForm @closeSignUpModal="$bvModal.hide('signup-modal')" />
                     </b-modal>
                 </b-collapse>
             </b-navbar>

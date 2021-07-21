@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import firebase from 'firebase'
+import store from '@/store'
 
 import Home from '@/views/Home.vue'
 
@@ -176,7 +176,7 @@ const router = new VueRouter({
 router.beforeEach(async (to, from, next) => {
     const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
 
-    if (requiresAuth && !await firebase.getCurrentUser()) {
+    if (requiresAuth && !await store.dispatch('fetchUser', false)) {
         next('home');
     } else {
         next();

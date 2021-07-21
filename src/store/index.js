@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { userWorkoutsCollection } from '../firebase'
-import { Auth } from 'aws-amplify'
+import { Auth, API } from 'aws-amplify'
 import router from '../router'
 
 Vue.use(Vuex)
@@ -205,38 +205,33 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        // Fetch user gets called after firebase.onAuthChange in main.js
-        // It pulls the user profile document using the user ID pass to it from auth change.
-        // async fetchUser({ commit }, user) {
-        //     if (user) {
-        //         const userProfile = await db.collection("users").doc(user.uid).get()
-        //         if (userProfile.exists) {
-        //             commit("setLoggedInUser", { loggedIn: true, data: user, docData: userProfile.data() });
-
-        //             if (router.history.current.name == "Sign Up" || router.history.current.name == "Login") {
-        //                 router.push("/");
-        //             }
-        //         } else {
-        //             console.log("User signed in but no doc data. Signing out.")
-        //             auth.signOut();
-        //             commit("setLoggedInUser", { loggedIn: false, data: null, docData: null })
-        //         } 
-        //     } else {
-        //         commit("setLoggedInUser", { loggedIn: false, data: null, docData: null })
-        //     }
-        // },
-
-        async fetchUser({ commit }, reroute) {
+        async fetchUser({ state, commit }, reroute) {
             const user = await Auth.currentAuthenticatedUser().catch(() => { commit("setLoggedInUser", { loggedIn: false, data: null, docData: null }); })
             
             if (user) {
                 console.log("LOGGED IN:", user);
-                commit("setLoggedInUser", { loggedIn: true, data: user, docData: 1 });
+
+                const path = '/user/' + user.username;
+                const myInit = {
+                    headers: {
+                        Authorization: user.signInUserSession.idToken.jwtToken
+                    }
+                }
+
+                let userDoc = await API.get(state.apiName, path, myInit);
+                userDoc = userDoc.data;
+
+                console.log("USER DOC", userDoc);
+
+                commit("setLoggedInUser", { loggedIn: true, data: user, docData: userDoc });
                 if (router.history.current.name == "Sign Up" || router.history.current.name == "Login" || reroute) {
                     router.push("/");
                 }
+
+                return true;
             } else {
                 commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
+                return false;
             }
         },  
 

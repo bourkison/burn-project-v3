@@ -69,7 +69,7 @@ import 'codemirror/lib/codemirror.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 import { Editor } from '@toast-ui/vue-editor'
 
-import { storage, functions } from '@/firebase'
+import { API } from 'aws-amplify'
 
 import ImageUploader from '@/components/Utility/ImageUploader.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
@@ -119,47 +119,59 @@ export default {
     },
 
     methods: {
-        createExercise: function() {
-            console.log("Create", this.exerciseForm, this.imagesToUpload);
+        createExercise: async function() {
+            console.log("Create", this.exerciseForm, this.imagesToUpload, JSON.stringify(this.exerciseForm));
             this.isCreating = true;
 
-            // Generate an ID.
-            this.exerciseForm.id = '';
-            this.exerciseForm.id += this.exerciseForm.name.replace(/[^A-Za-z0-9]/g, "").substring(0, 8).toLowerCase();
-            if (this.exerciseForm.id.length > 0) {
-                this.exerciseForm.id += '-';
-            }
-            this.exerciseForm.id += this.generateId(16 - this.exerciseForm.id.length);
-
             // First upload the image files.
+            let path = '/imageupload';
+            let imageDownloadUrlPromises = [];
             let imageUploadPromises = [];
-            this.imagesToUpload.forEach(img => {
-                let imageRef = storage.ref("exercises/" + this.exerciseForm.id + "/images/" + Number(new Date()) + "-" + this.generateId(4));
-                imageUploadPromises.push(imageRef.putString(img.url, 'data_url'));
-                this.exerciseForm.filePaths.push(imageRef.fullPath);
+            this.imagesToUpload.forEach(() => {
+                imageDownloadUrlPromises.push(API.get(this.$store.state.apiName, path, {
+                    headers: {
+                        "Authorization": this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    }
+                }));
             })
 
-            // Once images are all uploaded successfully, create the document.
-            Promise.all(imageUploadPromises)
-            .then(() => {
-                const createExercise = functions.httpsCallable("createExercise");
-                const user = { username: this.$store.state.userProfile.docData.username, profilePhoto: this.$store.state.userProfile.docData.profilePhoto };
+            const imageUrls = await Promise.all(imageDownloadUrlPromises);
 
-                createExercise({ exerciseForm: this.exerciseForm, user: user })
-                .then(result => {
-                    this.isCreating = false;
-                    console.log(result);
-                    this.$router.push("/exercises/" + result.data.id);
-                })
-                .catch(e => {
-                    console.log("Error creating exercise:", e);
-                    this.isCreating = false;
-                })
+            imageUrls.forEach((url, i) => {
+                const blob = this.dataURLtoBlob(this.imagesToUpload[i].url);
+
+                imageUploadPromises.push(fetch(url, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/octet-stream",
+                    },
+                    body: blob
+                }))
+
+                this.exerciseForm.filePaths.push(url.split("?")[0]);
             })
-            .catch(e => {
-                console.log("Error uploading images", e);
-                this.isCreating = false;
-            })
+
+            await Promise.all(imageUploadPromises);
+
+            path = '/exercise'
+            const myInit = {
+                headers: {
+                    "Authorization": this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                },
+                body: {
+                    exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
+                }
+            }
+
+            const response = await API.post(this.$store.state.apiName, path, myInit).catch(err => { 
+                this.isCreating = false; 
+                alert(err.message || JSON.stringify(err));
+                return;
+            });
+
+
+            console.log("CREATION SUCCESS:", response);
+            this.$router.push("/exercises/" + response._id);
         },
 
         updateDescription: function() {
@@ -182,15 +194,14 @@ export default {
             this.exerciseForm.difficulty = difficulty;
         },
 
-        generateId: function(n) {
-            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-            let id = '';
-            // 7 random characters
-            for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+        dataURLtoBlob: function(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
             }
-            return id;
-        },
+            return new Blob([u8arr], {type:mime});
+        }
     }
 }
 </script>
