@@ -21,6 +21,7 @@
 
 <script>
 import { db } from '@/firebase'
+import { API } from 'aws-amplify'
 import ExerciseFeed from '@/components/Exercise/ExerciseFeed.vue'
 
 export default {
@@ -38,30 +39,25 @@ export default {
         }
     },
 
-    created: function() {
-        // Download relevant exercises.
-        db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("exercises").orderBy("createdAt", "desc").limit(5).get()
-        .then(exerciseSnapshot => {
-            if (exerciseSnapshot.size > 0) {
-                exerciseSnapshot.forEach(exercise => {
-                    this.exercises.push(exercise.id);
-                })
-
-                if (exerciseSnapshot.size < 5) {
-                    this.moreToLoad = false;
-                }
-
-                setTimeout(() => { this.isLoadingMore = false }, 500);
-                this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
-            } else {
-                this.moreToLoad = false;
+    created: async function() {
+        const path = '/exercise';
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+            },
+            queryStringParameters: {
+                loadAmount: 5
             }
+        }
+
+        const result = await API.get(this.$store.state.apiName, path, myInit);
+        this.exercises = result.data;
+
+        if (this.exercises.length > 0) {
             this.isLoading = false;
-        })
-        .catch(e => {
-            this.isLoading = false;
-            console.error("Error pulling exercises", e);
-        })
+        }
+
+        console.log("API RESPONSE", result);
     },
 
     methods: {

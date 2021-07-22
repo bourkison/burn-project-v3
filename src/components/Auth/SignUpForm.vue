@@ -252,7 +252,11 @@ export default {
 
             const path = '/imageupload';
 
-            const uploadUrl = await API.get(this.$store.state.apiName, path).catch(err => { console.warn(err); });
+            const uploadUrl = await API.get(this.$store.state.apiName, path, {
+                queryStringParameters: {
+                    type: "profilePhotos"
+                }
+            }).catch(err => { console.warn(err); });
             const blob = this.dataURLtoBlob(image);
 
             fetch(uploadUrl, {

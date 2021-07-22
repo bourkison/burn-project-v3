@@ -43,6 +43,16 @@
         "getExercise": {
           "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
           "s3Key": "amplify-builds/getExercise-6b43415466782f4c7174-build.zip"
+        },
+        "queryExercises": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/queryExercises-356f49624b2b6b594866-build.zip"
+        },
+        "editExercise": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/editExercise-4d33736e4b724166664e-build.zip"
         }
       }
     }

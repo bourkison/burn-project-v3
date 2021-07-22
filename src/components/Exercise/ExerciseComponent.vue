@@ -1,13 +1,13 @@
 <template>
     <b-card no-body>
         <div v-if="!isLoading">
-            <div v-if="imgUrls.length > 1">
+            <div v-if="exerciseData.filePaths.length > 1">
                 <b-carousel v-model="carouselModel" controls indicators :interval="0">
-                    <b-aspect><b-carousel-slide v-for="img in imgUrls" :key="img" :img-src="img" /></b-aspect>
+                    <b-aspect><b-carousel-slide v-for="img in exerciseData.filePaths" :key="img" :img-src="img" /></b-aspect>
                 </b-carousel>
             </div>
-            <div v-else-if="imgUrls.length > 0">
-                <b-img :src="imgUrls[0]" fluid-grow />
+            <div v-else-if="exerciseData.filePaths.length > 0">
+                <b-img :src="exerciseData.filePaths[0]" fluid-grow />
             </div>
             
             <b-card-body>
@@ -29,7 +29,8 @@
 import '@toast-ui/editor/dist/toastui-editor-viewer.css'
 
 import { Viewer } from '@toast-ui/vue-editor'
-import { db, storage } from '@/firebase'
+// import { db, storage } from '@/firebase'
+import { API } from 'aws-amplify'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
 
@@ -47,37 +48,26 @@ export default {
         return {
             isLoading: true,
             exerciseData: {},
-            imgUrls: [],
 
             // Bootstrap:
             carouselModel: 0
         }
     },
 
-    created: function() {
-        // Download Exercise Data
-        db.collection("exercises").doc(this.$props.exerciseId).get()
-        .then(exerciseDoc => {
-            this.exerciseData = exerciseDoc.data();
-            this.exerciseData.id = exerciseDoc.id
-            let imageDownloadPromises = [];
+    created: async function() {
+        const path = '/exercise/' + this.$props.exerciseId;
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+            }
+        }
 
-            this.exerciseData.filePaths.forEach(filePath => {
-                imageDownloadPromises.push(storage.ref(filePath).getDownloadURL());
-            })
-            
-            return Promise.all(imageDownloadPromises);
-        })
-        .then(imgUrls => {
-            imgUrls.forEach(url => {
-                this.imgUrls.push(url);
-            })
+        const response = await API.get(this.$store.state.apiName, path, myInit);
+        this.exerciseData = response.data;
 
+        if (this.exerciseData) {
             this.isLoading = false;
-        })
-        .catch(e => {
-            console.warn("Error downloading exercise data", e);
-        })
+        }
     },
 }
 </script>

@@ -1,0 +1,17 @@
+{
+  "lambdaLayers": [
+    {
+      "type": "ProjectLayer",
+      "resourceName": "burnprojectv3mongooseModels",
+      "env": "prod",
+      "version": "Always choose latest version",
+      "isLatestVersionSelected": true
+    }
+  ],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "mongodbUri",
+      "environmentVariableName": "MONGODB_URI"
+    }
+  ]
+}

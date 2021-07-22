@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ExerciseComponent class="exercise" v-for="exercise in exercises" :exerciseId="exercise" :key="exercise" />
+        <ExerciseComponent class="exercise" v-for="exercise in exercises" :exerciseId="exercise._id" :key="exercise._id" />
     </div>
 </template>
 

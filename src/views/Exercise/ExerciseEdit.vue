@@ -12,7 +12,7 @@
                                     <b-form-input id="nameInput" v-model="newExerciseData.name" type="text" placeholder="Exercise Name" required />
                                 </b-form-group>
                                 <b-form-group label="Image/Video" label-for="imageInput">
-                                    <ImageUploader @updateImages="updateImages" @deleteInitImage="deleteInitImage" :initImages="initImages" />
+                                    <ImageUploader @updateImages="updateImages" @deleteInitImage="deleteInitImage" :initImages="initImages" :inlineDisplay="false" />
                                 </b-form-group>
                         </b-card-body>
                     </b-card>
@@ -72,7 +72,7 @@ import 'codemirror/lib/codemirror.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 import { Editor } from '@toast-ui/vue-editor'
 
-import { storage, db, functions } from '@/firebase'
+import { API } from 'aws-amplify'
 
 import ImageUploader from '@/components/Utility/ImageUploader.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
@@ -129,42 +129,33 @@ export default {
     },
 
     methods: {
-        downloadExercise: function() {
-            db.collection("exercises").doc(this.$route.params.exerciseid).get()
-            .then(exerciseDoc => {
-                if (exerciseDoc.exists) {
-                    this.exerciseExists = true;
-
-                    this.oldExerciseData = exerciseDoc.data();
-                    this.newExerciseData = exerciseDoc.data();
-                    this.newExerciseData.id = exerciseDoc.id;
-
-                    // Download images
-                    let imageDownloadPromises = [];
-                    this.oldExerciseData.filePaths.forEach(file => {
-                        imageDownloadPromises.push(storage.ref(file).getDownloadURL());
-                    })
-
-                    return Promise.all(imageDownloadPromises)
-                } else {
-                    throw new Error("Image does not exist");
+        downloadExercise: async function() {
+            this.isLoading = true;
+            this.exerciseExists = false;
+            this.exerciseData = {};
+            
+            const path = '/exercise/' + this.$route.params.exerciseid;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
                 }
-            })
-            .then(urls => {
-                let i = 0;
-                urls.forEach(url => {
-                    this.initImages.push({id: i, url: url, editable: false, path: this.oldExerciseData.filePaths[i]});
-                    i ++;
+            }
+
+            const response = await API.get(this.$store.state.apiName, path, myInit);
+            this.newExerciseData = response.data;
+            this.oldExerciseData = response.data;
+
+            if (this.newExerciseData) {
+                this.newExerciseData.filePaths.forEach((url, i) => {
+                    this.initImages.push({ id: i, url: url, editable: false, path: this.oldExerciseData.filePaths[i] });
                 })
 
+                this.exerciseExists = true;
                 this.isLoading = false;
-            })
-            .catch(e => {
-                console.error(e);
-            })
+            }
         },
 
-        updateExercise: function() {
+        updateExercise: async function() {
             console.log("Update", this.newExerciseData, this.imagesToUpload, this.imagesToDelete);
 
             this.isUpdating = true;
@@ -172,52 +163,69 @@ export default {
             // First delete images. This does not need to be waited for.
             if (this.imagesToDelete.length > 0) {
                 this.imagesToDelete.forEach(path => {
-                    storage.ref(path).delete()
-                    .catch(e => {
-                        console.error("Error deleting image", e);
-                    })
+                    // TODO: DELETE IMAGES.
+                    console.log("Should delete image here", path);
                 })
             }
 
             // Next, loop through our images and upload if need be.
+            let path = '/imageupload';
+            let imageUploadUrlPromises = [];
             let imageUploadPromises = [];
             this.newExerciseData.filePaths = [];
             this.imagesToUpload.forEach(image => {
                 if (!image.path) {
-                    const imageRef = storage.ref("exercises/" + this.$route.params.exerciseid + "/images/" + Number(new Date()) + "-" + this.generateId(4));
-                    this.newExerciseData.filePaths.push(imageRef.fullPath);
+                    const blob = this.dataURLtoBlob(image.url)
 
-                    imageUploadPromises.push(imageRef.putString(image.url, 'data_url'));
+                    imageUploadUrlPromises.push(API.get(this.$store.state.apiName, path, {
+                        headers: {
+                            Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                        },
+                        queryStringParameters: {
+                            type: "exercises"
+                        }
+                    }).then(url => {
+                        imageUploadPromises.push(fetch(url, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/octet-stream",
+                            },
+                            body: blob
+                        }));
+                        
+                        return new Promise(resolve => {
+                            resolve(url.split("?")[0]);
+                        })
+                    }));
                 } else {
-                    this.newExerciseData.filePaths.push(image.path);
+                    // To keep everything in order, create an empty promise.
+                    imageUploadUrlPromises.push(new Promise(resolve => {
+                        resolve(image.path);
+                    }))
                 }
             })
 
-            Promise.all(imageUploadPromises)
-            .then(() => {
-                // Update Algolia based on if name is different.
-                let updateAlgolia;
-                if (this.newExerciseData.name !== this.oldExerciseData.name) {
-                    updateAlgolia = true;
-                } else {
-                    updateAlgolia = false;
+            const imageUrls = await Promise.all(imageUploadUrlPromises);
+
+            imageUrls.forEach(url => {
+                this.newExerciseData.filePaths.push(url);
+            })
+
+            // Now update exercise document.
+            path = '/exercise/' + this.$route.params.exerciseid;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                },
+                body: {
+                    exerciseForm: this.newExerciseData
                 }
+            }
 
-                console.log("Uploaded images.", this.newExerciseData, updateAlgolia);
+            const result = await API.put(this.$store.state.apiName, path, myInit)
 
-                const editExercise = functions.httpsCallable("editExercise");
-                return editExercise({ exerciseForm: this.newExerciseData, updateAlgolia: updateAlgolia })
-            })
-            .then(result => {
-                this.isUpdating = false;
-                this.$router.push("/exercises/" + result.data.id);
-            })
-            .catch(e => {
-                console.error("Error updating exercise", e);
-                this.isUpdating = false;
-            })
-
-
+            this.isUpadting = false;
+            this.$router.push("/exercises/" + result.data._id)
         },
 
         updateDescription: function() {
@@ -252,6 +260,15 @@ export default {
                 id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
             }
             return id;
+        },
+
+        dataURLtoBlob: function(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
         }
     }
 }

@@ -125,17 +125,20 @@ export default {
 
             // First upload the image files.
             let path = '/imageupload';
-            let imageDownloadUrlPromises = [];
+            let imageUploadUrlPromises = [];
             let imageUploadPromises = [];
             this.imagesToUpload.forEach(() => {
-                imageDownloadUrlPromises.push(API.get(this.$store.state.apiName, path, {
+                imageUploadUrlPromises.push(API.get(this.$store.state.apiName, path, {
                     headers: {
                         "Authorization": this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        type: "exercises"
                     }
                 }));
             })
 
-            const imageUrls = await Promise.all(imageDownloadUrlPromises);
+            const imageUrls = await Promise.all(imageUploadUrlPromises);
 
             imageUrls.forEach((url, i) => {
                 const blob = this.dataURLtoBlob(this.imagesToUpload[i].url);
