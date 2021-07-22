@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
+// import store from '@/store'
 
 import Home from '@/views/Home.vue'
 
@@ -174,14 +174,15 @@ const router = new VueRouter({
 // This function checks if user is logged in based on route metadata.
 // Calls a promise in firebase.js to wait for user to log in (if on initial load).
 router.beforeEach(async (to, from, next) => {
-    const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
+    // const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
 
-    if (requiresAuth && !await store.dispatch('fetchUser', false)) {
-        next('home');
-    } else {
-        next();
-    }
+    // if (requiresAuth && !await store.dispatch('fetchUser', false)) {
+    //     next('home');
+    // } else {
+    //     next();
+    // }
 
+    // next();
     next();
 })
 

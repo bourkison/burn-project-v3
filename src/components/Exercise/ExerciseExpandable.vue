@@ -23,7 +23,7 @@
 
 <script>
 import { Viewer } from '@toast-ui/vue-editor'
-import { db } from '@/firebase'
+import { API } from 'aws-amplify'
 
 export default {
     name: 'ExerciseExpandable',
@@ -49,7 +49,7 @@ export default {
 
     data() {
         return {
-            exerciseData: {},
+            exerciseData: null,
             isLoading: true,
 
             isVisible: false
@@ -63,14 +63,33 @@ export default {
     },
 
     methods: {
-        downloadData: function() {
-            db.collection("exercises").doc(this.$props.exercise.id).get()
-            .then(exerciseDoc => {
-                this.exerciseData = exerciseDoc.data();
-                this.exerciseData.id = exerciseDoc.id;
+        downloadData: async function() {
+            try {
+                const path = '/exercise/' + this.$props.exercise.exerciseId;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    }
+                }
 
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw new Error("Error downloading exercise: " + this.$props.exercise.exerciseId + " at promise catch: " + err);
+                });
+
+                if (!response) {
+                    throw new Error("Error downloading exercise: " + this.$props.exercise.exerciseId + " no repsonse");
+                }
+
+                if (!response.success) {
+                    throw new Error("Error downloading exercise: " + this.$props.exercise.exerciseId + " call unsuccessful: " + response.errorMessage);
+                }
+
+                this.exerciseData = response.data;
                 this.isLoading = false;
-            })
+            }
+            catch (err) {
+                console.error(err);
+            }
         }
     },
 

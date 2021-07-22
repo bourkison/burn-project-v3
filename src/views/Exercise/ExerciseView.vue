@@ -8,9 +8,12 @@
                             <b-card-title>
                                 {{ exerciseData.name }}
                                 <b-dropdown right class="float-right" variant="outline">
-                                    <span v-if="exerciseData.createdBy._id === this.$store.state.userProfile.docData._id">
+                                    <span v-if="exerciseData.createdBy.userId === this.$store.state.userProfile.docData._id">
                                         <b-dropdown-item :to="'/exercises/' + exerciseData._id + '/edit'">Edit</b-dropdown-item>
-                                        <b-dropdown-item variant="danger">Delete</b-dropdown-item>
+                                        <b-dropdown-item @click="confirmDeleteExercise" :disabled="isDeleting" variant="danger">
+                                            <div v-if="!isDeleting">Delete</div>
+                                            <div v-else class="text-center"><b-spinner small /></div>
+                                        </b-dropdown-item>
                                     </span>
                                     <span v-else>
                                         <b-dropdown-item variant="danger">Report</b-dropdown-item>
@@ -86,6 +89,21 @@
                 </b-container>
             </b-col>
         </b-row>
+
+        <b-modal v-model="modalIsDeleting" title="Please Confirm" @ok="deleteExercise" ok-variant="danger" centered button-size="sm" :ok-title-html="isDeleting ? '<b-spinner />' : 'Ok'">
+            <div>Are you sure you want to delete this exercise? This can not be undone.</div>
+
+            <template #modal-footer="{ ok, cancel }">
+                <b-button size="sm" @click="cancel">
+                    <div>Cancel</div>
+                </b-button>
+
+                <b-button size="sm" variant="danger" @click="ok" :disabled="isDeleting">
+                    <div v-if="!isDeleting">OK</div>
+                    <div v-else><b-spinner small /></div>
+                </b-button>
+            </template>
+        </b-modal>
     </b-container>
     <b-container v-else-if="!isLoading && !exerciseExists">
         <!-- 404 -->
@@ -99,13 +117,12 @@
 <script>
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 
-import { Viewer } from '@toast-ui/vue-editor'
-// import { db, storage } from '@/firebase'
-import { API } from 'aws-amplify'
+import { Viewer } from '@toast-ui/vue-editor';
+import { API } from 'aws-amplify';
 
-import CommentSection from '@/components/Comment/CommentSection.vue'
-import ExerciseChart from '@/components/Charts/ExerciseChart.vue'
-import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
+import CommentSection from '@/components/Comment/CommentSection.vue';
+import ExerciseChart from '@/components/Charts/ExerciseChart.vue';
+import MuscleGroup from '@/components/Utility/MuscleGroup.vue';
 
 export default {
     name: 'ExerciseView',
@@ -113,13 +130,15 @@ export default {
     data() {
         return {
             isLoading: true,
+            isDeleting: false,
             exerciseExists: false,
 
-            exerciseData: {},
+            exerciseData: null,
 
             // Bootstrap:
             carouselModel: 0,
-            variants: ["success", "danger", "warning", "info", "dark"]
+            variants: ["success", "danger", "warning", "info", "dark"],
+            modalIsDeleting: false,
         }
     },
 
@@ -136,7 +155,7 @@ export default {
         downloadExercise: async function() {
             this.isLoading = true;
             this.exerciseExists = false;
-            this.exerciseData = {};
+            this.exerciseData = null;
             this.carouselModel = 0;
 
             const path = '/exercise/' + this.$route.params.exerciseid;
@@ -155,6 +174,30 @@ export default {
                 this.isLoading = false;
             }
         },
+
+        confirmDeleteExercise: function() {
+            this.modalIsDeleting = true;
+        },
+
+        deleteExercise: async function(e) {
+            e.preventDefault();
+
+            this.isDeleting = true;
+
+            const path = '/exercise/' + this.$route.params.exerciseid;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                }
+            }
+
+            const response = await API.del(this.$store.state.apiName, path, myInit);
+            console.log("Deletion success!", response);
+
+            this.isDeleting = false;
+            this.modalIsDeleting = false;
+            this.$router.push("/exercises");
+        }
     }
 }
 </script>

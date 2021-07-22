@@ -205,34 +205,36 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        async fetchUser({ state, commit }, reroute) {
-            const user = await Auth.currentAuthenticatedUser().catch(() => { commit("setLoggedInUser", { loggedIn: false, data: null, docData: null }); })
-            
-            if (user) {
-                console.log("LOGGED IN:", user);
-
-                const path = '/user/' + user.username;
-                const myInit = {
-                    headers: {
-                        Authorization: user.signInUserSession.idToken.jwtToken
+        fetchUser({ state, commit }, reroute) {
+            return Auth.currentAuthenticatedUser()
+            .then(async user => {
+                if (user) {
+                    console.log("LOGGED IN:", user);
+    
+                    const path = '/user/' + user.username;
+                    const myInit = {
+                        headers: {
+                            Authorization: user.signInUserSession.idToken.jwtToken
+                        }
                     }
+    
+                    let userDoc = await API.get(state.apiName, path, myInit);
+                    userDoc = userDoc.data;
+    
+                    console.log("USER DOC", userDoc);
+    
+                    commit("setLoggedInUser", { loggedIn: true, data: user, docData: userDoc });
+                    if (router.history.current.name == "Sign Up" || router.history.current.name == "Login" || reroute) {
+                        router.push("/");
+                    }
+    
+                    return true;
+                } else {
+                    commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
+                    return false;
                 }
-
-                let userDoc = await API.get(state.apiName, path, myInit);
-                userDoc = userDoc.data;
-
-                console.log("USER DOC", userDoc);
-
-                commit("setLoggedInUser", { loggedIn: true, data: user, docData: userDoc });
-                if (router.history.current.name == "Sign Up" || router.history.current.name == "Login" || reroute) {
-                    router.push("/");
-                }
-
-                return true;
-            } else {
-                commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
-                return false;
-            }
+            })
+            .catch(() => { commit("setLoggedInUser", { loggedIn: false, data: null, docData: null }); })
         },  
 
         // As this function may get callled multiple times from different components,

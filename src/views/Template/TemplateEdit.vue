@@ -17,7 +17,7 @@
                     <b-card no-body class="exerciseSelectCard">
                         <b-card-body>
                             <h5>Exercises</h5>
-                            <ExerciseSelector @updateExercises="updateExercises" :initExercises="oldTemplateData.exercises" />
+                            <TemplateBuilder @updateExercises="updateExercises" :initExercises="oldTemplateData.exercises" />
                         </b-card-body>
                     </b-card>
 
@@ -73,18 +73,19 @@
 </template>
 
 <script>
-import { functions, templatesCollection } from '@/firebase'
+import { functions } from '@/firebase'
+import { API } from '@/firebase'
 import { Editor } from '@toast-ui/vue-editor'
 
 import TagSelector from '@/components/Utility/TagSelector.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
 import DifficultySelector from '@/components/Utility/DifficultySelector.vue'
-import ExerciseSelector from '@/components/Utility/ExerciseSelector.vue'
+import TemplateBuilder from '@/components/Template/TemplateBuilder.vue'
 
 
 export default {
     name: 'TemplateEdit',
-    components: { Editor, TagSelector, MuscleGroupSelector, DifficultySelector, ExerciseSelector },
+    components: { Editor, TagSelector, MuscleGroupSelector, DifficultySelector, TemplateBuilder },
     data() {
         return {
             isLoading: true,
@@ -122,30 +123,45 @@ export default {
         this.downloadTemplate();
     },
 
-    beforeRouteUpdate: function() {
+    beforeRouteUpdate: function(to, from, next) {
+        next();
         this.downloadTemplate();
     },
 
     methods: {
-        downloadTemplate: function() {
-            templatesCollection().doc(this.$route.params.templateid).get()
-            .then(templateDoc => {
-                if (templateDoc.exists) {
-                    this.templateExists = true;
-
-                    this.oldTemplateData = templateDoc.data();
-                    this.newTemplateData = templateDoc.data();
-                    this.newTemplateData.id = templateDoc.id;
-
-                    this.isLoading = false;
-                    console.log(this.oldTemplateData.muscleGroups);
-                } else {
-                    throw new Error("Template does not exist");
+        downloadTemplate: async function() {
+            try {
+                this.isLoading = true;
+                this.templateExists = false;
+                this.oldTemplateData = null;
+                this.newTemplateData = null;
+    
+                const path = '/template/' + this.$route.params.exerciseid;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    }
                 }
-            })
-            .catch(e => {
-                console.error("Error downloading template", e);
-            })
+    
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " at promise catch: " + err);
+                })
+
+                if (!response) {
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " no response");
+                }
+
+                if (!response.success) {
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " call unsuccessful: " + response.errorMessage);
+                }
+
+                this.isLoading = false;
+                this.templateExists = true;
+                this.templateData = response.data;
+            }
+            catch(err) {
+                console.error(err);
+            }
         },
 
         updateTemplate: function() {

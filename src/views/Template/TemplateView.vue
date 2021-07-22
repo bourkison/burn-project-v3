@@ -23,7 +23,7 @@
 
                             <b-card-text>
                                 <div :id="templateData.id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
-                                    <ExerciseExpandable v-for="(exercise, index) in templateData.exercises" :exercise="exercise" :accordionIndex="index" :templateId="templateData.id" :key="exercise.id" :lazy="false" />
+                                    <ExerciseExpandable v-for="(exercise, index) in templateData.exerciseReferences" :exercise="exercise" :accordionIndex="index" :templateId="templateData._id" :key="exercise.exerciseId" :lazy="false" />
                                 </div>
 
                                 <div class="text-center">
@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { templatesCollection, userTemplatesCollection } from '@/firebase'
+import { API } from 'aws-amplify';
 import { Viewer } from '@toast-ui/vue-editor'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
@@ -97,7 +97,7 @@ export default {
         return {
             isLoading: true,
             templateExists: false,
-            templateData: {},
+            templateData: null,
 
             // Bootstrap:
             variants: ["success", "danger", "warning", "info", "dark"]
@@ -106,11 +106,6 @@ export default {
 
     created: function() {
         this.downloadTemplate();
-
-        userTemplatesCollection().where("template.id", "==", this.$route.params.templateid).get()
-        .then(templateSnapshot => {
-            console.log("TEST:", templateSnapshot.size);
-        })
     },
 
     beforeRouteUpdate: function(to, from, next) {
@@ -119,29 +114,38 @@ export default {
     },
 
     methods: {
-        downloadTemplate: function() {
-            this.isLoading = true;
-            this.templateExists = false;
-            this.templateData = {};
+        downloadTemplate: async function() {
+            try {
+                this.isLoading = true;
+                this.templateExists = false;
+                this.templateData = null;
 
-            templatesCollection().doc(this.$route.params.templateid).get()
-            .then(templateDoc => {
-                if (templateDoc.exists) {
-                    this.templateData = templateDoc.data();
-                    this.templateData.id = templateDoc.id;
-
-                    this.templateExists = true;
-
-                    this.isLoading = false;
-                } else {
-                    this.templateExists = false;
-                    throw new Error("Template does not exist");
+                const path = '/template/' + this.$route.params.templateid;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    }
                 }
-            })
-            .catch(e => {
-                console.error("Error downloading template", e);
+
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " at promise catch: " + err);
+                });
+
+                if (!response) {
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " no repsonse");
+                }
+
+                if (!response.success) {
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " call unsuccessful: " + response.errorMessage);
+                }
+
                 this.isLoading = false;
-            })
+                this.templateExists = true;
+                this.templateData = response.data;
+            }
+            catch (err) {
+                console.error(err);
+            }
         },
     }
 }

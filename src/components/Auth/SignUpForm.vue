@@ -218,7 +218,7 @@ export default {
                 this.cognitoUsername = user.user.username;
                 this.isCreating = false;
 
-                this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL);
+                // this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL);
 
                 const path = '/user';
                 const myInit = {
@@ -246,6 +246,7 @@ export default {
         },
 
         uploadProfilePhoto: async function(image) {
+            console.log(image);
             if (!image) {
                 return '';
             }

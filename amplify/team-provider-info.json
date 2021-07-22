@@ -53,6 +53,36 @@
           "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
           "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
           "s3Key": "amplify-builds/editExercise-4d33736e4b724166664e-build.zip"
+        },
+        "deleteExercise": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/deleteExercise-4b565774717636634167-build.zip"
+        },
+        "createWorkout": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/createWorkout-574d6d534e50654d2b6a-build.zip"
+        },
+        "createTemplate": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/createTemplate-4955714763633942545a-build.zip"
+        },
+        "getWorkout": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/getWorkout-35304274375141773843-build.zip"
+        },
+        "getTemplate": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/getTemplate-484536754c362b74424c-build.zip"
+        },
+        "editTemplate": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/editTemplate-664d7a69384d2f712f31-build.zip"
         }
       }
     }

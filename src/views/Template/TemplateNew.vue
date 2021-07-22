@@ -17,7 +17,7 @@
                     <b-card no-body class="exerciseSelectCard">
                         <b-card-body>
                             <h5>Exercises</h5>
-                            <ExerciseSelector @updateExercises="updateExercises" />
+                            <TemplateBuilder @updateExercises="updateExercises" />
                         </b-card-body>
                     </b-card>
 
@@ -71,16 +71,16 @@
 
 <script>
 import { Editor } from '@toast-ui/vue-editor'
-import { functions }  from '@/firebase'
+import { API } from 'aws-amplify'
 
-import ExerciseSelector from '@/components/Utility/ExerciseSelector.vue'
+import TemplateBuilder from '@/components/Template/TemplateBuilder.vue'
 import DifficultySelector from '@/components/Utility/DifficultySelector.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
 import TagSelector from '@/components/Utility/TagSelector.vue'
 
 export default {
     name: 'TemplateNew',
-    components: { Editor, DifficultySelector, TagSelector, ExerciseSelector, MuscleGroupSelector },
+    components: { Editor, DifficultySelector, TagSelector, TemplateBuilder, MuscleGroupSelector },
     data() {
         return {
             isLoading: true,
@@ -119,21 +119,35 @@ export default {
     },
 
     methods: {
-        createTemplate: function() {
-            this.isCreating = true;
+        createTemplate: async function() {
+            try {
+                this.isCreating = true;
 
-            const createTemplate = functions.httpsCallable("createTemplate");
-            const user = { username: this.$store.state.userProfile.docData.username, id: this.$store.state.userProfile.data.uid, profilePhoto: this.$store.state.userProfile.docData.profilePhoto };
+                const path = '/template'
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    },
+                    body: {
+                        templateForm: this.templateForm
+                    }
+                }
 
-            createTemplate({ templateForm: this.templateForm, user: user })
-            .then(result => {
-                this.isCreating = false;
-                this.$router.push("/templates/" + result.data.id);
-            })
-            .catch(e => {
-                console.log("Error creating template:", e);
-                this.isCreating = false;
-            })
+                const response = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw new Error("API Error at promise catch: " + err);
+                });
+
+                if (!response.data) {
+                    if (response.errorMessage) {
+                        throw new Error("API Error in response: " + response.errorMessage)
+                    }
+                }
+
+                this.$router.push('/templates/' + response._id);
+            } 
+            catch (err) {
+                console.error(err);
+            }
         },
 
         updateDescription: function() {
@@ -155,7 +169,7 @@ export default {
         updateExercises: function(exercises) {
             let temp = [];
             exercises.forEach(exercise => {
-                temp.push({ id: exercise.id, name: exercise.name })
+                temp.push({ exerciseId: exercise._id, name: exercise.name, muscleGroups: exercise.muscleGroups, tags: exercise.tags, isFollow: exercise.isFollow });
             })
 
             this.templateForm.exercises = temp;

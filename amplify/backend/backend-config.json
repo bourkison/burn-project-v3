@@ -71,6 +71,90 @@
           ]
         }
       ]
+    },
+    "deleteExercise": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "createWorkout": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "createTemplate": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "getWorkout": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "getTemplate": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "editTemplate": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
     }
   },
   "api": {

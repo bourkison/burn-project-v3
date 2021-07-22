@@ -87,8 +87,8 @@ export default {
             isLoading: true,
             exerciseExists: false,
 
-            oldExerciseData: {},
-            newExerciseData: {},
+            oldExerciseData: null,
+            newExerciseData: null,
 
             initImages: [],
             imagesToUpload: [],
@@ -130,28 +130,34 @@ export default {
 
     methods: {
         downloadExercise: async function() {
-            this.isLoading = true;
-            this.exerciseExists = false;
-            this.exerciseData = {};
-            
-            const path = '/exercise/' + this.$route.params.exerciseid;
-            const myInit = {
-                headers: {
-                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+            try {
+                this.isLoading = true;
+                this.exerciseExists = false;
+                this.oldExerciseData = null;
+                this.newExerciseData = null;
+                
+                const path = '/exercise/' + this.$route.params.exerciseid;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    }
+                }
+    
+                const response = await API.get(this.$store.state.apiName, path, myInit);
+                this.newExerciseData = response.data;
+                this.oldExerciseData = response.data;
+    
+                if (this.newExerciseData) {
+                    this.newExerciseData.filePaths.forEach((url, i) => {
+                        this.initImages.push({ id: i, url: url, editable: false, path: this.oldExerciseData.filePaths[i] });
+                    })
+    
+                    this.exerciseExists = true;
+                    this.isLoading = false;
                 }
             }
-
-            const response = await API.get(this.$store.state.apiName, path, myInit);
-            this.newExerciseData = response.data;
-            this.oldExerciseData = response.data;
-
-            if (this.newExerciseData) {
-                this.newExerciseData.filePaths.forEach((url, i) => {
-                    this.initImages.push({ id: i, url: url, editable: false, path: this.oldExerciseData.filePaths[i] });
-                })
-
-                this.exerciseExists = true;
-                this.isLoading = false;
+            catch (err) {
+                console.error(err);
             }
         },
 
