@@ -19,7 +19,7 @@
 
                 <b-form-group label="Username" label-for="usernameInput" description="Usernames must be unique.">
                     <b-input-group>
-                        <b-form-input id="usernameInput" v-model="signUpForm.username" type="text" placeholder="Enter Username" required debounce="250" />
+                        <b-form-input id="usernameInput" v-model="signUpForm.username" type="text" placeholder="Enter Username" required debounce="250" :disabled="isCreating" />
                         <b-input-group-append>
                             <b-button v-if="!checkingUsername && usernameUnique" variant="success" disabled><b-icon-check /></b-button>
                             <b-button v-else-if="!checkingUsername && !usernameUnique" variant="danger" disabled><b-icon-x /></b-button>
@@ -29,14 +29,14 @@
                 </b-form-group>
 
                 <b-form-group label="Email" label-for="emailInput" description="Email is used for sign in and password recovery. We will not send you annoying emails.">
-                    <b-form-input id="emailInput" v-model="signUpForm.email" type="email" placeholder="Enter Email" required />
+                    <b-form-input id="emailInput" v-model="signUpForm.email" type="email" placeholder="Enter Email" required  :disabled="isCreating" />
                 </b-form-group>
 
 
                 <b-form-group label="Password" :label-for="signUpForm.password && !signUpForm.confPassword ? 'confPasswordInput' : 'passwordInput'" description="Passwords must be at least 8 characters in length.">
                     <b-input-group>
-                        <b-form-input id="passwordInput" v-model="signUpForm.password" type="password" placeholder="Password" required />
-                        <b-form-input id="confPasswordInput" v-model="signUpForm.confPassword" type="password" placeholder="Confirm Password" required />
+                        <b-form-input id="passwordInput" v-model="signUpForm.password" type="password" placeholder="Password" required  :disabled="isCreating" />
+                        <b-form-input id="confPasswordInput" v-model="signUpForm.confPassword" type="password" placeholder="Confirm Password" required  :disabled="isCreating" />
                         <b-input-group-append>
                             <b-button v-if="signUpForm.password === signUpForm.confPassword && signUpForm.password.length >= 8" variant="success" disabled><b-icon-check /></b-button>
                             <b-button v-else variant="danger" disabled><b-icon-x /></b-button>
@@ -46,29 +46,29 @@
 
                 <b-form-group label="Name" :label-for="signUpForm.firstName && !signUpForm.surname ? 'surnameInput' : 'firstNameInput'">
                     <b-input-group>
-                        <b-form-input id="firstNameInput" v-model="signUpForm.firstName" type="text" placeholder="First Name" required />
-                        <b-form-input id="surnameInput" v-model="signUpForm.surname" type="text" placeholder="Last Name" required />
+                        <b-form-input id="firstNameInput" v-model="signUpForm.firstName" type="text" placeholder="First Name" required  :disabled="isCreating" />
+                        <b-form-input id="surnameInput" v-model="signUpForm.surname" type="text" placeholder="Last Name" required  :disabled="isCreating" />
                     </b-input-group>
                 </b-form-group>
 
                 <b-form-group label="Date of Birth" label-for="dobInput">
-                    <b-form-input id="dobInput" v-model="signUpForm.dob" type="date" required />
+                    <b-form-input id="dobInput" v-model="signUpForm.dob" type="date" required  :disabled="isCreating" />
                 </b-form-group>
 
                 <b-form-group label="Gender">
                     <div class="text-center">
-                        <b-form-radio-group v-model="signUpForm.gender" :options="genders" buttons />
+                        <b-form-radio-group v-model="signUpForm.gender" :options="genders" buttons  :disabled="isCreating" />
                     </div>
                 </b-form-group>
 
                 <b-form-group label="Height and Weight" :label-for="signUpForm.height && !signUpForm.weight ? 'weightInput' : 'heightInput'">
                     <b-input-group>
-                        <b-form-input id="heightInput" v-model="signUpForm.height" type="text" required />
+                        <b-form-input id="heightInput" v-model="signUpForm.height" type="text" required  :disabled="isCreating" />
                         <b-input-group-addon is-text>{{ signUpForm.metric ? 'cm' : 'inches' }}</b-input-group-addon>
-                        <b-form-input id="weightInput" v-model="signUpForm.weight" type="text" required />
+                        <b-form-input id="weightInput" v-model="signUpForm.weight" type="text" required  :disabled="isCreating" />
                         <b-input-group-addon is-text>{{ signUpForm.metric ? 'kg' : 'lbs' }}</b-input-group-addon>
                         <b-input-group-append>
-                            <b-dropdown variant="outline-dark">
+                            <b-dropdown variant="outline-dark"  :disabled="isCreating">
                                 <b-dropdown-item @click="signUpForm.metric = true">Metric</b-dropdown-item>
                                 <b-dropdown-item @click="signUpForm.metric = false">Imperial</b-dropdown-item>
                             </b-dropdown>
@@ -77,11 +77,11 @@
                 </b-form-group>
 
                 <b-form-group label="Country" label-for="countryInput">
-                    <b-form-select id="countryInput" v-model="signUpForm.country" :options="countryList" />
+                    <b-form-select id="countryInput" v-model="signUpForm.country" :options="countryList" :disabled="isCreating" />
                 </b-form-group>
 
                 <b-form-group>
-                    <b-form-checkbox inline required name="termsCheckbox">
+                    <b-form-checkbox inline required name="termsCheckbox" :disabled="isCreating">
                         I agree to the <a href="#" target="_blank">Terms and Conditions</a>.
                     </b-form-checkbox>
                 </b-form-group>
@@ -160,7 +160,6 @@ export default {
 
             // Cognito:
             userPool: null,
-            cognitoUser: null,
             verificationCode: '',
             cognitoUsername: '',
 
@@ -204,51 +203,39 @@ export default {
 
         signUp: async function() {
             try {
-                // Try upload profilePhoto.
-                this.isCreating = true;
-                this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.sigmUpForm.username);
+                try {
+                    // Try upload profilePhoto.
+                    this.isCreating = true;
+                    this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.signUpForm.username);
+                }
+                catch (err) {
+                    console.error("Image upload error", err);
+                }
+                finally {
+                    // First build user in database.    
+                    const user = await Auth.signUp({
+                        username: this.signUpForm.username,
+                        password: this.signUpForm.password,
+                        attributes: {
+                            email: this.signUpForm.email,
+                            birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
+                            gender: this.signUpForm.gender,
+                            given_name: this.signUpForm.firstName,
+                            family_name: this.signUpForm.surname,
+                            locale: this.signUpForm.country,
+                            picture: this.signUpForm.profilePhoto,
+                            "custom:height": this.signUpForm.height,
+                            "custom:weight": this.signUpForm.weight,
+                            "custom:metric": this.signUpForm.metric.toString()
+                        }
+                    });
+    
+                    this.cognitoUsername = user.user.username;
+                    this.verifyingEmail = true;
+                }
             }
             catch (err) {
-                console.error("Image upload error", err);
-            }
-            finally {
-                // First build user in database.    
-                const user = await Auth.signUp({
-                    username: this.signUpForm.username,
-                    password: this.signUpForm.password,
-                    attributes: {
-                        email: this.signUpForm.email,
-                        birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
-                        gender: this.signUpForm.gender,
-                        given_name: this.signUpForm.firstName,
-                        family_name: this.signUpForm.surname,
-                        locale: this.signUpForm.country,
-                        picture: this.signUpForm.profilePhoto,
-                        height: Number(this.signUpForm.height),
-                        weight: Number(this.signUpForm.weight)
-                    }
-                })
-
-                console.log("SUCCESS:", user);
-
-                // // If error uploading profile photo, continue on.
-                // const path = '/user';
-                // const myInit = {
-                //     body: {
-                //         signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
-                //     }
-                // };
-    
-                // myInit.body.signUpForm.username = this.cognitoUsername
-    
-                // delete myInit.body.signUpForm.password;
-                // delete myInit.body.signUpForm.confPassword;
-    
-                // const result = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
-                //     throw new Error("Error creating user document: " + (err.message || JSON.stringify(err)));
-                // })
-
-                // console.log("User doc success: ", result);
+                console.error("Error creating user!");
             }
         },
 

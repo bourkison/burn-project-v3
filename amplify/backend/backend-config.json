@@ -106,7 +106,16 @@
     "projectburncognitoPreSignup": {
       "build": true,
       "providerPlugin": "awscloudformation",
-      "service": "Lambda"
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "projectburnmongoosemodels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
     },
     "AdminQueries635d72f9": {
       "service": "Lambda",

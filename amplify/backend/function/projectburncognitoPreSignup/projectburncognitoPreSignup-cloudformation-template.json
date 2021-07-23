@@ -47,6 +47,10 @@
     },
     "s3Key": {
       "Type": "String"
+    },
+    "functionprojectburnmongoosemodelsArn": {
+      "Type": "String",
+      "Default": "functionprojectburnmongoosemodelsArn"
     }
   },
   "Conditions": {
@@ -120,7 +124,12 @@
           "S3Key": {
             "Ref": "s3Key"
           }
-        }
+        },
+        "Layers": [
+          {
+            "Ref": "functionprojectburnmongoosemodelsArn"
+          }
+        ]
       }
     },
     "LambdaExecutionRole": {

@@ -1,6 +1,6 @@
 {
     "identityPoolName": "projectburnIdentityPool",
-    "allowUnauthenticatedIdentities": true,
+    "allowUnauthenticatedIdentities": false,
     "resourceNameTruncated": "projec2129a855",
     "userPoolName": "projectburnUserPool",
     "autoVerifiedAttributes": [
@@ -14,9 +14,13 @@
     "smsVerificationMessage": "Your verification code is {####}",
     "emailVerificationSubject": "Your verification code",
     "emailVerificationMessage": "Your verification code is {####}",
-    "defaultPasswordPolicy": false,
+    "defaultPasswordPolicy": true,
     "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": [],
+    "passwordPolicyCharacters": [
+        "Requires Lowercase",
+        "Requires Uppercase",
+        "Requires Numbers"
+    ],
     "requiredAttributes": [
         "birthdate",
         "email",
@@ -51,7 +55,7 @@
         ]
     },
     "useDefault": "manual",
-    "thirdPartyAuth": true,
+    "thirdPartyAuth": false,
     "authProviders": [],
     "userPoolGroups": false,
     "adminQueries": true,

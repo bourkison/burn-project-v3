@@ -1,42 +1,46 @@
-/**
- * @fileoverview
- *
- * This CloudFormation Trigger creates a handler which awaits the other handlers
- * specified in the `MODULES` env var, located at `./${MODULE}`.
- */
+const MongooseModels = require('/opt/models')
 
-/**
- * The names of modules to load are stored as a comma-delimited string in the
- * `MODULES` env var.
- */
-const moduleNames = process.env.MODULES.split(',');
-/**
- * The array of imported modules.
- */
-const modules = moduleNames.map(name => require(`./${name}`));
+exports.handler = async (event, context, callback) => {
+    let userForm = JSON.parse(event.body).signUpForm;
+    const User = (await MongooseModels(MONGODB_URI)).User;
 
-/**
- * This async handler iterates over the given modules and awaits them.
- *
- * @see https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html#nodejs-handler-async
- *
- * @param {object} event
- *
- * The event that triggered this Lambda.
- *
- * @returns
- *
- * The handler response.
- */
-exports.handler = async event => {
-    /**
-     * Instead of naively iterating over all handlers, run them concurrently with
-     * `await Promise.all(...)`. This would otherwise just be determined by the
-     * order of names in the `MODULES` var.
-     */
-    await Promise.all(modules.map(module => module.handler(event)));
+    // Check user doesn't already exist.
+    const existingUser = await User.findOne({ username: event.request.userName });
 
-    console.log("PRE SIGNUP:", event);
+    if (existingUser) {
+        let denyError = new Error("Username already exists.");
+        callback(denyError, event);
+    }
 
-return event;
-};
+    // Build new user
+    const user = new User({
+        username: event.userName,
+        email: event.request.userAttributes.email,
+        firstName: event.request.userAttributes.given_name,
+        surname: event.request.userAttributes.family_name,
+        gender: event.request.userAttributes.gender,
+        dob: event.request.userAttributes.birthdate,
+        height: event.request.userAttributes['custom:height'],
+        weight: event.request.userAttributes['custom:weight'],
+        metric: (event.request.userAttributes['custom:metric'] === "true"),
+        country: event.request.userAttributes.locale,
+        profilePhoto: event.request.userAttributes.picture,
+        followerCount: 0,
+        followingCount: 0,
+        followers: [],
+        following: [],
+        exercises: [],
+        templates: [],
+        workouts: [],
+        workouts: [],
+        likes: [],
+        comments: []
+    });
+
+    const result = await user.save().catch(() => {
+        let denyError = new Error("Error creating document.");
+        callback(denyError, event);
+    });
+
+    callback(null, event);
+}
