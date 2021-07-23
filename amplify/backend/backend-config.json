@@ -1,169 +1,116 @@
 {
   "function": {
-    "AdminQueriese4a582f0": {
+    "AdminQueries0228cf3d": {
       "service": "Lambda",
       "providerPlugin": "awscloudformation",
       "build": true,
       "dependsOn": [
         {
           "category": "auth",
-          "resourceName": "burnprojectcognito",
+          "resourceName": "projectburncognito",
           "attributes": [
             "UserPoolId"
           ]
         }
       ]
     },
-    "createUser": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "getImageUploadUrl": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "getUser": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "burnprojectv3mongooseModels": {
+    "projectburnmongoosemodels": {
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
       "build": true
     },
-    "createExercise": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "getExercise": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "queryExercises": {
+    "projectburnUserHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
         }
       ]
     },
-    "editExercise": {
+    "projectburnExerciseHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
         }
       ]
     },
-    "deleteExercise": {
+    "projectburnTemplateHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
         }
       ]
     },
-    "createWorkout": {
+    "projectburnWorkoutHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
         }
       ]
     },
-    "createTemplate": {
+    "projectburnPostHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
         }
       ]
     },
-    "getWorkout": {
+    "projectburnLikeHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
         }
       ]
     },
-    "getTemplate": {
+    "projectburnCommentHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
-          "attributes": [
-            "Arn"
-          ]
-        }
-      ]
-    },
-    "editTemplate": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda",
-      "dependsOn": [
-        {
-          "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
-          "attributes": [
-            "Arn"
-          ]
-        }
-      ]
-    },
-    "queryTemplates": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda",
-      "dependsOn": [
-        {
-          "category": "function",
-          "resourceName": "burnprojectv3mongooseModels",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
             "Arn"
           ]
@@ -179,14 +126,14 @@
       "dependsOn": [
         {
           "category": "auth",
-          "resourceName": "burnprojectcognito",
+          "resourceName": "projectburncognito",
           "attributes": [
             "UserPoolId"
           ]
         },
         {
           "category": "function",
-          "resourceName": "AdminQueriese4a582f0",
+          "resourceName": "AdminQueries0228cf3d",
           "attributes": [
             "Arn",
             "Name"
@@ -194,13 +141,13 @@
         }
       ]
     },
-    "burnprojectapi": {
+    "projectburnapi": {
       "service": "API Gateway",
       "providerPlugin": "awscloudformation",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "createUser",
+          "resourceName": "projectburnUserHandler",
           "attributes": [
             "Name",
             "Arn"
@@ -208,7 +155,47 @@
         },
         {
           "category": "function",
-          "resourceName": "getImageUploadUrl",
+          "resourceName": "projectburnExerciseHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnTemplateHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnWorkoutHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnPostHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnLikeHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnCommentHandler",
           "attributes": [
             "Name",
             "Arn"
@@ -218,7 +205,7 @@
     }
   },
   "auth": {
-    "burnprojectcognito": {
+    "projectburncognito": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
@@ -226,7 +213,7 @@
     }
   },
   "storage": {
-    "projectburnresource": {
+    "projectburnstorage": {
       "service": "S3",
       "providerPlugin": "awscloudformation"
     }

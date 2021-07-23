@@ -182,7 +182,7 @@ const activeWorkoutModule = {
 
 export default new Vuex.Store({
     state: {
-        apiName: 'burnprojectapi',
+        apiName: 'projectburnapi',
         workoutPromises: [],
         userProfile: null,
         userWorkouts: null,

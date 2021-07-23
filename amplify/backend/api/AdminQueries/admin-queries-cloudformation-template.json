@@ -14,23 +14,23 @@
         },
         
         
-          "authburnprojectcognitoUserPoolId": {
+          "authprojectburncognitoUserPoolId": {
             "Type": "String",
-            "Default": "authburnprojectcognitoUserPoolId"
+            "Default": "authprojectburncognitoUserPoolId"
           },
         
           
           
         
-          "functionAdminQueriese4a582f0Arn": {
+          "functionAdminQueries0228cf3dArn": {
             "Type": "String",
-            "Default": "functionAdminQueriese4a582f0Arn"
+            "Default": "functionAdminQueries0228cf3dArn"
           },
         
           
-          "functionAdminQueriese4a582f0Name": {
+          "functionAdminQueries0228cf3dName": {
             "Type": "String",
-            "Default": "functionAdminQueriese4a582f0Name"
+            "Default": "functionAdminQueries0228cf3dName"
           }
         
           
@@ -176,7 +176,7 @@
                                 ":lambda:path/2015-03-31/functions/",
                                 {
                                     
-                                    "Ref": "functionAdminQueriese4a582f0Arn"
+                                    "Ref": "functionAdminQueries0228cf3dArn"
                                 },
                                 "/invocations"
                               ]
@@ -217,7 +217,7 @@
                                   ":userpool/",
                                   {
                                                   
-                                    "Ref": "authburnprojectcognitoUserPoolId"
+                                    "Ref": "authprojectburncognitoUserPoolId"
                                   }
 
                                 ]
@@ -268,7 +268,7 @@
         "Properties": {
             "FunctionName": 
                 {
-                  "Ref": "functionAdminQueriese4a582f0Name"
+                  "Ref": "functionAdminQueries0228cf3dName"
                 },
                 
                 "Action": "lambda:InvokeFunction",

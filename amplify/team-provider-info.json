@@ -1,93 +1,56 @@
 {
-  "prod": {
+  "dev": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-burnprojectv3-prod-141447-authRole",
-      "UnauthRoleArn": "arn:aws:iam::586865842618:role/amplify-burnprojectv3-prod-141447-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::586865842618:role/amplify-burnprojectv3-prod-141447-authRole",
+      "AuthRoleName": "amplify-projectburn-dev-203659-authRole",
+      "UnauthRoleArn": "arn:aws:iam::586865842618:role/amplify-projectburn-dev-203659-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::586865842618:role/amplify-projectburn-dev-203659-authRole",
       "Region": "ap-southeast-2",
-      "DeploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-      "UnauthRoleName": "amplify-burnprojectv3-prod-141447-unauthRole",
-      "StackName": "amplify-burnprojectv3-prod-141447",
-      "StackId": "arn:aws:cloudformation:ap-southeast-2:586865842618:stack/amplify-burnprojectv3-prod-141447/073ac520-e911-11eb-bb96-0a6e1e179d0a",
-      "AmplifyAppId": "d3tqb1d2p790p5"
+      "DeploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+      "UnauthRoleName": "amplify-projectburn-dev-203659-unauthRole",
+      "StackName": "amplify-projectburn-dev-203659",
+      "StackId": "arn:aws:cloudformation:ap-southeast-2:586865842618:stack/amplify-projectburn-dev-203659/ebb9b390-eba1-11eb-ba83-021c8a17b68a",
+      "AmplifyAppId": "d3tp6kskh7ft9m"
     },
     "categories": {
       "auth": {
-        "burnprojectcognito": {}
+        "projectburncognito": {}
       },
       "function": {
-        "AdminQueriese4a582f0": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/AdminQueriese4a582f0-4c7649525247446d6a70-build.zip"
+        "projectburnExerciseHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnExerciseHandler-3155456f4f646b747748-build.zip"
         },
-        "createUser": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/createUser-42576e31746b57773847-build.zip"
+        "projectburnLikeHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnLikeHandler-4c69707070363949436a-build.zip"
         },
-        "getImageUploadUrl": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/getImageUploadUrl-65534551504166346c67-build.zip"
+        "projectburnWorkoutHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnWorkoutHandler-73484d74657469486751-build.zip"
         },
-        "getUser": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/getUser-556b38443056464c2f4c-build.zip"
+        "projectburnmongoosemodels": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion724f6a25-build.zip"
         },
-        "burnprojectv3mongooseModels": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/burnprojectv3mongooseModels-LambdaLayerVersionafff9b67-build.zip"
+        "projectburnTemplateHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnTemplateHandler-48757232674257455843-build.zip"
         },
-        "createExercise": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/createExercise-416e3234544957723651-build.zip"
+        "projectburnCommentHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnCommentHandler-4448324f486b784e4e49-build.zip"
         },
-        "getExercise": {
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/getExercise-6b43415466782f4c7174-build.zip"
+        "projectburnPostHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnPostHandler-56634a5942796a586b42-build.zip"
         },
-        "queryExercises": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/queryExercises-356f49624b2b6b594866-build.zip"
+        "projectburnUserHandler": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnUserHandler-597a43386641354a615a-build.zip"
         },
-        "editExercise": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/editExercise-4d33736e4b724166664e-build.zip"
-        },
-        "deleteExercise": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/deleteExercise-4b565774717636634167-build.zip"
-        },
-        "createWorkout": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/createWorkout-574d6d534e50654d2b6a-build.zip"
-        },
-        "createTemplate": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/createTemplate-4955714763633942545a-build.zip"
-        },
-        "getWorkout": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/getWorkout-35304274375141773843-build.zip"
-        },
-        "getTemplate": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/getTemplate-484536754c362b74424c-build.zip"
-        },
-        "editTemplate": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/editTemplate-664d7a69384d2f712f31-build.zip"
-        },
-        "queryTemplates": {
-          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
-          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
-          "s3Key": "amplify-builds/queryTemplates-47517350336f534c784e-build.zip"
+        "AdminQueries0228cf3d": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/AdminQueries0228cf3d-5867774a6e4d46447879-build.zip"
         }
       }
     }

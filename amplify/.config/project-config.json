@@ -1,5 +1,5 @@
 {
-  "projectName": "burnprojectv3",
+  "projectName": "projectburn",
   "version": "3.1",
   "frontend": "javascript",
   "javascript": {
@@ -7,8 +7,8 @@
     "config": {
       "SourceDir": "src",
       "DistributionDir": "dist",
-      "BuildCommand": "npm run build",
-      "StartCommand": "npm run serve"
+      "BuildCommand": "npm run-script build",
+      "StartCommand": "npm run-script serve"
     }
   },
   "providers": [

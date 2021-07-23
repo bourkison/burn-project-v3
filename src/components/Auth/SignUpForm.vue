@@ -203,55 +203,68 @@ export default {
         },
 
         signUp: async function() {
-            try {
-                // First build user in database.
-                this.isCreating = true;
+            // try {
+            //    // First build user in database.
+            //     this.isCreating = true;
     
-                const user = await Auth.signUp({
-                    username: this.signUpForm.username,
-                    password: this.signUpForm.password,
-                    attributes: {
-                        email: this.signUpForm.email,
-                        birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
-                        gender: this.signUpForm.gender,
-                        given_name: this.signUpForm.firstName,
-                        family_name: this.signUpForm.surname
-                    }
-                })
+            //     const user = await Auth.signUp({
+            //         username: this.signUpForm.username,
+            //         password: this.signUpForm.password,
+            //         attributes: {
+            //             email: this.signUpForm.email,
+            //             birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
+            //             gender: this.signUpForm.gender,
+            //             given_name: this.signUpForm.firstName,
+            //             family_name: this.signUpForm.surname
+            //         }
+            //     })
 
-                this.cognitoUsername = user.user.username;
+            //     this.cognitoUsername = user.user.username;
 
-                try {
-                    // Then try upload profilePhoto.
-                    this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.cognitoUsername);
-                }
-                catch (err) {
-                    console.error("Image upload error", err);
-                }
-                finally {
-                    // If error uploading profile photo, continue on.
-                    const path = '/user';
-                    const myInit = {
-                        body: {
-                            signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
-                        }
-                    };
+            //     try {
+            //         // Then try upload profilePhoto.
+            //         this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.cognitoUsername);
+            //     }
+            //     catch (err) {
+            //         console.error("Image upload error", err);
+            //     }
+            //     finally {
+            //         // If error uploading profile photo, continue on.
+            //         const path = '/user';
+            //         const myInit = {
+            //             body: {
+            //                 signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
+            //             }
+            //         };
         
-                    myInit.body.signUpForm.username = this.cognitoUsername
+            //         myInit.body.signUpForm.username = this.cognitoUsername
         
-                    delete myInit.body.signUpForm.password;
-                    delete myInit.body.signUpForm.confPassword;
+            //         delete myInit.body.signUpForm.password;
+            //         delete myInit.body.signUpForm.confPassword;
         
-                    const result = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
-                        throw new Error("Error creating user document: " + (err.message || JSON.stringify(err)));
-                    })
+            //         const result = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
+            //             throw new Error("Error creating user document: " + (err.message || JSON.stringify(err)));
+            //         })
 
-                    console.log("User doc success: ", result);
+            //         console.log("User doc success: ", result);
+            //     }
+            // }
+            // catch(err) {
+            //     console.error("Last catch", err)
+            // }
+
+            const path = '/user';
+            const myInit = {
+                body: {
+                    signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
                 }
-            }
-            catch(err) {
-                console.error("Last catch", err)
-            }
+            };
+
+            const testRes = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
+                console.error(err)
+            })
+
+            console.log(testRes);
         },
 
         uploadProfilePhoto: async function(image, username) {
