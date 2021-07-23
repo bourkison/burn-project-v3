@@ -168,10 +168,8 @@ const updateExercise = async function(event) {
         const response = {
             statusCode: 500,
             headers: {
-                "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Credentials": true
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Origin": "*"
             },
             body: JSON.stringify({ message: errorResponse }),
         };
@@ -187,10 +185,8 @@ const updateExercise = async function(event) {
         const response = {
             statusCode: 404,
             headers: {
-                "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Credentials": true
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Origin": "*"
             },
             body: JSON.stringify({ message: errorResponse }),
         };
@@ -204,10 +200,8 @@ const updateExercise = async function(event) {
         const response = {
             statusCode: 500,
             headers: {
-                "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Credentials": true
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Origin": "*"
             },
             body: JSON.stringify({ message: errorResponse }),
         };
@@ -218,10 +212,8 @@ const updateExercise = async function(event) {
     const response = {
         statusCode: 200,
         headers: {
-            "Access-Control-Allow-Headers" : "Content-Type",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Credentials": true
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
         },
         body: JSON.stringify(JSON.stringify({ data: userResult })),
     };
@@ -255,10 +247,8 @@ const deleteExercise = async function(event) {
         const response = {
             statusCode: 500,
             headers: {
-                "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Credentials": true
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Origin": "*"
             },
             body: JSON.stringify({ message: errorResponse }),
         };
@@ -272,10 +262,8 @@ const deleteExercise = async function(event) {
         const response = {
             statusCode: 404,
             headers: {
-                "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Credentials": true
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Origin": "*"
             },
             body: JSON.stringify({ message: errorResponse }),
         };
@@ -310,10 +298,8 @@ const deleteExercise = async function(event) {
     const response = {
         statusCode: 200,
         headers: {
-            "Access-Control-Allow-Headers" : "Content-Type",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Credentials": true
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
         },
         body: JSON.stringify({ acknowledged: true, response: pullResponses })
     };
@@ -325,20 +311,21 @@ const deleteExercise = async function(event) {
 exports.handler = async (event) => {
     /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */
     context.callbackWaitsForEmptyEventLoop = false;
+    let response;
 
     switch (event.httpMethods) {
         case "GET":
             // const response = await getExercise(event);
-            const response = event;
+            response = event;
             break;
         case "POST":
-            const response = await createExercise(event);
+            response = await createExercise(event);
             break;
         case "PUT":
-            const response = await updateExercise(event);
+            response = await updateExercise(event);
             break;
         case "DELETE":
-            const response = await deleteExercise(event);
+            response = await deleteExercise(event);
             break;
     }
 

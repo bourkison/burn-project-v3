@@ -205,6 +205,7 @@ export default {
             try {
                 try {
                     // Try upload profilePhoto.
+                    // TODO: Image doesn't get uploaded.
                     this.isCreating = true;
                     this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.signUpForm.username);
                 }

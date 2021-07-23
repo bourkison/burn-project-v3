@@ -1,8 +1,7 @@
+import { Auth } from 'aws-amplify';
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { userWorkoutsCollection } from '../firebase'
-import { Auth, API } from 'aws-amplify'
-import router from '../router'
 
 Vue.use(Vuex)
 
@@ -205,62 +204,35 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        async fetchUser({ state, commit }, reroute) {
-            return Auth.currentAuthenticatedUser()
-            .then(async user => {
-                if (user) {
-                    console.log("LOGGED IN:", user);
-    
-                    const path = '/user/' + user.username;
-                    const myInit = {
-                        headers: {
-                            Authorization: user.signInUserSession.idToken.jwtToken
-                        }
-                    }
-    
-                    let userDoc = await API.get(state.apiName, path, myInit);
-                    userDoc = userDoc.data;
-    
-                    console.log("USER DOC", userDoc);
-    
-                    commit("setLoggedInUser", { loggedIn: true, data: user, docData: userDoc });
-                    if (router.history.current.name == "Sign Up" || router.history.current.name == "Login" || reroute) {
-                        router.push("/");
-                    }
-    
-                    return true;
-                } else {
-                    commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
-                    return false;
-                }
-            })
-            .catch(() => { commit("setLoggedInUser", { loggedIn: false, data: null, docData: null }); })
-        },  
+        fetchUser: async function({ commit }, data) {
+            console.log(data);
+            commit('setLoggedInUser', { loggedIn: true, data: data, docData: data });
+
+        },
 
         // As this function may get callled multiple times from different components,
         // Store the promise in an array to avoid loading it multiple times.
-        fetchWorkouts: function({ commit }, user) {
+        fetchWorkouts: async function({ commit }, user) {
             if (this.state.workoutPromises.length === 0) {
                 commit('setLoadingWorkouts', [userWorkoutsCollection(user.uid).orderBy("createdAt", "desc").get()]);
 
-                return Promise.all(this.state.workoutPromises)
-                .then(responses => {
-                    responses.forEach(workoutSnapshot => {
-                        let workouts = [];
-                        if (workoutSnapshot.size > 0) {
-                            workoutSnapshot.forEach(workout => {
-                                let d = workout.data();
-                                d.id = workout.id;
-                                workouts.push(d);
-                            })
-                        }
+                const responses = await Promise.all(this.state.workoutPromises)
 
-                        commit('setLoggedInUserWorkouts', workouts);
-                        commit('setLoadingWorkouts', []);
-                    })
+                responses.forEach(workoutSnapshot => {
+                    let workouts = [];
+                    if (workoutSnapshot.size > 0) {
+                        workoutSnapshot.forEach(workout => {
+                            let d = workout.data();
+                            d.id = workout.id;
+                            workouts.push(d);
+                        })
+                    }
+
+                    commit('setLoggedInUserWorkouts', workouts);
+                    commit('setLoadingWorkouts', []);
                 })
             } else {
-                return Promise.all(this.state.workoutPromises).then(() => {
+                await Promise.all(this.state.workoutPromises).then(() => {
                     commit('setLoadingWorkouts', []);
                 })
             }

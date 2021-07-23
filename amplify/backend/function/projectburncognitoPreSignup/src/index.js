@@ -1,4 +1,15 @@
-const MongooseModels = require('/opt/models')
+const aws = require('aws-sdk');
+const MongooseModels = require('/opt/models');
+
+const { Parameters } = await (new aws.SSM())
+.getParameters({
+    Names: ["MONGODB_URI"].map(secretName => process.env[secretName]),
+    WithDecryption: true,
+})
+.promise();
+
+const MONGODB_URI = Parameters[0].Value;
+
 
 exports.handler = async (event, context, callback) => {
     let userForm = JSON.parse(event.body).signUpForm;

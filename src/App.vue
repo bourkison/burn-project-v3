@@ -71,9 +71,7 @@ import { Auth } from 'aws-amplify'
 
 import SignInForm from '@/components/Auth/SignInForm.vue'
 import SignUpForm from '@/components/Auth/SignUpForm.vue'
-
 import MainSearch from '@/components/Search/MainSearch.vue'
-
 import WorkoutToast from '@/components/Workout/WorkoutToast.vue'
 
 export default {
@@ -83,7 +81,6 @@ export default {
             Auth.signOut()
             .then(() => {
                 this.$router.push("/");
-                this.$store.dispatch("fetchUser");
             })
             .catch(err => {
                 alert(err.message || JSON.stringify(err));
