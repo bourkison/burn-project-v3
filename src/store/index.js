@@ -205,7 +205,7 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        fetchUser({ state, commit }, reroute) {
+        async fetchUser({ state, commit }, reroute) {
             return Auth.currentAuthenticatedUser()
             .then(async user => {
                 if (user) {

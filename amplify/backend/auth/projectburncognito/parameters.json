@@ -1,7 +1,7 @@
 {
     "identityPoolName": "projectburnIdentityPool",
     "allowUnauthenticatedIdentities": true,
-    "resourceNameTruncated": "projeca576a9f2",
+    "resourceNameTruncated": "projec2129a855",
     "userPoolName": "projectburnUserPool",
     "autoVerifiedAttributes": [
         "email"
@@ -14,21 +14,16 @@
     "smsVerificationMessage": "Your verification code is {####}",
     "emailVerificationSubject": "Your verification code",
     "emailVerificationMessage": "Your verification code is {####}",
-    "defaultPasswordPolicy": true,
+    "defaultPasswordPolicy": false,
     "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": [
-        "Requires Lowercase",
-        "Requires Uppercase",
-        "Requires Numbers"
-    ],
+    "passwordPolicyCharacters": [],
     "requiredAttributes": [
         "birthdate",
         "email",
         "family_name",
         "gender",
         "locale",
-        "given_name",
-        "picture"
+        "given_name"
     ],
     "userpoolClientGenerateSecret": false,
     "userpoolClientRefreshTokenValidity": 30,
@@ -38,9 +33,9 @@
     "userpoolClientReadAttributes": [
         "email"
     ],
-    "userpoolClientLambdaRole": "projeca576a9f2_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "projec2129a855_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "a576a9f2",
+    "sharedId": "2129a855",
     "resourceName": "projectburncognito",
     "authSelections": "identityPoolAndUserPool",
     "authRoleArn": {
@@ -56,10 +51,11 @@
         ]
     },
     "useDefault": "manual",
-    "thirdPartyAuth": false,
+    "thirdPartyAuth": true,
+    "authProviders": [],
     "userPoolGroups": false,
     "adminQueries": true,
-    "triggers": "{}",
+    "triggers": "{\n  \"PreSignup\": [\n    \"custom\"\n  ]\n}",
     "hostedUI": false,
     "userPoolGroupList": [],
     "adminQueryGroup": "admin",
@@ -68,7 +64,18 @@
     "parentStack": {
         "Ref": "AWS::StackId"
     },
+    "authTriggerConnections": "[\n  {\n    \"triggerType\": \"PreSignUp\",\n    \"lambdaFunctionName\": \"projectburncognitoPreSignup\"\n  }\n]",
     "breakCircularDependency": true,
     "permissions": [],
-    "dependsOn": []
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "projectburncognitoPreSignup",
+            "triggerProvider": "Cognito",
+            "attributes": [
+                "Arn",
+                "Name"
+            ]
+        }
+    ]
 }

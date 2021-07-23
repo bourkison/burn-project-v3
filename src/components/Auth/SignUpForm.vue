@@ -118,7 +118,7 @@
 <script>
 // import { auth, db, functions, storage } from '@/firebase'
 import { db } from '@/firebase'
-import { Auth, API, Storage } from 'aws-amplify'
+import { Auth, Storage } from 'aws-amplify'
 
 import dayjs from 'dayjs'
 import crypto from 'crypto'
@@ -203,68 +203,53 @@ export default {
         },
 
         signUp: async function() {
-            // try {
-            //    // First build user in database.
-            //     this.isCreating = true;
+            try {
+                // Try upload profilePhoto.
+                this.isCreating = true;
+                this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.sigmUpForm.username);
+            }
+            catch (err) {
+                console.error("Image upload error", err);
+            }
+            finally {
+                // First build user in database.    
+                const user = await Auth.signUp({
+                    username: this.signUpForm.username,
+                    password: this.signUpForm.password,
+                    attributes: {
+                        email: this.signUpForm.email,
+                        birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
+                        gender: this.signUpForm.gender,
+                        given_name: this.signUpForm.firstName,
+                        family_name: this.signUpForm.surname,
+                        locale: this.signUpForm.country,
+                        picture: this.signUpForm.profilePhoto,
+                        height: Number(this.signUpForm.height),
+                        weight: Number(this.signUpForm.weight)
+                    }
+                })
+
+                console.log("SUCCESS:", user);
+
+                // // If error uploading profile photo, continue on.
+                // const path = '/user';
+                // const myInit = {
+                //     body: {
+                //         signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
+                //     }
+                // };
     
-            //     const user = await Auth.signUp({
-            //         username: this.signUpForm.username,
-            //         password: this.signUpForm.password,
-            //         attributes: {
-            //             email: this.signUpForm.email,
-            //             birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
-            //             gender: this.signUpForm.gender,
-            //             given_name: this.signUpForm.firstName,
-            //             family_name: this.signUpForm.surname
-            //         }
-            //     })
+                // myInit.body.signUpForm.username = this.cognitoUsername
+    
+                // delete myInit.body.signUpForm.password;
+                // delete myInit.body.signUpForm.confPassword;
+    
+                // const result = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
+                //     throw new Error("Error creating user document: " + (err.message || JSON.stringify(err)));
+                // })
 
-            //     this.cognitoUsername = user.user.username;
-
-            //     try {
-            //         // Then try upload profilePhoto.
-            //         this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.cognitoUsername);
-            //     }
-            //     catch (err) {
-            //         console.error("Image upload error", err);
-            //     }
-            //     finally {
-            //         // If error uploading profile photo, continue on.
-            //         const path = '/user';
-            //         const myInit = {
-            //             body: {
-            //                 signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
-            //             }
-            //         };
-        
-            //         myInit.body.signUpForm.username = this.cognitoUsername
-        
-            //         delete myInit.body.signUpForm.password;
-            //         delete myInit.body.signUpForm.confPassword;
-        
-            //         const result = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
-            //             throw new Error("Error creating user document: " + (err.message || JSON.stringify(err)));
-            //         })
-
-            //         console.log("User doc success: ", result);
-            //     }
-            // }
-            // catch(err) {
-            //     console.error("Last catch", err)
-            // }
-
-            const path = '/user';
-            const myInit = {
-                body: {
-                    signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
-                }
-            };
-
-            const testRes = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
-                console.error(err)
-            })
-
-            console.log(testRes);
+                // console.log("User doc success: ", result);
+            }
         },
 
         uploadProfilePhoto: async function(image, username) {

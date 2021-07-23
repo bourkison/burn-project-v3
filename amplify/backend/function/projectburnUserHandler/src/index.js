@@ -120,10 +120,8 @@ exports.handler = async (event, context) => {
     switch (event.httpMethod) {
         case "GET":
             const response = await getUser(event);
-            return response;
-
-        case "POST":
-            const response = await createUser(event);
-            return response;   
+            break;
     }
+
+    return response;
 };

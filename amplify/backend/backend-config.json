@@ -1,19 +1,5 @@
 {
   "function": {
-    "AdminQueries0228cf3d": {
-      "service": "Lambda",
-      "providerPlugin": "awscloudformation",
-      "build": true,
-      "dependsOn": [
-        {
-          "category": "auth",
-          "resourceName": "projectburncognito",
-          "attributes": [
-            "UserPoolId"
-          ]
-        }
-      ]
-    },
     "projectburnmongoosemodels": {
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
@@ -116,13 +102,16 @@
           ]
         }
       ]
-    }
-  },
-  "api": {
-    "AdminQueries": {
-      "service": "API Gateway",
+    },
+    "projectburncognitoPreSignup": {
+      "build": true,
       "providerPlugin": "awscloudformation",
-      "authorizationType": "AMAZON_COGNITO_USER_POOLS",
+      "service": "Lambda"
+    },
+    "AdminQueries635d72f9": {
+      "service": "Lambda",
+      "providerPlugin": "awscloudformation",
+      "build": true,
       "dependsOn": [
         {
           "category": "auth",
@@ -130,17 +119,11 @@
           "attributes": [
             "UserPoolId"
           ]
-        },
-        {
-          "category": "function",
-          "resourceName": "AdminQueries0228cf3d",
-          "attributes": [
-            "Arn",
-            "Name"
-          ]
         }
       ]
-    },
+    }
+  },
+  "api": {
     "projectburnapi": {
       "service": "API Gateway",
       "providerPlugin": "awscloudformation",
@@ -202,13 +185,45 @@
           ]
         }
       ]
+    },
+    "AdminQueries": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "authorizationType": "AMAZON_COGNITO_USER_POOLS",
+      "dependsOn": [
+        {
+          "category": "auth",
+          "resourceName": "projectburncognito",
+          "attributes": [
+            "UserPoolId"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "AdminQueries635d72f9",
+          "attributes": [
+            "Arn",
+            "Name"
+          ]
+        }
+      ]
     }
   },
   "auth": {
     "projectburncognito": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
-      "dependsOn": [],
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "projectburncognitoPreSignup",
+          "triggerProvider": "Cognito",
+          "attributes": [
+            "Arn",
+            "Name"
+          ]
+        }
+      ],
       "customAuth": false
     }
   },
