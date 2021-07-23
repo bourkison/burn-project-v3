@@ -60,6 +60,16 @@
                     <div v-else>
                         <em>Looks like you haven't followed or created any templates.</em>
                     </div>
+                    <b-alert
+                        class="position-fixed fixed-bottom m-0 rounded-0"
+                        variant="danger"
+                        dismissible
+                        fade
+                        style="z-index: 2000;"
+                        v-model="errorCountdown"
+                    >
+                        {{ errorMessage }}
+                    </b-alert>
                 </b-container>
             </b-col>
             <b-col sm="3">
@@ -78,6 +88,7 @@
 
 <script>
 import { userTemplatesCollection } from '@/firebase'
+import { API } from 'aws-amplify';
 
 import TemplateFeed from '@/components/Template/TemplateFeed.vue'
 import UsernameFilter from '@/components/Utility/UsernameFilter.vue'
@@ -90,9 +101,6 @@ export default {
             isLoading: true,
             templates: [],
 
-            // Firebase:
-            fbQuery: null,
-
             // Filters:
             selectedMgs: [],
 
@@ -100,75 +108,52 @@ export default {
             isLoadingMore: true,
             moreToLoad: true,
             lastLoadedTemplate: null,
+
+            // Errror handling:
+            errorCountdown: 0,
+            errorMessage: '',
+            errorInterval: null
         }
     },
 
-    created: function() {
-        userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").limit(5).get()
-        .then(templateSnapshot => {
-            if (templateSnapshot.size > 0) {
-                templateSnapshot.forEach(template => {
-                    this.templates.push(template.id);
-                })
-
-                if (templateSnapshot.size < 5) {
-                    this.moreToLoad = false;
+    created: async function() {
+        try {
+            this.isLoading = true;
+    
+            const path = '/template';
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                },
+                queryStringParameters: {
+                    loadAmount: 5
                 }
+            };
+    
+            const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                console.error(err);
+                throw new Error("Promise catch: " + err)
+            })
 
-                setTimeout(() => { this.isLoadingMore = false }, 500);
-                this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-            } else {
-                this.moreToLoad = false;
+            if (!response) { 
+                throw new Error("No response");
             }
 
+            if (!response.success) {
+                throw new Error("Unsuccessful: " + response.errorMessage);
+            }
+
+            this.templates = response.data;
+        }
+        catch (err) {
+            this.displayError(err);
+        }
+        finally {
             this.isLoading = false;
-        })
-        .catch(e => {
-            this.isLoading = false;
-            console.error("Error getting templates:", e);
-        })
+        }
     },
 
     methods: {
-        // getTemplates: function() {
-        //     this.isLoading = true;
-        //     this.templates = [];
-        //     this.moreToLoad = true;
-        //     this.lastLoadedTemplate = null;
-        //     this.isLoadingMore = true;
-
-        //     this.fbQuery = userTemplatesCollection(this.$store.state.userProfile.data.uid);
-
-        //     if (this.selectedMgs.length > 0) {
-        //         this.fbQuery = this.fbQuery.where("muscleGroups", "array-contains-any", this.selectedMgs);
-        //     }
-
-        //     this.fbQuery.orderBy("createdAt", "desc").limit(5).get()
-        //     .then(templateSnapshot => {
-        //         if (templateSnapshot.size > 0) {
-        //             templateSnapshot.forEach(template => {
-        //                 this.templates.push(template.id);
-        //             })
-
-        //             if (templateSnapshot.size < 5) {
-        //                 this.moreToLoad = false;
-        //             }
-
-        //             setTimeout(() => { this.isLoadingMore = false }, 500);
-        //             this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-        //         } else {
-        //             this.moreToLoad = false;
-        //         }
-
-        //         this.isLoading = false;
-        //     })
-        //     .catch(e => {
-        //         this.isLoading = false;
-        //         console.error("Error getting templates:", e);
-        //     })
-        // },
-
-
         loadMoreTemplates: function() {
             if (!this.isLoadingMore) {
                 userTemplatesCollection(this.$store.state.userProfile.data.uid).orderBy("createdAt", "desc").startAfter(this.lastLoadedTemplate).limit(5).get()
@@ -193,6 +178,21 @@ export default {
         updateMuscleGroups: function(muscleGroups) {
             this.selectedMgs = muscleGroups;
             // this.getTemplates();
+        },
+
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {    
+                    this.errorCountdown -= 1
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
         }
     }
 }

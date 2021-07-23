@@ -69,7 +69,10 @@ import 'codemirror/lib/codemirror.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 import { Editor } from '@toast-ui/vue-editor'
 
-import { API } from 'aws-amplify'
+import { API, Storage } from 'aws-amplify'
+
+import crypto from 'crypto'
+import util from 'util'
 
 import ImageUploader from '@/components/Utility/ImageUploader.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
@@ -120,43 +123,35 @@ export default {
 
     methods: {
         createExercise: async function() {
-            console.log("Create", this.exerciseForm, this.imagesToUpload, JSON.stringify(this.exerciseForm));
             this.isCreating = true;
 
-            // First upload the image files.
-            let path = '/imageupload';
-            let imageUploadUrlPromises = [];
-            let imageUploadPromises = [];
-            this.imagesToUpload.forEach(() => {
-                imageUploadUrlPromises.push(API.get(this.$store.state.apiName, path, {
-                    headers: {
-                        "Authorization": this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
-                    },
-                    queryStringParameters: {
-                        type: "exercises"
+            // First upload all images.
+            // Cannot use forEach so instead use .map : https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
+            // As await does not work in forEach.
+            const imageResults = await Promise.all(this.imagesToUpload.map(async (image, i) => {
+                const imageId = await this.generateId(16);
+                const imageName = "username/" + this.$store.state.userProfile.docData.username + "/exercises/" + imageId;
+                
+                const imageData = await fetch(image.url);
+                const blob = await imageData.blob();
+
+                console.log("UPLOADING:", imageName, blob);
+
+                const imageResponse = await Storage.put(imageName, blob, {
+                    contentType: blob.type,
+                    progressCallback: function(progress) {
+                        console.log("Image:", i, progress.loaded / progress.total, progress);
                     }
-                }));
-            })
+                }).catch(err => {
+                    console.error("Error uploading image:", i, err);
+                })
 
-            const imageUrls = await Promise.all(imageUploadUrlPromises);
+                return imageResponse;
+            }))
 
-            imageUrls.forEach((url, i) => {
-                const blob = this.dataURLtoBlob(this.imagesToUpload[i].url);
+            console.log("Image Results:", imageResults);
 
-                imageUploadPromises.push(fetch(url, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/octet-stream",
-                    },
-                    body: blob
-                }))
-
-                this.exerciseForm.filePaths.push(url.split("?")[0]);
-            })
-
-            await Promise.all(imageUploadPromises);
-
-            path = '/exercise'
+            const path = '/exercise'
             const myInit = {
                 headers: {
                     "Authorization": this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
@@ -197,13 +192,12 @@ export default {
             this.exerciseForm.difficulty = difficulty;
         },
 
-        dataURLtoBlob: function(dataurl) {
-            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], {type:mime});
+        generateId: async function(n) {
+            const randomBytes = util.promisify(crypto.randomBytes)
+            const rawBytes = await randomBytes(n);
+
+            const hex = await rawBytes.toString('hex');
+            return hex;
         }
     }
 }

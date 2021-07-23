@@ -83,6 +83,11 @@
           "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
           "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
           "s3Key": "amplify-builds/editTemplate-664d7a69384d2f712f31-build.zip"
+        },
+        "queryTemplates": {
+          "mongodbUri": "mongodb+srv://harrisonbourke:L7bTz89OHHU8haRw@projectburncluster.vvmny.mongodb.net/ProjectBurnDatabase?retryWrites=true&w=majority",
+          "deploymentBucketName": "amplify-burnprojectv3-prod-141447-deployment",
+          "s3Key": "amplify-builds/queryTemplates-47517350336f534c784e-build.zip"
         }
       }
     }

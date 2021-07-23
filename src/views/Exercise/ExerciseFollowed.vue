@@ -50,14 +50,14 @@ export default {
             }
         }
 
-        const result = await API.get(this.$store.state.apiName, path, myInit);
-        this.exercises = result.data;
+        const response = await API.get(this.$store.state.apiName, path, myInit);
+        this.exercises = response.data;
 
         if (this.exercises.length > 0) {
             this.isLoading = false;
         }
 
-        console.log("API RESPONSE", result);
+        console.log("API RESPONSE", response);
     },
 
     methods: {

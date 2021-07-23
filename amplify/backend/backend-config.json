@@ -155,6 +155,20 @@
           ]
         }
       ]
+    },
+    "queryTemplates": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "burnprojectv3mongooseModels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
     }
   },
   "api": {
@@ -209,6 +223,12 @@
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
       "customAuth": false
+    }
+  },
+  "storage": {
+    "projectburnresource": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation"
     }
   }
 }

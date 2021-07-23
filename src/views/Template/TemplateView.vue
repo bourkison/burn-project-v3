@@ -9,7 +9,7 @@
                                 {{ templateData.name }}
                                 <b-dropdown right class="float-right" variant="outline">
                                     <span v-if="templateData.createdBy.id === this.$store.state.userProfile.data.uid">
-                                        <b-dropdown-item :to="'/templates/' + templateData.id + '/edit'">Edit</b-dropdown-item>
+                                        <b-dropdown-item :to="'/templates/' + templateData._id + '/edit'">Edit</b-dropdown-item>
                                         <b-dropdown-item variant="danger">Delete</b-dropdown-item>
                                     </span>
                                     <span v-else>
@@ -139,12 +139,14 @@ export default {
                     throw new Error("Error downloading template: " + this.$route.params.templateid + " call unsuccessful: " + response.errorMessage);
                 }
 
-                this.isLoading = false;
                 this.templateExists = true;
                 this.templateData = response.data;
             }
             catch (err) {
                 console.error(err);
+            }
+            finally {
+                this.isLoading = false;
             }
         },
     }

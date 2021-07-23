@@ -1,4 +1,6 @@
 {
+    "identityPoolName": "burnprojectcognito_identitypool_c8fc4fc7",
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "burnprbe3a0cef",
     "userPoolName": "burn-project-user-pool",
     "autoVerifiedAttributes": [
@@ -34,7 +36,7 @@
     "userpoolClientSetAttributes": false,
     "sharedId": "be3a0cef",
     "resourceName": "burnprojectcognito",
-    "authSelections": "userPoolOnly",
+    "authSelections": "identityPoolAndUserPool",
     "authRoleArn": {
         "Fn::GetAtt": [
             "AuthRole",

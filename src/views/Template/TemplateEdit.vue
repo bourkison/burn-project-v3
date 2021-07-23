@@ -17,7 +17,7 @@
                     <b-card no-body class="exerciseSelectCard">
                         <b-card-body>
                             <h5>Exercises</h5>
-                            <TemplateBuilder @updateExercises="updateExercises" :initExercises="oldTemplateData.exercises" />
+                            <TemplateBuilder @updateExercises="updateExercises" :initExercises="oldTemplateData.exerciseReferences" />
                         </b-card-body>
                     </b-card>
 
@@ -66,6 +66,17 @@
                 </b-container>
             </b-col>
         </b-row>
+
+        <b-alert
+            class="position-fixed fixed-bottom m-0 rounded-0"
+            variant="danger"
+            dismissible
+            fade
+            style="z-index: 2000;"
+            v-model="errorCountdown"
+        >
+            {{ errorMessage }}
+        </b-alert>
     </b-container>
     <b-container v-else>
         <b-spinner />
@@ -73,8 +84,7 @@
 </template>
 
 <script>
-import { functions } from '@/firebase'
-import { API } from '@/firebase'
+import { API } from 'aws-amplify'
 import { Editor } from '@toast-ui/vue-editor'
 
 import TagSelector from '@/components/Utility/TagSelector.vue'
@@ -115,7 +125,12 @@ export default {
                     'outdent',
                     'hr'
                 ]
-            }
+            },
+
+            // Errror handling:
+            errorCountdown: 0,
+            errorMessage: '',
+            errorInterval: null
         }
     },
 
@@ -136,15 +151,16 @@ export default {
                 this.oldTemplateData = null;
                 this.newTemplateData = null;
     
-                const path = '/template/' + this.$route.params.exerciseid;
+                const path = '/template/' + this.$route.params.templateid;
                 const myInit = {
                     headers: {
                         Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
                     }
                 }
-    
+
                 const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
-                    throw new Error("Error downloading template: " + this.$route.params.templateid + " at promise catch: " + err);
+                    console.error(err);
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " at promise catch: " + (JSON.parse(err.response).message || err));
                 })
 
                 if (!response) {
@@ -152,39 +168,54 @@ export default {
                 }
 
                 if (!response.success) {
-                    throw new Error("Error downloading template: " + this.$route.params.templateid + " call unsuccessful: " + response.errorMessage);
+                    throw new Error("Error downloading template: " + this.$route.params.templateid + " call unsuccessful: " + response.message);
                 }
 
                 this.isLoading = false;
                 this.templateExists = true;
-                this.templateData = response.data;
+                console.log("RESPONSE:", response);
+                this.newTemplateData = response.data;
+                this.oldTemplateData = response.data;
             }
             catch(err) {
                 console.error(err);
             }
         },
 
-        updateTemplate: function() {
-            console.log(this.newTemplateData);
-            this.isUpdating = true;
+        updateTemplate: async function() {
+            try {
+                this.isUpdating = true;
+                console.log("Updating with:", JSON.stringify(this.newTemplateData));
+    
+                const path = '/template/' + this.$route.params.templateid;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    },
+                    body: {
+                        templateForm: this.newTemplateData
+                    }
+                }
+    
+                const response = await API.put(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw new Error("at promise catch: " + err);
+                });
 
-            let updateAlgolia;
-            if (this.newTemplateData.name !== this.oldTemplateData.name) {
-                updateAlgolia = true;
-            } else {
-                updateAlgolia = false;
+                if (!response) {
+                    throw new Error("no API response");
+                }
+
+                if (!response.success) {
+                    throw new Error("API error: " + response.errorMessage);
+                }
+
+                this.isUpdating = false;
+                this.$router.push("/templates/" + response.data._id);
+
+            } catch (err) {
+                this.isUpdating = false;
+                this.displayError(err);
             }
-
-            const editTemplate = functions.httpsCallable("editTemplate");
-            editTemplate({ templateForm: this.newTemplateData, updateAlgolia: updateAlgolia })
-            .then(result => {
-                this.isUpdating = false;
-                this.$router.push("/templates/" + result.data.id);
-            })
-            .catch(e => {
-                console.error("Error updating template:", e);
-                this.isUpdating = false;
-            })
         },
 
         updateDescription: function() {
@@ -210,6 +241,21 @@ export default {
             })
 
             this.newTemplateData.exercises = temp;
+        },
+
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {    
+                    this.errorCountdown -= 1
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
         }
     }
 }

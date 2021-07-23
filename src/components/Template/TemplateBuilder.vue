@@ -4,7 +4,7 @@
             <div v-if="createdExercises.length > 0">
                 <h6>My Exercises</h6>
                 <b-list-group class="exerciseLists">
-                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in createdExercises" :key="exercise.exerciseId" @click="addExercise(exercise)" href="#" :id="'exercise-' + exercise.exerciseId">
+                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in createdExercises" :key="exercise._id" @click="addExercise(exercise)" href="#" :id="'exercise-' + exercise._id">
                         <span>{{ exercise.name }}</span>
                         <b-icon-plus font-scale="1.2" class="ml-auto"/>
                     </b-list-group-item>
@@ -13,7 +13,7 @@
             <div v-if="followedExercises.length > 0">
                 <h6>Followed Exercises</h6>
                 <b-list-group class="exerciseLists">
-                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in followedExercises" :key="exercise.exerciseId" @click="addExercise(exercise)" href="#" :id="'exercise-' + exercise.exerciseId">
+                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in followedExercises" :key="exercise._id" @click="addExercise(exercise)" href="#" :id="'exercise-' + exercise._id">
                         <span>{{ exercise.name }}</span>
                         <b-icon-plus font-scale="1.2" class="ml-auto" />    
                     </b-list-group-item>
@@ -22,7 +22,7 @@
             <div v-if="selectedExercises.length > 0">
                 <h6>Selected Exercises</h6>
                 <b-list-group class="exerciseLists" id="selectedContainer">
-                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in selectedExercises" :key="exercise.id">
+                    <b-list-group-item class="d-flex" align-v="center" v-for="exercise in selectedExercises" :key="exercise._id">
                         <span>{{ exercise.name }}</span>
                         <span class="ml-auto" />
                             <b-icon-grip-horizontal font-scale="1.2" class="ml-auto sortableHandle clickableIcon" />
@@ -112,10 +112,10 @@ export default {
                 // Check we haven't downloaded already (i.e. in followed or created exercises)
                 let cIndex, fIndex;
 
-                cIndex = this.createdExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
+                cIndex = this.createdExercises.findIndex(x => x._id === exercise.exerciseId);
 
                 if (cIndex < 0) {
-                    fIndex = this.followedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
+                    fIndex = this.followedExercises.findIndex(x => x._id === exercise.exerciseId);
                 }
 
                 // If not, download.
@@ -140,14 +140,15 @@ export default {
             if (exercises) {
                 exercises.forEach(exercise => {
                     this.selectedExercises.push(exercise);
+                    this.$nextTick(() => { document.querySelector("#exercise-" + exercise._id).classList.add("active") });
                 })
             }
 
             this.$nextTick(() => { 
                 this.sortable = new Sortable(document.querySelector("#selectedContainer"), this.sortableOptions)
                 this.$props.initExercises.forEach(exercise => {
-                    if (document.querySelector("#exercise-" + exercise.exerciseId)) {
-                        document.querySelector("#exercise-" + exercise.exerciseId).classList.add("active");
+                    if (document.querySelector("#exercise-" + exercise._id)) {
+                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
                     }
                 })
             });
@@ -158,8 +159,8 @@ export default {
 
     methods: {
         addExercise: function(exercise) {
-            if (this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId) < 0) {
-                document.querySelector("#exercise-" + exercise.exerciseId).classList.add("active");
+            if (this.selectedExercises.findIndex(x => x._id === exercise._id) < 0) {
+                document.querySelector("#exercise-" + exercise._id).classList.add("active");
                 this.selectedExercises.push(exercise);
             } else {
                 this.removeExercise(exercise);
@@ -167,10 +168,10 @@ export default {
         },
 
         removeExercise: function(exercise) {
-            let index = this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
+            let index = this.selectedExercises.findIndex(x => x._id === exercise._id);
             this.selectedExercises.splice(index, 1);
 
-            document.querySelector("#exercise-" + exercise.exerciseId).classList.remove("active");
+            document.querySelector("#exercise-" + exercise._id).classList.remove("active");
         },
 
         changeOrder: function(e) {

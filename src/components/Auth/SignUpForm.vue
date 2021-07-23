@@ -118,8 +118,11 @@
 <script>
 // import { auth, db, functions, storage } from '@/firebase'
 import { db } from '@/firebase'
-import { Auth, API } from 'aws-amplify'
+import { Auth, API, Storage } from 'aws-amplify'
 
+import dayjs from 'dayjs'
+import crypto from 'crypto'
+import util from 'util'
 
 import AvatarEditor from '@/components/Utility/AvatarEditor.vue'
 
@@ -200,75 +203,77 @@ export default {
         },
 
         signUp: async function() {
-            this.isCreating = true;
-
-            Auth.signUp({
-                username: this.signUpForm.username,
-                password: this.signUpForm.password,
-                attributes: {
-                    email: this.signUpForm.email,
-                    birthdate: this.signUpForm.dob,
-                    gender: this.signUpForm.gender,
-                    given_name: this.signUpForm.firstName,
-                    family_name: this.signUpForm.surname
-                }
-            })
-            .then(async user => {
-                this.verifyingEmail = true;
-                this.cognitoUsername = user.user.username;
-                this.isCreating = false;
-
-                // this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL);
-
-                const path = '/user';
-                const myInit = {
-                    body: {
-                        signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
+            try {
+                // First build user in database.
+                this.isCreating = true;
+    
+                const user = await Auth.signUp({
+                    username: this.signUpForm.username,
+                    password: this.signUpForm.password,
+                    attributes: {
+                        email: this.signUpForm.email,
+                        birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
+                        gender: this.signUpForm.gender,
+                        given_name: this.signUpForm.firstName,
+                        family_name: this.signUpForm.surname
                     }
-                };
+                })
 
-                myInit.body.signUpForm.username = this.cognitoUsername
+                this.cognitoUsername = user.user.username;
 
-                delete myInit.body.signUpForm.password;
-                delete myInit.body.signUpForm.confPassword;
+                try {
+                    // Then try upload profilePhoto.
+                    this.signUpForm.profilePhoto = await this.uploadProfilePhoto(this.imageURL, this.cognitoUsername);
+                }
+                catch (err) {
+                    console.error("Image upload error", err);
+                }
+                finally {
+                    // If error uploading profile photo, continue on.
+                    const path = '/user';
+                    const myInit = {
+                        body: {
+                            signUpForm: JSON.parse(JSON.stringify(this.signUpForm))
+                        }
+                    };
+        
+                    myInit.body.signUpForm.username = this.cognitoUsername
+        
+                    delete myInit.body.signUpForm.password;
+                    delete myInit.body.signUpForm.confPassword;
+        
+                    const result = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
+                        throw new Error("Error creating user document: " + (err.message || JSON.stringify(err)));
+                    })
 
-                return API.post(this.$store.state.apiName, path, myInit)
-            })
-            .then(response => {
-                console.log("SIGN UP SUCCESS:", response);
-            })
-            .catch(err => {
-                this.isCreating = false;
-                alert(err.message || JSON.stringify(err))
-            })
-
-            
+                    console.log("User doc success: ", result);
+                }
+            }
+            catch(err) {
+                console.error("Last catch", err)
+            }
         },
 
-        uploadProfilePhoto: async function(image) {
-            console.log(image);
+        uploadProfilePhoto: async function(image, username) {
             if (!image) {
                 return '';
             }
 
-            const path = '/imageupload';
+            const imageName = "profilePhotos/" + username + "/" + dayjs().format("YYYYMMDDHHmmssSSS") + "-" + (await this.generateId(8));
+            const imageData = await fetch(image);
+            const blob = await imageData.blob();
 
-            const uploadUrl = await API.get(this.$store.state.apiName, path, {
-                queryStringParameters: {
-                    type: "profilePhotos"
+            const result = await Storage.put(imageName, blob, {
+                level: 'protected',
+                contentType: blob.type,
+                progressCallback: function(progress) {
+                    console.log("IMAGE UPLOAD PROGRESS:", progress.loaded, progress.total, progress.loaded / progress.total);
                 }
-            }).catch(err => { console.warn(err); });
-            const blob = this.dataURLtoBlob(image);
-
-            fetch(uploadUrl, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/octet-stream"
-                },
-                body: blob
+            }).catch(err => {
+                throw new Error("Error uploading image: " + err);
             })
-            
-            return uploadUrl.split("?")[0];
+
+            console.log("IMAGE UPLOADED:", result);
         },
 
         verifyEmail: function() {
@@ -306,13 +311,11 @@ export default {
             this.signUpForm.country = country;
         },
 
-        dataURLtoBlob: function(dataurl) {
-            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], {type:mime});
+        generateId: async function(n) {
+            const randomBytes = util.promisify(crypto.randomBytes)
+            const rawBytes = await randomBytes(n);
+
+            return rawBytes.toString('hex');
         }
 
     },

@@ -228,10 +228,10 @@ export default {
                 }
             }
 
-            const result = await API.put(this.$store.state.apiName, path, myInit)
+            const response = await API.put(this.$store.state.apiName, path, myInit)
 
             this.isUpadting = false;
-            this.$router.push("/exercises/" + result.data._id)
+            this.$router.push("/exercises/" + response.data._id)
         },
 
         updateDescription: function() {
