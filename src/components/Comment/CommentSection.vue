@@ -34,7 +34,7 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <CommentNew @addComment="addComment" :collection="coll" :docId="_id" />
+                <CommentNew @addComment="addComment" :coll="coll" :_id="_id" />
             </b-container>
         </b-collapse>
 
@@ -147,8 +147,9 @@ export default {
         //     console.error("Error pulling comment data:", e);
         // })
 
-        const path = '/like';
-        const myInit = {
+        let promises = [];
+        let path = '/like';
+        let myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
             },
@@ -159,15 +160,24 @@ export default {
             }
         }
 
-        const likeResponse = (await API.get(this.$store.state.apiName, path, myInit)).data;
+        promises.push(API.get(this.$store.state.apiName, path, myInit).then(likeResponse => {
+            this.isLiked = likeResponse.data.isLiked;
+            this.likeCount = likeResponse.data.likeCount;
+            this.likes = likeResponse.data.likes;
+        }))
 
-        this.isLiked = likeResponse.isLiked;
-        this.likeCount = likeResponse.likeCount;
-        this.likes = likeResponse.likes;
+        path = '/comment'
+
+        promises.push(API.get(this.$store.state.apiName, path, myInit).then(commentResponse => {
+            this.commentCount = commentResponse.data.commentCount;
+            this.comments = commentResponse.data.comments;
+
+            console.log("COMMENT RESPONSE:", commentResponse);
+        }));
+
+        await Promise.all(promises);
 
         this.isLoading = false;
-
-        console.log("LIKE RESPONSE", likeResponse);
     },
 
     methods: {

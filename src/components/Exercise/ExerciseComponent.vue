@@ -15,7 +15,7 @@
                 <b-card-sub-title>{{ exerciseData.createdBy.username }}</b-card-sub-title>
                 <Viewer :initialValue="exerciseData.description" />
             </b-card-body>
-            <CommentSection :docId="exerciseData.id" collection="exercises" :followableComponent="true" />
+            <CommentSection :_id="exerciseData._id" coll="exercise" :followableComponent="true" />
         </div>
         <div v-else>
             <b-card-body>

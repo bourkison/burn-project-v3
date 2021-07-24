@@ -14,9 +14,9 @@
             <div class="content">{{ comment.content }}</div>
             <div class="like pl-1 pr-1 d-flex">
                 <div align-v="center">
-                    <b-icon-heart v-if="!isLiked" class="icon" @click="toggleLike" font-scale=".8" />
+                    <b-icon-heart v-if="!comment.isLiked" class="icon" @click="toggleLike" font-scale=".8" />
                     <b-icon-heart-fill v-else variant="danger" class="icon" @click="toggleLike" font-scale=".8" />
-                    <span class="ml-1 text-muted count" style="font-size:12px;" @click="expandLikes"><span v-if="!isLoading">{{ likeCount }}</span><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>
+                    <span class="ml-1 text-muted count" style="font-size:12px;" @click="expandLikes"><span v-if="!isLoading">{{ comment.likeCount }}</span><span v-else>...</span>&nbsp;<span v-if="comment.likeCount == 1">like</span><span v-else>likes</span></span>
                 </div>
                 <span class="ml-auto text-muted" style="font-size: 12px;">
                     {{ createdAtText }}
@@ -69,10 +69,10 @@ export default {
     },
     data() {
         return {
-            isLoading: true,
+            isLoading: false,
             isLoadingLikes: false,
             isLiking: false,
-            isLiked: '',
+            isLiked: false,
             likeCount: 0,
 
             likes: [],
@@ -84,31 +84,7 @@ export default {
 
     created: function() {
         dayjs.extend(relativeTime);
-
-        let promises = [];
-        // Download likes.
-        promises.push(db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").doc(this.$props.comment.id).collection("counters").get()
-        .then(counterSnapshot => {
-            counterSnapshot.forEach(counter => {
-                this.likeCount += counter.data().likeCount;
-            })
-        }))
-
-        // Check if liked.
-        promises.push(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.comment.id).get()
-        .then(likeSnapshot => {
-            likeSnapshot.forEach(like => {
-                if (like.exists) {
-                    this.isLiked = like.id;
-                }
-            })
-        }))
-
-        Promise.all(promises)
-        .then(() => {
-            this.createdAtText = dayjs(dayjs.unix(this.$props.comment.createdAt.seconds)).fromNow();
-            this.isLoading = false;
-        })
+        this.createdAtText = dayjs(this.$props.comment.createdAt).fromNow();
     },
 
     methods: {

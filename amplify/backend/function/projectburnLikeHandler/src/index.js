@@ -57,8 +57,7 @@ const queryLike = async function(event) {
     ]))[0].likes;
 
     if (!likes) {
-        const errorResponse = "Likes not found for id: " + _id +  " in collection: " + "coll."
-        response.statusCode = 500;
+        const errorResponse = "Likes not found for id: " + _id +  " in collection: " + coll + "."
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
@@ -66,7 +65,7 @@ const queryLike = async function(event) {
 
     // We only need to return likeCount and isLiked if we are pulling from a collection.
     if (coll !== "user") {
-        // First pull like count from collection.
+        // First pull likeCount from collection.
         let fields = 'likeCount'
         const likeCount = (await Model.findOne({ "_id": _id }, fields).exec()).likeCount;
 
@@ -102,6 +101,7 @@ const queryLike = async function(event) {
         response.statusCode = 200;
         response.body = JSON.stringify({ success: true, data: { likeCount: likeCount, likes: likes, isLiked: isLiked } })
     } else {
+        // TODO: Pull the comment data from the relevant collections.
         response.statusCode = 200;
         response.body = JSON.stringify({ success: true, data: { likes: likes } })
     }
@@ -151,7 +151,7 @@ const createLike = async function(event) {
     let fields = 'username'
     const user = await User.findOne({ username: username }, fields).exec();
 
-    // Next push the user reference to the relevant document's likes array and increment likeCount by 1.
+    // Next push the like to the relevant document's likes array and increment likeCount by 1.
     const userReference = {
         userId: ObjectId(user._id),
         username: username
@@ -176,7 +176,7 @@ const createLike = async function(event) {
     );
 
     if (!collResult) {
-        const errorResponse = "No like created in collection: ";
+        const errorResponse = "No like created in collection.";
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         return response;
     }
@@ -201,7 +201,7 @@ const createLike = async function(event) {
     console.log(userResult)
 
     if (!userResult) {
-        const errorResponse = "No like created in user: ";
+        const errorResponse = "No like created in user.";
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
