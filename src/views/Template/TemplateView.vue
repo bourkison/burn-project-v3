@@ -10,7 +10,10 @@
                                 <b-dropdown right class="float-right" variant="outline">
                                     <span v-if="templateData.createdBy.id === this.$store.state.userProfile.data.uid">
                                         <b-dropdown-item :to="'/templates/' + templateData._id + '/edit'">Edit</b-dropdown-item>
-                                        <b-dropdown-item variant="danger">Delete</b-dropdown-item>
+                                        <b-dropdown-item variant="danger" @click="confirmDeleteTemplate" :disabled="isDeleting">
+                                            <div v-if="!isDeleting">Delete</div>
+                                            <div v-else><b-spinner small /></div>
+                                        </b-dropdown-item>
                                     </span>
                                     <span v-else>
                                         <b-dropdown-item variant="danger">Report</b-dropdown-item>
@@ -79,6 +82,28 @@
                 </b-card>
             </b-col>
         </b-row>
+
+        <b-modal v-model="modalIsDeleting" title="Please Confirm" @ok="deleteTemplate" ok-variant="danger" centered button-size="sm" :ok-title-html="isDeleting ? '<b-spinner />' : 'Ok'">
+            <div>Are you sure you want to delete this template? This can not be undone.</div>
+
+            <template #modal-footer="{ ok, cancel }">
+                <b-button size="sm" @click="cancel">
+                    <div>Cancel</div>
+                </b-button>
+
+                <b-button size="sm" variant="danger" @click="ok" :disabled="isDeleting">
+                    <div v-if="!isDeleting">Ok</div>
+                    <div v-else><b-spinner small /></div>
+                </b-button>
+            </template>
+        </b-modal>
+    </b-container>
+    <b-container v-else-if="!isLoading && !templateExists">
+        <!-- 404 -->
+        <div>Template does not exist</div>
+    </b-container>
+    <b-container v-else>
+        <div style="margin-top: 40px;" class="text-center"><b-spinner /></div>
     </b-container>
 </template>
 
@@ -96,11 +121,13 @@ export default {
     data() {
         return {
             isLoading: true,
+            isDeleting: false,
             templateExists: false,
             templateData: null,
 
             // Bootstrap:
-            variants: ["success", "danger", "warning", "info", "dark"]
+            variants: ["success", "danger", "warning", "info", "dark"],
+            modalIsDeleting: false
         }
     },
 
@@ -149,6 +176,30 @@ export default {
                 this.isLoading = false;
             }
         },
+
+        confirmDeleteTemplate: function() {
+            this.modalIsDeleting = true;
+        },
+
+        deleteTemplate: async function(e) {
+            e.preventDefault();
+
+            this.isDeleting = true;
+
+            const path = '/template/' + this.$route.params.templateid;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                }
+            }
+
+            const response = await API.del(this.$store.state.apiName, path, myInit);
+            console.log("Deletion success:", response);
+
+            this.isDeleting = false;
+            this.modalIsDeleting = false;
+            this.$router.push("/templates");
+        }
     }
 }
 </script>

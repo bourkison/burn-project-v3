@@ -4,8 +4,8 @@
       "type": "ProjectLayer",
       "resourceName": "projectburnmongoosemodels",
       "env": "dev",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true
+      "version": 8,
+      "isLatestVersionSelected": false
     }
   ],
   "secretNames": [

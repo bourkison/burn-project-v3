@@ -70,7 +70,7 @@ const queryTemplate = async function(event) {
     if (!userResult) {
         const errorResponse = "Templates not found for user: " + username + ".";
         response.statusCode = 404;
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     }
@@ -122,12 +122,14 @@ const createTemplate = async function(event) {
         exerciseReferences: templateForm.exercises,
         muscleGroups: templateForm.muscleGroups,
         name: templateForm.name,
-        tags: templateForm.tags
+        tags: templateForm.tags,
+        follows: [userReference],
+        followCount: 1
     })
 
     const templateResult = await template.save().catch(err => {
         const errorResponse = "Error creating template: " + JSON.stringify(err);
-        response.body = JSON.stringify({ success: true, data: userResult });
+        response.body = JSON.stringify({ success: true, errorMessage: errorResponse });
 
         return response;
     })
@@ -151,7 +153,7 @@ const createTemplate = async function(event) {
     const userResult = await User.updateOne({ _id: user._id }, { $push: { templateReferences: templateReference }}).catch(err => {
         // TODO: Delete previously created template
         const errorResponse = "Error creating template in user document: " + JSON.stringify(err);
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
     })
@@ -195,7 +197,7 @@ const updateTemplate = async function(event) {
         }
     ).exec().catch(err => {
         const errorResponse = "Error getting template from user: " + username + " : " + templateId + ". " + (err.message || JSON.stringify(err));
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     }))[0].templateReferences[0];
@@ -203,7 +205,7 @@ const updateTemplate = async function(event) {
     if (!userResult) {
         const errorResponse = "Template " + templateId + " not found for user " + username + ".";
         response.statusCode = 404;
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     }
@@ -212,7 +214,7 @@ const updateTemplate = async function(event) {
     // Now update Template document.
     const result = await Template.findByIdAndUpdate(templateId, templateForm, { runValidators: true }).exec().catch(err => {
         const errorResponse = "Error updating template : " + templateId + " : " + JSON.stringify(templateForm) + ". " + (err.message || JSON.stringify(err));
-        response.body = JSON.stringify({ success: false,message: errorResponse });
+        response.body = JSON.stringify({ success: false,errorMessage: errorResponse });
         
         return response;
     });
@@ -268,17 +270,17 @@ const deleteTemplate = async function(event) {
                 }
             }
         }
-    )).exec().catch(err => {
+    ).exec().catch(err => {
         const errorResponse = "Error getting template from user: " + username + " : " + templateId + ". " + (err.message || JSON.stringify(err));
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
-    }).templateReferences[0]
+    })).templateReferences[0]
 
     if (!userResult) {
         const errorResponse = "Template not found for user: " + username + ".";
         response.statusCode = 404;
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
     }
 
     // Now pull all follows for the template and pull their reference from each user.
@@ -327,7 +329,7 @@ exports.handler = async (event, context) => {
     
     switch (event.httpMethod) {
         case "GET":
-            if (event.resource === "/exercise") {
+            if (event.resource === "/template") {
                 response = await queryTemplate(event);
             } else {
                 response = await getTemplate(event);

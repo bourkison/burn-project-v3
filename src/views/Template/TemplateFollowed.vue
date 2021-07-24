@@ -123,7 +123,7 @@ export default {
             const path = '/template';
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 },
                 queryStringParameters: {
                     loadAmount: 5

@@ -123,10 +123,12 @@ export default {
             try {
                 this.isCreating = true;
 
+                console.log(JSON.stringify(JSON.stringify({ templateForm: this.templateForm })));
+
                 const path = '/template'
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     body: {
                         templateForm: this.templateForm

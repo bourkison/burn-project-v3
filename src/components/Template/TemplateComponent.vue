@@ -64,7 +64,7 @@ export default {
             const path = '/template/' + this.$props.templateId;
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 }
             }
     

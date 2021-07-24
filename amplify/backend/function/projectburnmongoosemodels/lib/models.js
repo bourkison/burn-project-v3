@@ -9,7 +9,7 @@ mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {
 });
 
 
-const userReferencesSchema = new mongoose.Schema({
+const userReferenceSchema = new mongoose.Schema({
     userId: {
         type: ObjectId,
         required: true
@@ -136,7 +136,7 @@ const recordedExerciseSchema = new mongoose.Schema({
 
 const likeSchema = new mongoose.Schema({
     createdBy: {
-        type: userReferencesSchema,
+        type: userReferenceSchema,
         required: true
     }
 }, { timestamps: true });
@@ -172,7 +172,7 @@ const commentSchema = new mongoose.Schema({
         required: true
     },
     createdBy: {
-        type: userReferencesSchema,
+        type: userReferenceSchema,
         required: true
     },
     likes: {
@@ -193,7 +193,7 @@ const postSchema = new mongoose.Schema({
         required: true
     },
     createdBy: {
-        type: userReferencesSchema,
+        type: userReferenceSchema,
         required: true
     },
     filePaths: {
@@ -278,11 +278,11 @@ const userSchema = new mongoose.Schema({
         default: 0
     },
     followers: {
-        type: [userReferencesSchema],
+        type: [userReferenceSchema],
         default: []
     },
     following: {
-        type: [userReferencesSchema],
+        type: [userReferenceSchema],
         default: []
     },
     exerciseReferences: {
@@ -314,7 +314,7 @@ const userSchema = new mongoose.Schema({
 
 const exerciseSchema = new mongoose.Schema({
     createdBy: {
-        type: userReferencesSchema,
+        type: userReferenceSchema,
         required: true
     },
     description: {
@@ -354,7 +354,7 @@ const exerciseSchema = new mongoose.Schema({
         default: []
     },
     follows: {
-        type: [userReferencesSchema],
+        type: [userReferenceSchema],
         default: []
     },
     likeCount: {
@@ -373,7 +373,7 @@ const exerciseSchema = new mongoose.Schema({
 
 const templateSchema = new mongoose.Schema({
     createdBy: {
-        type: userReferencesSchema,
+        type: userReferenceSchema,
         required: true
     },
     description: {
@@ -415,9 +415,16 @@ const templateSchema = new mongoose.Schema({
     commentCount: {
         type: Number,
         default: 0
+    },
+    follows: {
+        type: [userReferenceSchema],
+        default: []
+    },
+    followCount: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true })
-
 
 
 module.exports = async (uri) => {

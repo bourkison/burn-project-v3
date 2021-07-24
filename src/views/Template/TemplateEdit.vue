@@ -154,7 +154,7 @@ export default {
                 const path = '/template/' + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     }
                 }
 
@@ -190,7 +190,7 @@ export default {
                 const path = '/template/' + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     body: {
                         templateForm: this.newTemplateData
