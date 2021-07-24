@@ -1,13 +1,13 @@
 <template>
     <b-card no-body>
         <div v-if="!isLoading">
-            <div v-if="exerciseData.filePaths.length > 1">
+            <div v-if="imageUrls.length > 1">
                 <b-carousel v-model="carouselModel" controls indicators :interval="0">
-                    <b-aspect><b-carousel-slide v-for="img in exerciseData.filePaths" :key="img" :img-src="img" /></b-aspect>
+                    <b-aspect><b-carousel-slide v-for="img in imageUrls" :key="img" :img-src="img" /></b-aspect>
                 </b-carousel>
             </div>
-            <div v-else-if="exerciseData.filePaths.length > 0">
-                <b-img :src="exerciseData.filePaths[0]" fluid-grow />
+            <div v-else-if="imageUrls.length > 0">
+                <b-img :src="imageUrls[0]" fluid-grow />
             </div>
             
             <b-card-body>
@@ -30,7 +30,7 @@ import '@toast-ui/editor/dist/toastui-editor-viewer.css'
 
 import { Viewer } from '@toast-ui/vue-editor'
 // import { db, storage } from '@/firebase'
-import { API } from 'aws-amplify'
+import { API, Storage } from 'aws-amplify'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'
 
@@ -48,6 +48,7 @@ export default {
         return {
             isLoading: true,
             exerciseData: {},
+            imageUrls: [],
 
             // Bootstrap:
             carouselModel: 0
@@ -55,18 +56,44 @@ export default {
     },
 
     created: async function() {
-        const path = '/exercise/' + this.$props.exerciseId;
-        const myInit = {
-            headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+        try {
+            const path = '/exercise/' + this.$props.exerciseId;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                }
             }
+    
+            const response = await API.get(this.$store.state.apiName, path, myInit);
+            this.exerciseData = response.data;
+
+            try {
+                if (this.exerciseData.filePaths) {
+                    let urlPromises = [];
+
+                    this.exerciseData.filePaths.forEach(path => {
+                        urlPromises.push(Storage.get(path))
+                    })
+
+                    const imageUrls = await Promise.all(urlPromises);
+
+                    imageUrls.forEach(url => {
+                        this.imageUrls.push(url);
+                    })
+                }
+            }
+            catch (err) {
+                console.error("Error getting image URLs:", err);
+            }
+            finally {
+                if (this.exerciseData) {
+                    this.isLoading = false;
+                }
+            }
+
         }
-
-        const response = await API.get(this.$store.state.apiName, path, myInit);
-        this.exerciseData = response.data;
-
-        if (this.exerciseData) {
-            this.isLoading = false;
+        catch (err) {
+            console.error("Error downloading exercise:", this.$props.exerciseId, err);
         }
     },
 }

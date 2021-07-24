@@ -136,6 +136,14 @@ const createExercise = async function(event) {
         return response;
     });
 
+    console.log("EXERCISE RESULT:", exerciseResult);
+
+    if (!exerciseResult) {
+        const errorResponse = "Error creating exercise. No response."
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }
     // Now build out the exercise reference, and add that to the User's exerciseReferences array.
     const exerciseReference = {
         exerciseId: ObjectId(exerciseResult._id),
@@ -217,18 +225,22 @@ const updateExercise = async function(event) {
     });
 
     // Now update the exercise reference in the User.
-    const exerciseReference = {
-        muscleGroups: exerciseForm.muscleGroups,
-        tags: exerciseForm.tags,
-        name: exerciseForm.name,
-        exerciseId: exerciseId,
-        isFollow: userResult.isFollow,
-        _id: exerciseResult._id
-    }
+    console.log("Updating exercise reference");
 
-    console.log("Updating exercise reference:", exerciseReference);
+    const userUpdateResult = await User.updateOne(
+        { 
+            "username": username, 
+            "exerciseReferences.exerciseId": exerciseId 
+        }, 
+        { 
+            "$set": { 
+                "exerciseReferences.$.muscleGroups": exerciseForm.muscleGroups,
+                "exerciseReferences.$.tags": exerciseForm.tags,
+                "exerciseReferences.$.name": exerciseForm.name 
+            }
+        }
+    );
 
-    const userUpdateResult = await User.updateOne({ "username": username, "exerciseReferences.exerciseId": exerciseId }, { "$set": { "exerciseReferences.$":  exerciseReference }});
     response.statusCode = 200;
     response.body = JSON.stringify({ success: true, data: exerciseResult, userData: userUpdateResult });
 

@@ -151,7 +151,7 @@ export default {
 
             console.log("Image Results:", imageResults);
             imageResults.forEach(result => {
-                this.exerciseForm.filePath.push(result);
+                this.exerciseForm.filePaths.push(result.key);
             })
 
             const path = '/exercise'
