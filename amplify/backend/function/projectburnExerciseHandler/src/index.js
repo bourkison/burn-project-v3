@@ -1,8 +1,10 @@
 const aws = require('aws-sdk');
 const MongooseModels = require('/opt/models');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
 
-// GET request /exercise
+// GET request /exercise/{proxy+}
 const getExercise = async function(event) {
     const exerciseId = event.pathParameters.proxy;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
@@ -37,12 +39,12 @@ const getExercise = async function(event) {
     return response;
 }
 
-// GET request /exercise/{proxy+}
+// GET request /exercise
 const queryExercise = async function(event) {
     const username = event.requestContext.authorizer.claims['cognito:username'];
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
     
-    const User = (await mongooseModels(MONGODB_URI)).User;
+    const User = (await MongooseModels(MONGODB_URI)).User;
 
     // Pull loadAmount elements from templaterefs
     const userResult = (await User.aggregate([
@@ -154,12 +156,11 @@ const createExercise = async function(event) {
     });
 
     const userExercise = {
-        _id: exerciseResult._id,
+        exerciseId: ObjectId(exerciseResult._id),
         muscleGroups: exerciseResult.muscleGroups,
         tags: exerciseResult.tags,
         isFollow: false,
-        createdAt: exerciseResult.createdAt,
-        updatedAt: exerciseResult.updatedAt
+        name: exerciseResult.name
     }
 
     const userResult = await User.update({ _id: user._id }, { $push: { exercises: userExercise }}).catch(err => {
@@ -372,7 +373,7 @@ exports.handler = async (event, context) => {
 
     switch (event.httpMethod) {
         case "GET":
-            if (event.resourcePath === "/exercise") {
+            if (event.resource === "/exercise") {
                 response = await queryExercise(event);
             } else {
                 response = await getExercise(event);
@@ -401,7 +402,7 @@ exports.handler = async (event, context) => {
 
     console.log("RESPONSE:", response);
     console.log("EVENT:", event);
-    console.log("USER:", event.requestContext.identity.user);
+    console.log("USER:", event.requestContext.authorizer.claims['cognito:username']);
     console.log("REQUEST CONTEXT:", event.requestContext);
     return response;
 };
