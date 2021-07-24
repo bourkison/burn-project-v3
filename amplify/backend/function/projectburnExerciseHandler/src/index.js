@@ -12,29 +12,25 @@ const getExercise = async function(event) {
     let fields = 'createdBy description difficulty filePaths measureBy muscleGroups name tags';
     const result = await Exercise.findOne({ _id: exerciseId }, fields).exec();
 
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false }),
+    };
+
     if (!result) {
         const errorResponse = "Exercise: " + exerciseId + " not found." + JSON.stringify(event);
-
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.statusCode = 404
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     }
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers" : "*"
-        },
-        body: JSON.stringify({ success: true, data: result }),
-    }
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: result });
 
     return response;
 }
@@ -45,6 +41,15 @@ const queryExercise = async function(event) {
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
     
     const User = (await MongooseModels(MONGODB_URI)).User;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    };
 
     // Pull loadAmount elements from exerciseReferences
     const userResult = (await User.aggregate([
@@ -66,27 +71,14 @@ const queryExercise = async function(event) {
 
     if (!userResult) {
         const errorResponse = "Exercises not found for user: " + username + ".";
-
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     }
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "Content-Type",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify(JSON.stringify({ success: true, data: userResult })),
-    };
+    response.statusCode = 200;
+    response.body = JSON.stringify(JSON.stringify({ success: true, data: userResult }));
 
     return response;
 }
@@ -97,8 +89,15 @@ const createExercise = async function(event) {
 
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
-    const UserReference = (await MongooseModels(MONGODB_URI)).UserReference;
-    const ExerciseReference = (await MongooseModels(MONGODB_URI)).ExerciseReference;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
 
     // First pull user data.
     let fields = 'username profilePhoto'
@@ -106,19 +105,12 @@ const createExercise = async function(event) {
 
     if (!user) {
         const errorResponse = "Error finding user: " + event.requestContext.authorizer.claims['cognito:username'] + ".\n" + JSON.stringify(event.requestContext.authorizer);
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers" : "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse}),
-        }
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
     }
 
+    // Now build out and sent the new Exercise.
     const userReference = {
         userId: user._id,
         username: user.username
@@ -139,18 +131,12 @@ const createExercise = async function(event) {
 
     const exerciseResult = await exercise.save().catch(err => {
         const errorResponse = "Error creating exercise: " + JSON.stringify(err);
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers" : "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        }
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
     });
 
+    // Now build out the exercise reference, and add that to the User's exerciseReferences array.
     const exerciseReference = {
         exerciseId: ObjectId(exerciseResult._id),
         muscleGroups: exerciseResult.muscleGroups,
@@ -162,26 +148,13 @@ const createExercise = async function(event) {
     const userResult = await User.update({ _id: user._id }, { $push: { exerciseReferences: exerciseReference }}).catch(err => {
         // TODO: Delete previously created exercise.
         const errorResponse = "Error creating exercise in user document: " + JSON.stringify(err);
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers" : "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        }
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
     });
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers" : "*"
-        },
-        body: JSON.stringify({ success: true, _id: exerciseResult._id, data: exerciseResult }),
-    }
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, _id: exerciseResult._id, data: exerciseResult });
 
     return response;
 }
@@ -194,6 +167,15 @@ const updateExercise = async function(event) {
 
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
     
     // First pull exercise data from user to ensure user has access verification.
     console.log("Finding username:", username, "Exercise ID:", exerciseId);
@@ -211,52 +193,30 @@ const updateExercise = async function(event) {
         }
     ).exec().catch(err => {
         const errorResponse = "Error getting exercise from user: " + username + " : " + exerciseId + ". " + (err.message || JSON.stringify(err));
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
     })).exerciseReferences[0];
     
     console.log("Found:", userResult);
 
-    // Check if theres a response.
     if (!userResult) {
         const errorResponse = "Exercise not found for user: " + username + ".";
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, message: errorResponse });
 
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
-        
         return response;
     }
     
+    // Now update the Exercise document.
     const exerciseResult = await Exercise.findByIdAndUpdate(exerciseId, exerciseForm, { runValidators: true }).exec().catch(err => {
         const errorResponse = "Error updating exercise : " + exerciseId + " : " + JSON.stringify(exerciseForm) + ". " + (err.message || JSON.stringify(err));
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
     });
 
+    // Now update the exercise reference in the User.
     const exerciseReference = {
         muscleGroups: exerciseForm.muscleGroups,
         tags: exerciseForm.tags,
@@ -268,16 +228,9 @@ const updateExercise = async function(event) {
 
     console.log("Updating exercise reference:", exerciseReference);
 
-    const userUpdateResult = User.updateOne({ "username": username, "exerciseReferences.exerciseId": exerciseId }, { "$set": { "exerciseReferences.$":  exerciseReference }});
-
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "*",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ success: true, data: exerciseResult, userData: userUpdateResult }),
-    };
+    const userUpdateResult = await User.updateOne({ "username": username, "exerciseReferences.exerciseId": exerciseId }, { "$set": { "exerciseReferences.$":  exerciseReference }});
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: exerciseResult, userData: userUpdateResult });
 
     return response;
 }
@@ -290,6 +243,16 @@ const deleteExercise = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
 
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
+    // First pull exercise from user to see if it exists (thus the user has auth to delete).
     const userResult = (await User.find(
         {
             "username": username
@@ -304,34 +267,20 @@ const deleteExercise = async function(event) {
         }
     ).exec().catch(err => {
         const errorResponse = "Error getting exercise from user: " + username + " : " + exerciseId + ". " + (err.message || JSON.stringify(err));
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
     }))[0].exerciseReferences[0];
 
     if (!userResult) {
         const errorResponse = "Exercise not found for user: " + username + ".";
-
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, message: errorResponse })
         
         return response;
     }
 
+    // Now pull all follows from the exercise and pull their reference from each user.
     const exerciseResult = (await Exercise.findById(exerciseId, { "follows": 1 })).follows;
     let userPullPromises = [];
     
@@ -352,21 +301,15 @@ const deleteExercise = async function(event) {
         userPullPromises.push(query.exec());
     })
     
-    const pullResponses = await Promise.all(userPullPromises)
+    await Promise.all(userPullPromises)
 
-    const result = await Exercise.findById(exerciseId).deleteOne();
+    // Finally delete the exercise.
+    const result = await Exercise.deleteOne({ "_id": exerciseId }).exec();
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "*",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ success: true, data: result })
-    };
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: result })
 
     return response;
-
 }
 
 exports.handler = async (event, context) => {
