@@ -72,7 +72,10 @@ import 'codemirror/lib/codemirror.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 import { Editor } from '@toast-ui/vue-editor'
 
-import { API } from 'aws-amplify'
+import { API, Storage } from 'aws-amplify'
+
+import crypto from 'crypto'
+import util from 'util'
 
 import ImageUploader from '@/components/Utility/ImageUploader.vue'
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
@@ -139,7 +142,7 @@ export default {
                 const path = '/exercise/' + this.$route.params.exerciseid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     }
                 }
     
@@ -163,6 +166,7 @@ export default {
 
         updateExercise: async function() {
             console.log("Update", this.newExerciseData, this.imagesToUpload, this.imagesToDelete);
+            console.log("JSON:", JSON.stringify(this.newExerciseData));
 
             this.isUpdating = true;
 
@@ -174,64 +178,63 @@ export default {
                 })
             }
 
-            // Next, loop through our images and upload if need be.
-            let path = '/imageupload';
-            let imageUploadUrlPromises = [];
-            let imageUploadPromises = [];
-            this.newExerciseData.filePaths = [];
-            this.imagesToUpload.forEach(image => {
-                if (!image.path) {
-                    const blob = this.dataURLtoBlob(image.url)
-
-                    imageUploadUrlPromises.push(API.get(this.$store.state.apiName, path, {
-                        headers: {
-                            Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
-                        },
-                        queryStringParameters: {
-                            type: "exercises"
+            try {
+                try {
+                    // Next, loop through our images and upload if need be.
+                    this.newExerciseData.filePaths = [];
+        
+                    const imagePaths = await Promise.all(this.imagesToUpload.map(async (image, i) => {
+                        if (!image.path) {
+                            const imageId = await this.generateId(16);
+                            const imageName = "username/" + this.$store.state.userProfile.docData.username + "/exercises/" + imageId;
+                            
+                            const imageData = await fetch(image.url);
+                            const blob = await imageData.blob();
+        
+                            const imageResponse = await Storage.put(imageName, blob, {
+                                contentType: blob.type,
+                                progressCallback: function(progress) {
+                                    console.log("Image:", i, progress.loaded / progress.total, progress);
+                                }
+                            }).catch(err => {
+                                throw new Error(i + " " + err);
+                            })
+        
+                            return imageResponse;
+                        } else {
+                            return image.path
                         }
-                    }).then(url => {
-                        imageUploadPromises.push(fetch(url, {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/octet-stream",
-                            },
-                            body: blob
-                        }));
-                        
-                        return new Promise(resolve => {
-                            resolve(url.split("?")[0]);
-                        })
                     }));
-                } else {
-                    // To keep everything in order, create an empty promise.
-                    imageUploadUrlPromises.push(new Promise(resolve => {
-                        resolve(image.path);
-                    }))
+        
+                    imagePaths.forEach(path => {
+                        this.newExerciseData.filePaths.push(path);
+                    })
+                } catch (err) {
+                    console.error("Error uploading image(s):", err);
                 }
-            })
-
-            const imageUrls = await Promise.all(imageUploadUrlPromises);
-
-            imageUrls.forEach(url => {
-                this.newExerciseData.filePaths.push(url);
-            })
-
-            // Now update exercise document.
-            path = '/exercise/' + this.$route.params.exerciseid;
-            const myInit = {
-                headers: {
-                    Authorization: this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
-                },
-                body: {
-                    exerciseForm: this.newExerciseData
+                finally {
+                    // Now update exercise document.
+                    const path = '/exercise/' + this.$route.params.exerciseid;
+                    const myInit = {
+                        headers: {
+                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        },
+                        body: {
+                            exerciseForm: this.newExerciseData
+                        }
+                    }
+        
+                    const response = await API.put(this.$store.state.apiName, path, myInit)
+        
+                    this.$router.push("/exercises/" + response.data._id)
                 }
+            } catch (err) {
+                console.error("Error updating exercise:", err);
+            }
+            finally {
+                this.isUpadting = false;
             }
 
-            const response = await API.put(this.$store.state.apiName, path, myInit)
-
-            this.isUpadting = false;
-            this.$router.push("/exercises/" + response.data._id)
         },
 
         updateDescription: function() {
@@ -258,14 +261,12 @@ export default {
             this.imagesToDelete.push(path);
         },
 
-        generateId(n) {
-            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-            let id = '';
-            // 7 random characters
-            for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
-            }
-            return id;
+        generateId: async function(n) {
+            const randomBytes = util.promisify(crypto.randomBytes)
+            const rawBytes = await randomBytes(n);
+
+            const hex = await rawBytes.toString('hex');
+            return hex;
         },
 
         dataURLtoBlob: function(dataurl) {

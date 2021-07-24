@@ -150,11 +150,14 @@ export default {
             }))
 
             console.log("Image Results:", imageResults);
+            imageResults.forEach(result => {
+                this.exerciseForm.filePath.push(result);
+            })
 
             const path = '/exercise'
             const myInit = {
                 headers: {
-                    "Authorization": this.$store.state.userProfile.data.signInUserSession.idToken.jwtToken
+                    "Authorization": this.$store.state.userProfile.data.idToken.jwtToken
                 },
                 body: {
                     exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))

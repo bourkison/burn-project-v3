@@ -145,7 +145,7 @@ const createTemplate = async function(event) {
         return response;
     })
 
-    const userTemplate = {
+    const templateReference = {
         templateId: ObjectId(templateResult._id),
         name: templateResult.name,
         muscleGroups: templateResult.muscleGroups,
@@ -153,7 +153,7 @@ const createTemplate = async function(event) {
         isFollow: false
     }
 
-    const userResult = await User.updateOne({ _id: user._id }, { $push: { templateReferences: userTemplate }}).catch(err => {
+    const userResult = await User.updateOne({ _id: user._id }, { $push: { templateReferences: templateReference }}).catch(err => {
         // TODO: Delete previous template
         const errorResponse = "Error creating template in user document: " + JSON.stringify(err);
         const response = {

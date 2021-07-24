@@ -46,7 +46,7 @@ const queryExercise = async function(event) {
     
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    // Pull loadAmount elements from templaterefs
+    // Pull loadAmount elements from exerciseReferences
     const userResult = (await User.aggregate([
         {
             "$match": {
@@ -55,25 +55,23 @@ const queryExercise = async function(event) {
         },
         {
             "$project": {
-                "templateReferences": {
-                    "$slice": [ "$templateReferences", loadAmount ]
+                "exerciseReferences": {
+                    "$slice": [ "$exerciseReferences", loadAmount ]
                 }
             }
         }
-    ]))[0].templateReferences.reverse();
+    ]))[0].exerciseReferences.reverse();
 
     console.log(userResult);
 
     if (!userResult) {
-        const errorResponse = "Templates not found for user: " + username + ".";
+        const errorResponse = "Exercises not found for user: " + username + ".";
 
         const response = {
             statusCode: 404,
             headers: {
                 "Access-Control-Allow-Headers" : "Content-Type",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Credentials": true
+                "Access-Control-Allow-Origin": "*"
             },
             body: JSON.stringify({ success: false, message: errorResponse }),
         };
@@ -85,9 +83,7 @@ const queryExercise = async function(event) {
         statusCode: 200,
         headers: {
             "Access-Control-Allow-Headers" : "Content-Type",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Credentials": true
+            "Access-Control-Allow-Origin": "*"
         },
         body: JSON.stringify(JSON.stringify({ success: true, data: userResult })),
     };
@@ -102,6 +98,7 @@ const createExercise = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
     const UserReference = (await MongooseModels(MONGODB_URI)).UserReference;
+    const ExerciseReference = (await MongooseModels(MONGODB_URI)).ExerciseReference;
 
     // First pull user data.
     let fields = 'username profilePhoto'
@@ -122,11 +119,10 @@ const createExercise = async function(event) {
         return response;
     }
 
-    const userReference = new UserReference({
+    const userReference = {
         userId: user._id,
-        profilePhoto: user.profilePhoto,
         username: user.username
-    });
+    };
 
     const exercise = new Exercise({
         createdBy: userReference,
@@ -155,7 +151,7 @@ const createExercise = async function(event) {
         return response;
     });
 
-    const userExercise = {
+    const exerciseReference = {
         exerciseId: ObjectId(exerciseResult._id),
         muscleGroups: exerciseResult.muscleGroups,
         tags: exerciseResult.tags,
@@ -163,7 +159,7 @@ const createExercise = async function(event) {
         name: exerciseResult.name
     }
 
-    const userResult = await User.update({ _id: user._id }, { $push: { exercises: userExercise }}).catch(err => {
+    const userResult = await User.update({ _id: user._id }, { $push: { exerciseReferences: exerciseReference }}).catch(err => {
         // TODO: Delete previously created exercise.
         const errorResponse = "Error creating exercise in user document: " + JSON.stringify(err);
         const response = {
@@ -200,14 +196,16 @@ const updateExercise = async function(event) {
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
     
     // First pull exercise data from user to ensure user has access verification.
-    const userResult = (await User.find(
+    console.log("Finding username:", username, "Exercise ID:", exerciseId);
+    const userResult = (await User.findOne(
         {
             "username": username
         },
         {
-            "exercises": {
+            "exerciseReferences": {
                 "$elemMatch": {
-                    "_id": exerciseId
+                    "exerciseId": exerciseId,
+                    "isFollow": false
                 }
             }
         }
@@ -224,10 +222,11 @@ const updateExercise = async function(event) {
         };
         
         return response;
-    }))[0].exercises[0];
+    })).exerciseReferences[0];
     
-    console.log("User:", username, ", Exercise Id:", exerciseId, ", Result:", userResult);
+    console.log("Found:", userResult);
 
+    // Check if theres a response.
     if (!userResult) {
         const errorResponse = "Exercise not found for user: " + username + ".";
 
@@ -243,7 +242,7 @@ const updateExercise = async function(event) {
         return response;
     }
     
-    const result = await Exercise.findByIdAndUpdate(exerciseId, exerciseForm, { runValidators: true }).exec().catch(err => {
+    const exerciseResult = await Exercise.findByIdAndUpdate(exerciseId, exerciseForm, { runValidators: true }).exec().catch(err => {
         const errorResponse = "Error updating exercise : " + exerciseId + " : " + JSON.stringify(exerciseForm) + ". " + (err.message || JSON.stringify(err));
 
         const response = {
@@ -258,13 +257,26 @@ const updateExercise = async function(event) {
         return response;
     });
 
+    const exerciseReference = {
+        muscleGroups: exerciseForm.muscleGroups,
+        tags: exerciseForm.tags,
+        name: exerciseForm.name,
+        exerciseId: exerciseId,
+        isFollow: userResult.isFollow,
+        _id: exerciseResult._id
+    }
+
+    console.log("Updating exercise reference:", exerciseReference);
+
+    const userUpdateResult = User.updateOne({ "username": username, "exerciseReferences.exerciseId": exerciseId }, { "$set": { "exerciseReferences.$":  exerciseReference }});
+
     const response = {
         statusCode: 200,
         headers: {
             "Access-Control-Allow-Headers" : "*",
             "Access-Control-Allow-Origin": "*"
         },
-        body: JSON.stringify({ success: true, data: userResult }),
+        body: JSON.stringify({ success: true, data: exerciseResult, userData: userUpdateResult }),
     };
 
     return response;

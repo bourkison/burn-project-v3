@@ -213,9 +213,9 @@ export default new Vuex.Store({
                 }
             };
 
-            const docData = API.get(state.apiName, path, myInit).catch(() => {
+            const docData = (await API.get(state.apiName, path, myInit).catch(() => {
                 console.error("Error getting user doc.");
-            })
+            })).data
             
             commit('setLoggedInUser', { loggedIn: true, data: data, docData: docData });
         },

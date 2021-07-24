@@ -12,7 +12,6 @@ const MONGODB_URI = Parameters[0].Value;
 
 
 exports.handler = async (event, context, callback) => {
-    let userForm = JSON.parse(event.body).signUpForm;
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     // Check user doesn't already exist.
