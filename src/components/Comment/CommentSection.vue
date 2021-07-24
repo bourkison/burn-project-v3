@@ -18,7 +18,7 @@
             <b-container>
                 <div v-if="!isLoadingComments">
                     <b-list-group class="commentsContainer borderless" flush>
-                        <Comment v-for="comment in comments" :key="comment.id" :comment="comment" :collection="collection" :docId="docId" />
+                        <Comment v-for="comment in comments" :key="comment.id" :comment="comment" :collection="coll" :docId="_id" />
                     </b-list-group>
                     <div class="text-center">
                         <b-button v-if="commentCount > comments.length" @click="loadMoreComments" :disabled="isLoadingMoreComments" variant="outline" class="mb-2">
@@ -34,11 +34,11 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <CommentNew @addComment="addComment" :collection="collection" :docId="docId" />
+                <CommentNew @addComment="addComment" :collection="coll" :docId="_id" />
             </b-container>
         </b-collapse>
 
-        <b-modal :id="docId + '-likeModal'" centered ok-only button-size="sm">
+        <b-modal :id="_id + '-likeModal'" centered ok-only button-size="sm">
             <template #modal-title>
                 Likes
             </template>
@@ -46,7 +46,7 @@
             <div class="d-block">
                 <div v-if="!isLoadingLikes">
                     <b-list-group>
-                        <UserList v-for="like in likes" :key="like.createdBy.id" :userData="like.createdBy" />
+                        <UserList v-for="like in likes" :key="like.createdBy._id" :userData="like.createdBy" />
                     </b-list-group>
                 </div>
                 <div v-else>
@@ -55,7 +55,7 @@
             </div>
         </b-modal>
 
-        <b-modal :id="docId + '-followModal'" centered ok-only button-size="sm">
+        <b-modal :id="_id + '-followModal'" centered ok-only button-size="sm">
             <template #modal-title>
                 Follows
             </template>
@@ -76,6 +76,7 @@
 
 <script>
 import { db, fv } from '@/firebase'
+import { API } from 'aws-amplify'
 
 import UserList from '@/components/User/UserList.vue'
 
@@ -86,11 +87,11 @@ export default {
     name: 'CommentSection',
     components: { UserList, Comment, CommentNew },
     props: {
-        docId: {
+        _id: {
             type: String,
             required: true
         },
-        collection: {
+        coll: {
             type: String,
             required: true
         },
@@ -128,114 +129,99 @@ export default {
         }
     },
 
-    created: function() {
-        let promises = [];
-        promises.push(this.checkIfUserLiked());
+    created: async function() {
+        // let promises = [];
+        // promises.push(this.checkIfUserLiked());
 
-        if (this.$props.followableComponent) {
-            promises.push(this.checkIfUserFollowed());
+        // if (this.$props.followableComponent) {
+        //     promises.push(this.checkIfUserFollowed());
+        // }
+
+        // promises.push(this.downloadCounters());
+
+        // Promise.all(promises)
+        // .then(() => {
+        //     this.isLoading = false;
+        // })
+        // .catch(e => {
+        //     console.error("Error pulling comment data:", e);
+        // })
+
+        const path = '/like';
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+            },
+            queryStringParameters: {
+                _id: this.$props._id,
+                coll: this.$props.coll,
+                loadAmount: 5
+            }
         }
 
-        promises.push(this.downloadCounters());
+        const likeResponse = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-        Promise.all(promises)
-        .then(() => {
-            this.isLoading = false;
-        })
-        .catch(e => {
-            console.error("Error pulling comment data:", e);
-        })
+        this.isLiked = likeResponse.isLiked;
+        this.likeCount = likeResponse.likeCount;
+        this.likes = likeResponse.likes;
+
+        this.isLoading = false;
+
+        console.log("LIKE RESPONSE", likeResponse);
     },
 
     methods: {
-        toggleLike: function() {
+        toggleLike: async function() {
             // Check we're not already in the process of liking.
             if (!this.isLiking) {
                 this.isLiking = true;
-                const batch = db.batch();
-                const timestamp = new Date();
+                const path = '/like'
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        _id: this.$props._id,
+                        coll: this.$props.coll
+                    }
+                }
 
                 // Check to see if we like or unlike.
                 if (!this.isLiked) {
-                    // Add like.           
-                    const likeId = this.generateId(16);
-                    this.isLiked = likeId;
+                    // Add like.
+                    console.log("LIKING...");
+                    this.likeCount ++;
+                    this.isLiked = true;
 
-                    // First add to relevant collection/document.
-                    batch.set(db.collection(this.$props.collection).doc(this.$props.docId).collection("likes").doc(likeId), {
-                        createdBy: { 
-                            username: this.$store.state.userProfile.docData.username,
-                            id: this.$store.state.userProfile.data.uid,
-                            profilePhoto: this.$store.state.userProfile.docData.profilePhoto 
-                        }, 
-                        createdAt: timestamp
-                    });
-
-                    // Create the like in the user document.
-                    batch.set(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").doc(likeId), {
-                        type: this.$props.collection,
-                        id: this.$props.docId,
-                        createdAt: timestamp
-                    });
-
-                    // Increment one of the like counters.
-                    batch.update(db.collection(this.$props.collection).doc(this.$props.docId).collection("counters").doc((Math.floor(Math.random() * this.numShards)).toString()), {
-                        likeCount: fv.increment(1)
-                    });
-
-                    // Set last activity on this document.
-                    batch.update(db.collection(this.$props.collection).doc(this.docId), {
-                        lastActivity: timestamp
-                    });
-
-                    // Commit the batch
-                    batch.commit()
-                    .then(() => {
-                        this.isLiking = false;
-                        this.likeCount ++;
-
-                        if (this.likes.length > 0) {
-                            this.likes.push({
-                                createdBy: { 
-                                    username: this.$store.state.userProfile.docData.username,
-                                    id: this.$store.state.userProfile.data.uid,
-                                    profilePhoto: this.$store.state.userProfile.docData.profilePhoto 
-                                }
-                            })
-                        }
-                    })
-                    .catch(e => {
-                        console.error("Error liking", this.$props.docId, e);
-                        this.isLiked = '';
-                        this.isLiking = false;
-                    })
-                } else {
-                    // First delete like from relevant collection.
-                    batch.delete(db.collection(this.$props.collection).doc(this.$props.docId).collection("likes").doc(this.isLiked));
-
-                    // Then delete from user document.
-                    batch.delete(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").doc(this.isLiked));
-
-                    // Decrement one of the like counters.
-                    batch.update(db.collection(this.$props.collection).doc(this.$props.docId).collection("counters").doc((Math.floor(Math.random() * this.numShards)).toString()), {
-                        likeCount: fv.increment(-1)
-                    });
-
-                    // Delete like.
-                    const temp = this.isLiked;
-                    this.isLiked = '';
-
-                    // Commit the batch.
-                    batch.commit()
-                    .then(() => {
-                        this.isLiking = false;
+                    try {
+                        const likeResponse = await API.post(this.$store.state.apiName, path, myInit);
+                        console.log("LIKED:", likeResponse);
+                    }
+                    catch (err) {
+                        console.error("Liking error", err);
                         this.likeCount --;
-                    })
-                    .catch(e => {
-                        console.error("Error unliking", this.$props.docId, e);
+                        this.isLiked = false;
+                    }
+                    finally {
                         this.isLiking = false;
-                        this.isLiked = temp;
-                    })
+                    }
+                } else {
+                    console.log("UNLIKING...");
+                    this.likeCount --;
+                    this.isLiked = false;
+
+                    try {
+                        const likeResponse = await API.del(this.$store.state.apiName, path, myInit);
+                        console.log("UNLIKED:", likeResponse);
+                    }
+                    catch (err) {
+                        console.error("Unliking error", err);
+                        this.likeCount ++;
+                        this.isLiked = true;
+                    }
+                    finally {
+                        this.isLiking = false;
+                    }
                 }
             }
         },

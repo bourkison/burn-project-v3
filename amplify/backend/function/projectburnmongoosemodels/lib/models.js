@@ -82,11 +82,11 @@ const commentReferenceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    id: {
+    _id: {
         type: ObjectId,
         required: true
     }
-})
+}, { timestamps: true })
 
 
 
@@ -95,11 +95,11 @@ const likeReferenceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    id: {
+    _id: {
         type: ObjectId,
         required: true
     }
-}, { timestamps: false })
+}, { timestamps: true })
 
 
 const recordedSetSchema = new mongoose.Schema({

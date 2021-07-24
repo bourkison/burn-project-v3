@@ -183,7 +183,7 @@ const updateTemplate = async function(event) {
     const Template = (await MongooseModels(MONGODB_URI)).Template;
 
     // First pull template data to ensure user created this and has access to edit.
-    const userResult = (await User.find(
+    const userResult = (await User.findOne(
         {
             "username": username
         },
@@ -200,7 +200,7 @@ const updateTemplate = async function(event) {
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
-    }))[0].templateReferences[0];
+    })).templateReferences[0];
 
     if (!userResult) {
         const errorResponse = "Template " + templateId + " not found for user " + username + ".";

@@ -6,7 +6,7 @@
                     <b-card-title><router-link :to="'/templates/' + templateId" class="componentLink">{{ templateData.name }}</router-link></b-card-title>
                     <b-card-sub-title>{{ templateData.createdBy.username }}</b-card-sub-title>
                     <b-card-text>
-                        <div :_id="templateData._id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
+                        <div :id="templateData._id + 'accordion'" class="accordion exerciseExpandableCont" role="tablist">
                             <ExerciseExpandable v-for="(exercise, index) in templateData.exerciseReferences" :exercise="exercise" :accordionIndex="index" :templateId="templateData._id" :key="exercise.exerciseId" :lazy="true" />
                         </div>
                     </b-card-text>
@@ -19,7 +19,7 @@
                         </b-button>
                     </div>
                 </b-card-body>
-                <CommentSection :docId="templateData._id" collection="templates" :followableComponent="true" />
+                <CommentSection :_id="templateData._id" coll="template" :followableComponent="true" />
             </div>
         </div>
         <div v-else>

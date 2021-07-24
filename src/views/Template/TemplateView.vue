@@ -40,7 +40,7 @@
                                 </div>
                             </b-card-text>
                         </b-card-body>
-                        <CommentSection :docId="templateData.id" collection="templates" :followableComponent="true" />
+                        <CommentSection :_id="templateData._id" coll="template" :followableComponent="true" />
                     </b-card>
                 </b-container>
             </b-col>
