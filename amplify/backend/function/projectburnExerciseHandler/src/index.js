@@ -9,9 +9,6 @@ const getExercise = async function(event) {
     const exerciseId = event.pathParameters.proxy;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
 
-    let fields = 'createdBy description difficulty filePaths measureBy muscleGroups name tags';
-    const result = await Exercise.findOne({ _id: exerciseId }, fields).exec();
-
     let response = {
         statusCode: 500,
         headers: {
@@ -20,6 +17,9 @@ const getExercise = async function(event) {
         },
         body: JSON.stringify({ success: false }),
     };
+
+    let fields = 'createdBy description difficulty filePaths measureBy muscleGroups name tags';
+    const result = await Exercise.findOne({ _id: exerciseId }, fields).exec();
 
     if (!result) {
         const errorResponse = "Exercise: " + exerciseId + " not found." + JSON.stringify(event);
@@ -99,8 +99,8 @@ const createExercise = async function(event) {
         body: JSON.stringify({ success: false })
     }
 
-    // First pull user data.
-    let fields = 'username profilePhoto'
+    // First get user ID.
+    let fields = 'username'
     const user = await User.findOne({ username: event.requestContext.authorizer.claims['cognito:username'] }, fields).exec();
 
     if (!user) {
@@ -110,7 +110,7 @@ const createExercise = async function(event) {
         return response;
     }
 
-    // Now build out and sent the new Exercise.
+    // Now build out and send the new Exercise.
     const userReference = {
         userId: user._id,
         username: user.username
@@ -185,7 +185,7 @@ const updateExercise = async function(event) {
         body: JSON.stringify({ success: false })
     }
     
-    // First pull exercise data from user to ensure user has access verification.
+    // First pull exercise data from user to ensure user has access to edit.
     console.log("Finding username:", username, "Exercise ID:", exerciseId);
     const userResult = (await User.findOne(
         {
@@ -265,7 +265,7 @@ const deleteExercise = async function(event) {
     }
 
     // First pull exercise from user to see if it exists (thus the user has auth to delete).
-    const userResult = (await User.find(
+    const userResult = (await User.findOne(
         {
             "username": username
         },
@@ -282,7 +282,7 @@ const deleteExercise = async function(event) {
         response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
-    }))[0].exerciseReferences[0];
+    })).exerciseReferences[0];
 
     if (!userResult) {
         const errorResponse = "Exercise not found for user: " + username + ".";

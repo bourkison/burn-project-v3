@@ -9,32 +9,28 @@ const getTemplate = async function(event) {
     const templateId = event.pathParameters.proxy;
     const Template = (await MongooseModels(MONGODB_URI)).Template;
 
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
     let fields = 'createdBy description difficulty exerciseReferences muscleGroups name tags'
     const result = await Template.findOne({ _id: templateId }, fields).exec();
 
     if (!result) {
         const errorResponse = "Exercise: " + exerciseId + " not found." + JSON.stringify(event);
-
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     }
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "*",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ success: true, data: result }),
-    }
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: result });
 
     return response;
 }
@@ -46,7 +42,16 @@ const queryTemplate = async function(event) {
     
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    // Pull loadAmount elements from templaterefs
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
+    // Pull loadAmount elements from templateReferences
     const userResult = (await User.aggregate([
         {
             "$match": {
@@ -62,31 +67,16 @@ const queryTemplate = async function(event) {
         }
     ]))[0].templateReferences.reverse();
 
-    console.log(userResult);
-
     if (!userResult) {
         const errorResponse = "Templates not found for user: " + username + ".";
-
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
     }
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "*",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify(JSON.stringify({ success: true, data: userResult })),
-    };
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: userResult });
 
     return response;
 }
@@ -98,24 +88,28 @@ const createTemplate = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Template = (await MongooseModels(MONGODB_URI)).Template;
 
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
+    // First get User ID.
     let fields = 'username';
     const user = await User.findOne({ username: event.requestContext.authorizer.claims['cognito:username'] }, fields).exec();
 
     if (!user) {
         const errorResponse = "Error finding user: " + event.requestContext.authorizer.claims['cognito:username'] + ".\n" + JSON.stringify(event.requestContext.authorizer);
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse}),
-        }
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: true, data: userResult });
 
         return response;
     }
 
+    // Now build out and send the new Template.
     const userReference = {
         userId: ObjectId(user._id),
         username: user.username
@@ -133,18 +127,19 @@ const createTemplate = async function(event) {
 
     const templateResult = await template.save().catch(err => {
         const errorResponse = "Error creating template: " + JSON.stringify(err);
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success:false, message: errorResponse }),
-        }
+        response.body = JSON.stringify({ success: true, data: userResult });
 
         return response;
     })
 
+    if (!templateResult) {
+        const errorResponse = "Error creating template. No response";
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }
+
+    // Now build out template reference
     const templateReference = {
         templateId: ObjectId(templateResult._id),
         name: templateResult.name,
@@ -154,28 +149,15 @@ const createTemplate = async function(event) {
     }
 
     const userResult = await User.updateOne({ _id: user._id }, { $push: { templateReferences: templateReference }}).catch(err => {
-        // TODO: Delete previous template
+        // TODO: Delete previously created template
         const errorResponse = "Error creating template in user document: " + JSON.stringify(err);
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        }
+        response.body = JSON.stringify({ success: false, message: errorResponse });
 
         return response;
     })
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "*",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ success: true, _id: templateResult._id, data: templateResult }),
-    }
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, _id: templateResult._id, data: templateResult });
 
     return response;
 }
@@ -185,6 +167,15 @@ const updateTemplate = async function(event) {
     const templateId = ObjectId(event.pathParameters.proxy);
     const username = event.requestContext.authorizer.claims['cognito:username'];
     let templateForm = JSON.parse(event.body).templateForm;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
 
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Template = (await MongooseModels(MONGODB_URI)).Template;
@@ -204,61 +195,120 @@ const updateTemplate = async function(event) {
         }
     ).exec().catch(err => {
         const errorResponse = "Error getting template from user: " + username + " : " + templateId + ". " + (err.message || JSON.stringify(err));
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
     }))[0].templateReferences[0];
 
     if (!userResult) {
         const errorResponse = "Template " + templateId + " not found for user " + username + ".";
-    
-        const response = {
-            statusCode: 404,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false, message: errorResponse }),
-        };
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, message: errorResponse });
         
         return response;
     }
 
+
+    // Now update Template document.
     const result = await Template.findByIdAndUpdate(templateId, templateForm, { runValidators: true }).exec().catch(err => {
         const errorResponse = "Error updating template : " + templateId + " : " + JSON.stringify(templateForm) + ". " + (err.message || JSON.stringify(err));
-
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ success: false,message: errorResponse }),
-        };
+        response.body = JSON.stringify({ success: false,message: errorResponse });
         
         return response;
     });
 
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "*",
-            "Access-Control-Allow-Origin": "*"
+    // Now update the template reference in the User.
+    const userUpdateResult = await User.updateOne(
+        {
+            "username": username,
+            "templateReferences.templateId": templateId
         },
-        body: JSON.stringify({ success: true, data: result }),
-    }
+        {
+            "$set": {
+                "templateReferences.$.muscleGroups": templateForm.muscleGroups,
+                "templateReferences.$.tags": templateForm.tags,
+                "templateReferences.$.name": templateForm.name
+            }
+        }
+    );
+
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: result });
 
     return response;
 }
 
+// DELETE request
+const deleteTemplate = async function(event) {
+    const templateId = ObjectId(event.pathParameters.proxy);
+    const username = event.requestContext.authorizer.claims['cognito:username'];
+
+    const User = (await MongooseModels(MONGODB_URI)).User;
+    const Template = (await MongooseModels(MONGODB_URI)).Template;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
+    // First pull template data from user to see if it exists (thus the user has auth to delete).
+    const userResult = (await User.findOne(
+        {
+            "username": username
+        },
+        {
+            "templateReferences": {
+                "$elemMatch": {
+                    "templateId": templateId,
+                    "isFollow": false
+                }
+            }
+        }
+    )).exec().catch(err => {
+        const errorResponse = "Error getting template from user: " + username + " : " + templateId + ". " + (err.message || JSON.stringify(err));
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }).templateReferences[0]
+
+    if (!userResult) {
+        const errorResponse = "Template not found for user: " + username + ".";
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, message: errorResponse });
+    }
+
+    // Now pull all follows for the template and pull their reference from each user.
+    const templateResult = (await Template.findById(templateId, { "follows": 1 })).follows;
+    let userPullPromises = [];
+
+    templateResult.forEach(follow => {
+        const userId = ObjectId(follow.get('userId'));
+
+        const query = User.updateOne({ '_id': userId }, {
+            "$pull": {
+                "templateReferences": {
+                    "templateId": templateId
+                }
+            }
+        })
+
+        userPullPromises.push(query.exec());
+    })
+
+    await Promise.all(userPullPromises);
+
+    // Finally delete the template.
+    const result = await Template.deleteOne({ "_id": templateId }).exec();
+
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: result });
+
+    return response;
+}
 
 
 exports.handler = async (event, context) => {
@@ -288,6 +338,9 @@ exports.handler = async (event, context) => {
             break;
         case "PUT":
             response = await updateTemplate(event);
+            break;
+        case "DELETE":
+            response = await deleteTemplate(event);
             break;
         default:
             response = {
