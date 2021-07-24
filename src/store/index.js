@@ -1,4 +1,4 @@
-import { Auth } from 'aws-amplify';
+import { API } from 'aws-amplify';
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { userWorkoutsCollection } from '../firebase'
@@ -204,10 +204,20 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        fetchUser: async function({ commit }, data) {
-            console.log(data);
-            commit('setLoggedInUser', { loggedIn: true, data: data, docData: data });
+        fetchUser: async function({ state, commit }, data) {
+            const path = '/user/' + data.idToken.payload['cognito:username'];
+            const myInit = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": data.idToken.jwtToken 
+                }
+            };
 
+            const docData = API.get(state.apiName, path, myInit).catch(() => {
+                console.error("Error getting user doc.");
+            })
+            
+            commit('setLoggedInUser', { loggedIn: true, data: data, docData: docData });
         },
 
         // As this function may get callled multiple times from different components,

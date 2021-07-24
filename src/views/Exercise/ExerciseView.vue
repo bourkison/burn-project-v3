@@ -159,7 +159,12 @@ export default {
             this.carouselModel = 0;
 
             const path = '/exercise/' + this.$route.params.exerciseid;
-            const myInit = {}
+            const myInit = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": this.$store.state.userProfile.data.idToken.jwtToken
+                }
+            }
 
             const response = await API.get(this.$store.state.apiName, path, myInit);
             this.exerciseData = response.data;

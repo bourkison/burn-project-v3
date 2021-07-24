@@ -4,16 +4,11 @@
       "name": "/user",
       "lambdaFunction": "projectburnUserHandler",
       "privacy": {
-        "protected": true,
+        "private": true,
         "auth": [
-          "/POST",
           "/GET",
           "/PUT",
           "/PATCH"
-        ],
-        "unauth": [
-          "/POST",
-          "/GET"
         ]
       },
       "policyResourceName": "/user"
@@ -136,7 +131,7 @@
   ],
   "privacy": {
     "auth": 7,
-    "unauth": 1,
+    "unauth": 0,
     "authRoleName": "amplify-projectburn-dev-203659-authRole",
     "unAuthRoleName": "amplify-projectburn-dev-203659-unauthRole"
   },
