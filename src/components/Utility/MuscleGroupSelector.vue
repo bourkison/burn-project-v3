@@ -23,7 +23,7 @@ export default {
         initMgs: {
             type: Array,
             required: false
-        }
+        },
     },
     data() { 
         return {

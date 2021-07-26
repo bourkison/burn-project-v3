@@ -58,7 +58,7 @@ export default {
                 // Check its not already selected.
                 if (!this.selectedTags.includes(this.inputText)) {
                     // Push input text to selectedTags
-                    this.selectedTags.push(this.inputText);
+                    this.selectedTags.push(this.inputText.toLowerCase());
 
                     // Remove from available (if it's there).
                     this.tagOptions = this.tagOptions.filter(x => x !== this.inputText);

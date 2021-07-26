@@ -49,8 +49,8 @@
             </b-col>
 
             <b-col sm="6">
-                <div v-if="exercises.length > 0 && !isLoading">
-                    <ExerciseFeed class="exerciseFeed"  :exercises="exercises" />
+                <div v-if="exercises.length > 0 || isLoading">
+                    <ExerciseFeed class="exerciseFeed"  :exercises="exercises" :isLoading="isLoading" />
 
                     <div class="text-center" v-if="moreToLoad">
                         <b-button @click="loadMoreExercises" variant="outline-dark" size="sm" v-b-visible.200="loadMoreExercises">
@@ -59,8 +59,6 @@
                         </b-button>
                     </div>
                 </div>
-
-                <div v-else-if="isLoading"><b-spinner /></div>
                 <div v-else>Error pulling top exercises</div>
             </b-col>
 
@@ -68,6 +66,9 @@
                 <!-- 
                     AD HERE.
                  -->
+                 <div class="adTest bg-warning text-center">
+                    Exercise Discover Ad Here.
+                </div>
             </b-col>
         </b-row>
     </b-container>
@@ -75,15 +76,24 @@
 
 <script>
 import { db } from '@/firebase'
+import { API } from 'aws-amplify'
 import ExerciseFeed from '@/components/Exercise/ExerciseFeed'
+
+import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
+import TagSelector from '@/components/Utility/TagSelector.vue'
+import UsernameFilter from '@/components/Utility/UsernameFilter.vue'
 
 export default {
     name: 'ExerciseDiscover',
-    components: { ExerciseFeed },
+    components: { ExerciseFeed, MuscleGroupSelector, TagSelector, UsernameFilter },
     data() {
         return {
             isLoading: true,
             exercises: [], // Exercises from user doc.
+
+            // Filters
+            selectedMgs: [],
+            selectedTags: [],
 
             // Lazy loading:
             isLoadingMore: true,
@@ -93,30 +103,55 @@ export default {
     },
 
     created: function() {
-        // Download relevant exercises.
-        db.collection("exercises").orderBy("createdAt", "desc").limit(5).get()
-        .then(exerciseSnapshot => {
-            exerciseSnapshot.forEach(exercise => {
-                this.exercises.push(exercise.id);
-            })
+        if (this.$route.query.muscleGroups) {
+            this.selectedMgs = this.$route.query.muscleGroups.split(",");
+        }
 
-            if (exerciseSnapshot.size < 5) {
-                this.moreToLoad = false;
-            }
-
-            setTimeout(() => { this.isLoadingMore = false }, 500);
-            this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
-
-            this.isLoading = false;
-        })
-        .catch(e => {
-            console.error("Error downloading exercises:", e);
-        })
+        if (this.$route.query.tags) {
+            this.selectedTags = this.$route.query.tags.split(",");
+        }
+        
+        this.downloadExercises();
     },
 
     methods: {
+        downloadExercises: async function() {
+            this.isLoading = true;
+            this.exercises = [];
+
+            const path = '/exercise';
+            let myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                },
+                queryStringParameters: {
+                    loadAmount: 5,
+                    user: false
+                }
+            }
+
+            if (this.selectedMgs.length > 0) {
+                myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            }
+
+            if (this.selectedTags.length > 0) {
+                myInit.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
+            const response = await API.get(this.$store.state.apiName, path, myInit);
+
+            this.exercises = response.data;
+
+            if (this.exercises.length > 0) {
+                this.isLoading = false;
+            }
+
+            this.moreToLoad = false;
+            this.isLoadingMore = false;
+        },
+
         loadMoreExercises: function() {
-            if (!this.isLoadingMore) {
+            if (!this.isLoadingMore && !this.moreToLoad) {
                 db.collection("exercises").orderBy("createdAt", "desc").startAfter(this.lastLoadedExercise).limit(5).get()
                 .then(exerciseSnapshot => {
                     exerciseSnapshot.forEach(exercise => {
@@ -134,13 +169,65 @@ export default {
                     console.error("Error downloading more exercises:", e);
                 })
             }
+        },
+
+        updateMuscleGroups: function(muscleGroups) {
+            this.selectedMgs = muscleGroups;
+            let isFiltered = false;
+
+            let query = {};
+            
+            if (this.selectedMgs.length > 0) {
+                isFiltered = true;
+                query.muscleGroups = this.selectedMgs.join(",")
+            }
+
+            if (this.selectedTags.length > 0) { 
+                isFiltered = true;
+                query.tags = this.selectedTags.join(",")
+            }
+
+            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+
+            this.downloadExercises();
+        },
+
+        updateTags: function(tags) {
+            this.selectedTags = tags;
+            let isFiltered = false;
+
+            let query = {};
+            
+            if (this.selectedMgs.length > 0) {
+                isFiltered = true;
+                query.muscleGroups = this.selectedMgs.join(",")
+            }
+
+            if (this.selectedTags.length > 0) { 
+                isFiltered = true;
+                query.tags = this.selectedTags.join(",")
+            }
+
+            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+            this.downloadExercises();
         }
     }
 }
 </script>
 
 <style scoped>
+.navCard,
 .exerciseFeed {
     margin-top: 40px;
+}
+
+.adTest {
+    position: sticky;
+    top: 100px;
+    height: 250px;
+    width: 300px;
+    padding: 0;
+    margin-top: 40px;
+    line-height: 250px
 }
 </style>

@@ -4,19 +4,19 @@
             <b-col sm="3">
                 <b-card class="navCard" no-body>
                         <b-list-group>
-                            <b-list-group-item class="navItem" ref="homeExerciseLink" to="/exercises" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" ref="homeExerciseLink" to="/exercises" active>
                                 <div class="d-flex align-items-center">
                                     Exercises
                                     <b-icon-house class="ml-auto" />
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" ref="discoverExerciseLink" to="/exercises/discover" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" ref="discoverExerciseLink" to="/exercises/discover" active-class="unset">
                                 <div class="d-flex align-items-center">
                                     Discover
                                     <b-icon-search class="ml-auto"/>
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/exercises/new" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" to="/exercises/new" active-class="unset">
                                 <div class="d-flex align-items-center">
                                     New
                                     <b-icon-plus class="ml-auto"/>
@@ -36,12 +36,12 @@
                             </div>
                             <div class="mt-3">
                                 <h6>Muscle Groups</h6>
-                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
+                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" :initMgs="selectedMgs" />
                             </div>
 
                             <div class="mt-3">
                                 <h6>Tags</h6>
-                                <TagSelector />
+                                <TagSelector @updateTags="updateTags" :initTags="selectedTags" />
                             </div>
                         </div>
                     </b-card-body>
@@ -50,8 +50,8 @@
 
             <b-col sm="6">
                 <b-container>
-                    <div v-if="exercises.length > 0 && !isLoading" class="mb-4">
-                        <ExerciseFeed class="exerciseFeed" :exercises="exercises" />
+                    <div v-if="exercises.length > 0 || isLoading" class="mb-4">
+                        <ExerciseFeed class="exerciseFeed" :exercises="exercises" :isLoading="isLoading" />
 
                         <div class="text-center" v-if="moreToLoad">
                             <b-button @click="loadMoreExercises" variant="outline-dark" size="sm" v-b-visible.200="loadMoreExercises">
@@ -59,9 +59,6 @@
                                 <span v-else><b-spinner small /></span>
                             </b-button>
                         </div>
-                    </div>
-                    <div v-else-if="isLoading">
-                        <b-spinner />
                     </div>
                     <div v-else>
                         <em>Looks like you haven't followed or created any exercises.</em>
@@ -101,6 +98,7 @@ export default {
 
             // Filters
             selectedMgs: [],
+            selectedTags: [],
 
             // Lazy loading:
             isLoadingMore: true,
@@ -109,7 +107,15 @@ export default {
         }
     },
 
-    created: async function() {
+    created: function() {
+        if (this.$route.query.muscleGroups) {
+            this.selectedMgs = this.$route.query.muscleGroups.split(",");
+        }
+
+        if (this.$route.query.tags) {
+            this.selectedTags = this.$route.query.tags.split(",");
+        }
+        
         this.downloadExercises();
     },
 
@@ -139,8 +145,6 @@ export default {
             this.isLoading = true;
             this.exercises = [];
 
-            console.log("DOWNLOADING MORE");
-
             const path = '/exercise';
             let myInit = {
                 headers: {
@@ -156,6 +160,10 @@ export default {
                 myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
             }
 
+            if (this.selectedTags.length > 0) {
+                myInit.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
             const response = await API.get(this.$store.state.apiName, path, myInit);
 
             this.exercises = response.data;
@@ -164,11 +172,50 @@ export default {
                 this.isLoading = false;
             }
 
+            this.moreToLoad = false;
+            this.isLoadingMore = false;
+
             console.log("API RESPONSE", response);
         },
 
         updateMuscleGroups: function(muscleGroups) {
             this.selectedMgs = muscleGroups;
+            let isFiltered = false;
+
+            let query = {};
+            
+            if (this.selectedMgs.length > 0) {
+                isFiltered = true;
+                query.muscleGroups = this.selectedMgs.join(",")
+            }
+
+            if (this.selectedTags.length > 0) { 
+                isFiltered = true;
+                query.tags = this.selectedTags.join(",")
+            }
+
+            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+
+            this.downloadExercises();
+        },
+
+        updateTags: function(tags) {
+            this.selectedTags = tags;
+            let isFiltered = false;
+
+            let query = {};
+            
+            if (this.selectedMgs.length > 0) {
+                isFiltered = true;
+                query.muscleGroups = this.selectedMgs.join(",")
+            }
+
+            if (this.selectedTags.length > 0) { 
+                isFiltered = true;
+                query.tags = this.selectedTags.join(",")
+            }
+
+            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
             this.downloadExercises();
         }
     }

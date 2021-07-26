@@ -38,7 +38,7 @@ const getExercise = async function(event) {
 // GET request /exercise
 const queryExercise = async function(event) {
     const username = event.requestContext.authorizer.claims['cognito:username'];
-    const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
+    const loadAmount = (event.queryStringParameters.loadAmount) ? Number(event.queryStringParameters.loadAmount) : 5;
     const userBool = (event.queryStringParameters.user === 'true');
     const muscleGroups =  (event.queryStringParameters.muscleGroups) ? event.queryStringParameters.muscleGroups.split(",") : null;
     const tags = (event.queryStringParameters.tags) ? event.queryStringParameters.tags.split(",") : null;
@@ -121,9 +121,9 @@ const queryExercise = async function(event) {
                                         "$setIsSubset": [ "$inputTags", "$$this.tags" ]
                                     },
                                     { 
-                                        "$concatArrays": [["$$this"], "$$value"]
+                                        "$concatArrays": ["$$value", ["$$this"]]
                                     },
-                                    ["$$value"]
+                                    "$$value"
                                 ],   
                             }
                         }
@@ -135,7 +135,7 @@ const queryExercise = async function(event) {
         exerciseQuery.push({
             "$project": {
                 "exerciseReferences": {
-                    "$slice": [ "$exerciseReferences", loadAmount ]
+                    "$slice": [ "$exerciseReferences", (0 - loadAmount) ]
                 }
             }
         })
@@ -143,10 +143,29 @@ const queryExercise = async function(event) {
         result = await User.aggregate(exerciseQuery);
 
         if (result[0] && result[0].exerciseReferences) {
-            result = result[0].exerciseReferences;
+            result = result[0].exerciseReferences.reverse();
         } else {
             result = [];
         }
+    } else {
+        const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+
+        let exerciseQuery = {};
+
+        if (muscleGroups) {
+            exerciseQuery.muscleGroups = {
+                "$all": muscleGroups
+            }
+        }
+
+        if (tags) {
+            exerciseQuery.tags = {
+                "$all": tags
+            }
+        }
+
+        let fields = "createdBy createdAt name tags muscleGroups updatedAt"
+        result = await Exercise.find(exerciseQuery, fields).sort({ "createdAt": 1 }).limit(loadAmount);
     }
 
     if (!result || !result.length) {

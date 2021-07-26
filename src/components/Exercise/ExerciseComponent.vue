@@ -19,7 +19,7 @@
         </div>
         <div v-else>
             <b-card-body>
-                <b-skeleton v-for="(index) in (Math.floor(Math.random() * 4) + 3)" :key="index" animation="wave" :width="(Math.floor(Math.random() * 50) + 50).toString() + '%'"></b-skeleton>
+                <b-skeleton v-for="(index) in skeletonAmount" :key="index" animation="wave" :width="skeletonWidth[index]"></b-skeleton>
             </b-card-body>
         </div>
     </b-card>
@@ -39,8 +39,16 @@ export default {
     components: { CommentSection, Viewer },
     props: {
         exerciseId: {
-            required: true,
-            type: String
+            type: String,
+            required: true
+        },
+        skeletonAmount: {
+            type: Number,
+            required: true
+        },
+        skeletonWidth: {
+            type: Array,
+            required: true
         }
     },
 
@@ -55,47 +63,63 @@ export default {
         }
     },
 
-    created: async function() {
-        try {
-            const path = '/exercise/' + this.$props.exerciseId;
-            const myInit = {
-                headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
-                }
-            }
-    
-            const response = await API.get(this.$store.state.apiName, path, myInit);
-            this.exerciseData = response.data;
-
-            try {
-                if (this.exerciseData.filePaths) {
-                    let urlPromises = [];
-
-                    this.exerciseData.filePaths.forEach(path => {
-                        urlPromises.push(Storage.get(path))
-                    })
-
-                    const imageUrls = await Promise.all(urlPromises);
-
-                    imageUrls.forEach(url => {
-                        this.imageUrls.push(url);
-                    })
-                }
-            }
-            catch (err) {
-                console.error("Error getting image URLs:", err);
-            }
-            finally {
-                if (this.exerciseData) {
-                    this.isLoading = false;
-                }
-            }
-
-        }
-        catch (err) {
-            console.error("Error downloading exercise:", this.$props.exerciseId, err);
+    created: function() {
+        if (this.$props.exerciseId) {
+            this.downloadExercise();
         }
     },
+
+    methods: {
+        downloadExercise: async function() {
+            try {
+                const path = '/exercise/' + this.$props.exerciseId;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    }
+                }
+        
+                const response = await API.get(this.$store.state.apiName, path, myInit);
+                this.exerciseData = response.data;
+
+                try {
+                    if (this.exerciseData.filePaths) {
+                        let urlPromises = [];
+
+                        this.exerciseData.filePaths.forEach(path => {
+                            urlPromises.push(Storage.get(path))
+                        })
+
+                        const imageUrls = await Promise.all(urlPromises);
+
+                        imageUrls.forEach(url => {
+                            this.imageUrls.push(url);
+                        })
+                    }
+                }
+                catch (err) {
+                    console.error("Error getting image URLs:", err);
+                }
+                finally {
+                    if (this.exerciseData) {
+                        this.isLoading = false;
+                    }
+                }
+
+            }
+            catch (err) {
+                console.error("Error downloading exercise:", this.$props.exerciseId, err);
+            }
+        }
+    },
+
+    watch: {
+        exerciseId: function(n, o) {
+            if (n && !o) {
+                this.downloadExercise();
+            }
+        }
+    }
 }
 </script>
 

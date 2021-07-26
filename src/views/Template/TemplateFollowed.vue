@@ -144,6 +144,8 @@ export default {
             }
 
             this.templates = response.data;
+            this.isLoadingMore = false;
+            this.moreToLoad = false;
         }
         catch (err) {
             this.displayError(err);
@@ -177,7 +179,6 @@ export default {
 
         updateMuscleGroups: function(muscleGroups) {
             this.selectedMgs = muscleGroups;
-            // this.getTemplates();
         },
 
         displayError: function(err) {
