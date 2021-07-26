@@ -4,19 +4,19 @@
             <b-col sm="3">
                 <b-card class="navCard" no-body>
                     <b-list-group>
-                        <b-list-group-item class="navItem" to="/templates" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/templates" active-class="unset">
                             <div class="d-flex align-items-center">
                                 Templates
                                 <b-icon-house class="ml-auto" />
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item class="navItem" to="/templates/discover" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/templates/discover" active-class="unset" active>
                             <div class="d-flex align-items-center">
                                 Discover
                                 <b-icon-search class="ml-auto"/>
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item class="navItem" to="/templates/new" active-class="unset" exact-active-class="active">
+                        <b-list-group-item class="navItem" to="/templates/new" active-class="unset">
                             <div class="d-flex align-items-center">
                                 New
                                 <b-icon-plus class="ml-auto"/>
@@ -36,12 +36,12 @@
                             </div>
                             <div class="mt-3">
                                 <h6>Muscle Groups</h6>
-                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
+                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" :initMgs="selectedMgs" />
                             </div>
 
                             <div class="mt-3">
                                 <h6>Tags</h6>
-                                <TagSelector />
+                                <TagSelector @updateTags="updateTags" :initTags="selectedTags" />
                             </div>
                         </div>
                     </b-card-body>
@@ -49,8 +49,8 @@
             </b-col>
             <b-col sm="6">
                 <b-container>
-                    <div v-if="templates.length > 0 && !isLoading">
-                        <TemplateFeed class="templateFeed" :templates="templates" />
+                    <div v-if="templates.length > 0 || isLoading">
+                        <TemplateFeed class="templateFeed" :templates="templates" :isLoading="isLoading" />
 
                         <div class="text-center" v-if="moreToLoad">
                             <b-button @click="loadMoreTemplates" variant="outline-dark" size="sm" v-b-visible.200="loadMoreTemplates">
@@ -59,7 +59,6 @@
                             </b-button>
                         </div>
                     </div>
-                    <div v-else-if="isLoading" class="text-center mt-5"><b-spinner /></div>
                     <div v-else>Error pulling top templates</div>
                 </b-container>
             </b-col>
@@ -74,6 +73,7 @@
 
 <script>
 import { templatesCollection } from '@/firebase'
+import { API } from 'aws-amplify'
 
 import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
 import TagSelector from '@/components/Utility/TagSelector.vue'
@@ -94,73 +94,81 @@ export default {
 
             // Filters:
             selectedMgs: [],
+            selectedTags: [],
 
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
             lastLoadedTemplate: null,
+
+            // Error handling:
+            errorCountdown: 0,
+            errorMessage: '',
+            errorInterval: null
         }
     },
 
     created: function() {
-        templatesCollection().orderBy("createdAt", "desc").limit(5).get()
-        .then(templateSnapshot => {
-            templateSnapshot.forEach(templateDoc => {
-                this.templates.push(templateDoc.id)
-            })
+        if (this.$route.query.muscleGroups) {
+            this.selectedMgs = this.$route.query.muscleGroups.split(",");
+        }
 
+        if (this.$route.query.tags) {
+            this.selectedTags = this.$route.query.tags.split(",");
+        }
 
-            if (templateSnapshot.size < 5) {
-                this.moreToLoad = false;
-            }
-
-            setTimeout(() => { this.isLoadingMore = false }, 500);
-            this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-
-            this.isLoading = false;
-        })
-        .catch(e => {
-            console.error("Error downloading templates", e);
-        })
+        this.downloadTemplates();
     },
 
     methods: {
-        getTemplates: function() {
-            this.isLoading = true;
-            this.templates = [];
-            this.moreToLoad = true;
-            this.lastLoadedTemplate = null;
-            this.isLoadingMore = true;
-
-            this.fbQuery = templatesCollection();
-
-            if (this.selectedMgs.length > 0) {
-                this.fbQuery = this.fbQuery.where("muscleGroups", "array-contains-any", this.selectedMgs);
-            }
-
-            this.fbQuery.orderBy("createdAt", "desc").limit(5).get()
-            .then(templateSnapshot => {
-                if (templateSnapshot.size > 0) {
-                    templateSnapshot.forEach(template => {
-                        this.templates.push(template.id);
-                    })
-
-                    if (templateSnapshot.size < 5) {
-                        this.moreToLoad = false;
+        downloadTemplates: async function() {
+            try {
+                this.isLoading = true;
+                this.templates = [];
+        
+                const path = '/template';
+                let myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        loadAmount: 5,
+                        user: false
                     }
+                };
 
-                    setTimeout(() => { this.isLoadingMore = false }, 500);
-                    this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-                } else {
-                    this.moreToLoad = false;
+                if (this.selectedMgs.length > 0) {
+                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
                 }
 
+                if (this.selectedTags.length > 0) {
+                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
+                }
+        
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw err;
+                })
+
+                if (!response) { 
+                    throw new Error("No response");
+                }
+
+                if (!response.success) {
+                    throw new Error("Unsuccessful: " + response.errorMessage);
+                }
+
+                this.templates = response.data;
+                this.isLoadingMore = false;
+                this.moreToLoad = false;
+            }
+            catch (err) {
+                if (err.response && err.response.status !== 404) {
+                    this.displayError(err);
+                }
+            }
+            finally {
                 this.isLoading = false;
-            })
-            .catch(e => {
-                this.isLoading = false;
-                console.error("Error getting templates:", e);
-            })
+            }
         },
 
         loadMoreTemplates: function() {
@@ -184,9 +192,63 @@ export default {
             }
         },
 
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {    
+                    this.errorCountdown -= 1
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
+        },
+
         updateMuscleGroups: function(muscleGroups) {
             this.selectedMgs = muscleGroups;
-            this.getTemplates();
+            let isFiltered = false;
+
+            let query = {};
+            
+            if (this.selectedMgs.length > 0) {
+                isFiltered = true;
+                query.muscleGroups = this.selectedMgs.join(",")
+            }
+
+            if (this.selectedTags.length > 0) { 
+                isFiltered = true;
+                query.tags = this.selectedTags.join(",")
+            }
+
+            if (isFiltered) { this.$router.replace({ path: "/templates/discover", query: query }) }
+            else { this.$router.replace({ path: "/templates/discover", query: null }) }
+
+            this.downloadTemplates();
+        },
+
+        updateTags: function(tags) {
+            this.selectedTags = tags;
+            let isFiltered = false;
+
+            let query = {};
+            
+            if (this.selectedMgs.length > 0) {
+                isFiltered = true;
+                query.muscleGroups = this.selectedMgs.join(",")
+            }
+
+            if (this.selectedTags.length > 0) { 
+                isFiltered = true;
+                query.tags = this.selectedTags.join(",")
+            }
+
+            if (isFiltered) { this.$router.replace({ path: "/templates", query: query }) }
+            else { this.$router.replace({ path: "/templates/discover", query: null }) }
+
+            this.downloadTemplates();
         }
     }
 }

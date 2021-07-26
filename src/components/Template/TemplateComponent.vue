@@ -24,7 +24,7 @@
         </div>
         <div v-else>
             <b-card-body>
-                <b-skeleton v-for="(index) in (Math.floor(Math.random() * 4) + 3)" :key="index" animation="wave" :width="(Math.floor(Math.random() * 50) + 50).toString() + '%'"></b-skeleton>
+                <b-skeleton v-for="(index) in skeletonAmount" :key="index" animation="wave" :width="skeletonWidth[index]"></b-skeleton>
             </b-card-body>
         </div>
     </b-card>
@@ -44,8 +44,16 @@ export default {
     components: { Viewer, CommentSection, ExerciseExpandable },
     props: {
         templateId: {
-            required: true,
-            type: String
+            type: String,
+            required: true
+        },
+        skeletonAmount: {
+            type: Number,
+            required: true
+        },
+        skeletonWidth: {
+            type: Array,
+            required: true
         }
     },
 

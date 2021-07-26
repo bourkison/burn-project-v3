@@ -166,7 +166,7 @@ const queryTemplate = async function(event) {
         }
 
         let fields = "createdBy createdAt name tags muscleGroups updatedAt"
-        result = await Template.find(exerciseQuery, fields).sort({ "createdAt": 1 }).limit(loadAmount);
+        result = await Template.find(templateQuery, fields).sort({ "createdAt": 1 }).limit(loadAmount);
     }
 
     if (!result || !result.length) {
@@ -178,7 +178,7 @@ const queryTemplate = async function(event) {
     }
 
     response.statusCode = 200;
-    response.body = JSON.stringify({ success: true, data: userResult });
+    response.body = JSON.stringify({ success: true, data: result });
 
     return response;
 }

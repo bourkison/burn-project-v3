@@ -31,7 +31,7 @@
         },
         "projectburnTemplateHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnTemplateHandler-54676b4b4b444d375657-build.zip"
+          "s3Key": "amplify-builds/projectburnTemplateHandler-553462704b2f646e4f4a-build.zip"
         },
         "projectburnCommentHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",

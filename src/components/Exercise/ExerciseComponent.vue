@@ -29,7 +29,6 @@
 import '@toast-ui/editor/dist/toastui-editor-viewer.css'
 
 import { Viewer } from '@toast-ui/vue-editor'
-// import { db, storage } from '@/firebase'
 import { API, Storage } from 'aws-amplify'
 
 import CommentSection from '@/components/Comment/CommentSection.vue'

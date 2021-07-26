@@ -41,7 +41,7 @@
 
                             <div class="mt-3">
                                 <h6>Tags</h6>
-                                <TagSelector />
+                                <TagSelector @updateTags="updateTags" :initTags="selectedTags" />
                             </div>
                         </div>
                     </b-card-body>
@@ -59,7 +59,17 @@
                         </b-button>
                     </div>
                 </div>
-                <div v-else>Error pulling top exercises</div>
+                <div v-else class="text-center noexercisesfound">No exercises found</div>
+                <b-alert
+                    class="position-fixed fixed-bottom m-0 rounded-0"
+                    variant="danger"
+                    dismissible
+                    fade
+                    style="z-index: 2000;"
+                    v-model="errorCountdown"
+                >
+                    {{ errorMessage }}
+                </b-alert>
             </b-col>
 
             <b-col sm="3">
@@ -99,6 +109,11 @@ export default {
             isLoadingMore: true,
             moreToLoad: true,
             lastLoadedExercise: null,
+
+            // Error handling:
+            errorCountdown: 0,
+            errorMessage: '',
+            errorInterval: null
         }
     },
 
@@ -116,38 +131,49 @@ export default {
 
     methods: {
         downloadExercises: async function() {
-            this.isLoading = true;
-            this.exercises = [];
-
-            const path = '/exercise';
-            let myInit = {
-                headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
-                },
-                queryStringParameters: {
-                    loadAmount: 5,
-                    user: false
+            try {
+                this.isLoading = true;
+                this.exercises = [];
+    
+                const path = '/exercise';
+                let myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        loadAmount: 5,
+                        user: false
+                    }
+                }
+    
+                if (this.selectedMgs.length > 0) {
+                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+                }
+    
+                if (this.selectedTags.length > 0) {
+                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
+                }
+    
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw err;
+                });
+    
+                this.exercises = response.data;
+    
+                if (this.exercises.length > 0) {
+                    this.isLoading = false;
                 }
             }
-
-            if (this.selectedMgs.length > 0) {
-                myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            catch(err) {
+                if (err.response && err.response.status !== 404) {
+                    this.displayError(err);
+                }
             }
-
-            if (this.selectedTags.length > 0) {
-                myInit.queryStringParameters.tags = this.selectedTags.join(",");
-            }
-
-            const response = await API.get(this.$store.state.apiName, path, myInit);
-
-            this.exercises = response.data;
-
-            if (this.exercises.length > 0) {
+            finally {
+                this.moreToLoad = false;
                 this.isLoading = false;
             }
 
-            this.moreToLoad = false;
-            this.isLoadingMore = false;
         },
 
         loadMoreExercises: function() {
@@ -210,14 +236,30 @@ export default {
 
             if (isFiltered) { this.$router.replace({ path: "/exercises/discover", query: query }) }
             this.downloadExercises();
-        }
+        },
+
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {    
+                    this.errorCountdown -= 1
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
+        },
     }
 }
 </script>
 
 <style scoped>
 .navCard,
-.exerciseFeed {
+.exerciseFeed,
+.noexercisesfound {
     margin-top: 40px;
 }
 
