@@ -151,12 +151,22 @@ export default {
                 this.oldExerciseData = response.data;
     
                 if (this.newExerciseData) {
-                    this.newExerciseData.filePaths.forEach((url, i) => {
+                    let urlPromises = [];
+
+                    this.newExerciseData.filePaths.forEach(path => {
+                        urlPromises.push(Storage.get(path));
+                    });
+
+                    const imageUrls = await Promise.all(urlPromises);
+
+                    imageUrls.forEach((url, i) => {
                         this.initImages.push({ id: i, url: url, editable: false, path: this.oldExerciseData.filePaths[i] });
                     })
-    
+
                     this.exerciseExists = true;
                     this.isLoading = false;
+                } else {
+                    throw new Error("No exercise data!");
                 }
             }
             catch (err) {

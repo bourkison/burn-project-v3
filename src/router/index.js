@@ -9,7 +9,6 @@ import WorkoutNew from '@/views/Workout/WorkoutNew.vue'
 import WorkoutRecent from '@/views/Workout/WorkoutRecent.vue'
 import WorkoutView from '@/views/Workout/WorkoutView.vue'
 
-import Exercise from '@/views/Exercise/Exercise.vue'
 import ExerciseDiscover from '@/views/Exercise/ExerciseDiscover.vue'
 import ExerciseEdit from '@/views/Exercise/ExerciseEdit.vue'
 import ExerciseFollowed from '@/views/Exercise/ExerciseFollowed.vue'
@@ -38,24 +37,20 @@ const routes = [
     },
     // EXERCISES
     {
-        path: '/exercises',
-        name: 'Exercise',
-        component: Exercise,
+        path: '/exercises/discover',
+        name: 'Discover Exercises',
+        component: ExerciseDiscover,
         meta: {
             requiresAuth: true
-        },
-        children: [
-            {
-                path: '/exercises/discover',
-                name: 'Discover Exercises',
-                component: ExerciseDiscover
-            },
-            {
-                path: '/exercises',
-                name: 'Followed Exercises',
-                component: ExerciseFollowed
-            },
-        ]
+        }
+    },
+    {
+        path: '/exercises',
+        name: 'Followed Exercises',
+        component: ExerciseFollowed,
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: '/exercises/new',
@@ -66,17 +61,17 @@ const routes = [
         }
     },
     {
-        path: '/exercises/:exerciseid/edit',
-        name: 'Edit Exercise',
-        component: ExerciseEdit,
+        path: '/exercises/:exerciseid',
+        name: 'View Exercise',
+        component: ExerciseView,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/exercises/:exerciseid',
-        name: 'View Exercise',
-        component: ExerciseView,
+        path: '/exercises/:exerciseid/edit',
+        name: 'Edit Exercise',
+        component: ExerciseEdit,
         meta: {
             requiresAuth: true
         }

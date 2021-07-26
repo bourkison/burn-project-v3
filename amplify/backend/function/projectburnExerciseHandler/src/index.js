@@ -39,8 +39,9 @@ const getExercise = async function(event) {
 const queryExercise = async function(event) {
     const username = event.requestContext.authorizer.claims['cognito:username'];
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
-    
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const userBool = (event.queryStringParameters.user === 'true');
+    const muscleGroups =  (event.queryStringParameters.muscleGroups) ? event.queryStringParameters.muscleGroups.split(",") : null;
+    const tags = (event.queryStringParameters.tags) ? event.queryStringParameters.tags.split(",") : null;
 
     let response = {
         statusCode: 500,
@@ -51,26 +52,105 @@ const queryExercise = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    // Pull loadAmount elements from exerciseReferences
-    const userResult = (await User.aggregate([
-        {
-            "$match": {
-                "username": username
+    let result;
+
+    if (userBool) {
+        const User = (await MongooseModels(MONGODB_URI)).User;
+        let exerciseQuery = [
+            {
+                "$match": {
+                    "username": username
+                }
+            },
+            {
+                "$project": {
+                    "exerciseReferences": 1,
+                    "username": 1,
+                }
             }
-        },
-        {
+        ];
+
+        if (muscleGroups) {
+            exerciseQuery.push({
+                "$addFields": {
+                    "inputMuscleGroups": muscleGroups
+                }
+            });
+
+            exerciseQuery.push({
+                "$project": {
+                    "username": 1,
+                    "exerciseReferences": {
+                        "$reduce": {
+                            "input": "$exerciseReferences",
+                            "initialValue": [],
+                            "in": {
+                                "$cond": [
+                                    {
+                                        "$setIsSubset": [ "$inputMuscleGroups", "$$this.muscleGroups" ]
+                                    },
+                                    { 
+                                        "$concatArrays": ["$$value", ["$$this"]]
+                                    },
+                                    "$$value"
+                                ],
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        if (tags) {
+            exerciseQuery.push({
+                "$addFields": {
+                    "inputTags": tags
+                }
+            })
+
+            exerciseQuery.push({
+                "$project": {
+                    "username": 1,
+                    "exerciseReferences": {
+                        "$reduce": {
+                            "input": "$exerciseReferences",
+                            "initialValue": [],
+                            "in": {
+                                "$cond": [
+                                    {
+                                        "$setIsSubset": [ "$inputTags", "$$this.tags" ]
+                                    },
+                                    { 
+                                        "$concatArrays": [["$$this"], "$$value"]
+                                    },
+                                    ["$$value"]
+                                ],   
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        exerciseQuery.push({
             "$project": {
                 "exerciseReferences": {
                     "$slice": [ "$exerciseReferences", loadAmount ]
                 }
             }
+        })
+
+        result = await User.aggregate(exerciseQuery);
+
+        if (result[0] && result[0].exerciseReferences) {
+            result = result[0].exerciseReferences;
+        } else {
+            result = [];
         }
-    ]))[0].exerciseReferences.reverse();
+    }
 
-    console.log(userResult);
-
-    if (!userResult) {
-        const errorResponse = "Exercises not found for user: " + username + ".";
+    if (!result || !result.length) {
+        const errorResponse = "No exercises found!";
         response.statusCode = 404;
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
@@ -78,7 +158,7 @@ const queryExercise = async function(event) {
     }
 
     response.statusCode = 200;
-    response.body = JSON.stringify(JSON.stringify({ success: true, data: userResult }));
+    response.body = JSON.stringify(JSON.stringify({ success: true, data: result }));
 
     return response;
 }
@@ -371,6 +451,8 @@ const deleteExercise = async function(event) {
     await Promise.all(userPullPromises)
 
     // TODO: Delete all images/videos associated with this exercise.
+
+    // TODO: Delete all exerciseReferences in workouts associated with this exercise.
 
     // Finally delete the exercise.
     const result = await Exercise.deleteOne({ "_id": exerciseId }).exec();
