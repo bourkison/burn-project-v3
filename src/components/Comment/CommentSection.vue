@@ -18,7 +18,7 @@
             <b-container>
                 <div v-if="!isLoadingComments">
                     <b-list-group class="commentsContainer borderless" flush>
-                        <Comment v-for="comment in comments" :key="comment.id" :comment="comment" :collection="coll" :docId="_id" />
+                        <Comment v-for="comment in comments" :key="comment._id" :comment="comment" :coll="coll" :docId="docId" />
                     </b-list-group>
                     <div class="text-center">
                         <b-button v-if="commentCount > comments.length" @click="loadMoreComments" :disabled="isLoadingMoreComments" variant="outline" class="mb-2">
@@ -34,11 +34,11 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <CommentNew @addComment="addComment" :coll="coll" :_id="_id" />
+                <CommentNew @addComment="addComment" :coll="coll" :docId="docId" />
             </b-container>
         </b-collapse>
 
-        <b-modal :id="_id + '-likeModal'" centered ok-only button-size="sm">
+        <b-modal :id="docId + '-likeModal'" centered ok-only button-size="sm">
             <template #modal-title>
                 Likes
             </template>
@@ -55,7 +55,7 @@
             </div>
         </b-modal>
 
-        <b-modal :id="_id + '-followModal'" centered ok-only button-size="sm">
+        <b-modal :id="docId + '-followModal'" centered ok-only button-size="sm">
             <template #modal-title>
                 Follows
             </template>
@@ -87,7 +87,7 @@ export default {
     name: 'CommentSection',
     components: { UserList, Comment, CommentNew },
     props: {
-        _id: {
+        docId: {
             type: String,
             required: true
         },
@@ -154,7 +154,7 @@ export default {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
             },
             queryStringParameters: {
-                _id: this.$props._id,
+                docId: this.$props.docId,
                 coll: this.$props.coll,
                 loadAmount: 5
             }
@@ -191,7 +191,7 @@ export default {
                         Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
-                        _id: this.$props._id,
+                        docId: this.$props.docId,
                         coll: this.$props.coll
                     }
                 }

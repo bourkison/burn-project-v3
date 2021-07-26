@@ -6,7 +6,7 @@ let MONGODB_URI;
 
 // GET request /comment
 const queryComment = async function(event) {
-    const _id = ObjectId(event.queryStringParameters._id);
+    const docId = ObjectId(event.queryStringParameters.docId);
     const coll = event.queryStringParameters.coll;
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
     const username = event.requestContext.authorizer.claims['cognito:username'];
@@ -46,7 +46,7 @@ const queryComment = async function(event) {
     const comments = (await Model.aggregate([
         {
             "$match": {
-                "_id": _id
+                "_id": docId
             }
         },
         {
@@ -58,38 +58,52 @@ const queryComment = async function(event) {
         },
         {
             "$project": {
-                "comments.content": 1,
-                "comments.likeCount": 1,
-                "comments.createdAt": 1,
-                "comments.updatedAt": 1,
-                "comments.createdBy": 1,
-                "comments.likes": {
-                    "$eq": [ "$comments.likes.createdAt.username", username ]
+                "comments": {
+                    "$map": {
+                        "input": "$comments",
+                        "as": "c",
+                        "in": {
+                            "_id": "$$c._id",
+                            "docId": "$$c.docId",
+                            "content": "$$c.content",
+                            "likeCount": "$$c.likeCount",
+                            "createdAt": "$$c.createdAt",
+                            "updatedAt": "$$c.updatedAt",
+                            "createdBy": "$$c.createdBy",
+                            "isLiked": {
+                                "$anyElementTrue": [{
+                                    "$map": {
+                                        "input": "$$c.likes",
+                                        "as": "l",
+                                        "in": {
+                                            "$eq": [ "$$l.createdBy.username", username ]
+                                        }
+                                    }
+                                }]
+                            },
+                            "likes": []
+                        }
+                    }
                 }
             }
         }
     ]))[0].comments.reverse();
 
     if (!comments) {
-        const errorResponse = "Comments not found for id: " + _id + " in collection: " + coll + ".";
+        const errorResponse = "Comments not found for id: " + docId + " in collection: " + coll + ".";
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
     }
 
-    comments.forEach(comment => {
-        comment.isLiked = comment.likes;
-        comment.likes = [];
-    })
-
     // We only need to return commentCount if we are pulling from a collection.
     if (coll !== "user") {
         // First pull commentCount from collection.
         let fields = 'commentCount';
-        const commentCount = (await Model.findOne({ "_id": _id }, fields).exec()).commentCount;
+        const commentCount = (await Model.findOne({ "_id": docId }, fields).exec()).commentCount;
 
         if (isNaN(commentCount)) {
-            const errorResponse = "Id: " + _id + " for collection: " + coll + " commentCount not found." 
+            const errorResponse = "Id: " + docId + " for collection: " + coll + " commentCount not found." 
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
             
@@ -108,10 +122,11 @@ const queryComment = async function(event) {
 
 // POST request /comment
 const createComment = async function(event) {
-    const _id = ObjectId(event.queryStringParameters._id);
+    const docId = ObjectId(event.queryStringParameters.docId);
     const coll = event.queryStringParameters.coll;
     const username = event.requestContext.authorizer.claims['cognito:username'];
     const content = JSON.parse(event.body).content;
+    const _id = new ObjectId();
 
     let response = {
         statusCode: 500,
@@ -141,7 +156,7 @@ const createComment = async function(event) {
             return response;
     }
 
-    // First get the user for the _id.
+    // First get the user for the docId.
     let fields = 'username';
     const user = await User.findOne({ username: username }, fields).exec();
 
@@ -153,12 +168,13 @@ const createComment = async function(event) {
 
     const comment = {
         content: content,
-        createdBy: userReference
+        createdBy: userReference,
+        _id: _id
     }
 
     const collResult = await Model.updateOne(
         {
-            "_id": _id
+            "_id": docId
         },
         {
             "$push": {
@@ -175,10 +191,11 @@ const createComment = async function(event) {
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         return response;
     }
-
+    
     // Next push the comment reference to the user's comments array.
     const commentReference = {
         coll: coll,
+        docId: docId,
         _id: _id
     }
 
@@ -199,7 +216,164 @@ const createComment = async function(event) {
     }
 
     response.statusCode = 200;
-    response.body = JSON.stringify({ success: true, data: comment, userData: commentReference });
+    response.body = JSON.stringify({ success: true, data: { _id: _id } });
+
+    return response;
+}
+
+// DELETE request /comment
+const deleteComment = async function(event) {
+    const docId = ObjectId(event.queryStringParameters.docId);
+    const coll = event.queryStringParameters.coll;
+    const _id = ObjectId(event.queryStringParameters._id);
+    const username = event.requestContext.authorizer.claims['cognito:username'];
+
+    let Model;
+
+    const User = (await MongooseModels(MONGODB_URI)).User;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers" : "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
+    switch (coll) {
+        case "exercise":
+            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            break;
+        case "template":
+            Model = (await MongooseModels(MONGODB_URI)).Template;
+            break;
+        case "post":
+            Model = (await MongooseModels(MONGODB_URI)).Post;
+            break;
+        default:
+            response.statusCode = 400;
+            response.body = "Incorrect collection provided";
+            return response;
+    }
+
+    // First get the comment to ensure user created it.
+    const userCheck = (await User.findOne(
+        {
+            "username": username
+        },
+        {
+            "comments": {
+                "$elemMatch": {
+                    "_id": _id,
+                    "coll": coll,
+                    "docId": docId
+                }
+            }
+        }
+    ).exec().catch(err => {
+        const errorResponse = "Error getting comment: " + _id + " from doc: " + docId + " from coll: " + coll + " ." + (err.message || JSON.stringify(err));
+        response.body = JSON.stringify({ success: falase, errorMessage: errorResponse });
+
+        return response;
+    })).comments[0];
+
+    if (!userCheck) {
+        const errorResponse = "Comment: " + _id + " not found for user: " + username + ".";
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }
+
+    // Next delete all like references from each like.
+    const likesResult = (await Model.findOne(
+        { 
+            "_id": docId
+        }, 
+        { 
+            "comments": {
+                "$elemMatch": {
+                    "_id": _id
+                }
+            } 
+        }).exec()).comments[0].likes;
+    let userLikesPullPromises = [];
+
+    console.log("LIKES RESULT:", likesResult);
+
+    likesResult.forEach(like => {
+        const userId = ObjectId(like.createdBy.userId);
+
+        console.log("USER ID:", userId);
+        console.log("LIKE ID:", like._id);
+        console.log("COMMENT ID:", _id);
+
+        const query = User.updateOne({ "_id": userId }, {
+            "$pull": {
+                "likes": {
+                    "_id": like._id,
+                    "commentId": _id
+                }
+            }
+        })
+
+        userLikesPullPromises.push(query.exec());
+    });
+
+    await Promise.all(userLikesPullPromises);
+
+    // Now pull comment from the collection's comments array.
+    const collResult = await Model.updateOne(
+        {
+            "_id": docId
+        },
+        {
+            "$pull": {
+                "comments": {
+                    "_id": _id,
+                    "createdBy.username": username
+                }
+            },
+            "$inc": {
+                "commentCount": -1
+            }
+        }
+    )
+
+    if (!collResult) {
+        const errorResponse = "Couldn't delete comment from collection";
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }
+
+    // Now pull the commentReference from the user's comments array.
+    const userResult = await User.updateOne(
+        {
+            "username": username
+        },
+        {
+            "$pull": {
+                "comments": {
+                    "_id": _id,
+                    "docId": docId,
+                    "coll": coll
+                }
+            }
+        }
+    );
+
+    if (!userResult) {
+        const errorResponse = "Error deleting like in user."
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }
+
+
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: collResult, userData: userResult });
 
     return response;
 }
@@ -226,6 +400,9 @@ exports.handler = async (event, context) => {
             break;
         case "POST":
             response = createComment(event);
+            break;
+        case "DELETE":
+            response = deleteComment(event);
             break;
         default:
             response = {

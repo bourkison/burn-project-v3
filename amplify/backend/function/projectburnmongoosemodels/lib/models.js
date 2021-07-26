@@ -82,7 +82,7 @@ const commentReferenceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    _id: {
+    docId: {
         type: ObjectId,
         required: true
     }
@@ -95,9 +95,13 @@ const likeReferenceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    _id: {
+    docId: {
         type: ObjectId,
         required: true
+    },
+    commentId: {
+        type: ObjectId,
+        default: null
     }
 }, { timestamps: true })
 
@@ -176,7 +180,7 @@ const commentSchema = new mongoose.Schema({
         required: true
     },
     likes: {
-        type: [likeReferenceSchema],
+        type: [likeSchema],
         default: []
     },
     likeCount: {

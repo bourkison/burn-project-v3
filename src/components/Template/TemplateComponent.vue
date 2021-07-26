@@ -19,7 +19,7 @@
                         </b-button>
                     </div>
                 </b-card-body>
-                <CommentSection :_id="templateData._id" coll="template" :followableComponent="true" />
+                <CommentSection :docId="templateData._id" coll="template" :followableComponent="true" />
             </div>
         </div>
         <div v-else>

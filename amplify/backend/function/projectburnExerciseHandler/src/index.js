@@ -201,7 +201,7 @@ const updateExercise = async function(event) {
         }
     ).exec().catch(err => {
         const errorResponse = "Error getting exercise from user: " + username + " : " + exerciseId + ". " + (err.message || JSON.stringify(err));
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     })).exerciseReferences[0];
@@ -211,7 +211,7 @@ const updateExercise = async function(event) {
     if (!userResult) {
         const errorResponse = "Exercise not found for user: " + username + ".";
         response.statusCode = 404;
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
     }
@@ -219,7 +219,7 @@ const updateExercise = async function(event) {
     // Now update the Exercise document.
     const exerciseResult = await Exercise.findByIdAndUpdate(exerciseId, exerciseForm, { runValidators: true }).exec().catch(err => {
         const errorResponse = "Error updating exercise : " + exerciseId + " : " + JSON.stringify(exerciseForm) + ". " + (err.message || JSON.stringify(err));
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     });
@@ -279,7 +279,7 @@ const deleteExercise = async function(event) {
         }
     ).exec().catch(err => {
         const errorResponse = "Error getting exercise from user: " + username + " : " + exerciseId + ". " + (err.message || JSON.stringify(err));
-        response.body = JSON.stringify({ success: false, message: errorResponse });
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
     })).exerciseReferences[0];
@@ -287,16 +287,71 @@ const deleteExercise = async function(event) {
     if (!userResult) {
         const errorResponse = "Exercise not found for user: " + username + ".";
         response.statusCode = 404;
-        response.body = JSON.stringify({ success: false, message: errorResponse })
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
         
         return response;
     }
 
-    // Now pull all follows from the exercise and pull their reference from each user.
-    const exerciseResult = (await Exercise.findById(exerciseId, { "follows": 1 })).follows;
+    // Now pull all likes, comments and follows from the exercise and pull their reference from each user (this includes the user who created).
+    const exerciseResult = (await Exercise.findById(exerciseId, { "follows": 1, "likes": 1, "comments": 1 }).exec());
     let userPullPromises = [];
+
+    const likes = exerciseResult.likes;
+    const comments = exerciseResult.comments;
+    const follows = exerciseResult.follows;
+
+    likes.forEach(like => {
+        console.log("LIKE TO DELETE:", like);
+        const userId = ObjectId(like.createdBy.userId);
+
+        const query = User.updateOne({ "_id": userId }, {
+            "$pull": {
+                "likes": {
+                    "_id": like._id,
+                    "docId": exerciseId,
+                    "coll": "exercise"
+                }
+            }
+        })
+
+        userPullPromises.push(query.exec());
+    })
+
+    comments.forEach(comment => {
+        console.log("COMMENT TO DELETE:", comment);
+        comment.likes.forEach(commentLike => {
+            console.log("COMMENT LIKE TO DELETE:", commentLike);
+            const userId = ObjectId(commentLike.createdBy.userId);
+
+            const query = User.updateOne({ "_id": userId }, {
+                "$pull": {
+                    "likes": {
+                        "_id": commentLike._id,
+                        "docId": exerciseId,
+                        "coll": "exercise/comment"
+                    }
+                }
+            })
+
+            userPullPromises.push(query.exec());
+        })
+
+        const userId = ObjectId(comment.createdBy.userId);
+
+        const query = User.updateOne({ "_id": userId }, {
+            "$pull": {
+                "comments": {
+                    "_id": comment._id,
+                    "docId": exerciseId,
+                    "coll": "exercise"
+                }
+            }
+        })
+
+        userPullPromises.push(query.exec());
+    })
     
-    exerciseResult.forEach(follow => {
+    follows.forEach(follow => {
         const userId = ObjectId(follow.get('userId'))
         
         console.log("USER ID:", userId);
@@ -314,6 +369,8 @@ const deleteExercise = async function(event) {
     })
     
     await Promise.all(userPullPromises)
+
+    // TODO: Delete all images/videos associated with this exercise.
 
     // Finally delete the exercise.
     const result = await Exercise.deleteOne({ "_id": exerciseId }).exec();

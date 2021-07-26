@@ -37,7 +37,7 @@
                                 <Viewer :initialValue="exerciseData.description" />
                             </b-card-text>
                         </b-card-body>
-                        <CommentSection :_id="exerciseData._id" coll="exercise" :followableComponent="true" />
+                        <CommentSection :docId="exerciseData._id" coll="exercise" :followableComponent="true" />
                     </b-card>
                 </b-container>
             </b-col>

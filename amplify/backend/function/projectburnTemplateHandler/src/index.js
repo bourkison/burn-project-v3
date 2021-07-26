@@ -22,7 +22,7 @@ const getTemplate = async function(event) {
     const result = await Template.findOne({ _id: templateId }, fields).exec();
 
     if (!result) {
-        const errorResponse = "Exercise: " + exerciseId + " not found." + JSON.stringify(event);
+        const errorResponse = "Template: " + templateId + " not found." + JSON.stringify(event);
         response.statusCode = 404;
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
@@ -284,10 +284,69 @@ const deleteTemplate = async function(event) {
     }
 
     // Now pull all follows for the template and pull their reference from each user.
-    const templateResult = (await Template.findById(templateId, { "follows": 1 })).follows;
+    const templateResult = (await Template.findById(templateId, { "follows": 1, "likes": 1, "comments": 1 }).exec());
     let userPullPromises = [];
 
-    templateResult.forEach(follow => {
+    const likes = templateResult.likes;
+    const comments = templateResult.comments;
+    const follows = templateResult.follows;
+
+    likes.forEach(like => {
+        console.log("LIKE TO DELETE:", like);
+        const userId = ObjectId(like.createdBy.userId);
+
+        const query = User.updateOne({ "_id": userId }, {
+            "$pull": {
+                "likes": {
+                    "_id": like._id,
+                    "docId": templateId,
+                    "coll": "template"
+                }
+            }
+        })
+
+        userPullPromises.push(query.exec());
+    })
+
+    comments.forEach(comment => {
+        console.log("COMMENT TO DELETE:", comment);
+        comment.likes.forEach((commentLike, i) => {
+            console.log("COMMENT LIKE TO DELETE:", commentLike);
+            console.log("COMMENT LIKE TO DELETE:", i);
+            console.log("COMMENT LIKE TO DELETE:", commentLike.get('createdBy'));
+            console.log("COMMENT LIKE TO DELETE:", commentLike.get('createdBy').userId);
+
+            const userId = ObjectId(commentLike.get('createdBy').userId);
+    
+            const query = User.updateOne({ "_id": userId }, {
+                "$pull": {
+                    "likes": {
+                        "_id": commentLike._id,
+                        "docId": templateId,
+                        "coll": "template/comment"
+                    }
+                }
+            })
+
+            userPullPromises.push(query.exec());
+        });
+        
+        const userId = ObjectId(comment.createdBy.userId);
+
+        const query = User.updateOne({ "_id": userId }, {
+            "$pull": {
+                "comments": {
+                    "_id": comment._id,
+                    "docId": templateId,
+                    "coll": "template"
+                }
+            }
+        })
+
+        userPullPromises.push(query.exec());
+    })
+
+    follows.forEach(follow => {
         const userId = ObjectId(follow.get('userId'));
 
         const query = User.updateOne({ '_id': userId }, {

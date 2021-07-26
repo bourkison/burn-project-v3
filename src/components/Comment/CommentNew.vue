@@ -16,7 +16,7 @@ export default {
             type: String,
             required: true
         },
-        _id: {
+        docId: {
             type: String,
             required: true
         }
@@ -43,7 +43,7 @@ export default {
                         Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
-                        _id: this.$props._id,
+                        docId: this.$props.docId,
                         coll: this.$props.coll
                     },
                     body: {
@@ -52,9 +52,14 @@ export default {
                 }
 
                 await API.post(this.$store.state.apiName, path, myInit).then(commentResponse => {
-                    console.log("SUCCESSFUL COMMENT:", commentResponse);
-                    payload = commentResponse.data;
+                    payload._id = commentResponse.data._id;
                     payload.createdAt = new Date();
+                    payload.likeCount = 0;
+                    payload.likes = [];
+                    payload.createdBy = {
+                        username: this.$store.state.userProfile.docData.username,
+                        _id: this.$store.state.userProfile.docData._id
+                    }
 
                     this.$emit("addComment", payload);
                 })

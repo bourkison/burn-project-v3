@@ -1,6 +1,6 @@
 <template>
     <div>
-        <TemplateComponent class="template" v-for="template in templates" :templateId="template.templateId ? template.templateId : template._id" :key="template" />
+        <TemplateComponent class="template" v-for="template in templates" :templateId="template.templateId ? template.templateId : template._id" :key="template._id" />
     </div>
 </template>
 

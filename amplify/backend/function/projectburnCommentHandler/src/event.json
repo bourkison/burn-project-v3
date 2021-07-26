@@ -1,5 +1,15 @@
 {
-  "key1": "value1",
-  "key2": "value2",
-  "key3": "value3"
+  "requestContext": {
+    "authorizer": {
+      "claims": {
+        "cognito:username": "bourkison"
+      }
+    }
+  },
+  "queryStringParameters": {
+    "coll": "template",
+    "docId": "60fc6202e6dc3d0008652e7f",
+    "_id": "60fd19414913b2000879e6c7"
+  },
+  "httpMethod": "DELETE"
 }

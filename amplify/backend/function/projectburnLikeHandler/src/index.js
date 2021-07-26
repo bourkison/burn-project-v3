@@ -6,7 +6,7 @@ let MONGODB_URI;
 
 // GET request /like
 const queryLike = async function(event) {
-    const _id = ObjectId(event.queryStringParameters._id);
+    const docId = ObjectId(event.queryStringParameters.docId);
     const coll = event.queryStringParameters.coll;
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
     
@@ -44,7 +44,7 @@ const queryLike = async function(event) {
     const likes = (await Model.aggregate([
         {
             "$match": {
-                "_id": _id
+                "_id": docId
             }
         },
         {
@@ -57,7 +57,7 @@ const queryLike = async function(event) {
     ]))[0].likes;
 
     if (!likes) {
-        const errorResponse = "Likes not found for id: " + _id +  " in collection: " + coll + "."
+        const errorResponse = "Likes not found for id: " + docId +  " in collection: " + coll + "."
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
         
         return response;
@@ -67,10 +67,10 @@ const queryLike = async function(event) {
     if (coll !== "user") {
         // First pull likeCount from collection.
         let fields = 'likeCount'
-        const likeCount = (await Model.findOne({ "_id": _id }, fields).exec()).likeCount;
+        const likeCount = (await Model.findOne({ "_id": docId }, fields).exec()).likeCount;
 
         if (isNaN(likeCount)) {
-            const errorResponse = "Id: " + _id + " for collection: " + coll + " likeCount not found." 
+            const errorResponse = "Id: " + docId + " for collection: " + coll + " likeCount not found." 
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
             
@@ -83,7 +83,7 @@ const queryLike = async function(event) {
 
         const userResult = (await Model.findOne(
             {
-                "_id": _id
+                "_id": docId
             },
             {
                 "likes": {
@@ -112,9 +112,15 @@ const queryLike = async function(event) {
 
 // POST request /like
 const createLike = async function(event) {
-    const _id = ObjectId(event.queryStringParameters._id);
+    console.log("EVENT:", event);
+
+    const docId = new ObjectId(event.queryStringParameters.docId);
     const coll = event.queryStringParameters.coll;
     const username = event.requestContext.authorizer.claims['cognito:username'];
+    const commentId = (event.queryStringParameters.commentId) ? new ObjectId(event.queryStringParameters.commentId) : null;
+    const _id = new ObjectId();
+
+    console.log("ID:", docId, "COLL:", coll, "USERNAME:", username, "COMMENTID:", commentId)
 
     let response = {
         statusCode: 500,
@@ -128,7 +134,7 @@ const createLike = async function(event) {
     let Model;
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    switch (coll) {
+    switch (coll.split("/")[0]) {
         case "exercise":
             Model = (await MongooseModels(MONGODB_URI)).Exercise;
             break;
@@ -142,7 +148,7 @@ const createLike = async function(event) {
             response.statusCode = 400;
             response.body = "Incorrect collection provided";
             return response;
-    }
+    }    
 
     // TODO: A lot of these promises could be done asynchronously
     // With a Promise.all() to catch them.
@@ -151,6 +157,115 @@ const createLike = async function(event) {
     let fields = 'username'
     const user = await User.findOne({ username: username }, fields).exec();
 
+
+
+    // Check if user has liked already.
+    // TODO: This is all messy and needs to be cleaned.
+    let likeCheckResult;
+    console.log("COMMENT ID:", commentId);
+
+    if (!commentId) {
+        console.log("NO COMMENT ID");
+        likeCheckResult = (await Model.aggregate([
+            {
+                "$match": {
+                    "_id": docId
+                }
+            },
+            {
+                "$project": {
+                    "isLiked": {
+                        "$anyElementTrue": [{
+                            "$map": {
+                                "input": "$likes",
+                                "as": "l",
+                                "in": {
+                                    "$eq": [ "$$l.createdBy.username", username ]
+                                }
+                            }
+                        }]
+                    }
+                }
+            }
+        ]));
+
+        if (likeCheckResult.length > 0) {
+            likeCheckResult = likeCheckResult[0].isLiked
+        } else {
+            likeCheckResult = false;
+        }
+    } else {
+        console.log("YES COMMENT ID");
+        try {
+            // THIS ONE FUCKING WOKRS IN BOTH MONGOSH AND MONGOPLAYGROUND BUT NOT HERE FOR WHATEVER STUPID REASON.
+            // I SWEAR TO GOD I HAVE TRIPLE CHECKED VARIABLES BEING PASSED THROUGH.
+            // db.templates.aggregate([{"$match": { "_id": ObjectId("60fc1e3d7a89130008bf0475") }}, { "$project": { "filteredComments": { "$arrayElemAt": [{ "$filter": {"input": "$comments", "as": "c", "cond": { "$eq": [ "$$c._id", ObjectId("60fd373389d9130008b4fe0c") ] } }}, 0] } }}, { "$project":  { "isLiked": { "$anyElementTrue": [ { "$map": { "input": "$filteredComments.likes", "as": "l", "in": { "$eq": [ "$$l.createdBy.username", "bourkison" ] } } } ] } } } ])
+
+            // Apparently no changes detected.
+            console.log("Trying this shit:", docId, commentId);
+            likeCheckResult = (await Model.aggregate([
+                {
+                    "$match": { 
+                        "_id": docId 
+                    }
+                }, 
+                {
+                    "$project": { 
+                        "filteredComments": { 
+                            "$arrayElemAt": [{ 
+                                "$filter": {
+                                    "input": "$comments", 
+                                    "as": "c", 
+                                    "cond": { 
+                                        "$eq": [ "$$c._id", commentId ] 
+                                    } 
+                                }
+                            }, 0] 
+                        } 
+                    }
+                }, 
+                { 
+                    "$project":  { 
+                        "isLiked": { 
+                            "$anyElementTrue": [{ 
+                                "$map": { 
+                                    "input": "$filteredComments.likes", 
+                                    "as": "l", 
+                                    "in": { 
+                                        "$eq": [ "$$l.createdBy.username", username ] 
+                                    } 
+                                } 
+                            } 
+                        ]} 
+                    } 
+                } 
+            ]));
+
+            likeCheckResult = likeCheckResult[0].isLiked;
+        }
+        catch (err) {
+            console.error(err);
+            const errorResponse = "Error checking DB for isLiked." + JSON.stringify(likeCheckResult);
+            response.statusCode = 500;
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+        
+            return response;
+        }
+    }
+
+    console.log("LIKE CHECK RESULT:", likeCheckResult);
+
+    if (likeCheckResult) {
+        const errorResponse = "User has already liked this post: " + JSON.stringify(likeCheckResult);
+        response.statusCode = 403;
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+    
+        return response;
+    }
+
+    console.log("MADE IT PAST LIKE CHECK RESULT:", likeCheckResult);
+
+
     // Next push the like to the relevant document's likes array and increment likeCount by 1.
     const userReference = {
         userId: ObjectId(user._id),
@@ -158,22 +273,42 @@ const createLike = async function(event) {
     }
     
     const like = {
-        createdBy: userReference
+        createdBy: userReference,
+        _id: _id
     }
 
-    const collResult = await Model.updateOne(
-        {
-            "_id": _id
-        },
-        {
-            "$push": {
-                "likes": like
+
+    let collResult;
+    if (!commentId) {
+        collResult = await Model.updateOne(
+            {
+                "_id": docId
             },
-            "$inc": {
-                "likeCount": 1
+            {
+                "$push": {
+                    "likes": like
+                },
+                "$inc": {
+                    "likeCount": 1
+                }
             }
-        }
-    );
+        );
+    } else {
+        collResult = await Model.updateOne(
+            {
+                "_id": docId,
+                "comments._id": commentId
+            },
+            {
+                "$push": {
+                    "comments.$.likes": like
+                },
+                "$inc": {
+                    "comments.$.likeCount": 1
+                }
+            }
+        )
+    }
 
     if (!collResult) {
         const errorResponse = "No like created in collection.";
@@ -182,8 +317,10 @@ const createLike = async function(event) {
     }
 
     // Next push the likes reference to the user's likes array.
-    const likeReference = {
+    let likeReference = {
         coll: coll,
+        docId: docId,
+        commentId: (commentId) ? commentId : null,
         _id: _id
     }
 
@@ -215,8 +352,9 @@ const createLike = async function(event) {
 
 // DELETE request /like
 const deleteLike = async function(event) {
-    const _id = ObjectId(event.queryStringParameters._id);
+    const docId = ObjectId(event.queryStringParameters.docId);
     const coll = event.queryStringParameters.coll;
+    const commentId =  (event.queryStringParameters.commentId) ? ObjectId(event.queryStringParameters.commentId) : null;
     const username = event.requestContext.authorizer.claims['cognito:username'];
 
     let response = {
@@ -231,7 +369,7 @@ const deleteLike = async function(event) {
     let Model;
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    switch (coll) {
+    switch (coll.split("/")[0]) {
         case "exercise":
             Model = (await MongooseModels(MONGODB_URI)).Exercise;
             break;
@@ -252,21 +390,41 @@ const deleteLike = async function(event) {
     const user = await User.findOne({ username: username }, fields).exec();
 
     // Next pull user reference from relevant document's likes array and increment likeCount by -1.
-    const collResult = await Model.updateOne(
-        {
-            "_id": _id
-        },
-        {
-            "$pull": {
-                "likes": {
-                    "createdBy.userId": ObjectId(user._id)
-                }
+    let collResult;
+    if (!commentId) {
+        collResult = await Model.updateOne(
+            {
+                "_id": docId
             },
-            "$inc": {
-                "likeCount": -1
+            {
+                "$pull": {
+                    "likes": {
+                        "createdBy.userId": ObjectId(user._id)
+                    }
+                },
+                "$inc": {
+                    "likeCount": -1
+                }
             }
-        }
-    );
+        );
+    } else {
+        collResult = await Model.updateOne(
+            {
+                "_id": docId,
+                "comments._id": commentId
+            },
+            {
+                "$pull": {
+                    "comments.$.likes": {
+                        "createdBy.username": username
+                    }
+                },
+                "$inc": {
+                    "comments.$.likeCount": -1
+                }
+            }
+        )
+    }
 
     if (!collResult) {
         const errorResponse = "Couldn't delete like from collection";
@@ -276,21 +434,39 @@ const deleteLike = async function(event) {
     }
 
     // Next pull the likeReference from the user's likes array.
-    const userResult = await User.updateOne(
-        {
-            "username": username
-        },
-        {
-            "$pull": {
-                "likes": {
-                    "_id": _id
+    let userResult;
+    if (!commentId) {
+        userResult = await User.updateOne(
+            {
+                "username": username
+            },
+            {
+                "$pull": {
+                    "likes": {
+                        "docId": docId,
+                        "commentId": null
+                    }
                 }
             }
-        }
-    );
+        );
+    } else {
+        userResult = await User.updateOne(
+            {
+                "username": username,
+            },
+            {
+                "$pull": {
+                    "likes": {
+                        "docId": docId,
+                        "commentId": commentId
+                    }
+                }
+            }
+        )
+    }
 
     if (!userResult) {
-        const errorResponse = "Error deleting like in user: ";
+        const errorResponse = "Error deleting like in user.";
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
 
         return response;
