@@ -20,19 +20,23 @@
     }
   },
   "Resources": {
-    "LambdaLayerVersioncaa4a8a4": {
+    "LambdaLayerVersion289c8719": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
-        "CompatibleRuntimes": [
-          "nodejs14.x"
-        ],
+        "CompatibleRuntimes": {
+          "Ref": "runtimes"
+        },
         "Content": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"
           },
-          "S3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersioncaa4a8a4-build.zip"
+          "S3Key": {
+            "Ref": "s3Key"
+          }
         },
-        "Description": "Updated layer version 2021-07-23T12:12:21.506Z",
+        "Description": {
+          "Ref": "description"
+        },
         "LayerName": {
           "Fn::Sub": [
             "projectburnmongoosemodels-${env}",
@@ -47,7 +51,56 @@
       "DeletionPolicy": "Delete",
       "UpdateReplacePolicy": "Retain"
     },
-    "LambdaLayerPermissionPrivatecaa4a8a4": {
+    "LambdaLayerPermissionPrivate289c8719": {
+      "Type": "AWS::Lambda::LayerVersionPermission",
+      "Properties": {
+        "Action": "lambda:GetLayerVersion",
+        "LayerVersionArn": {
+          "Ref": "LambdaLayerVersion289c8719"
+        },
+        "Principal": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "LambdaLayerVersion14810474": {
+      "Type": "AWS::Lambda::LayerVersion",
+      "Properties": {
+        "CompatibleRuntimes": [
+          "nodejs14.x"
+        ],
+        "Content": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion14810474-build.zip"
+        },
+        "Description": "Updated layer version 2021-07-26T15:46:55.966Z",
+        "LayerName": {
+          "Fn::Sub": [
+            "projectburnmongoosemodels-${env}",
+            {
+              "env": {
+                "Ref": "env"
+              }
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Delete",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "LambdaLayerPermissionPrivate14810474": {
+      "Type": "AWS::Lambda::LayerVersionPermission",
+      "Properties": {
+        "Action": "lambda:GetLayerVersion",
+        "LayerVersionArn": "arn:aws:lambda:ap-southeast-2:586865842618:layer:projectburnmongoosemodels-dev:18",
+        "Principal": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "LambdaLayerPermissionPrivateLegacy16": {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "Properties": {
         "Action": "lambda:GetLayerVersion",
@@ -111,7 +164,7 @@
   "Outputs": {
     "Arn": {
       "Value": {
-        "Ref": "LambdaLayerVersioncaa4a8a4"
+        "Ref": "LambdaLayerVersion289c8719"
       }
     }
   }

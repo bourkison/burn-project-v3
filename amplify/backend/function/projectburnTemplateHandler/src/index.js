@@ -39,9 +39,10 @@ const getTemplate = async function(event) {
 const queryTemplate = async function(event) {
     const username = event.requestContext.authorizer.claims['cognito:username'];
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
+    const userBool = (event.queryStringParameters.user === 'true');
+    const muscleGroups =  (event.queryStringParameters.muscleGroups) ? event.queryStringParameters.muscleGroups.split(",") : null;
+    const tags = (event.queryStringParameters.tags) ? event.queryStringParameters.tags.split(",") : null;
     
-    const User = (await MongooseModels(MONGODB_URI)).User;
-
     let response = {
         statusCode: 500,
         headers: {
@@ -51,23 +52,124 @@ const queryTemplate = async function(event) {
         body: JSON.stringify({ success: false })
     }
 
-    // Pull loadAmount elements from templateReferences
-    const userResult = (await User.aggregate([
-        {
-            "$match": {
-                "username": username
-            }
-        },
-        {
+    let result;
+
+    if (userBool) {
+        const User = (await MongooseModels(MONGODB_URI)).User;
+
+        let templateQuery = [
+            {
+                "$match": {
+                    "username": username
+                }
+            },
+            {
+                "$project": {
+                    "templateReferences": 1,
+                    "username": 1
+                }
+            },
+        ];
+
+        if (muscleGroups) {
+            templateQuery.push({
+                "$addFields": {
+                    "inputMuscleGroups": muscleGroups
+                }
+            })
+
+            templateQuery.push({
+                "$project": {
+                    "username": 1,
+                    "templateReferences": {
+                        "$reduce": {
+                            "input": "$templateReferences",
+                            "initialValue": [],
+                            "in": {
+                                "$cond": [
+                                    {
+                                        "$setIsSubset": [ "$inputMuscleGroups", "$$this.muscleGroups" ]
+                                    },
+                                    {
+                                        "$concatArrays": [ "$$value", ["$$this"]]
+                                    },
+                                    "$$value"
+                                ]
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        if (tags) {
+            templateQuery.push({
+                "$addFields": {
+                    "inputTags": tags
+                }
+            })
+
+            templateQuery.push({
+                "$project": {
+                    "username": 1,
+                    "templateReferences": {
+                        "$reduce": {
+                            "input": "$templateReferences",
+                            "initialValue": [],
+                            "in": {
+                                "$cond": [
+                                    {
+                                        "$setIsSubset": [ "$inputTags", "$$this.tags" ]
+                                    },
+                                    {
+                                        "$concatArrays": [ "$$value", ["$$this"]]
+                                    },
+                                    "$$value"
+                                ]
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        templateQuery.push({
             "$project": {
                 "templateReferences": {
-                    "$slice": [ "$templateReferences", loadAmount ]
+                    "$slice": [ "$templateReferences", (0 - loadAmount) ]
                 }
             }
-        }
-    ]))[0].templateReferences.reverse();
+        })
 
-    if (!userResult) {
+        result = await User.aggregate(templateQuery);
+
+        if (result[0] && result[0].templateReferences) {
+            result = result[0].templateReferences.reverse()
+        } else {
+            result = [];
+        }
+    } else {
+        const Template = (await MongooseModels(MONGODB_URI)).Template;
+
+        let templateQuery = {};
+
+        if (muscleGroups) {
+            templateQuery.muscleGroups = {
+                "$all": muscleGroups
+            }
+        }
+
+        if (tags) {
+            templateQuery.tags = {
+                "$all": tags
+            }
+        }
+
+        let fields = "createdBy createdAt name tags muscleGroups updatedAt"
+        result = await Template.find(exerciseQuery, fields).sort({ "createdAt": 1 }).limit(loadAmount);
+    }
+
+    if (!result || !result.length) {
         const errorResponse = "Templates not found for user: " + username + ".";
         response.statusCode = 404;
         response.body = JSON.stringify({ success: false, errorMessage: errorResponse });

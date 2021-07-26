@@ -4,19 +4,19 @@
             <b-col sm="3">
                 <b-card class="navCard" no-body>
                         <b-list-group>
-                            <b-list-group-item class="navItem" ref="homeExerciseLink" to="/exercises" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" ref="homeExerciseLink" to="/exercises" active-class="unset">
                                 <div class="d-flex align-items-center">
                                     Exercises
                                     <b-icon-house class="ml-auto" />
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" ref="discoverExerciseLink" to="/exercises/discover" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" ref="discoverExerciseLink" to="/exercises/discover" active>
                                 <div class="d-flex align-items-center">
                                     Discover
                                     <b-icon-search class="ml-auto"/>
                                 </div>
                             </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/exercises/new" active-class="unset" exact-active-class="active">
+                            <b-list-group-item class="navItem" to="/exercises/new" active-class="unset">
                                 <div class="d-flex align-items-center">
                                     New
                                     <b-icon-plus class="ml-auto"/>
@@ -187,7 +187,7 @@ export default {
                 query.tags = this.selectedTags.join(",")
             }
 
-            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+            if (isFiltered) { this.$router.replace({ path: "/exercises/discover", query: query }) }
 
             this.downloadExercises();
         },
@@ -208,7 +208,7 @@ export default {
                 query.tags = this.selectedTags.join(",")
             }
 
-            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+            if (isFiltered) { this.$router.replace({ path: "/exercises/discover", query: query }) }
             this.downloadExercises();
         }
     }
