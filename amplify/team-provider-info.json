@@ -15,7 +15,7 @@
       "function": {
         "projectburnExerciseHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnExerciseHandler-6f4a7678695749543351-build.zip"
+          "s3Key": "amplify-builds/projectburnExerciseHandler-553772504653336d394b-build.zip"
         },
         "projectburnLikeHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",

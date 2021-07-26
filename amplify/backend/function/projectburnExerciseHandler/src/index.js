@@ -321,7 +321,7 @@ const deleteExercise = async function(event) {
         console.log("COMMENT TO DELETE:", comment);
         comment.likes.forEach(commentLike => {
             console.log("COMMENT LIKE TO DELETE:", commentLike);
-            const userId = ObjectId(commentLike.createdBy.userId);
+            const userId = ObjectId(commentLike.get('createdBy').userId);
 
             const query = User.updateOne({ "_id": userId }, {
                 "$pull": {
