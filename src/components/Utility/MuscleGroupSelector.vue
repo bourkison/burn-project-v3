@@ -1,20 +1,42 @@
 <template>
-    <div>            
-        <MuscleGroup v-bind:editable="true" v-bind:selectedGroups="selectedMuscleGroups" @mgClick="muscleGroupClickHandler"></MuscleGroup>
+    <div>
+        <MuscleGroup
+            v-bind:editable="true"
+            v-bind:selectedGroups="selectedMuscleGroups"
+            @mgClick="muscleGroupClickHandler"
+        ></MuscleGroup>
 
         <div>
-            <b-badge v-for="muscleGroup in selectedMuscleGroups" class="mgBadge" @click="pillRemove(muscleGroup)" variant="dark" :key="muscleGroup">{{ muscleGroup }}</b-badge>
+            <b-badge
+                v-for="muscleGroup in selectedMuscleGroups"
+                class="mgBadge"
+                @click="pillRemove(muscleGroup)"
+                variant="dark"
+                :key="muscleGroup"
+                >{{ muscleGroup }}</b-badge
+            >
         </div>
 
         <div class="datalistCont">
-            <b-form-input list="muscleGroupList" id="inputWithList" placeholder="Select muscle groups..." autocomplete="off" size="sm" v-model="inputText" @select="datalistAdd"></b-form-input>
-            <b-form-datalist id="muscleGroupList" :options="availableMuscleGroups"></b-form-datalist>
+            <b-form-input
+                list="muscleGroupList"
+                id="inputWithList"
+                placeholder="Select muscle groups..."
+                autocomplete="off"
+                size="sm"
+                v-model="inputText"
+                @select="datalistAdd"
+            ></b-form-input>
+            <b-form-datalist
+                id="muscleGroupList"
+                :options="availableMuscleGroups"
+            ></b-form-datalist>
         </div>
     </div>
 </template>
 
 <script>
-import MuscleGroup from '@/components/Utility/MuscleGroup.vue'
+import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 
 export default {
     name: "MuscleGroupSelect",
@@ -23,18 +45,33 @@ export default {
         initMgs: {
             type: Array,
             required: false
-        },
+        }
     },
-    data() { 
+    data() {
         return {
-            inputText: '',
+            inputText: "",
             // Selected Muscle Groups is all selected.
             // All is all possible.
             // Available is non selected.
-            allMuscleGroups: ["Trapezius","Deltoids","Forearms","Lats","Abs","Obliques","Pectorals","Adductors","Calves","Hamstrings","Glutes","Quads","Triceps","Biceps"],
+            allMuscleGroups: [
+                "Trapezius",
+                "Deltoids",
+                "Forearms",
+                "Lats",
+                "Abs",
+                "Obliques",
+                "Pectorals",
+                "Adductors",
+                "Calves",
+                "Hamstrings",
+                "Glutes",
+                "Quads",
+                "Triceps",
+                "Biceps"
+            ],
             availableMuscleGroups: [],
             selectedMuscleGroups: []
-        }
+        };
     },
 
     mounted: function() {
@@ -45,29 +82,37 @@ export default {
 
             this.$props.initMgs.forEach(mg => {
                 // Remove from available.
-                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== mg);
-            })
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(
+                    x => x !== mg
+                );
+            });
         }
-
     },
 
     methods: {
         datalistAdd: function(e) {
-            if (this.inputText.trim() !== '' && this.availableMuscleGroups.includes(this.inputText)) {
+            if (
+                this.inputText.trim() !== "" &&
+                this.availableMuscleGroups.includes(this.inputText)
+            ) {
                 // Add selected to selectedMuscleGroups.
                 this.selectedMuscleGroups.push(e.target.value);
-                
+
                 // Remove from available.
-                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== e.target.value);
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(
+                    x => x !== e.target.value
+                );
             }
 
-            this.inputText = '';
+            this.inputText = "";
             // document.activeElement.blur();
         },
 
         pillRemove: function(mg) {
-            this.selectedMuscleGroups = this.selectedMuscleGroups.filter(x => x !== mg);
-            this.availableMuscleGroups.push(mg)
+            this.selectedMuscleGroups = this.selectedMuscleGroups.filter(
+                x => x !== mg
+            );
+            this.availableMuscleGroups.push(mg);
         },
 
         muscleGroupClickHandler: function(id) {
@@ -76,15 +121,19 @@ export default {
                 this.selectedMuscleGroups.push(id);
 
                 // Remove from available.
-                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== id);
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(
+                    x => x !== id
+                );
             } else {
                 // Remove from selected.
-                this.selectedMuscleGroups = this.selectedMuscleGroups.filter(x => x !== id);
+                this.selectedMuscleGroups = this.selectedMuscleGroups.filter(
+                    x => x !== id
+                );
 
                 // Add to available.
                 this.availableMuscleGroups.push(id);
             }
-        },
+        }
     },
 
     watch: {
@@ -92,24 +141,24 @@ export default {
             this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         }
     }
-}
+};
 </script>
 
 <style scoped>
-    .datalistCont {
-        margin-top: 15px;
-    }
+.datalistCont {
+    margin-top: 15px;
+}
 
-    .muscleGroupsCont {
-        margin-top: 10px;
-        padding-top:10px
-    }
+.muscleGroupsCont {
+    margin-top: 10px;
+    padding-top: 10px;
+}
 
-    .mgBadge {
-        margin: 0 2px;
-    }
+.mgBadge {
+    margin: 0 2px;
+}
 
-    .mgBadge:hover {
-        cursor: pointer;
-    }
+.mgBadge:hover {
+    cursor: pointer;
+}
 </style>

@@ -1,14 +1,27 @@
 <template>
     <b-card no-body class="mb-1 exerciseExpandableItem">
         <b-card-header header-tag="header" class="p-1" role="tab">
-            <b-button block v-b-toggle="templateId + '_' + accordionIndex + '_accordion'" variant="outlined" class="d-flex" size="sm">
+            <b-button
+                block
+                v-b-toggle="templateId + '_' + accordionIndex + '_accordion'"
+                variant="outlined"
+                class="d-flex"
+                size="sm"
+            >
                 {{ exercise.name }}
-                <strong v-if="isVisible" aria-hidden="true" class="ml-auto">-</strong>
+                <strong v-if="isVisible" aria-hidden="true" class="ml-auto"
+                    >-</strong
+                >
                 <strong v-else aria-hidden="true" class="ml-auto">+</strong>
             </b-button>
         </b-card-header>
 
-        <b-collapse :id="templateId + '_' + accordionIndex + '_accordion'" accordion="my-accordion" role="tabpanel" v-model="isVisible">
+        <b-collapse
+            :id="templateId + '_' + accordionIndex + '_accordion'"
+            accordion="my-accordion"
+            role="tabpanel"
+            v-model="isVisible"
+        >
             <b-card-body>
                 <div v-if="!isLoading">
                     <Viewer :initialValue="exerciseData.description" />
@@ -22,11 +35,11 @@
 </template>
 
 <script>
-import { Viewer } from '@toast-ui/vue-editor'
-import { API } from 'aws-amplify'
+import { Viewer } from "@toast-ui/vue-editor";
+import { API } from "aws-amplify";
 
 export default {
-    name: 'ExerciseExpandable',
+    name: "ExerciseExpandable",
     components: { Viewer },
     props: {
         exercise: {
@@ -53,7 +66,7 @@ export default {
             isLoading: true,
 
             isVisible: false
-        }
+        };
     },
 
     created: function() {
@@ -65,29 +78,47 @@ export default {
     methods: {
         downloadData: async function() {
             try {
-                const path = '/exercise/' + this.$props.exercise.exerciseId;
+                const path = "/exercise/" + this.$props.exercise.exerciseId;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
                     }
-                }
+                };
 
-                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
-                    throw new Error("Error downloading exercise: " + this.$props.exercise.exerciseId + " at promise catch: " + err);
+                const response = await API.get(
+                    this.$store.state.apiName,
+                    path,
+                    myInit
+                ).catch(err => {
+                    throw new Error(
+                        "Error downloading exercise: " +
+                            this.$props.exercise.exerciseId +
+                            " at promise catch: " +
+                            err
+                    );
                 });
 
                 if (!response) {
-                    throw new Error("Error downloading exercise: " + this.$props.exercise.exerciseId + " no repsonse");
+                    throw new Error(
+                        "Error downloading exercise: " +
+                            this.$props.exercise.exerciseId +
+                            " no repsonse"
+                    );
                 }
 
                 if (!response.success) {
-                    throw new Error("Error downloading exercise: " + this.$props.exercise.exerciseId + " call unsuccessful: " + response.errorMessage);
+                    throw new Error(
+                        "Error downloading exercise: " +
+                            this.$props.exercise.exerciseId +
+                            " call unsuccessful: " +
+                            response.errorMessage
+                    );
                 }
 
                 this.exerciseData = response.data;
                 this.isLoading = false;
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         }
@@ -101,7 +132,7 @@ export default {
             }
         }
     }
-}
+};
 </script>
 
 <style scoped>

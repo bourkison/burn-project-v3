@@ -6,10 +6,20 @@
                     <b-card class="newTemplateCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{ newTemplateData.name ? newTemplateData.name : oldTemplateData.name }}
+                                {{
+                                    newTemplateData.name
+                                        ? newTemplateData.name
+                                        : oldTemplateData.name
+                                }}
                             </b-card-title>
                             <b-form-group label="Name" label-for="nameInput">
-                                <b-form-input id="nameInput" v-model="newTemplateData.name" type="text" placeholder="Template Name" required />
+                                <b-form-input
+                                    id="nameInput"
+                                    v-model="newTemplateData.name"
+                                    type="text"
+                                    placeholder="Template Name"
+                                    required
+                                />
                             </b-form-group>
                         </b-card-body>
                     </b-card>
@@ -17,14 +27,28 @@
                     <b-card no-body class="exerciseSelectCard">
                         <b-card-body>
                             <h5>Exercises</h5>
-                            <TemplateBuilder @updateExercises="updateExercises" :initExercises="oldTemplateData.exerciseReferences" />
+                            <TemplateBuilder
+                                @updateExercises="updateExercises"
+                                :initExercises="
+                                    oldTemplateData.exerciseReferences
+                                "
+                            />
                         </b-card-body>
                     </b-card>
 
                     <b-card no-body class="descriptionCard">
                         <b-card-body>
                             <h5>Description</h5>
-                            <Editor @change="updateDescription" id="descriptionInput" ref="toastuiEditor" :options="editorOptions" :initialValue="oldTemplateData.description" height="300px" initialEditType="wysiwyg" previewStyle="vertical" />
+                            <Editor
+                                @change="updateDescription"
+                                id="descriptionInput"
+                                ref="toastuiEditor"
+                                :options="editorOptions"
+                                :initialValue="oldTemplateData.description"
+                                height="300px"
+                                initialEditType="wysiwyg"
+                                previewStyle="vertical"
+                            />
                         </b-card-body>
                     </b-card>
                 </b-container>
@@ -35,21 +59,30 @@
                     <b-card class="difficultySelectCard" no-body>
                         <b-card-body>
                             <h5>Difficulty</h5>
-                            <DifficultySelector @updateDifficulty="updateDifficulty" :initDifficulty="oldTemplateData.difficulty" />
+                            <DifficultySelector
+                                @updateDifficulty="updateDifficulty"
+                                :initDifficulty="oldTemplateData.difficulty"
+                            />
                         </b-card-body>
                     </b-card>
 
                     <b-card class="muscleGroupSelectCard" no-body>
                         <b-card-body>
                             <h5>Muscle Groups</h5>
-                            <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" :initMgs="oldTemplateData.muscleGroups" />
+                            <MuscleGroupSelector
+                                @updateMuscleGroups="updateMuscleGroups"
+                                :initMgs="oldTemplateData.muscleGroups"
+                            />
                         </b-card-body>
                     </b-card>
 
                     <b-card class="tagSelectCard" no-body>
                         <b-card-body>
                             <h5>Add Tags</h5>
-                            <TagSelector @updateTags="updateTags" :initTags="oldTemplateData.tags" />
+                            <TagSelector
+                                @updateTags="updateTags"
+                                :initTags="oldTemplateData.tags"
+                            />
                         </b-card-body>
                     </b-card>
                 </b-container>
@@ -58,9 +91,19 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger" @click="$router.push('/templates/' + newTemplateData.id)">Cancel</b-button>
-                    <b-button variant="outline-primary" @click="updateTemplate" :disabled="isUpdating">
-                        <span v-if="isUpdating"><b-spinner small /></span>
+                    <b-button
+                        variant="outline-danger"
+                        @click="
+                            $router.push('/templates/' + newTemplateData.id)
+                        "
+                        >Cancel</b-button
+                    >
+                    <b-button
+                        variant="outline-primary"
+                        @click="updateTemplate"
+                        :disabled="isUpdating"
+                    >
+                        <span v-if="isUpdating"><b-spinner small/></span>
                         <span v-else>Update</span>
                     </b-button>
                 </b-container>
@@ -84,18 +127,23 @@
 </template>
 
 <script>
-import { API } from 'aws-amplify'
-import { Editor } from '@toast-ui/vue-editor'
+import { API } from "aws-amplify";
+import { Editor } from "@toast-ui/vue-editor";
 
-import TagSelector from '@/components/Utility/TagSelector.vue'
-import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
-import DifficultySelector from '@/components/Utility/DifficultySelector.vue'
-import TemplateBuilder from '@/components/Template/TemplateBuilder.vue'
-
+import TagSelector from "@/components/Utility/TagSelector.vue";
+import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
+import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
+import TemplateBuilder from "@/components/Template/TemplateBuilder.vue";
 
 export default {
-    name: 'TemplateEdit',
-    components: { Editor, TagSelector, MuscleGroupSelector, DifficultySelector, TemplateBuilder },
+    name: "TemplateEdit",
+    components: {
+        Editor,
+        TagSelector,
+        MuscleGroupSelector,
+        DifficultySelector,
+        TemplateBuilder
+    },
     data() {
         return {
             isLoading: true,
@@ -107,31 +155,31 @@ export default {
 
             // Editor:
             editorOptions: {
-                minHeight: '300px',
-                language: 'en-US',
+                minHeight: "300px",
+                language: "en-US",
                 hideModeSwitch: true,
                 usageStatistics: false,
                 toolbarItems: [
-                    'heading',
-                    'bold',
-                    'italic',
-                    'divider',
-                    'link',
-                    'ul',
-                    'ol',
-                    'quote',
-                    'divider',
-                    'indent',
-                    'outdent',
-                    'hr'
+                    "heading",
+                    "bold",
+                    "italic",
+                    "divider",
+                    "link",
+                    "ul",
+                    "ol",
+                    "quote",
+                    "divider",
+                    "indent",
+                    "outdent",
+                    "hr"
                 ]
             },
 
             // Errror handling:
             errorCountdown: 0,
-            errorMessage: '',
+            errorMessage: "",
             errorInterval: null
-        }
+        };
     },
 
     created: function() {
@@ -150,25 +198,44 @@ export default {
                 this.templateExists = false;
                 this.oldTemplateData = null;
                 this.newTemplateData = null;
-    
-                const path = '/template/' + this.$route.params.templateid;
+
+                const path = "/template/" + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
                     }
-                }
+                };
 
-                const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                const response = await API.get(
+                    this.$store.state.apiName,
+                    path,
+                    myInit
+                ).catch(err => {
                     console.error(err);
-                    throw new Error("Error downloading template: " + this.$route.params.templateid + " at promise catch: " + (JSON.parse(err.response).message || err));
-                })
+                    throw new Error(
+                        "Error downloading template: " +
+                            this.$route.params.templateid +
+                            " at promise catch: " +
+                            (JSON.parse(err.response).message || err)
+                    );
+                });
 
                 if (!response) {
-                    throw new Error("Error downloading template: " + this.$route.params.templateid + " no response");
+                    throw new Error(
+                        "Error downloading template: " +
+                            this.$route.params.templateid +
+                            " no response"
+                    );
                 }
 
                 if (!response.success) {
-                    throw new Error("Error downloading template: " + this.$route.params.templateid + " call unsuccessful: " + response.message);
+                    throw new Error(
+                        "Error downloading template: " +
+                            this.$route.params.templateid +
+                            " call unsuccessful: " +
+                            response.message
+                    );
                 }
 
                 this.isLoading = false;
@@ -176,8 +243,7 @@ export default {
                 console.log("RESPONSE:", response);
                 this.newTemplateData = response.data;
                 this.oldTemplateData = response.data;
-            }
-            catch(err) {
+            } catch (err) {
                 console.error(err);
             }
         },
@@ -185,19 +251,27 @@ export default {
         updateTemplate: async function() {
             try {
                 this.isUpdating = true;
-                console.log("Updating with:", JSON.stringify(this.newTemplateData));
-    
-                const path = '/template/' + this.$route.params.templateid;
+                console.log(
+                    "Updating with:",
+                    JSON.stringify(this.newTemplateData)
+                );
+
+                const path = "/template/" + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
                     },
                     body: {
                         templateForm: this.newTemplateData
                     }
-                }
-    
-                const response = await API.put(this.$store.state.apiName, path, myInit).catch(err => {
+                };
+
+                const response = await API.put(
+                    this.$store.state.apiName,
+                    path,
+                    myInit
+                ).catch(err => {
                     throw new Error("at promise catch: " + err);
                 });
 
@@ -211,7 +285,6 @@ export default {
 
                 this.isUpdating = false;
                 this.$router.push("/templates/" + response.data._id);
-
             } catch (err) {
                 this.isUpdating = false;
                 this.displayError(err);
@@ -219,7 +292,9 @@ export default {
         },
 
         updateDescription: function() {
-            this.newTemplateData.description = this.$refs.toastuiEditor.invoke('getMarkdown');
+            this.newTemplateData.description = this.$refs.toastuiEditor.invoke(
+                "getMarkdown"
+            );
         },
 
         updateTags: function(tags) {
@@ -238,7 +313,7 @@ export default {
             let temp = [];
             exercises.forEach(exercise => {
                 temp.push({ id: exercise.id, name: exercise.name });
-            })
+            });
 
             this.newTemplateData.exercises = temp;
         },
@@ -246,11 +321,12 @@ export default {
         displayError: function(err) {
             this.errorCountdown = 30;
             console.error(err);
-            this.errorMessage = "Oops, an error has occured... Please try again later.";
+            this.errorMessage =
+                "Oops, an error has occured... Please try again later.";
 
             this.errorInterval = window.setInterval(() => {
-                if (this.errorCountdown > 0) {    
-                    this.errorCountdown -= 1
+                if (this.errorCountdown > 0) {
+                    this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
                     this.errorInterval = null;
@@ -258,7 +334,7 @@ export default {
             }, 1000);
         }
     }
-}
+};
 </script>
 
 <style scoped>

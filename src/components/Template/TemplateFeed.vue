@@ -1,19 +1,33 @@
 <template>
     <div v-if="!isLoading">
-        <TemplateComponent class="template" v-for="(template, index) in templates" :templateId="template.templateId ? template.templateId : template._id" :key="template._id" :skeletonAmount="skeleton[index][0]" :skeletonWidth="skeleton[index][1]" />
+        <TemplateComponent
+            class="template"
+            v-for="(template, index) in templates"
+            :templateId="
+                template.templateId ? template.templateId : template._id
+            "
+            :key="template._id"
+            :skeletonAmount="skeleton[index][0]"
+            :skeletonWidth="skeleton[index][1]"
+        />
     </div>
     <div v-else>
-        <LoadingComponent class="template" v-for="(s, i) in skeleton" :key="i" :skeletonAmount="s[0]" :skeletonWidth="s[1]" />
+        <LoadingComponent
+            class="template"
+            v-for="(s, i) in skeleton"
+            :key="i"
+            :skeletonAmount="s[0]"
+            :skeletonWidth="s[1]"
+        />
     </div>
 </template>
 
 <script>
-import TemplateComponent from '@/components/Template/TemplateComponent.vue'
-import LoadingComponent from '@/components/Utility/LoadingComponent.vue'
-
+import TemplateComponent from "@/components/Template/TemplateComponent.vue";
+import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
 
 export default {
-    name: 'TemplateFeed',
+    name: "TemplateFeed",
     components: { TemplateComponent, LoadingComponent },
     props: {
         templates: {
@@ -29,25 +43,27 @@ export default {
         return {
             skeleton: [],
             loadAmount: 5
-        }
+        };
     },
 
     created: function() {
-        for (let i = 0; i < this.loadAmount; i ++) {
-            let amount = (Math.floor(Math.random() * 4) + 3);
+        for (let i = 0; i < this.loadAmount; i++) {
+            let amount = Math.floor(Math.random() * 4) + 3;
             let widths = [];
 
-            for (let j = 0; j < amount; j ++) {
-                widths.push((Math.floor(Math.random() * 50) + 50).toString() + '%');
+            for (let j = 0; j < amount; j++) {
+                widths.push(
+                    (Math.floor(Math.random() * 50) + 50).toString() + "%"
+                );
             }
             this.skeleton.push([amount, widths]);
         }
     }
-}
+};
 </script>
 
 <style scoped>
-    .template {
-        margin-bottom: 25px;
-    }
+.template {
+    margin-bottom: 25px;
+}
 </style>

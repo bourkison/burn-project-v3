@@ -1,23 +1,59 @@
 <template>
     <b-nav-form @submit.prevent="searchPage">
-        <b-form-input v-model="searchText" @focus="showPopover" @change="showPopover" @blur="hidePopover" id="testInput" placeholder="Search exercises, templates, users..." size="sm" debounce="250" />
+        <b-form-input
+            v-model="searchText"
+            @focus="showPopover"
+            @change="showPopover"
+            @blur="hidePopover"
+            id="testInput"
+            placeholder="Search exercises, templates, users..."
+            size="sm"
+            debounce="250"
+        />
 
-        <b-popover id="mainSearchPopover" target="testInput" :show.sync="displayPopover" placement="bottomright" triggers="manual" custom-class="searchPopover">
+        <b-popover
+            id="mainSearchPopover"
+            target="testInput"
+            :show.sync="displayPopover"
+            placement="bottomright"
+            triggers="manual"
+            custom-class="searchPopover"
+        >
             <div v-if="!isLoading && searchText">
-                <div v-if="userResponses.length > 0" :class="(templateResponses.length > 0 || exerciseResponses.length > 0) ? 'mb-2' : ''">
+                <div
+                    v-if="userResponses.length > 0"
+                    :class="
+                        templateResponses.length > 0 ||
+                        exerciseResponses.length > 0
+                            ? 'mb-2'
+                            : ''
+                    "
+                >
                     <h6>Users</h6>
                     <b-list-group>
-                        <b-list-group-item v-for="user in userResponses" :key="user.id" :to="'/' + user.username" class="p-2">
+                        <b-list-group-item
+                            v-for="user in userResponses"
+                            :key="user.id"
+                            :to="'/' + user.username"
+                            class="p-2"
+                        >
                             <b-avatar class="mr-2" :src="user.profilePhoto" />
                             {{ user.username }}
                         </b-list-group-item>
                     </b-list-group>
                 </div>
 
-                <div v-if="exerciseResponses.length > 0" :class="templateResponses.length > 0 ? 'mb-2' : ''">
+                <div
+                    v-if="exerciseResponses.length > 0"
+                    :class="templateResponses.length > 0 ? 'mb-2' : ''"
+                >
                     <h6>Exercises</h6>
                     <b-list-group>
-                        <b-list-group-item v-for="exercise in exerciseResponses" :key="exercise.objectID" :to="'/exercises/' + exercise.objectID">
+                        <b-list-group-item
+                            v-for="exercise in exerciseResponses"
+                            :key="exercise.objectID"
+                            :to="'/exercises/' + exercise.objectID"
+                        >
                             {{ exercise.name }}
                         </b-list-group-item>
                     </b-list-group>
@@ -26,7 +62,11 @@
                 <div v-if="templateResponses.length > 0">
                     <h6>Templates</h6>
                     <b-list-group>
-                        <b-list-group-item v-for="template in templateResponses" :key="template.objectID" :to="'/templates/' + template.objectID">
+                        <b-list-group-item
+                            v-for="template in templateResponses"
+                            :key="template.objectID"
+                            :to="'/templates/' + template.objectID"
+                        >
                             {{ template.name }}
                         </b-list-group-item>
                     </b-list-group>
@@ -45,14 +85,14 @@
 </template>
 
 <script>
-import algoliasearch from 'algoliasearch'
+import algoliasearch from "algoliasearch";
 
 export default {
-    name: 'MainSearch',
+    name: "MainSearch",
     data() {
         return {
             isLoading: false,
-            searchText: '',
+            searchText: "",
 
             userResponses: [],
             exerciseResponses: [],
@@ -68,8 +108,8 @@ export default {
             ),
             userIndex: null,
             exerciseIndex: null,
-            templateIndex: null,
-        }
+            templateIndex: null
+        };
     },
 
     created: function() {
@@ -84,14 +124,16 @@ export default {
         },
 
         hidePopover: function() {
-            this.$nextTick(() => { this.displayPopover = false });
+            this.$nextTick(() => {
+                this.displayPopover = false;
+            });
         },
 
         searchPage: function() {
             const encodedSearch = encodeURIComponent(this.searchText.trim());
             this.displayPopover = false;
             document.activeElement.blur();
-            
+
             this.$router.push("/search?q=" + encodedSearch);
         }
     },
@@ -107,44 +149,59 @@ export default {
             this.templateResponses = [];
 
             if (this.searchText.trim()) {
-                searchPromises.push(this.userIndex.search(this.searchText).then(responses => {
-                    responses.hits.forEach(hit => {
-                        this.userResponses.push(hit);
+                searchPromises.push(
+                    this.userIndex.search(this.searchText).then(responses => {
+                        responses.hits.forEach(hit => {
+                            this.userResponses.push(hit);
+                        });
                     })
-                }))
+                );
 
-                searchPromises.push(this.exerciseIndex.search(this.searchText).then(responses => {
-                    responses.hits.forEach(hit => {
-                        this.exerciseResponses.push(hit);
-                    })
-                }))
+                searchPromises.push(
+                    this.exerciseIndex
+                        .search(this.searchText)
+                        .then(responses => {
+                            responses.hits.forEach(hit => {
+                                this.exerciseResponses.push(hit);
+                            });
+                        })
+                );
 
-                searchPromises.push(this.templateIndex.search(this.searchText).then(responses => {
-                    responses.hits.forEach(hit => {
-                        this.templateResponses.push(hit);
-                    })
-                }))
+                searchPromises.push(
+                    this.templateIndex
+                        .search(this.searchText)
+                        .then(responses => {
+                            responses.hits.forEach(hit => {
+                                this.templateResponses.push(hit);
+                            });
+                        })
+                );
 
-                Promise.all(searchPromises)
-                .then(() => {
-                    console.log("USER RESPONSES:", this.userResponses, "EXERCISE RESPONSES:", this.exerciseResponses, "TEMPLATE RESPONSES:", this.templateResponses);
+                Promise.all(searchPromises).then(() => {
+                    console.log(
+                        "USER RESPONSES:",
+                        this.userResponses,
+                        "EXERCISE RESPONSES:",
+                        this.exerciseResponses,
+                        "TEMPLATE RESPONSES:",
+                        this.templateResponses
+                    );
                     this.isLoading = false;
-                })
+                });
             } else {
                 this.isLoading = false;
             }
         }
     }
-}
+};
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
 
 <style>
-    .searchPopover {
-        left: -100px !important;
-        width: 350px !important;
-        max-width: 350px !important;
-    }
+.searchPopover {
+    left: -100px !important;
+    width: 350px !important;
+    max-width: 350px !important;
+}
 </style>

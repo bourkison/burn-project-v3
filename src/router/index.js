@@ -1,76 +1,75 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import Vue from "vue";
+import VueRouter from "vue-router";
 // import store from '@/store'
 
-import Home from '@/views/Home.vue'
+import Home from "@/views/Home.vue";
 
-import Workout from '@/views/Workout/Workout.vue'
-import WorkoutNew from '@/views/Workout/WorkoutNew.vue'
-import WorkoutRecent from '@/views/Workout/WorkoutRecent.vue'
-import WorkoutView from '@/views/Workout/WorkoutView.vue'
+import Workout from "@/views/Workout/Workout.vue";
+import WorkoutNew from "@/views/Workout/WorkoutNew.vue";
+import WorkoutRecent from "@/views/Workout/WorkoutRecent.vue";
+import WorkoutView from "@/views/Workout/WorkoutView.vue";
 
-import ExerciseDiscover from '@/views/Exercise/ExerciseDiscover.vue'
-import ExerciseEdit from '@/views/Exercise/ExerciseEdit.vue'
-import ExerciseFollowed from '@/views/Exercise/ExerciseFollowed.vue'
-import ExerciseNew from '@/views/Exercise/ExerciseNew.vue'
-import ExerciseView from '@/views/Exercise/ExerciseView.vue'
+import ExerciseDiscover from "@/views/Exercise/ExerciseDiscover.vue";
+import ExerciseEdit from "@/views/Exercise/ExerciseEdit.vue";
+import ExerciseFollowed from "@/views/Exercise/ExerciseFollowed.vue";
+import ExerciseNew from "@/views/Exercise/ExerciseNew.vue";
+import ExerciseView from "@/views/Exercise/ExerciseView.vue";
 
-import Profile from '@/views/User/Profile.vue'
+import Profile from "@/views/User/Profile.vue";
 
-import Search from '@/views/Utility/Search.vue'
+import Search from "@/views/Utility/Search.vue";
 
 // import Template from '@/views/Template/Template.vue'
-import TemplateDiscover from '@/views/Template/TemplateDiscover.vue'
-import TemplateEdit from '@/views/Template/TemplateEdit.vue'
-import TemplateFollowed from '@/views/Template/TemplateFollowed.vue'
-import TemplateNew from '@/views/Template/TemplateNew.vue'
-import TemplateView from '@/views/Template/TemplateView.vue'
+import TemplateDiscover from "@/views/Template/TemplateDiscover.vue";
+import TemplateEdit from "@/views/Template/TemplateEdit.vue";
+import TemplateFollowed from "@/views/Template/TemplateFollowed.vue";
+import TemplateNew from "@/views/Template/TemplateNew.vue";
+import TemplateView from "@/views/Template/TemplateView.vue";
 
-
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
     {
-        path: '/',
-        name: 'Home',
+        path: "/",
+        name: "Home",
         component: Home
     },
     // EXERCISES
     {
-        path: '/exercises/discover',
-        name: 'Discover Exercises',
+        path: "/exercises/discover",
+        name: "Discover Exercises",
         component: ExerciseDiscover,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/exercises',
-        name: 'Followed Exercises',
+        path: "/exercises",
+        name: "Followed Exercises",
         component: ExerciseFollowed,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/exercises/new',
-        name: 'New Exercise',
+        path: "/exercises/new",
+        name: "New Exercise",
         component: ExerciseNew,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/exercises/:exerciseid',
-        name: 'View Exercise',
+        path: "/exercises/:exerciseid",
+        name: "View Exercise",
         component: ExerciseView,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/exercises/:exerciseid/edit',
-        name: 'Edit Exercise',
+        path: "/exercises/:exerciseid/edit",
+        name: "Edit Exercise",
         component: ExerciseEdit,
         meta: {
             requiresAuth: true
@@ -78,40 +77,40 @@ const routes = [
     },
     // TEMPLATES
     {
-        path: '/templates/discover',
-        name: 'Discover Templates',
+        path: "/templates/discover",
+        name: "Discover Templates",
         component: TemplateDiscover,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/templates',
-        name: 'Followed Templates',
+        path: "/templates",
+        name: "Followed Templates",
         component: TemplateFollowed,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/templates/new',
-        name: 'New Template',
+        path: "/templates/new",
+        name: "New Template",
         component: TemplateNew,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/templates/:templateid',
-        name: 'View Template',
+        path: "/templates/:templateid",
+        name: "View Template",
         component: TemplateView,
         meta: {
             requiresAuth: true
         }
     },
     {
-        path: '/templates/:templateid/edit',
-        name: 'Edit Template',
+        path: "/templates/:templateid/edit",
+        name: "Edit Template",
         component: TemplateEdit,
         meta: {
             requiresAuth: true
@@ -119,34 +118,34 @@ const routes = [
     },
     // WORKOUT
     {
-        path: '/workout',
-        name: 'Workout',
+        path: "/workout",
+        name: "Workout",
         component: Workout,
         meta: {
             requiresAuth: true
         },
         children: [
             {
-                path: '/workout/new',
-                name: 'New Workout',
+                path: "/workout/new",
+                name: "New Workout",
                 component: WorkoutNew
             },
             {
-                path: '/workout/recent',
-                name: 'WorkoutRecent',
-                component: WorkoutRecent,
+                path: "/workout/recent",
+                name: "WorkoutRecent",
+                component: WorkoutRecent
             },
             {
-                path: '/workout',
-                name: 'Workout View',
+                path: "/workout",
+                name: "Workout View",
                 component: WorkoutView
-            },
+            }
         ]
     },
     // SEARCH
     {
-        path: '/search',
-        name: 'Search',
+        path: "/search",
+        name: "Search",
         component: Search,
         meta: {
             requiresAuth: true
@@ -154,17 +153,17 @@ const routes = [
     },
     // USER + 404
     {
-        path: '/:profileid',
-        name: 'Profile',
-        component: Profile,
+        path: "/:profileid",
+        name: "Profile",
+        component: Profile
     }
-]
+];
 
 const router = new VueRouter({
-    mode: 'history',
+    mode: "history",
     base: process.env.BASE_URL,
     routes
-})
+});
 
 // This function checks if user is logged in based on route metadata.
 // Calls a promise in firebase.js to wait for user to log in (if on initial load).
@@ -179,6 +178,6 @@ router.beforeEach(async (to, from, next) => {
 
     // next();
     next();
-})
+});
 
-export default router
+export default router;

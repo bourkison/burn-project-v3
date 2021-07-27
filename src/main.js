@@ -1,54 +1,68 @@
-import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
 
-import Amplify from 'aws-amplify'
-import aws_exports from './aws-exports'
-import { Auth, Hub } from 'aws-amplify'
+import Amplify from "aws-amplify";
+import aws_exports from "./aws-exports";
+import { Auth, Hub } from "aws-amplify";
 
-import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
+import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
 
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-vue/dist/bootstrap-vue.css";
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
 
 Amplify.configure(aws_exports);
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
 new Vue({
     router,
     store,
     render: h => h(App)
-}).$mount('#app')
+}).$mount("#app");
 
 // Check if user logs in or out.
 // If log in we also fetch the user document, else we commit user data to equal null.
-Hub.listen('auth', async ({ payload: { event, data }}) => {
-    switch(event) {
+Hub.listen("auth", async ({ payload: { event, data } }) => {
+    switch (event) {
         case "signIn":
             console.log("SIGNEDIN");
-            await this.$store.dispatch('fetchUser', data);
+            await this.$store.dispatch("fetchUser", data);
             break;
         case "signOut":
             console.log("SIGNEDOUT");
-            this.$store.commit('setLoggedInUser', { loggedIn: false, data: data, docData: data });
+            this.$store.commit("setLoggedInUser", {
+                loggedIn: false,
+                data: data,
+                docData: data
+            });
             break;
         default:
             console.log("Unhandled Auth Hub use case:", event);
             break;
     }
-})
-
-Auth.currentSession().then(user => {
-    if (user) {
-        store.dispatch('fetchUser', user);
-    } else {
-        store.commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
-    }
-}).catch(() => {
-    store.commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
 });
+
+Auth.currentSession()
+    .then(user => {
+        if (user) {
+            store.dispatch("fetchUser", user);
+        } else {
+            store.commit("setLoggedInUser", {
+                loggedIn: false,
+                data: null,
+                docData: null
+            });
+        }
+    })
+    .catch(() => {
+        store.commit("setLoggedInUser", {
+            loggedIn: false,
+            data: null,
+            docData: null
+        });
+    });

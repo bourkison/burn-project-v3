@@ -3,14 +3,61 @@
         <b-row>
             <b-col sm="12" align-v="center" class="d-flex">
                 <span>
-                    <b-icon-heart class="ml-1 mr-1 icon" font-scale="1.4" v-if="!isLiked" @click="toggleLike" /><b-icon-heart-fill class="ml-1 mr-1 icon" font-scale="1.4" variant="danger" v-else @click="toggleLike" />
-                    <b-icon-chat class="ml-1 mr-1 icon" font-scale="1.4" @click="expandComments" />
-                    <span v-if="isFollowable"><b-icon-plus-square class="ml-1 mr-1 icon" font-scale="1.4" v-if="!isFollowed" @click="toggleFollow" /><b-icon-plus-square-fill class="ml-1 mr-1 icon" font-scale="1.4" variant="success" v-else @click="toggleFollow" /></span>
+                    <b-icon-heart
+                        class="ml-1 mr-1 icon"
+                        font-scale="1.4"
+                        v-if="!isLiked"
+                        @click="toggleLike"
+                    /><b-icon-heart-fill
+                        class="ml-1 mr-1 icon"
+                        font-scale="1.4"
+                        variant="danger"
+                        v-else
+                        @click="toggleLike"
+                    />
+                    <b-icon-chat
+                        class="ml-1 mr-1 icon"
+                        font-scale="1.4"
+                        @click="expandComments"
+                    />
+                    <span v-if="isFollowable"
+                        ><b-icon-plus-square
+                            class="ml-1 mr-1 icon"
+                            font-scale="1.4"
+                            v-if="!isFollowed"
+                            @click="toggleFollow"/><b-icon-plus-square-fill
+                            class="ml-1 mr-1 icon"
+                            font-scale="1.4"
+                            variant="success"
+                            v-else
+                            @click="toggleFollow"
+                    /></span>
                 </span>
                 <span class="ml-auto text-muted">
-                    <span class="count" @click="expandLikes"><span v-if="!isLoading">{{ likeCount }}</span><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span><span v-else>likes</span></span>&nbsp;
-                    <span class="count" @click="expandComments"><span v-if="!isLoading">{{ commentCount }}</span><span v-else>...</span>&nbsp;<span v-if="commentCount == 1">comment</span><span v-else>comments</span></span>&nbsp;
-                    <span class="count" @click="expandFollows" v-if="followableComponent"><span v-if="!isLoading">{{ followCount }}</span><span v-else>...</span>&nbsp;<span v-if="followCount == 1">follow</span><span v-else>follows</span></span>
+                    <span class="count" @click="expandLikes"
+                        ><span v-if="!isLoading">{{ likeCount }}</span
+                        ><span v-else>...</span>&nbsp;<span
+                            v-if="likeCount == 1"
+                            >like</span
+                        ><span v-else>likes</span></span
+                    >&nbsp;
+                    <span class="count" @click="expandComments"
+                        ><span v-if="!isLoading">{{ commentCount }}</span
+                        ><span v-else>...</span>&nbsp;<span
+                            v-if="commentCount == 1"
+                            >comment</span
+                        ><span v-else>comments</span></span
+                    >&nbsp;
+                    <span
+                        class="count"
+                        @click="expandFollows"
+                        v-if="followableComponent"
+                        ><span v-if="!isLoading">{{ followCount }}</span
+                        ><span v-else>...</span>&nbsp;<span
+                            v-if="followCount == 1"
+                            >follow</span
+                        ><span v-else>follows</span></span
+                    >
                 </span>
             </b-col>
         </b-row>
@@ -18,11 +65,25 @@
             <b-container>
                 <div v-if="!isLoadingComments">
                     <b-list-group class="commentsContainer borderless" flush>
-                        <Comment v-for="comment in comments" :key="comment._id" :comment="comment" :coll="coll" :docId="docId" />
+                        <Comment
+                            v-for="comment in comments"
+                            :key="comment._id"
+                            :comment="comment"
+                            :coll="coll"
+                            :docId="docId"
+                        />
                     </b-list-group>
                     <div class="text-center">
-                        <b-button v-if="commentCount > comments.length" @click="loadMoreComments" :disabled="isLoadingMoreComments" variant="outline" class="mb-2">
-                            <span v-if="isLoadingMoreComments"><b-spinner small /></span>
+                        <b-button
+                            v-if="commentCount > comments.length"
+                            @click="loadMoreComments"
+                            :disabled="isLoadingMoreComments"
+                            variant="outline"
+                            class="mb-2"
+                        >
+                            <span v-if="isLoadingMoreComments"
+                                ><b-spinner small
+                            /></span>
                             <span v-else>More</span>
                         </b-button>
                     </div>
@@ -34,7 +95,11 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <CommentNew @addComment="addComment" :coll="coll" :docId="docId" />
+                <CommentNew
+                    @addComment="addComment"
+                    :coll="coll"
+                    :docId="docId"
+                />
             </b-container>
         </b-collapse>
 
@@ -46,7 +111,11 @@
             <div class="d-block">
                 <div v-if="!isLoadingLikes">
                     <b-list-group>
-                        <UserList v-for="like in likes" :key="like.createdBy._id" :userData="like.createdBy" />
+                        <UserList
+                            v-for="like in likes"
+                            :key="like.createdBy._id"
+                            :userData="like.createdBy"
+                        />
                     </b-list-group>
                 </div>
                 <div v-else>
@@ -63,7 +132,11 @@
             <div class="d-block">
                 <div v-if="!isLoadingFollows">
                     <b-list-group>
-                        <UserList v-for="follow in follows" :key="follow.createdBy.id" :userData="follow.createdBy" />
+                        <UserList
+                            v-for="follow in follows"
+                            :key="follow.createdBy.id"
+                            :userData="follow.createdBy"
+                        />
                     </b-list-group>
                 </div>
                 <div v-else>
@@ -75,16 +148,16 @@
 </template>
 
 <script>
-import { db, fv } from '@/firebase'
-import { API } from 'aws-amplify'
+import { db, fv } from "@/firebase";
+import { API } from "aws-amplify";
 
-import UserList from '@/components/User/UserList.vue'
+import UserList from "@/components/User/UserList.vue";
 
-import Comment from '@/components/Comment/Comment.vue'
-import CommentNew from '@/components/Comment/CommentNew.vue'
+import Comment from "@/components/Comment/Comment.vue";
+import CommentNew from "@/components/Comment/CommentNew.vue";
 
 export default {
-    name: 'CommentSection',
+    name: "CommentSection",
     components: { UserList, Comment, CommentNew },
     props: {
         docId: {
@@ -110,8 +183,8 @@ export default {
             isLoadingFollows: false,
             isLoadingMoreComments: false,
 
-            isLiked: '',
-            isFollowed: '',
+            isLiked: "",
+            isFollowed: "",
             isFollowable: false,
 
             likeCount: 0,
@@ -125,8 +198,8 @@ export default {
             comments: [],
             follows: [],
 
-            lastLoadedComment: null,
-        }
+            lastLoadedComment: null
+        };
     },
 
     created: async function() {
@@ -148,32 +221,41 @@ export default {
         // })
 
         let promises = [];
-        let path = '/like';
+        let path = "/like";
         let myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                Authorization: this.$store.state.userProfile.data.idToken
+                    .jwtToken
             },
             queryStringParameters: {
                 docId: this.$props.docId,
                 coll: this.$props.coll,
                 loadAmount: 5
             }
-        }
+        };
 
-        promises.push(API.get(this.$store.state.apiName, path, myInit).then(likeResponse => {
-            this.isLiked = likeResponse.data.isLiked;
-            this.likeCount = likeResponse.data.likeCount;
-            this.likes = likeResponse.data.likes;
-        }))
+        promises.push(
+            API.get(this.$store.state.apiName, path, myInit).then(
+                likeResponse => {
+                    this.isLiked = likeResponse.data.isLiked;
+                    this.likeCount = likeResponse.data.likeCount;
+                    this.likes = likeResponse.data.likes;
+                }
+            )
+        );
 
-        path = '/comment'
+        path = "/comment";
 
-        promises.push(API.get(this.$store.state.apiName, path, myInit).then(commentResponse => {
-            this.commentCount = commentResponse.data.commentCount;
-            this.comments = commentResponse.data.comments;
+        promises.push(
+            API.get(this.$store.state.apiName, path, myInit).then(
+                commentResponse => {
+                    this.commentCount = commentResponse.data.commentCount;
+                    this.comments = commentResponse.data.comments;
 
-            console.log("COMMENT RESPONSE:", commentResponse);
-        }));
+                    console.log("COMMENT RESPONSE:", commentResponse);
+                }
+            )
+        );
 
         await Promise.all(promises);
 
@@ -185,51 +267,56 @@ export default {
             // Check we're not already in the process of liking.
             if (!this.isLiking) {
                 this.isLiking = true;
-                const path = '/like'
+                const path = "/like";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
                         coll: this.$props.coll
                     }
-                }
+                };
 
                 // Check to see if we like or unlike.
                 if (!this.isLiked) {
                     // Add like.
                     console.log("LIKING...");
-                    this.likeCount ++;
+                    this.likeCount++;
                     this.isLiked = true;
 
                     try {
-                        const likeResponse = await API.post(this.$store.state.apiName, path, myInit);
+                        const likeResponse = await API.post(
+                            this.$store.state.apiName,
+                            path,
+                            myInit
+                        );
                         console.log("LIKED:", likeResponse);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error("Liking error", err);
-                        this.likeCount --;
+                        this.likeCount--;
                         this.isLiked = false;
-                    }
-                    finally {
+                    } finally {
                         this.isLiking = false;
                     }
                 } else {
                     console.log("UNLIKING...");
-                    this.likeCount --;
+                    this.likeCount--;
                     this.isLiked = false;
 
                     try {
-                        const likeResponse = await API.del(this.$store.state.apiName, path, myInit);
+                        const likeResponse = await API.del(
+                            this.$store.state.apiName,
+                            path,
+                            myInit
+                        );
                         console.log("UNLIKED:", likeResponse);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         console.error("Unliking error", err);
-                        this.likeCount ++;
+                        this.likeCount++;
                         this.isLiked = true;
-                    }
-                    finally {
+                    } finally {
                         this.isLiking = false;
                     }
                 }
@@ -251,70 +338,127 @@ export default {
                     this.isFollowed = this.$props.docId;
 
                     // First add to the relevant document.
-                    batch.set(db.collection(this.$props.collection).doc(this.$props.docId).collection("follows").doc(this.$store.state.userProfile.data.uid), {
-                        createdBy: { 
-                            username: this.$store.state.userProfile.docData.username,
-                            id: this.$store.state.userProfile.data.uid,
-                            profilePhoto: this.$store.state.userProfile.docData.profilePhoto 
-                        }, 
-                        createdAt: timestamp
-                    })
+                    batch.set(
+                        db
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId)
+                            .collection("follows")
+                            .doc(this.$store.state.userProfile.data.uid),
+                        {
+                            createdBy: {
+                                username: this.$store.state.userProfile.docData
+                                    .username,
+                                id: this.$store.state.userProfile.data.uid,
+                                profilePhoto: this.$store.state.userProfile
+                                    .docData.profilePhoto
+                            },
+                            createdAt: timestamp
+                        }
+                    );
 
                     // Then add to the user document.
-                    batch.set(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection(this.$props.collection).doc(this.$props.docId), {
-                        createdAt: timestamp,
-                        isFollow: true,
-                    })
+                    batch.set(
+                        db
+                            .collection("users")
+                            .doc(this.$store.state.userProfile.data.uid)
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId),
+                        {
+                            createdAt: timestamp,
+                            isFollow: true
+                        }
+                    );
 
                     // Increment the follow counter.
-                    batch.update(db.collection(this.$props.collection).doc(this.$props.docId).collection("counters").doc((Math.floor(Math.random() * this.numShards)).toString()), {
-                        followCount: fv.increment(1)
-                    })
+                    batch.update(
+                        db
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId)
+                            .collection("counters")
+                            .doc(
+                                Math.floor(
+                                    Math.random() * this.numShards
+                                ).toString()
+                            ),
+                        {
+                            followCount: fv.increment(1)
+                        }
+                    );
 
                     // Update lastActivity
-                    batch.update(db.collection(this.$props.collection).doc(this.$props.docId), {
-                        lastActivity: timestamp
-                    });
+                    batch.update(
+                        db
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId),
+                        {
+                            lastActivity: timestamp
+                        }
+                    );
 
                     // Commit the batch.
-                    batch.commit()
-                    .then(() => {
-                        this.followCount ++;
-                        this.isFollowed = this.$props.docId;
-                        this.isFollowing = false;
-                    })
-                    .catch(e => {
-                        console.error("Error creating follow:", e);
-                        this.isFollowed = '';
-                    })
+                    batch
+                        .commit()
+                        .then(() => {
+                            this.followCount++;
+                            this.isFollowed = this.$props.docId;
+                            this.isFollowing = false;
+                        })
+                        .catch(e => {
+                            console.error("Error creating follow:", e);
+                            this.isFollowed = "";
+                        });
                 } else {
                     // Unfollow.
-                    this.isFollowed = '';
+                    this.isFollowed = "";
 
                     // First delete from relevant collection.
-                    batch.delete(db.collection(this.$props.collection).doc(this.$props.docId).collection("follows").doc(this.$store.state.userProfile.data.uid));
+                    batch.delete(
+                        db
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId)
+                            .collection("follows")
+                            .doc(this.$store.state.userProfile.data.uid)
+                    );
 
                     // Then delete from users collection.
-                    batch.delete(db.collection("users").doc(this.$store.state.userProfile.data.uid).collection(this.$props.collection).doc(this.$props.docId));
+                    batch.delete(
+                        db
+                            .collection("users")
+                            .doc(this.$store.state.userProfile.data.uid)
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId)
+                    );
 
                     // Decrement the follow counter.
-                    batch.update(db.collection(this.$props.collection).doc(this.$props.docId).collection("counters").doc((Math.floor(Math.random() * this.numShards)).toString()), {
-                        followCount: fv.increment(-1)
-                    });
+                    batch.update(
+                        db
+                            .collection(this.$props.collection)
+                            .doc(this.$props.docId)
+                            .collection("counters")
+                            .doc(
+                                Math.floor(
+                                    Math.random() * this.numShards
+                                ).toString()
+                            ),
+                        {
+                            followCount: fv.increment(-1)
+                        }
+                    );
 
                     // Commit the batch.
-                    batch.commit()
-                    .then(() => {
-                        this.isFollowed = '';
-                        this.followCount --;
-                        this.isFollowing = false;
-                    })
-                    .catch(e => {
-                        console.error("Error deleting follow:", e);
-                        this.isFollowing = false;
-                        this.isFollowed = this.$props.docId;
-                    });
-                }    
+                    batch
+                        .commit()
+                        .then(() => {
+                            this.isFollowed = "";
+                            this.followCount--;
+                            this.isFollowing = false;
+                        })
+                        .catch(e => {
+                            console.error("Error deleting follow:", e);
+                            this.isFollowing = false;
+                            this.isFollowed = this.$props.docId;
+                        });
+                }
                 document.activeElement.blur();
             }
         },
@@ -325,39 +469,54 @@ export default {
                     this.isLoadingLikes = true;
                     console.log("Downloading likes");
 
-                    db.collection(this.$props.collection).doc(this.$props.docId).collection("likes").get()
-                    .then(likeSnapshot => {
-                        likeSnapshot.forEach(like => {
-                            this.likes.push(like.data());
-                        })
+                    db.collection(this.$props.collection)
+                        .doc(this.$props.docId)
+                        .collection("likes")
+                        .get()
+                        .then(likeSnapshot => {
+                            likeSnapshot.forEach(like => {
+                                this.likes.push(like.data());
+                            });
 
-                        this.isLoadingLikes = false;
-                        console.log(this.likes);
-                        this.$bvModal.show(this.$props.docId + '-likeModal');
-                    })
+                            this.isLoadingLikes = false;
+                            console.log(this.likes);
+                            this.$bvModal.show(
+                                this.$props.docId + "-likeModal"
+                            );
+                        });
                 } else {
-                    this.$bvModal.show(this.$props.docId + '-likeModal');
-                }   
+                    this.$bvModal.show(this.$props.docId + "-likeModal");
+                }
             }
         },
 
         expandComments: function() {
             this.commentsExpanded = !this.commentsExpanded;
 
-            if (this.commentsExpanded && this.comments.length == 0 && this.commentCount > 0) {
+            if (
+                this.commentsExpanded &&
+                this.comments.length == 0 &&
+                this.commentCount > 0
+            ) {
                 this.isLoadingComments = true;
 
-                db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").orderBy("createdAt", "desc").limit(5).get()
-                .then(commentSnapshot => {
-                    commentSnapshot.forEach(comment => {
-                        let data = comment.data();
-                        data.id = comment.id;
-                        this.comments.push(data);
-                    })
+                db.collection(this.$props.collection)
+                    .doc(this.$props.docId)
+                    .collection("comments")
+                    .orderBy("createdAt", "desc")
+                    .limit(5)
+                    .get()
+                    .then(commentSnapshot => {
+                        commentSnapshot.forEach(comment => {
+                            let data = comment.data();
+                            data.id = comment.id;
+                            this.comments.push(data);
+                        });
 
-                    this.isLoadingComments = false;
-                    this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
-                })
+                        this.isLoadingComments = false;
+                        this.lastLoadedComment =
+                            commentSnapshot.docs[commentSnapshot.size - 1];
+                    });
             }
         },
 
@@ -367,113 +526,141 @@ export default {
                     this.isLoadingFollows = true;
                     console.log("Downloading follows");
 
-                    db.collection(this.$props.collection).doc(this.$props.docId).collection("follows").get()
-                    .then(followSnapshot => {
-                        followSnapshot.forEach(follow => {
-                            this.follows.push(follow.data());
-                        })
+                    db.collection(this.$props.collection)
+                        .doc(this.$props.docId)
+                        .collection("follows")
+                        .get()
+                        .then(followSnapshot => {
+                            followSnapshot.forEach(follow => {
+                                this.follows.push(follow.data());
+                            });
 
-                        this.isLoadingFollows = false;
-                        console.log(this.follows);
-                        this.$bvModal.show(this.$props.docId + '-followModal');
-                    })
+                            this.isLoadingFollows = false;
+                            console.log(this.follows);
+                            this.$bvModal.show(
+                                this.$props.docId + "-followModal"
+                            );
+                        });
                 } else {
-                    this.$bvModal.show(this.$props.docId + '-followModal');
-                }   
+                    this.$bvModal.show(this.$props.docId + "-followModal");
+                }
             }
         },
 
         addComment: function(comment) {
             this.comments.unshift(comment);
-            this.commentCount ++;
+            this.commentCount++;
         },
 
         loadMoreComments: function() {
             this.isLoadingMoreComments = true;
-            
-            db.collection(this.$props.collection).doc(this.$props.docId).collection("comments").orderBy("createdAt", "desc").startAfter(this.lastLoadedComment).limit(5).get()
-            .then(commentSnapshot => {
-                commentSnapshot.forEach(comment => {
-                    let data = comment.data();
-                    data.id = comment.id;
-                    this.comments.push(data);
-                })
 
-                this.isLoadingMoreComments = false;
-                this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
-            })
-        },  
+            db.collection(this.$props.collection)
+                .doc(this.$props.docId)
+                .collection("comments")
+                .orderBy("createdAt", "desc")
+                .startAfter(this.lastLoadedComment)
+                .limit(5)
+                .get()
+                .then(commentSnapshot => {
+                    commentSnapshot.forEach(comment => {
+                        let data = comment.data();
+                        data.id = comment.id;
+                        this.comments.push(data);
+                    });
+
+                    this.isLoadingMoreComments = false;
+                    this.lastLoadedComment =
+                        commentSnapshot.docs[commentSnapshot.size - 1];
+                });
+        },
 
         checkIfUserLiked: function() {
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("likes").where("id", "==", this.$props.docId).get()
-            .then(likeSnapshot => {
-                likeSnapshot.forEach(like => {
-                    if (like.exists) {
-                        this.isLiked = like.id;
-                    }
-                })
-            })
+            return db
+                .collection("users")
+                .doc(this.$store.state.userProfile.data.uid)
+                .collection("likes")
+                .where("id", "==", this.$props.docId)
+                .get()
+                .then(likeSnapshot => {
+                    likeSnapshot.forEach(like => {
+                        if (like.exists) {
+                            this.isLiked = like.id;
+                        }
+                    });
+                });
         },
 
         checkIfUserFollowed: function() {
-            return db.collection("users").doc(this.$store.state.userProfile.data.uid).collection(this.$props.collection).doc(this.$props.docId).get()
-            .then(docRef => {
-                if (docRef.exists) {
-                    if (!docRef.data().isFollow) {
-                        this.isFollowable = false;
+            return db
+                .collection("users")
+                .doc(this.$store.state.userProfile.data.uid)
+                .collection(this.$props.collection)
+                .doc(this.$props.docId)
+                .get()
+                .then(docRef => {
+                    if (docRef.exists) {
+                        if (!docRef.data().isFollow) {
+                            this.isFollowable = false;
+                        } else {
+                            this.isFollowable = true;
+                        }
+                        this.isFollowed = docRef.id; // Collection document ID.
                     } else {
                         this.isFollowable = true;
+                        this.isFollowed = "";
                     }
-                    this.isFollowed = docRef.id; // Collection document ID.
-                } else {
-                    this.isFollowable = true;
-                    this.isFollowed = '';
-                }
-            })
+                });
         },
 
         downloadCounters: function() {
-            return db.collection(this.$props.collection).doc(this.$props.docId).collection("counters").get()
-            .then(counterSnapshot => {
-                counterSnapshot.forEach(counterDoc => {
-                    this.likeCount += counterDoc.data().likeCount;
-                    this.commentCount += counterDoc.data().commentCount;
-                    if (this.$props.followableComponent) {
-                        this.followCount += counterDoc.data().followCount;
-                    }
-                })
-            })
+            return db
+                .collection(this.$props.collection)
+                .doc(this.$props.docId)
+                .collection("counters")
+                .get()
+                .then(counterSnapshot => {
+                    counterSnapshot.forEach(counterDoc => {
+                        this.likeCount += counterDoc.data().likeCount;
+                        this.commentCount += counterDoc.data().commentCount;
+                        if (this.$props.followableComponent) {
+                            this.followCount += counterDoc.data().followCount;
+                        }
+                    });
+                });
         },
 
         generateId: function(n) {
-            let randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-            let id = '';
+            let randomChars =
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let id = "";
             for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+                id += randomChars.charAt(
+                    Math.floor(Math.random() * randomChars.length)
+                );
             }
             return id;
         }
     }
-
-}
+};
 </script>
 
 <style scoped>
-    .commentSection {
-        padding: 10px;
-        border-top: 2px solid;
-    }
+.commentSection {
+    padding: 10px;
+    border-top: 2px solid;
+}
 
-    .commentsContainer {
-        padding: 10px;
-    }
+.commentsContainer {
+    padding: 10px;
+}
 
-    .icon:hover {
-        cursor: pointer;
-    }
+.icon:hover {
+    cursor: pointer;
+}
 
-    .count:hover {
-        cursor: pointer;
-        text-decoration: underline;
-    }
+.count:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
 </style>

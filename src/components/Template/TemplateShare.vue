@@ -1,18 +1,25 @@
 <template>
     <b-container>
         <div :id="template.id + 'accordion'" class="accordion" role="tablist">
-            <ExerciseExpandable v-for="(exercise, index) in template.exercises" :exercise="exercise" :accordionIndex="index" :templateId="template.id" :key="exercise.id" :lazy="false" />
+            <ExerciseExpandable
+                v-for="(exercise, index) in template.exercises"
+                :exercise="exercise"
+                :accordionIndex="index"
+                :templateId="template.id"
+                :key="exercise.id"
+                :lazy="false"
+            />
         </div>
     </b-container>
 </template>
 
 <script>
-import { templatesCollection } from '@/firebase'
+import { templatesCollection } from "@/firebase";
 
-import ExerciseExpandable from '@/components/Exercise/ExerciseExpandable.vue'
+import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 
 export default {
-    name: 'TemplateShare',
+    name: "TemplateShare",
     components: { ExerciseExpandable },
     props: {
         templateId: {
@@ -24,7 +31,7 @@ export default {
         return {
             isLoading: true,
             template: {}
-        }
+        };
     },
 
     created: function() {
@@ -35,13 +42,15 @@ export default {
         downloadTemplate: function() {
             this.isLoading = true;
 
-            templatesCollection().doc(this.$props.templateId).get()
-            .then(templateDoc => {
-                this.template = templateDoc.data();
-                this.template.id = templateDoc.id;
+            templatesCollection()
+                .doc(this.$props.templateId)
+                .get()
+                .then(templateDoc => {
+                    this.template = templateDoc.data();
+                    this.template.id = templateDoc.id;
 
-                this.isLoading = false;
-            })
+                    this.isLoading = false;
+                });
         }
     },
 
@@ -50,5 +59,5 @@ export default {
             this.downloadTemplate();
         }
     }
-}
+};
 </script>

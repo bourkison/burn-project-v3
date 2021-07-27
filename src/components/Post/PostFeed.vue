@@ -2,17 +2,17 @@
     <div class="postFeed">
         <b-row v-for="post in posts" :key="post">
             <b-col sm="12">
-                <PostComponent :postId="post" class="post"/>
+                <PostComponent :postId="post" class="post" />
             </b-col>
         </b-row>
     </div>
 </template>
 
 <script>
-import PostComponent from '@/components/Post/PostComponent.vue'
+import PostComponent from "@/components/Post/PostComponent.vue";
 
 export default {
-    name: 'Feed',
+    name: "Feed",
     components: { PostComponent },
     props: {
         posts: {
@@ -26,11 +26,11 @@ export default {
             this.$emit("addPost", p.id);
         }
     }
-}
+};
 </script>
 
 <style scoped>
-    .post {
-        margin-bottom: 25px;
-    }
+.post {
+    margin-bottom: 25px;
+}
 </style>

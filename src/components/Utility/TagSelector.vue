@@ -1,19 +1,38 @@
 <template>
     <div>
         <div>
-            <b-badge v-for="tag in selectedTags" class="tagBadge" variant="dark" :key="tag" @click="pillRemove(tag)">{{ tag }}</b-badge>
+            <b-badge
+                v-for="tag in selectedTags"
+                class="tagBadge"
+                variant="dark"
+                :key="tag"
+                @click="pillRemove(tag)"
+                >{{ tag }}</b-badge
+            >
         </div>
 
         <div class="dataListCont">
-            <b-form-input list="tagList" id="inputWithList" placeholder="Add up to 5 tags..." autocomplete="off" v-model="inputText" @select="dataListAdd" @keydown="detectEnter" size="sm"></b-form-input>
-            <b-form-datalist id="tagList" :options="tagOptions"></b-form-datalist>
+            <b-form-input
+                list="tagList"
+                id="inputWithList"
+                placeholder="Add up to 5 tags..."
+                autocomplete="off"
+                v-model="inputText"
+                @select="dataListAdd"
+                @keydown="detectEnter"
+                size="sm"
+            ></b-form-input>
+            <b-form-datalist
+                id="tagList"
+                :options="tagOptions"
+            ></b-form-datalist>
         </div>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'TagSelector',
+    name: "TagSelector",
     props: {
         initTags: {
             type: Array,
@@ -22,10 +41,10 @@ export default {
     },
     data() {
         return {
-            inputText: '',
+            inputText: "",
             selectedTags: [],
             tagOptions: ["Cardio", "Strength", "No Equipment"]
-        }
+        };
     },
 
     created: function() {
@@ -35,36 +54,44 @@ export default {
 
                 // Remove from available (if it's there).
                 this.tagOptions = this.tagOptions.filter(x => x !== tag);
-            })
+            });
         }
     },
 
     methods: {
         dataListAdd: function(e) {
-            if (this.inputText.trim() !== '' && this.selectedTags.length < 5) {
+            if (this.inputText.trim() !== "" && this.selectedTags.length < 5) {
                 // Add selected to selectedTags
                 this.selectedTags.push(e.target.value);
 
                 // Remove from available.
-                this.tagOptions = this.tagOptions.filter(x => x !== e.target.value);
+                this.tagOptions = this.tagOptions.filter(
+                    x => x !== e.target.value
+                );
 
                 // Reset input text.
-                this.inputText = '';
+                this.inputText = "";
             }
         },
 
         detectEnter: function(e) {
-            if (e.key === 'Enter' && this.inputText.trim() !== '' && this.selectedTags.length < 5) {
+            if (
+                e.key === "Enter" &&
+                this.inputText.trim() !== "" &&
+                this.selectedTags.length < 5
+            ) {
                 // Check its not already selected.
                 if (!this.selectedTags.includes(this.inputText)) {
                     // Push input text to selectedTags
                     this.selectedTags.push(this.inputText.toLowerCase());
 
                     // Remove from available (if it's there).
-                    this.tagOptions = this.tagOptions.filter(x => x !== this.inputText);
+                    this.tagOptions = this.tagOptions.filter(
+                        x => x !== this.inputText
+                    );
                 }
 
-                this.inputText = '';
+                this.inputText = "";
             }
         },
 
@@ -79,7 +106,7 @@ export default {
             this.$emit("updateTags", this.selectedTags);
         }
     }
-}
+};
 </script>
 
 <style scoped>

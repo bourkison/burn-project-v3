@@ -8,7 +8,10 @@
         <div>
             <b-list-group>
                 <b-list-group-item to="/workout/new" class="s-font btr-0">
-                    <div v-if="!$store.state.activeWorkout.workoutCommenced" class="d-flex align-items">
+                    <div
+                        v-if="!$store.state.activeWorkout.workoutCommenced"
+                        class="d-flex align-items"
+                    >
                         <div>New Workout</div>
                         <div class="ml-auto"><b-icon-plus /></div>
                     </div>
@@ -17,9 +20,17 @@
                         <div class="ml-auto"><b-icon-play /></div>
                     </div>
                 </b-list-group-item>
-                <b-list-group-item v-for="workout in recentWorkouts" :key="workout.id" :to="'/workout/new?b=' + workout.id" class="s-font d-flex align-items" :disabled="$store.state.activeWorkout.workoutCommenced">
+                <b-list-group-item
+                    v-for="workout in recentWorkouts"
+                    :key="workout.id"
+                    :to="'/workout/new?b=' + workout.id"
+                    class="s-font d-flex align-items"
+                    :disabled="$store.state.activeWorkout.workoutCommenced"
+                >
                     <div>{{ workout.name }}</div>
-                    <div class="ml-auto text-muted xs-font">{{ workout.createdAtText }}</div>
+                    <div class="ml-auto text-muted xs-font">
+                        {{ workout.createdAtText }}
+                    </div>
                 </b-list-group-item>
             </b-list-group>
         </div>
@@ -27,41 +38,50 @@
 </template>
 
 <script>
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 export default {
-    name: 'QuickStart',
+    name: "QuickStart",
     data() {
         return {
             workoutsLoadedIn: 3,
-            recentWorkouts: [],
-        }
+            recentWorkouts: []
+        };
     },
 
     created: async function() {
         dayjs.extend(relativeTime);
 
         if (this.$store.state.userWorkouts === null) {
-            await this.$store.dispatch('fetchWorkouts', this.$store.state.userProfile.data).catch(e => { console.error(e) });
+            await this.$store
+                .dispatch("fetchWorkouts", this.$store.state.userProfile.data)
+                .catch(e => {
+                    console.error(e);
+                });
         }
 
         let uniqueNames = [];
         let i = 0;
         let j = 0;
 
-        while (i < this.workoutsLoadedIn && j < this.$store.state.userWorkouts.length) {
+        while (
+            i < this.workoutsLoadedIn &&
+            j < this.$store.state.userWorkouts.length
+        ) {
             if (!uniqueNames.includes(this.$store.state.userWorkouts[j].name)) {
                 let temp = this.$store.state.userWorkouts[j];
-                temp.createdAtText = dayjs(dayjs.unix(temp.createdAt.seconds)).fromNow();
+                temp.createdAtText = dayjs(
+                    dayjs.unix(temp.createdAt.seconds)
+                ).fromNow();
                 this.recentWorkouts.push(temp);
-                i ++;
+                i++;
             }
 
-            j ++;
+            j++;
         }
     }
-}
+};
 </script>
 
 <style scoped>
@@ -83,7 +103,7 @@ export default {
     border-bottom-right-radius: 0 !important;
 }
 
-.no-bot-border { 
+.no-bot-border {
     border-bottom: none !important;
 }
 

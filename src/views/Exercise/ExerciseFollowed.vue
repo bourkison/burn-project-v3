@@ -3,26 +3,40 @@
         <b-row>
             <b-col sm="3">
                 <b-card class="navCard" no-body>
-                        <b-list-group>
-                            <b-list-group-item class="navItem" ref="homeExerciseLink" to="/exercises" active>
-                                <div class="d-flex align-items-center">
-                                    Exercises
-                                    <b-icon-house class="ml-auto" />
-                                </div>
-                            </b-list-group-item>
-                            <b-list-group-item class="navItem" ref="discoverExerciseLink" to="/exercises/discover" active-class="unset">
-                                <div class="d-flex align-items-center">
-                                    Discover
-                                    <b-icon-search class="ml-auto"/>
-                                </div>
-                            </b-list-group-item>
-                            <b-list-group-item class="navItem" to="/exercises/new" active-class="unset">
-                                <div class="d-flex align-items-center">
-                                    New
-                                    <b-icon-plus class="ml-auto"/>
-                                </div>
-                            </b-list-group-item>
-                        </b-list-group>
+                    <b-list-group>
+                        <b-list-group-item
+                            class="navItem"
+                            ref="homeExerciseLink"
+                            to="/exercises"
+                            active
+                        >
+                            <div class="d-flex align-items-center">
+                                Exercises
+                                <b-icon-house class="ml-auto" />
+                            </div>
+                        </b-list-group-item>
+                        <b-list-group-item
+                            class="navItem"
+                            ref="discoverExerciseLink"
+                            to="/exercises/discover"
+                            active-class="unset"
+                        >
+                            <div class="d-flex align-items-center">
+                                Discover
+                                <b-icon-search class="ml-auto" />
+                            </div>
+                        </b-list-group-item>
+                        <b-list-group-item
+                            class="navItem"
+                            to="/exercises/new"
+                            active-class="unset"
+                        >
+                            <div class="d-flex align-items-center">
+                                New
+                                <b-icon-plus class="ml-auto" />
+                            </div>
+                        </b-list-group-item>
+                    </b-list-group>
                 </b-card>
 
                 <b-card class="navCard" no-body>
@@ -36,12 +50,18 @@
                             </div>
                             <div class="mt-3">
                                 <h6>Muscle Groups</h6>
-                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" :initMgs="selectedMgs" />
+                                <MuscleGroupSelector
+                                    @updateMuscleGroups="updateMuscleGroups"
+                                    :initMgs="selectedMgs"
+                                />
                             </div>
 
                             <div class="mt-3">
                                 <h6>Tags</h6>
-                                <TagSelector @updateTags="updateTags" :initTags="selectedTags" />
+                                <TagSelector
+                                    @updateTags="updateTags"
+                                    :initTags="selectedTags"
+                                />
                             </div>
                         </div>
                     </b-card-body>
@@ -51,17 +71,29 @@
             <b-col sm="6">
                 <b-container>
                     <div v-if="exercises.length > 0 || isLoading" class="mb-4">
-                        <ExerciseFeed class="exerciseFeed" :exercises="exercises" :isLoading="isLoading" />
+                        <ExerciseFeed
+                            class="exerciseFeed"
+                            :exercises="exercises"
+                            :isLoading="isLoading"
+                        />
 
                         <div class="text-center" v-if="moreToLoad">
-                            <b-button @click="loadMoreExercises" variant="outline-dark" size="sm" v-b-visible.200="loadMoreExercises">
+                            <b-button
+                                @click="loadMoreExercises"
+                                variant="outline-dark"
+                                size="sm"
+                                v-b-visible.200="loadMoreExercises"
+                            >
                                 <span v-if="!isLoadingMore">Load More</span>
-                                <span v-else><b-spinner small /></span>
+                                <span v-else><b-spinner small/></span>
                             </b-button>
                         </div>
                     </div>
                     <div v-else>
-                        <em>Looks like you haven't followed or created any exercises.</em>
+                        <em
+                            >Looks like you haven't followed or created any
+                            exercises.</em
+                        >
                     </div>
                 </b-container>
             </b-col>
@@ -75,22 +107,26 @@
                 </div>
             </b-col>
         </b-row>
-        
     </b-container>
 </template>
 
 <script>
-import { db } from '@/firebase'
-import { API } from 'aws-amplify'
-import ExerciseFeed from '@/components/Exercise/ExerciseFeed.vue'
+import { db } from "@/firebase";
+import { API } from "aws-amplify";
+import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
 
-import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
-import TagSelector from '@/components/Utility/TagSelector.vue'
-import UsernameFilter from '@/components/Utility/UsernameFilter.vue'
+import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
+import TagSelector from "@/components/Utility/TagSelector.vue";
+import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
 export default {
-    name: 'ExerciseFollowed',
-    components: { ExerciseFeed, MuscleGroupSelector, TagSelector, UsernameFilter },
+    name: "ExerciseFollowed",
+    components: {
+        ExerciseFeed,
+        MuscleGroupSelector,
+        TagSelector,
+        UsernameFilter
+    },
     data() {
         return {
             isLoading: true,
@@ -103,8 +139,8 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedExercise: null,
-        }
+            lastLoadedExercise: null
+        };
     },
 
     created: function() {
@@ -115,29 +151,38 @@ export default {
         if (this.$route.query.tags) {
             this.selectedTags = this.$route.query.tags.split(",");
         }
-        
+
         this.downloadExercises();
     },
 
     methods: {
         loadMoreExercises: function() {
             if (!this.isLoadingMore) {
-                db.collection("users").doc(this.$store.state.userProfile.data.uid).collection("exercises").orderBy("createdAt", "desc").startAfter(this.lastLoadedExercise).limit(5).get()
-                .then(exerciseSnapshot => {
-                    exerciseSnapshot.forEach(exercise => {
-                        this.exercises.push(exercise.id);
+                db.collection("users")
+                    .doc(this.$store.state.userProfile.data.uid)
+                    .collection("exercises")
+                    .orderBy("createdAt", "desc")
+                    .startAfter(this.lastLoadedExercise)
+                    .limit(5)
+                    .get()
+                    .then(exerciseSnapshot => {
+                        exerciseSnapshot.forEach(exercise => {
+                            this.exercises.push(exercise.id);
+                        });
+
+                        if (exerciseSnapshot.size < 5) {
+                            this.moreToLoad = false;
+                        }
+
+                        setTimeout(() => {
+                            this.isLoadingMore = false;
+                        }, 500);
+                        this.lastLoadedExercise =
+                            exerciseSnapshot.docs[exerciseSnapshot.size - 1];
                     })
-
-                    if (exerciseSnapshot.size < 5) {
-                        this.moreToLoad = false;
-                    }
-
-                    setTimeout(() => { this.isLoadingMore = false }, 500);
-                    this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
-                })
-                .catch(e => {
-                    console.error("Error downloading more exercises:", e);
-                })
+                    .catch(e => {
+                        console.error("Error downloading more exercises:", e);
+                    });
             }
         },
 
@@ -145,26 +190,33 @@ export default {
             this.isLoading = true;
             this.exercises = [];
 
-            const path = '/exercise';
+            const path = "/exercise";
             let myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken
+                        .jwtToken
                 },
                 queryStringParameters: {
                     loadAmount: 5,
                     user: true
                 }
-            }
+            };
 
             if (this.selectedMgs.length > 0) {
-                myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+                myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(
+                    ","
+                );
             }
 
             if (this.selectedTags.length > 0) {
                 myInit.queryStringParameters.tags = this.selectedTags.join(",");
             }
 
-            const response = await API.get(this.$store.state.apiName, path, myInit);
+            const response = await API.get(
+                this.$store.state.apiName,
+                path,
+                myInit
+            );
 
             this.exercises = response.data;
 
@@ -183,18 +235,20 @@ export default {
             let isFiltered = false;
 
             let query = {};
-            
+
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
-                query.muscleGroups = this.selectedMgs.join(",")
+                query.muscleGroups = this.selectedMgs.join(",");
             }
 
-            if (this.selectedTags.length > 0) { 
+            if (this.selectedTags.length > 0) {
                 isFiltered = true;
-                query.tags = this.selectedTags.join(",")
+                query.tags = this.selectedTags.join(",");
             }
 
-            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+            if (isFiltered) {
+                this.$router.replace({ path: "/exercises", query: query });
+            }
 
             this.downloadExercises();
         },
@@ -204,22 +258,24 @@ export default {
             let isFiltered = false;
 
             let query = {};
-            
+
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
-                query.muscleGroups = this.selectedMgs.join(",")
+                query.muscleGroups = this.selectedMgs.join(",");
             }
 
-            if (this.selectedTags.length > 0) { 
+            if (this.selectedTags.length > 0) {
                 isFiltered = true;
-                query.tags = this.selectedTags.join(",")
+                query.tags = this.selectedTags.join(",");
             }
 
-            if (isFiltered) { this.$router.replace({ path: "/exercises", query: query }) }
+            if (isFiltered) {
+                this.$router.replace({ path: "/exercises", query: query });
+            }
             this.downloadExercises();
         }
     }
-}
+};
 </script>
 
 <style scoped>
@@ -235,6 +291,6 @@ export default {
     width: 300px;
     padding: 0;
     margin-top: 40px;
-    line-height: 250px
+    line-height: 250px;
 }
 </style>

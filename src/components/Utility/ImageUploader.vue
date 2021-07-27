@@ -1,26 +1,55 @@
 <template>
     <div>
-        <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
-            <ImageEditor :imagesToAdd="addedFiles" :initId="initId" :imagesToEdit="imagesToEdit" @addImage="addImage" @cancelEdit="filesInEdit --" :resetVariablesIncrementor="resetVariablesIncrementor" />
+        <div
+            ref="mImgEdit"
+            class="imageEditor"
+            style="visibility:hidden;position:absolute;"
+        >
+            <ImageEditor
+                :imagesToAdd="addedFiles"
+                :initId="initId"
+                :imagesToEdit="imagesToEdit"
+                @addImage="addImage"
+                @cancelEdit="filesInEdit--"
+                :resetVariablesIncrementor="resetVariablesIncrementor"
+            />
         </div>
         <div>
-            <ImageSorter v-if="editedFiles.length > 0" :imagesProp="editedFiles" @editImage="editImage" @deleteImage="deleteImage" @sort="sort" />
+            <ImageSorter
+                v-if="editedFiles.length > 0"
+                :imagesProp="editedFiles"
+                @editImage="editImage"
+                @deleteImage="deleteImage"
+                @sort="sort"
+            />
         </div>
         <div class="imageInput" v-if="!inlineDisplay">
-            <b-form-file class="imageInput" v-model="addedFiles" multiple @change="handleFileUpload" :file-name-formatter="formatNames"></b-form-file>
+            <b-form-file
+                class="imageInput"
+                v-model="addedFiles"
+                multiple
+                @change="handleFileUpload"
+                :file-name-formatter="formatNames"
+            ></b-form-file>
         </div>
         <div class="d-inline" v-else>
-            <input type="file" id="file-input" style="display: none;" multiple @change="handleFileUpload" />
+            <input
+                type="file"
+                id="file-input"
+                style="display: none;"
+                multiple
+                @change="handleFileUpload"
+            />
         </div>
     </div>
 </template>
 
 <script>
-import ImageEditor from '@/components/Utility/ImageEditor.vue'
-import ImageSorter from '@/components/Utility/ImageSorter.vue'
+import ImageEditor from "@/components/Utility/ImageEditor.vue";
+import ImageSorter from "@/components/Utility/ImageSorter.vue";
 
 export default {
-    name: 'ImageUploader',
+    name: "ImageUploader",
     components: { ImageEditor, ImageSorter },
     props: {
         initImages: {
@@ -51,9 +80,8 @@ export default {
             // Used for determining new image IDs.
             initId: 0,
 
-            filesInEdit: 0,
-
-        }
+            filesInEdit: 0
+        };
     },
 
     created: function() {
@@ -61,7 +89,7 @@ export default {
             this.$props.initImages.forEach(img => {
                 this.sortedFiles.push(img);
                 this.editedFiles.push(img);
-            })
+            });
 
             this.initId = this.$props.initImages.length;
         }
@@ -69,9 +97,11 @@ export default {
 
     methods: {
         formatNames: function() {
-            return this.filesInEdit === 1 ? '1 file selected' : `${ this.filesInEdit } files selected`
+            return this.filesInEdit === 1
+                ? "1 file selected"
+                : `${this.filesInEdit} files selected`;
         },
-        
+
         handleFileUpload: function(e) {
             this.filesInEdit += e.target.files.length;
 
@@ -80,10 +110,10 @@ export default {
 
                 e.target.files.forEach(file => {
                     this.addedFiles.push(file);
-                })
+                });
             }
         },
-        
+
         addImage: function(data) {
             delete data.edit;
             delete data.ratio;
@@ -91,13 +121,13 @@ export default {
             this.editedFiles.push(data);
             this.sortedFiles.push(data);
 
-            this.filesInEdit --;
+            this.filesInEdit--;
         },
 
         editImage: function(id) {
             this.imagesToEdit.push(id);
             this.deleteImage(id);
-            this.filesInEdit ++;
+            this.filesInEdit++;
         },
 
         deleteImage: function(id) {
@@ -105,27 +135,34 @@ export default {
             let sortedIndex = this.sortedFiles.findIndex(x => x.id === id);
 
             if (!this.sortedFiles[sortedIndex].editable) {
-                this.$bvModal.msgBoxConfirm("You are about to delete an image that you have already uploaded. Are you sure?", {
-                    title: 'Confirm',
-                    size: 'sm',
-                    buttonSize: 'sm',
-                    okVariant: 'danger',
-                    okTitle: 'Delete',
-                    cancelTitle: 'No',
-                    footerClass: 'p2',
-                    hideHeaderClose: false,
-                    centered: true
-                })
-                .then(value => {
-                    if (value) {
-                        this.$emit("deleteInitImage", this.sortedFiles[sortedIndex].path);
-                        this.editedFiles.splice(editedIndex, 1);
-                        this.sortedFiles.splice(sortedIndex, 1);
-                    }
-                })
-                .catch(e => {
-                    console.error(e);
-                })
+                this.$bvModal
+                    .msgBoxConfirm(
+                        "You are about to delete an image that you have already uploaded. Are you sure?",
+                        {
+                            title: "Confirm",
+                            size: "sm",
+                            buttonSize: "sm",
+                            okVariant: "danger",
+                            okTitle: "Delete",
+                            cancelTitle: "No",
+                            footerClass: "p2",
+                            hideHeaderClose: false,
+                            centered: true
+                        }
+                    )
+                    .then(value => {
+                        if (value) {
+                            this.$emit(
+                                "deleteInitImage",
+                                this.sortedFiles[sortedIndex].path
+                            );
+                            this.editedFiles.splice(editedIndex, 1);
+                            this.sortedFiles.splice(sortedIndex, 1);
+                        }
+                    })
+                    .catch(e => {
+                        console.error(e);
+                    });
             } else {
                 this.editedFiles.splice(editedIndex, 1);
                 this.sortedFiles.splice(sortedIndex, 1);
@@ -163,7 +200,7 @@ export default {
             console.log("Uploader reset");
         }
     }
-}
+};
 </script>
 
 <style scoped>

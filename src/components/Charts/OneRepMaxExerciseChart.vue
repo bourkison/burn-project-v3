@@ -2,7 +2,11 @@
     <b-card no-body>
         <b-card-body>
             <div v-if="!isLoading">
-                <b-card-title><h6>{{ selectedExercise.name }} One Rep Max</h6></b-card-title>
+                <b-card-title
+                    ><h6>
+                        {{ selectedExercise.name }} One Rep Max
+                    </h6></b-card-title
+                >
                 <canvas id="oneRepMaxChart"></canvas>
             </div>
             <div v-else class="align-items text-center">
@@ -13,11 +17,11 @@
 </template>
 
 <script>
-import dayjs from 'dayjs'
-import { Chart, registerables } from 'chart.js'
+import dayjs from "dayjs";
+import { Chart, registerables } from "chart.js";
 
 export default {
-    name: 'OneRepMaxExerciseChart',
+    name: "OneRepMaxExerciseChart",
     props: {
         exercisePosition: {
             type: Number,
@@ -38,20 +42,25 @@ export default {
             delayed: false,
             chartLabels: [],
             chartDataORM: [],
-            chartDataReps: [],
-        }
+            chartDataReps: []
+        };
     },
 
     mounted: async function() {
         if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
-            console.log("Not loading 1RM chart for this user.")
+            console.log("Not loading 1RM chart for this user.");
         } else {
             if (this.$store.state.userWorkouts === null) {
-                await this.$store.dispatch("fetchWorkouts", this.$store.state.userProfile.data);
+                await this.$store.dispatch(
+                    "fetchWorkouts",
+                    this.$store.state.userProfile.data
+                );
             }
 
             this.buildChartData();
-            this.$nextTick (() => { this.buildChart() });
+            this.$nextTick(() => {
+                this.buildChart();
+            });
         }
     },
 
@@ -77,7 +86,7 @@ export default {
                     },
                     {
                         label: "Total Reps",
-                        type: 'bar',
+                        type: "bar",
                         data: this.chartDataReps,
                         backgroundColor: "rgba(0, 123, 255, 0.5)",
                         borderColor: "#007bff",
@@ -85,19 +94,25 @@ export default {
                         yAxisID: "y1"
                     }
                 ]
-            }
+            };
             let options = {
                 animation: {
                     onComplete: () => {
                         this.delayed = true;
                     },
-                    delay: (context) => {
+                    delay: context => {
                         let delay = 0;
-                        if (context.type === 'data' && context.mode === 'default' && !this.delayed) {
-                            delay = context.dataIndex * 150 + context.datasetIndex * 50;
+                        if (
+                            context.type === "data" &&
+                            context.mode === "default" &&
+                            !this.delayed
+                        ) {
+                            delay =
+                                context.dataIndex * 150 +
+                                context.datasetIndex * 50;
                         }
                         return delay;
-                    },
+                    }
                 },
                 plugins: {
                     legend: {
@@ -110,7 +125,7 @@ export default {
                             display: false
                         },
                         title: {
-                            text: "Week Commencing",
+                            text: "Week Commencing"
                         },
                         ticks: {
                             font: {
@@ -119,23 +134,27 @@ export default {
                         }
                     },
                     y: {
-                        type: 'linear',
+                        type: "linear",
                         display: true,
-                        position: 'left',
+                        position: "left"
                     },
                     y1: {
-                        type: 'linear',
+                        type: "linear",
                         display: true,
-                        position: 'right',
+                        position: "right",
                         grid: {
                             drawOnChartArea: false
                         }
                     }
                 }
-            }
+            };
 
             // eslint-disable-next-line
-            const chart = new Chart(ctx, { type: chartType, data: chartData, options: options })
+            const chart = new Chart(ctx, {
+                type: chartType,
+                data: chartData,
+                options: options
+            });
         },
 
         buildChartData: function() {
@@ -146,35 +165,43 @@ export default {
                 workout.exercises.forEach(exercise => {
                     if (exerciseData[exercise.id]) {
                         exerciseData[exercise.id].push(exercise);
-                        exerciseData[exercise.id][exerciseData[exercise.id].length - 1].createdAt = workout.createdAt.toDate();
+                        exerciseData[exercise.id][
+                            exerciseData[exercise.id].length - 1
+                        ].createdAt = workout.createdAt.toDate();
                     } else {
                         exerciseData[exercise.id] = [exercise];
-                        exerciseData[exercise.id][0].createdAt = workout.createdAt.toDate();
+                        exerciseData[
+                            exercise.id
+                        ][0].createdAt = workout.createdAt.toDate();
                     }
-                })
-            })
+                });
+            });
 
             exerciseData = Object.entries(exerciseData);
 
             // Now sort by amount done.
             exerciseData.sort((a, b) => {
                 return b[1].length - a[1].length;
-            })
+            });
 
             console.log(exerciseData);
             this.selectedExercise = {
                 id: exerciseData[this.$props.exercisePosition][0],
                 name: exerciseData[this.$props.exercisePosition][1][0].name,
                 data: exerciseData[this.$props.exercisePosition][1]
-            }
+            };
 
             if (this.amountInChart > this.selectedExercise.data.length) {
                 this.amountInChart = this.selectedExercise.data.length;
             }
 
-            for (let i = this.amountInChart - 1; i >= 0; i --) {
-                this.chartLabels.push(dayjs(this.selectedExercise.data[i].createdAt).format("DD-MM"));
-                
+            for (let i = this.amountInChart - 1; i >= 0; i--) {
+                this.chartLabels.push(
+                    dayjs(this.selectedExercise.data[i].createdAt).format(
+                        "DD-MM"
+                    )
+                );
+
                 // Calculate 1RM for every set and sort.
                 let ormArr = [];
                 let repsCounter = 0;
@@ -182,9 +209,11 @@ export default {
                 this.selectedExercise.data[i].sets.forEach(set => {
                     ormArr.push(this.calcORM(set.kg, set.measureAmount));
                     repsCounter += set.measureAmount;
-                })
+                });
 
-                ormArr.sort((a, b) => { b - a });
+                ormArr.sort((a, b) => {
+                    b - a;
+                });
 
                 // Push the highest.
                 this.chartDataORM.push(ormArr[0]);
@@ -196,14 +225,14 @@ export default {
 
         calcORM: function(amount, reps) {
             if (reps >= 30) {
-                return amount / 0.50;
+                return amount / 0.5;
             } else if (reps <= 0 || amount <= 0) {
                 return 0;
             }
 
-            switch(reps) {
+            switch (reps) {
                 case 1:
-                    return Math.round((amount) * 2) / 2;
+                    return Math.round(amount * 2) / 2;
                 case 2:
                     return Math.round((amount / 0.97) * 2) / 2;
                 case 3:
@@ -227,7 +256,7 @@ export default {
                 case 12:
                     return Math.round((amount / 0.71) * 2) / 2;
                 case 13:
-                    return Math.round((amount / 0.70) * 2) / 2;
+                    return Math.round((amount / 0.7) * 2) / 2;
                 case 14:
                     return Math.round((amount / 0.68) * 2) / 2;
                 case 15:
@@ -241,7 +270,7 @@ export default {
                 case 19:
                     return Math.round((amount / 0.61) * 2) / 2;
                 case 20:
-                    return Math.round((amount / 0.60) * 2) / 2;
+                    return Math.round((amount / 0.6) * 2) / 2;
                 case 21:
                     return Math.round((amount / 0.59) * 2) / 2;
                 case 22:
@@ -256,18 +285,18 @@ export default {
                     return Math.round((amount / 0.54) * 2) / 2;
                 case 27:
                     return Math.round((amount / 0.53) * 2) / 2;
-                case 28: 
+                case 28:
                     return Math.round((amount / 0.52) * 2) / 2;
                 case 29:
                     return Math.round((amount / 0.51) * 2) / 2;
             }
         }
     }
-}
+};
 </script>
 
 <style scoped>
-    .align-items {
-        align-items: center !important;
-    }
+.align-items {
+    align-items: center !important;
+}
 </style>

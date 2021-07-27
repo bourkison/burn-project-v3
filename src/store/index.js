@@ -1,9 +1,9 @@
-import { API } from 'aws-amplify';
-import Vue from 'vue'
-import Vuex from 'vuex'
-import { userWorkoutsCollection } from '../firebase'
+import { API } from "aws-amplify";
+import Vue from "vue";
+import Vuex from "vuex";
+import { userWorkoutsCollection } from "../firebase";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 // Used for tracking live workout
 const activeWorkoutModule = {
@@ -18,7 +18,7 @@ const activeWorkoutModule = {
         startTime: 0,
         finishTime: 0,
         interval: null,
-        timeString: '00:00'
+        timeString: "00:00"
     }),
 
     mutations: {
@@ -43,11 +43,19 @@ const activeWorkoutModule = {
         },
 
         changeExerciseOrder: function(state, data) {
-            state.workout.exercises.splice(data.n, 0, state.workout.exercises.splice(data.o, 1)[0]);
+            state.workout.exercises.splice(
+                data.n,
+                0,
+                state.workout.exercises.splice(data.o, 1)[0]
+            );
         },
 
         setExerciseValue: function(state, data) {
-            Vue.set(state.workout.exercises[data.exerciseIndex], data.key, data.value);
+            Vue.set(
+                state.workout.exercises[data.exerciseIndex],
+                data.key,
+                data.value
+            );
         },
 
         addSet: function(state, data) {
@@ -59,7 +67,11 @@ const activeWorkoutModule = {
         },
 
         setSetValue: function(state, data) {
-            Vue.set(state.workout.exercises[data.exerciseIndex].sets[data.setIndex], data.key, data.value);
+            Vue.set(
+                state.workout.exercises[data.exerciseIndex].sets[data.setIndex],
+                data.key,
+                data.value
+            );
         },
 
         setEmptyWorkout: function(state, value) {
@@ -91,15 +103,28 @@ const activeWorkoutModule = {
                 const now = new Date().getTime();
                 let duration = now - state.startTime;
 
-                let hours = Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
-                let minutes = (Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60))).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
-                let seconds = (Math.floor((duration % (1000 * 60)) / 1000)).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+                let hours = Math.floor(
+                    (duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
+                );
+                let minutes = Math.floor(
+                    (duration % (1000 * 60 * 60)) / (1000 * 60)
+                ).toLocaleString("en-US", {
+                    minimumIntegerDigits: 2,
+                    useGrouping: false
+                });
+                let seconds = Math.floor(
+                    (duration % (1000 * 60)) / 1000
+                ).toLocaleString("en-US", {
+                    minimumIntegerDigits: 2,
+                    useGrouping: false
+                });
 
                 if (!state.isFinishing) {
                     if (!hours) {
                         state.timeString = minutes + ":" + seconds;
                     } else {
-                        state.timeString = hours + ":" + minutes + ":" + seconds;
+                        state.timeString =
+                            hours + ":" + minutes + ":" + seconds;
                     }
                 }
             }, timer);
@@ -109,9 +134,21 @@ const activeWorkoutModule = {
             const now = new Date().getTime();
             let duration = now - state.startTime;
 
-            let hours = Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
-            let minutes = (Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60))).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
-            let seconds = (Math.floor((duration % (1000 * 60)) / 1000)).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+            let hours = Math.floor(
+                (duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
+            );
+            let minutes = Math.floor(
+                (duration % (1000 * 60 * 60)) / (1000 * 60)
+            ).toLocaleString("en-US", {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+            });
+            let seconds = Math.floor(
+                (duration % (1000 * 60)) / 1000
+            ).toLocaleString("en-US", {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+            });
 
             if (!state.isFinishing) {
                 if (!hours) {
@@ -129,8 +166,7 @@ const activeWorkoutModule = {
             state.workoutCommenced = false;
             state.workout = {};
             state.previousWorkout = {};
-            state.emptyWorkout = true,
-            state.startTime = 0;
+            (state.emptyWorkout = true), (state.startTime = 0);
             state.finishTime = 0;
             state.interval = null;
             state.timeString = "00:00";
@@ -157,16 +193,16 @@ const activeWorkoutModule = {
                     } else {
                         set.measureAmount = Number(set.measureAmount);
                     }
-                })
+                });
 
                 if (!exercise.notes) {
                     exercise.notes = "";
                 }
-                
+
                 if (!payload.exerciseIds.includes(exercise.id)) {
                     payload.exerciseIds.push(exercise.id);
                 }
-            })
+            });
 
             payload.createdAt = new Date();
             payload.duration = state.finishTime - state.startTime;
@@ -174,17 +210,17 @@ const activeWorkoutModule = {
             const d = await userWorkoutsCollection(userId).add(payload);
             let temp = d.data();
             temp.id = d.id;
-            commit('pushWorkoutToUserWorkouts', temp);
+            commit("pushWorkoutToUserWorkouts", temp);
         }
     }
 };
 
 export default new Vuex.Store({
     state: {
-        apiName: 'projectburnapi',
+        apiName: "projectburnapi",
         workoutPromises: [],
         userProfile: null,
-        userWorkouts: null,
+        userWorkouts: null
     },
     mutations: {
         setLoggedInUser: function(state, user) {
@@ -205,28 +241,38 @@ export default new Vuex.Store({
     },
     actions: {
         fetchUser: async function({ state, commit }, data) {
-            const path = '/user/' + data.idToken.payload['cognito:username'];
+            const path = "/user/" + data.idToken.payload["cognito:username"];
             const myInit = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": data.idToken.jwtToken 
+                    Authorization: data.idToken.jwtToken
                 }
             };
 
-            const docData = (await API.get(state.apiName, path, myInit).catch(() => {
-                console.error("Error getting user doc.");
-            })).data
-            
-            commit('setLoggedInUser', { loggedIn: true, data: data, docData: docData });
+            const docData = (
+                await API.get(state.apiName, path, myInit).catch(() => {
+                    console.error("Error getting user doc.");
+                })
+            ).data;
+
+            commit("setLoggedInUser", {
+                loggedIn: true,
+                data: data,
+                docData: docData
+            });
         },
 
         // As this function may get callled multiple times from different components,
         // Store the promise in an array to avoid loading it multiple times.
         fetchWorkouts: async function({ commit }, user) {
             if (this.state.workoutPromises.length === 0) {
-                commit('setLoadingWorkouts', [userWorkoutsCollection(user.uid).orderBy("createdAt", "desc").get()]);
+                commit("setLoadingWorkouts", [
+                    userWorkoutsCollection(user.uid)
+                        .orderBy("createdAt", "desc")
+                        .get()
+                ]);
 
-                const responses = await Promise.all(this.state.workoutPromises)
+                const responses = await Promise.all(this.state.workoutPromises);
 
                 responses.forEach(workoutSnapshot => {
                     let workouts = [];
@@ -235,20 +281,20 @@ export default new Vuex.Store({
                             let d = workout.data();
                             d.id = workout.id;
                             workouts.push(d);
-                        })
+                        });
                     }
 
-                    commit('setLoggedInUserWorkouts', workouts);
-                    commit('setLoadingWorkouts', []);
-                })
+                    commit("setLoggedInUserWorkouts", workouts);
+                    commit("setLoadingWorkouts", []);
+                });
             } else {
                 await Promise.all(this.state.workoutPromises).then(() => {
-                    commit('setLoadingWorkouts', []);
-                })
+                    commit("setLoadingWorkouts", []);
+                });
             }
         }
     },
     modules: {
         activeWorkout: activeWorkoutModule
     }
-})
+});

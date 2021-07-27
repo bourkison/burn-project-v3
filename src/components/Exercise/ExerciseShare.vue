@@ -2,10 +2,18 @@
     <b-container>
         <b-card no-body class="mb-1 exerciseExpandableItem">
             <b-card-header header-tag="header" class="p-1" role="tab">
-                <b-button block variant="outlined" class="d-flex" size="sm" @click="isVisible = !isVisible">
+                <b-button
+                    block
+                    variant="outlined"
+                    class="d-flex"
+                    size="sm"
+                    @click="isVisible = !isVisible"
+                >
                     <span v-if="!isLoading">{{ exercise.name }}</span>
-                    <span v-else><b-spinner small /></span>
-                    <strong v-if="isVisible" aria-hidden="true" class="ml-auto">-</strong>
+                    <span v-else><b-spinner small/></span>
+                    <strong v-if="isVisible" aria-hidden="true" class="ml-auto"
+                        >-</strong
+                    >
                     <strong v-else aria-hidden="true" class="ml-auto">+</strong>
                 </b-button>
             </b-card-header>
@@ -25,11 +33,11 @@
 </template>
 
 <script>
-import { Viewer } from '@toast-ui/vue-editor'
-import { db } from '@/firebase'
+import { Viewer } from "@toast-ui/vue-editor";
+import { db } from "@/firebase";
 
 export default {
-    name: 'ExerciseShare',
+    name: "ExerciseShare",
     components: { Viewer },
     props: {
         exerciseId: {
@@ -44,7 +52,7 @@ export default {
 
             // Bootstrap:
             isVisible: false
-        }
+        };
     },
 
     created: function() {
@@ -55,13 +63,15 @@ export default {
         downloadExercise: function() {
             this.isLoading = true;
 
-            db.collection("exercises").doc(this.$props.exerciseId).get()
-            .then(exerciseDoc => {
-                this.exercise = exerciseDoc.data();
-                this.exercise.id = exerciseDoc.id;
+            db.collection("exercises")
+                .doc(this.$props.exerciseId)
+                .get()
+                .then(exerciseDoc => {
+                    this.exercise = exerciseDoc.data();
+                    this.exercise.id = exerciseDoc.id;
 
-                this.isLoading = false;
-            })
+                    this.isLoading = false;
+                });
         }
     },
 
@@ -70,5 +80,5 @@ export default {
             this.downloadExercise();
         }
     }
-}
+};
 </script>

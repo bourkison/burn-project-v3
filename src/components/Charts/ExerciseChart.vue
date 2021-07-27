@@ -2,21 +2,17 @@
     <div v-if="dataExists && !isLoading">
         <canvas class="exerciseChart"></canvas>
     </div>
-    <div v-else-if="isLoading">
-
-    </div>
-    <div v-else>
-
-    </div>
+    <div v-else-if="isLoading"></div>
+    <div v-else></div>
 </template>
 
 <script>
 // import { userWorkoutsCollection } from '@/firebase'
-import dayjs from 'dayjs'
-import { Chart, registerables } from 'chart.js';
+import dayjs from "dayjs";
+import { Chart, registerables } from "chart.js";
 
 export default {
-    name: 'ExerciseChart',
+    name: "ExerciseChart",
     props: {
         exerciseId: {
             type: String,
@@ -38,7 +34,7 @@ export default {
 
             // Chart.js
             chartLabels: []
-        }
+        };
     },
 
     created: async function() {
@@ -47,17 +43,25 @@ export default {
         this.buildRepsData();
         this.buildWeightLiftedData();
         this.buildLabels();
-        this.$nextTick (() => { this.buildChart() });
+        this.$nextTick(() => {
+            this.buildChart();
+        });
     },
 
     methods: {
         getWorkouts: async function() {
             if (this.$store.state.userWorkouts == null) {
-                await this.$store.dispatch('fetchWorkouts', this.$store.state.userProfile.data);
+                await this.$store.dispatch(
+                    "fetchWorkouts",
+                    this.$store.state.userProfile.data
+                );
             }
 
-            this.workoutData = this.$store.state.userWorkouts.filter(x => { 
-                if (x.exerciseIds && x.exerciseIds.includes(this.$props.exerciseId)) {
+            this.workoutData = this.$store.state.userWorkouts.filter(x => {
+                if (
+                    x.exerciseIds &&
+                    x.exerciseIds.includes(this.$props.exerciseId)
+                ) {
                     return true;
                 } else {
                     return false;
@@ -70,14 +74,14 @@ export default {
                 let exerciseArr = [];
                 workout.exercises.forEach(exercise => {
                     if (exercise.id === this.$props.exerciseId) {
-                        console.log("EX:", exercise)
+                        console.log("EX:", exercise);
                         exercise.sets.forEach(set => {
                             exerciseArr.push(set);
-                        })
+                        });
                     }
-                })
+                });
                 this.exerciseData.push(exerciseArr);
-            })
+            });
 
             this.dataExists = true;
             this.isLoading = false;
@@ -85,7 +89,7 @@ export default {
             // if (this.workoutData.length < this.amountInChart) {
             //     console.log(this.$props.exerciseId);
             //     const workoutSnapshot = await userWorkoutsCollection(this.$store.state.userProfile.data.uid).where("exerciseIds", "array-contains", this.$props.exerciseId).orderBy("createdAt").limit(this.amountInChart).get();
-                
+
             //     if (workoutSnapshot.size > 0) {
             //         workoutSnapshot.forEach(workoutDoc => {
             //             this.workoutData.push(workoutDoc.data());
@@ -100,8 +104,10 @@ export default {
 
         buildLabels: function() {
             this.workoutData.forEach(workout => {
-                this.chartLabels.push(dayjs(workout.createdAt.toDate()).format("DD-MM"));
-            })
+                this.chartLabels.push(
+                    dayjs(workout.createdAt.toDate()).format("DD-MM")
+                );
+            });
         },
 
         buildChart: function() {
@@ -124,7 +130,7 @@ export default {
                     },
                     {
                         label: "Total Reps",
-                        type: 'bar',
+                        type: "bar",
                         data: this.repsData,
                         backgroundColor: "rgba(0, 123, 255, 0.5)",
                         borderColor: "#007bff",
@@ -132,19 +138,25 @@ export default {
                         yAxisID: "y1"
                     }
                 ]
-            }
+            };
             let options = {
                 animation: {
                     onComplete: () => {
                         this.delayed = true;
                     },
-                    delay: (context) => {
+                    delay: context => {
                         let delay = 0;
-                        if (context.type === 'data' && context.mode === 'default' && !this.delayed) {
-                            delay = context.dataIndex * 150 + context.datasetIndex * 50;
+                        if (
+                            context.type === "data" &&
+                            context.mode === "default" &&
+                            !this.delayed
+                        ) {
+                            delay =
+                                context.dataIndex * 150 +
+                                context.datasetIndex * 50;
                         }
                         return delay;
-                    },
+                    }
                 },
                 plugins: {
                     legend: {
@@ -157,7 +169,7 @@ export default {
                             display: false
                         },
                         title: {
-                            text: "Week Commencing",
+                            text: "Week Commencing"
                         },
                         ticks: {
                             font: {
@@ -166,23 +178,27 @@ export default {
                         }
                     },
                     y: {
-                        type: 'linear',
+                        type: "linear",
                         display: true,
-                        position: 'left',
+                        position: "left"
                     },
                     y1: {
-                        type: 'linear',
+                        type: "linear",
                         display: true,
-                        position: 'right',
+                        position: "right",
                         grid: {
                             drawOnChartArea: false
                         }
                     }
                 }
-            }
+            };
 
             // eslint-disable-next-line
-            const chart = new Chart(ctx, { type: chartType, data: chartData, options: options })
+            const chart = new Chart(ctx, {
+                type: chartType,
+                data: chartData,
+                options: options
+            });
         },
 
         buildWeightLiftedData: function() {
@@ -191,10 +207,10 @@ export default {
 
                 exercise.forEach(set => {
                     weightLifted += set.measureAmount * set.kg;
-                })
+                });
 
                 this.weightLiftedData.push(weightLifted);
-            })
+            });
         },
 
         buildOrmData: function() {
@@ -202,12 +218,14 @@ export default {
                 let ormArr = [];
 
                 exercise.forEach(set => {
-                    ormArr.push(this.calcORM(set.kg, set.measureAmount))
-                })
+                    ormArr.push(this.calcORM(set.kg, set.measureAmount));
+                });
 
-                ormArr.sort((a, b) => { b - a });
+                ormArr.sort((a, b) => {
+                    b - a;
+                });
                 this.ormData.push(ormArr[0]);
-            })
+            });
         },
 
         buildRepsData: function() {
@@ -216,22 +234,22 @@ export default {
 
                 exercise.forEach(set => {
                     totalReps += set.measureAmount;
-                })
+                });
 
                 this.repsData.push(totalReps);
-            })
+            });
         },
 
         calcORM: function(amount, reps) {
             if (reps >= 30) {
-                return amount / 0.50;
+                return amount / 0.5;
             } else if (reps <= 0 || amount <= 0) {
                 return 0;
             }
 
-            switch(reps) {
+            switch (reps) {
                 case 1:
-                    return Math.round((amount) * 2) / 2;
+                    return Math.round(amount * 2) / 2;
                 case 2:
                     return Math.round((amount / 0.97) * 2) / 2;
                 case 3:
@@ -255,7 +273,7 @@ export default {
                 case 12:
                     return Math.round((amount / 0.71) * 2) / 2;
                 case 13:
-                    return Math.round((amount / 0.70) * 2) / 2;
+                    return Math.round((amount / 0.7) * 2) / 2;
                 case 14:
                     return Math.round((amount / 0.68) * 2) / 2;
                 case 15:
@@ -269,7 +287,7 @@ export default {
                 case 19:
                     return Math.round((amount / 0.61) * 2) / 2;
                 case 20:
-                    return Math.round((amount / 0.60) * 2) / 2;
+                    return Math.round((amount / 0.6) * 2) / 2;
                 case 21:
                     return Math.round((amount / 0.59) * 2) / 2;
                 case 22:
@@ -284,12 +302,12 @@ export default {
                     return Math.round((amount / 0.54) * 2) / 2;
                 case 27:
                     return Math.round((amount / 0.53) * 2) / 2;
-                case 28: 
+                case 28:
                     return Math.round((amount / 0.52) * 2) / 2;
                 case 29:
                     return Math.round((amount / 0.51) * 2) / 2;
             }
         }
     }
-}
+};
 </script>

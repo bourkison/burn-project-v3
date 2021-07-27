@@ -4,23 +4,64 @@
         <template #header>
             <div v-if="!isLoading" class="d-flex alignHeader" align-v="center">
                 <div class="d-flex centeredHeader" align-v="center">
-                    <b-avatar :to="'/' + postData.createdBy.username" size="1.5rem" class="mr-1 disableAvatarHover" :src="postData.createdBy.profilePhoto" />
-                    <span><router-link :to="'/' + postData.createdBy.username" class="text-dark username">{{ postData.createdBy.username }}</router-link>&#32;&nbsp; </span>
+                    <b-avatar
+                        :to="'/' + postData.createdBy.username"
+                        size="1.5rem"
+                        class="mr-1 disableAvatarHover"
+                        :src="postData.createdBy.profilePhoto"
+                    />
+                    <span
+                        ><router-link
+                            :to="'/' + postData.createdBy.username"
+                            class="text-dark username"
+                            >{{ postData.createdBy.username }}</router-link
+                        >&#32;&nbsp;
+                    </span>
                     <span class="ml-1" v-if="postData.share.type">
-                        <span v-if="postData.share.type == 'exercise'">&nbsp;shared an <router-link :to="'/exercises/'+ postData.share.id">exercise</router-link>.</span>
-                        <span v-if="postData.share.type == 'template'">&nbsp;shared a <router-link :to="'/templates/'+ postData.share.id">template</router-link>.</span>
-                        <span v-if="postData.share.type == 'workout'">&nbsp;shared a workout.</span>
+                        <span v-if="postData.share.type == 'exercise'"
+                            >&nbsp;shared an
+                            <router-link :to="'/exercises/' + postData.share.id"
+                                >exercise</router-link
+                            >.</span
+                        >
+                        <span v-if="postData.share.type == 'template'"
+                            >&nbsp;shared a
+                            <router-link :to="'/templates/' + postData.share.id"
+                                >template</router-link
+                            >.</span
+                        >
+                        <span v-if="postData.share.type == 'workout'"
+                            >&nbsp;shared a workout.</span
+                        >
                     </span>
                 </div>
                 <div class="d-flex ml-auto text-muted centeredHeader">
-                    <span class="createdAtText" :title="Date(postData.createdAt).toLocaleString()"><em>{{ createdAtText }}</em></span>
-                    <b-dropdown left variant="outline" size="sm" style="padding-top:1px;">
-                        <span v-if="postData.createdBy.id === $store.state.userProfile.data.uid">
+                    <span
+                        class="createdAtText"
+                        :title="Date(postData.createdAt).toLocaleString()"
+                        ><em>{{ createdAtText }}</em></span
+                    >
+                    <b-dropdown
+                        left
+                        variant="outline"
+                        size="sm"
+                        style="padding-top:1px;"
+                    >
+                        <span
+                            v-if="
+                                postData.createdBy.id ===
+                                    $store.state.userProfile.data.uid
+                            "
+                        >
                             <b-dropdown-item>Edit</b-dropdown-item>
-                            <b-dropdown-item variant="danger">Delete</b-dropdown-item>
+                            <b-dropdown-item variant="danger"
+                                >Delete</b-dropdown-item
+                            >
                         </span>
                         <span v-else>
-                            <b-dropdown-item variant="danger">Report</b-dropdown-item>
+                            <b-dropdown-item variant="danger"
+                                >Report</b-dropdown-item
+                            >
                         </span>
                     </b-dropdown>
                 </div>
@@ -30,12 +71,21 @@
             </div>
         </template>
 
-
         <!-- Content -->
         <div v-if="!isLoading">
             <div v-if="imgUrls.length > 1">
-                <b-carousel v-model="carouselModel" controls indicators :interval="0">
-                    <b-aspect><b-carousel-slide v-for="img in imgUrls" :key="img" :img-src="img"/></b-aspect>
+                <b-carousel
+                    v-model="carouselModel"
+                    controls
+                    indicators
+                    :interval="0"
+                >
+                    <b-aspect
+                        ><b-carousel-slide
+                            v-for="img in imgUrls"
+                            :key="img"
+                            :img-src="img"
+                    /></b-aspect>
                 </b-carousel>
             </div>
             <div v-else-if="imgUrls.length > 0">
@@ -54,36 +104,50 @@
                         </div>
 
                         <div v-else-if="postData.share.type == 'workout'">
-                            <WorkoutShare :workoutId="postData.share.id" :userId="postData.createdBy.id" />
+                            <WorkoutShare
+                                :workoutId="postData.share.id"
+                                :userId="postData.createdBy.id"
+                            />
                         </div>
                     </div>
                     {{ postData.content }}
                 </b-card-text>
             </b-card-body>
-            <CommentSection :docId="postData.id" collection="posts" :followableComponent="false" />
+            <CommentSection
+                :docId="postData.id"
+                collection="posts"
+                :followableComponent="false"
+            />
         </div>
         <div v-else>
             <b-card-body>
-                <b-skeleton v-for="(index) in (Math.floor(Math.random() * 4) + 3)" :key="index" animation="wave" :width="(Math.floor(Math.random() * 50) + 50).toString() + '%'"></b-skeleton>
+                <b-skeleton
+                    v-for="index in Math.floor(Math.random() * 4) + 3"
+                    :key="index"
+                    animation="wave"
+                    :width="
+                        (Math.floor(Math.random() * 50) + 50).toString() + '%'
+                    "
+                ></b-skeleton>
             </b-card-body>
         </div>
     </b-card>
 </template>
 
 <script>
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
-import CommentSection from '@/components/Comment/CommentSection.vue'
+import CommentSection from "@/components/Comment/CommentSection.vue";
 
-import WorkoutShare from '@/components/Workout/WorkoutShare.vue'
-import ExerciseShare from '@/components/Exercise/ExerciseShare.vue'
-import TemplateShare from '@/components/Template/TemplateShare.vue'
+import WorkoutShare from "@/components/Workout/WorkoutShare.vue";
+import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
+import TemplateShare from "@/components/Template/TemplateShare.vue";
 
-import { db, storage } from '@/firebase'
+import { db, storage } from "@/firebase";
 
 export default {
-    name: 'PostComponent',
+    name: "PostComponent",
     components: { CommentSection, WorkoutShare, ExerciseShare, TemplateShare },
     props: {
         postId: {
@@ -97,11 +161,11 @@ export default {
             isLoading: true,
             postData: {},
             imgUrls: [],
-            createdAtText: '',
+            createdAtText: "",
 
             // Bootstrap:
             carouselModel: 0
-        }
+        };
     },
 
     created: function() {
@@ -109,35 +173,41 @@ export default {
     },
 
     mounted: function() {
-        db.collection("posts").doc(this.$props.postId).get()
-        .then(postDoc => {
-            this.postData = postDoc.data();
-            this.postData.id = postDoc.id;
+        db.collection("posts")
+            .doc(this.$props.postId)
+            .get()
+            .then(postDoc => {
+                this.postData = postDoc.data();
+                this.postData.id = postDoc.id;
 
-            if (this.postData.filePaths.length > 0) {
-                let imageDownloadPromises = [];
-                
-                this.postData.filePaths.forEach(imgPath => {
-                    imageDownloadPromises.push(storage.ref(imgPath).getDownloadURL());
-                })
+                if (this.postData.filePaths.length > 0) {
+                    let imageDownloadPromises = [];
 
-                return Promise.all(imageDownloadPromises).then(imgUrls => {
-                    imgUrls.forEach(url => {
-                        this.imgUrls.push(url);
-                    })
-                })
-            }
-        })
-        .then(() => {
-            this.isLoading = false;
-            this.createdAtText = dayjs(dayjs.unix(this.postData.createdAt.seconds)).fromNow();
-        })
-        .catch(e => {
-            console.error("Error downloading post:", e);
-            this.isLoading = false;
-        })
+                    this.postData.filePaths.forEach(imgPath => {
+                        imageDownloadPromises.push(
+                            storage.ref(imgPath).getDownloadURL()
+                        );
+                    });
+
+                    return Promise.all(imageDownloadPromises).then(imgUrls => {
+                        imgUrls.forEach(url => {
+                            this.imgUrls.push(url);
+                        });
+                    });
+                }
+            })
+            .then(() => {
+                this.isLoading = false;
+                this.createdAtText = dayjs(
+                    dayjs.unix(this.postData.createdAt.seconds)
+                ).fromNow();
+            })
+            .catch(e => {
+                console.error("Error downloading post:", e);
+                this.isLoading = false;
+            });
     }
-}
+};
 </script>
 
 <style scoped>

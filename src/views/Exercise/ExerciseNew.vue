@@ -6,21 +6,46 @@
                     <b-card class="newExerciseCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{ exerciseForm.name ? exerciseForm.name : 'New Exercise' }}
+                                {{
+                                    exerciseForm.name
+                                        ? exerciseForm.name
+                                        : "New Exercise"
+                                }}
                             </b-card-title>
-                                <b-form-group label="Name" label-for="nameInput">
-                                    <b-form-input id="nameInput" v-model="exerciseForm.name" type="text" placeholder="Exercise Name" required />
-                                </b-form-group>
-                                <b-form-group label="Image/Video" label-for="imageInput">
-                                    <ImageUploader @updateImages="updateImages" :inlineDisplay="false" />
-                                </b-form-group>
+                            <b-form-group label="Name" label-for="nameInput">
+                                <b-form-input
+                                    id="nameInput"
+                                    v-model="exerciseForm.name"
+                                    type="text"
+                                    placeholder="Exercise Name"
+                                    required
+                                />
+                            </b-form-group>
+                            <b-form-group
+                                label="Image/Video"
+                                label-for="imageInput"
+                            >
+                                <ImageUploader
+                                    @updateImages="updateImages"
+                                    :inlineDisplay="false"
+                                />
+                            </b-form-group>
                         </b-card-body>
                     </b-card>
 
                     <b-card no-body class="descriptionCard">
-                        <b-card-body>   
+                        <b-card-body>
                             <h5>Description</h5>
-                            <Editor @change="updateDescription" id="descriptionInput" placeholder="Test" ref="toastuiEditor" :options="editorOptions" height="300px" initialEditType="wysiwyg" previewStyle="vertical" />
+                            <Editor
+                                @change="updateDescription"
+                                id="descriptionInput"
+                                placeholder="Test"
+                                ref="toastuiEditor"
+                                :options="editorOptions"
+                                height="300px"
+                                initialEditType="wysiwyg"
+                                previewStyle="vertical"
+                            />
                         </b-card-body>
                     </b-card>
                 </b-container>
@@ -30,14 +55,18 @@
                     <b-card class="difficultySelectCard" no-body>
                         <b-card-body>
                             <h5>Difficulty</h5>
-                            <DifficultySelector @updateDifficulty="updateDifficulty" />
+                            <DifficultySelector
+                                @updateDifficulty="updateDifficulty"
+                            />
                         </b-card-body>
                     </b-card>
-                    
+
                     <b-card class="muscleGroupCard" no-body>
                         <b-card-body>
                             <h5>Muscle Groups</h5>
-                            <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
+                            <MuscleGroupSelector
+                                @updateMuscleGroups="updateMuscleGroups"
+                            />
                         </b-card-body>
                     </b-card>
 
@@ -53,8 +82,16 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button variant="outline-danger" @click="$router.push('/exercises/')">Cancel</b-button>
-                    <b-button variant="outline-primary" @click="createExercise" :disabled="isCreating">
+                    <b-button
+                        variant="outline-danger"
+                        @click="$router.push('/exercises/')"
+                        >Cancel</b-button
+                    >
+                    <b-button
+                        variant="outline-primary"
+                        @click="createExercise"
+                        :disabled="isCreating"
+                    >
                         <span v-if="isCreating"><b-spinner small/></span>
                         <span v-else>Create</span>
                     </b-button>
@@ -65,32 +102,38 @@
 </template>
 
 <script>
-import 'codemirror/lib/codemirror.css'
-import '@toast-ui/editor/dist/toastui-editor.css'
-import { Editor } from '@toast-ui/vue-editor'
+import "codemirror/lib/codemirror.css";
+import "@toast-ui/editor/dist/toastui-editor.css";
+import { Editor } from "@toast-ui/vue-editor";
 
-import { API, Storage } from 'aws-amplify'
+import { API, Storage } from "aws-amplify";
 
-import crypto from 'crypto'
-import util from 'util'
+import crypto from "crypto";
+import util from "util";
 
-import ImageUploader from '@/components/Utility/ImageUploader.vue'
-import MuscleGroupSelector from '@/components/Utility/MuscleGroupSelector.vue'
-import DifficultySelector from '@/components/Utility/DifficultySelector.vue'
-import TagSelector from '@/components/Utility/TagSelector.vue'
+import ImageUploader from "@/components/Utility/ImageUploader.vue";
+import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
+import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
+import TagSelector from "@/components/Utility/TagSelector.vue";
 
 export default {
-    name: 'ExerciseNew',
-    components: { DifficultySelector, Editor, ImageUploader, MuscleGroupSelector, TagSelector },
+    name: "ExerciseNew",
+    components: {
+        DifficultySelector,
+        Editor,
+        ImageUploader,
+        MuscleGroupSelector,
+        TagSelector
+    },
     data() {
         return {
             exerciseForm: {
-                name: '',
-                description: '',
+                name: "",
+                description: "",
                 muscleGroups: [],
                 difficulty: 1,
                 filePaths: [],
-                measureBy: 'Reps',
+                measureBy: "Reps",
                 tags: []
             },
 
@@ -99,26 +142,26 @@ export default {
 
             // Editor:
             editorOptions: {
-                minHeight: '300px',
-                language: 'en-US',
+                minHeight: "300px",
+                language: "en-US",
                 hideModeSwitch: true,
                 usageStatistics: false,
                 toolbarItems: [
-                    'heading',
-                    'bold',
-                    'italic',
-                    'divider',
-                    'link',
-                    'ul',
-                    'ol',
-                    'quote',
-                    'divider',
-                    'indent',
-                    'outdent',
-                    'hr'
+                    "heading",
+                    "bold",
+                    "italic",
+                    "divider",
+                    "link",
+                    "ul",
+                    "ol",
+                    "quote",
+                    "divider",
+                    "indent",
+                    "outdent",
+                    "hr"
                 ]
             }
-        }
+        };
     },
 
     methods: {
@@ -128,55 +171,72 @@ export default {
             // First upload all images.
             // Cannot use forEach so instead use .map : https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
             // As await does not work in forEach.
-            const imageResults = await Promise.all(this.imagesToUpload.map(async (image, i) => {
-                const imageId = await this.generateId(16);
-                const imageName = "username/" + this.$store.state.userProfile.docData.username + "/exercises/" + imageId;
-                
-                const imageData = await fetch(image.url);
-                const blob = await imageData.blob();
+            const imageResults = await Promise.all(
+                this.imagesToUpload.map(async (image, i) => {
+                    const imageId = await this.generateId(16);
+                    const imageName =
+                        "username/" +
+                        this.$store.state.userProfile.docData.username +
+                        "/exercises/" +
+                        imageId;
 
-                console.log("UPLOADING:", imageName, blob);
+                    const imageData = await fetch(image.url);
+                    const blob = await imageData.blob();
 
-                const imageResponse = await Storage.put(imageName, blob, {
-                    contentType: blob.type,
-                    progressCallback: function(progress) {
-                        console.log("Image:", i, progress.loaded / progress.total, progress);
-                    }
-                }).catch(err => {
-                    console.error("Error uploading image:", i, err);
+                    console.log("UPLOADING:", imageName, blob);
+
+                    const imageResponse = await Storage.put(imageName, blob, {
+                        contentType: blob.type,
+                        progressCallback: function(progress) {
+                            console.log(
+                                "Image:",
+                                i,
+                                progress.loaded / progress.total,
+                                progress
+                            );
+                        }
+                    }).catch(err => {
+                        console.error("Error uploading image:", i, err);
+                    });
+
+                    return imageResponse;
                 })
-
-                return imageResponse;
-            }))
+            );
 
             console.log("Image Results:", imageResults);
             imageResults.forEach(result => {
                 this.exerciseForm.filePaths.push(result.key);
-            })
+            });
 
-            const path = '/exercise'
+            const path = "/exercise";
             const myInit = {
                 headers: {
-                    "Authorization": this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken
+                        .jwtToken
                 },
                 body: {
                     exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
                 }
-            }
+            };
 
-            const response = await API.post(this.$store.state.apiName, path, myInit).catch(err => { 
-                this.isCreating = false; 
+            const response = await API.post(
+                this.$store.state.apiName,
+                path,
+                myInit
+            ).catch(err => {
+                this.isCreating = false;
                 alert(err.message || JSON.stringify(err));
                 return;
             });
-
 
             console.log("CREATION SUCCESS:", response);
             this.$router.push("/exercises/" + response._id);
         },
 
         updateDescription: function() {
-            this.exerciseForm.description = this.$refs.toastuiEditor.invoke('getMarkdown')
+            this.exerciseForm.description = this.$refs.toastuiEditor.invoke(
+                "getMarkdown"
+            );
         },
 
         updateImages: function(images) {
@@ -196,14 +256,14 @@ export default {
         },
 
         generateId: async function(n) {
-            const randomBytes = util.promisify(crypto.randomBytes)
+            const randomBytes = util.promisify(crypto.randomBytes);
             const rawBytes = await randomBytes(n);
 
-            const hex = await rawBytes.toString('hex');
+            const hex = await rawBytes.toString("hex");
             return hex;
         }
     }
-}
+};
 </script>
 
 <style scoped>

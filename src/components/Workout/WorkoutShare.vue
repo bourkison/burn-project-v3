@@ -10,10 +10,17 @@
 
             <div v-for="(exercise, index) in workout.exercises" :key="index">
                 <b-row class="text-center mt-1">
-                    <b-col cols="1" class="setAmountHoverable" v-b-toggle="'setsCollapse-' + workout.id + index">{{ exercise.sets.length }}</b-col>
+                    <b-col
+                        cols="1"
+                        class="setAmountHoverable"
+                        v-b-toggle="'setsCollapse-' + workout.id + index"
+                        >{{ exercise.sets.length }}</b-col
+                    >
 
                     <b-col cols="5">
-                        <router-link :to="'/exercises/' + exercise.id">{{ exercise.name }}</router-link>
+                        <router-link :to="'/exercises/' + exercise.id">{{
+                            exercise.name
+                        }}</router-link>
                     </b-col>
 
                     <b-col cols="3">
@@ -26,11 +33,17 @@
                 </b-row>
 
                 <b-collapse :id="'setsCollapse-' + workout.id + index">
-                    <b-row v-for="(set, index) in exercise.sets" :key="index" class="text-center mt-1 text-muted font-weight-light">
+                    <b-row
+                        v-for="(set, index) in exercise.sets"
+                        :key="index"
+                        class="text-center mt-1 text-muted font-weight-light"
+                    >
                         <b-col cols="1"></b-col>
                         <b-col cols="5">{{ index + 1 }}</b-col>
                         <b-col cols="3">{{ exercise.sets[index].kg }}</b-col>
-                        <b-col cols="3">{{ exercise.sets[index].measureAmount }}</b-col>
+                        <b-col cols="3">{{
+                            exercise.sets[index].measureAmount
+                        }}</b-col>
                     </b-row>
                 </b-collapse>
             </div>
@@ -42,10 +55,10 @@
 </template>
 
 <script>
-import { userWorkoutsCollection } from '@/firebase'
+import { userWorkoutsCollection } from "@/firebase";
 
 export default {
-    name: 'WorkoutShare',
+    name: "WorkoutShare",
     props: {
         workoutId: {
             type: String,
@@ -60,7 +73,7 @@ export default {
         return {
             isLoading: true,
             workout: {}
-        }
+        };
     },
 
     created: function() {
@@ -69,13 +82,15 @@ export default {
 
     methods: {
         downloadWorkout: function() {
-            userWorkoutsCollection(this.$store.state.userProfile.data.uid).doc(this.$props.workoutId).get()
-            .then(workoutDoc => {
-                this.workout = workoutDoc.data();
-                this.workout.id = workoutDoc.id;
+            userWorkoutsCollection(this.$store.state.userProfile.data.uid)
+                .doc(this.$props.workoutId)
+                .get()
+                .then(workoutDoc => {
+                    this.workout = workoutDoc.data();
+                    this.workout.id = workoutDoc.id;
 
-                this.isLoading = false;
-            })
+                    this.isLoading = false;
+                });
         }
     },
 
@@ -84,7 +99,7 @@ export default {
             this.downloadWorkout();
         }
     }
-}
+};
 </script>
 
 <style scoped>

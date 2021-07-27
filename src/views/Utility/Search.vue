@@ -5,21 +5,66 @@
                 <b-container>
                     <b-card no-body class="searchHeader">
                         <b-card-body>
-                            <b-card-title>"{{ searchText }}" Results</b-card-title>
+                            <b-card-title
+                                >"{{ searchText }}" Results</b-card-title
+                            >
 
                             <b-card-text>
                                 <div class="text-center">
-                                    <b-button pill :variant="tabIndex == 0 ? 'primary' : 'outline-primary'" @click="tabIndex=0" size="sm" class="mr-1">Users</b-button>
-                                    <b-button pill :variant="tabIndex == 1 ? 'primary' : 'outline-primary'" @click="tabIndex=1" size="sm" class="ml-1 mr-1">Exercises</b-button>
-                                    <b-button pill :variant="tabIndex == 2 ? 'primary' : 'outline-primary'" @click="tabIndex=2" size="sm" class="ml-1">Templates</b-button>
+                                    <b-button
+                                        pill
+                                        :variant="
+                                            tabIndex == 0
+                                                ? 'primary'
+                                                : 'outline-primary'
+                                        "
+                                        @click="tabIndex = 0"
+                                        size="sm"
+                                        class="mr-1"
+                                        >Users</b-button
+                                    >
+                                    <b-button
+                                        pill
+                                        :variant="
+                                            tabIndex == 1
+                                                ? 'primary'
+                                                : 'outline-primary'
+                                        "
+                                        @click="tabIndex = 1"
+                                        size="sm"
+                                        class="ml-1 mr-1"
+                                        >Exercises</b-button
+                                    >
+                                    <b-button
+                                        pill
+                                        :variant="
+                                            tabIndex == 2
+                                                ? 'primary'
+                                                : 'outline-primary'
+                                        "
+                                        @click="tabIndex = 2"
+                                        size="sm"
+                                        class="ml-1"
+                                        >Templates</b-button
+                                    >
                                 </div>
 
                                 <div class="mt-3" v-if="!isLoading">
-                                    <b-tabs v-model="tabIndex" nav-class="tabNav">
+                                    <b-tabs
+                                        v-model="tabIndex"
+                                        nav-class="tabNav"
+                                    >
                                         <b-tab title="Users" lazy>
                                             <b-list-group>
-                                                <b-list-group-item v-for="user in userResponses" :key="user.id" :to="'/' + user.username">
-                                                    <b-avatar class="mr-2" :src="user.profilePhoto" />
+                                                <b-list-group-item
+                                                    v-for="user in userResponses"
+                                                    :key="user.id"
+                                                    :to="'/' + user.username"
+                                                >
+                                                    <b-avatar
+                                                        class="mr-2"
+                                                        :src="user.profilePhoto"
+                                                    />
                                                     {{ user.username }}
                                                 </b-list-group-item>
                                             </b-list-group>
@@ -27,7 +72,14 @@
 
                                         <b-tab title="Exercises" lazy>
                                             <b-list-group>
-                                                <b-list-group-item v-for="exercise in exerciseResponses" :key="exercise.objectID" :to="'/exercises/' + exercise.objectID">
+                                                <b-list-group-item
+                                                    v-for="exercise in exerciseResponses"
+                                                    :key="exercise.objectID"
+                                                    :to="
+                                                        '/exercises/' +
+                                                            exercise.objectID
+                                                    "
+                                                >
                                                     {{ exercise.name }}
                                                 </b-list-group-item>
                                             </b-list-group>
@@ -35,7 +87,14 @@
 
                                         <b-tab title="Templates" lazy>
                                             <b-list-group>
-                                                <b-list-group-item v-for="template in templateResponses" :key="template.objectID" :to="'/templates/' + template.objectID">
+                                                <b-list-group-item
+                                                    v-for="template in templateResponses"
+                                                    :key="template.objectID"
+                                                    :to="
+                                                        '/templates/' +
+                                                            template.objectID
+                                                    "
+                                                >
                                                     {{ template.name }}
                                                 </b-list-group-item>
                                             </b-list-group>
@@ -52,22 +111,20 @@
                 </b-container>
             </b-col>
 
-            <b-col sm="4">
-
-            </b-col>
+            <b-col sm="4"> </b-col>
         </b-row>
     </b-container>
 </template>
 
 <script>
-import algoliasearch from 'algoliasearch'
+import algoliasearch from "algoliasearch";
 
 export default {
-    name: 'Search',
+    name: "Search",
     data() {
         return {
             isLoading: true,
-            searchText: '',
+            searchText: "",
 
             userResponses: [],
             exerciseResponses: [],
@@ -82,8 +139,8 @@ export default {
             ),
             userIndex: null,
             exerciseIndex: null,
-            templateIndex: null,
-        }
+            templateIndex: null
+        };
     },
 
     created: function() {
@@ -116,46 +173,62 @@ export default {
             this.templateResponses = [];
 
             if (this.searchText) {
-                searchPromises.push(this.userIndex.search(this.searchText).then(responses => {
-                    responses.hits.forEach(hit => {
-                        this.userResponses.push(hit);
+                searchPromises.push(
+                    this.userIndex.search(this.searchText).then(responses => {
+                        responses.hits.forEach(hit => {
+                            this.userResponses.push(hit);
+                        });
                     })
-                }))
+                );
 
-                searchPromises.push(this.exerciseIndex.search(this.searchText).then(responses => {
-                    responses.hits.forEach(hit => {
-                        this.exerciseResponses.push(hit);
-                    })
-                }))
+                searchPromises.push(
+                    this.exerciseIndex
+                        .search(this.searchText)
+                        .then(responses => {
+                            responses.hits.forEach(hit => {
+                                this.exerciseResponses.push(hit);
+                            });
+                        })
+                );
 
-                searchPromises.push(this.templateIndex.search(this.searchText).then(responses => {
-                    responses.hits.forEach(hit => {
-                        this.templateResponses.push(hit);
-                    })
-                }))
+                searchPromises.push(
+                    this.templateIndex
+                        .search(this.searchText)
+                        .then(responses => {
+                            responses.hits.forEach(hit => {
+                                this.templateResponses.push(hit);
+                            });
+                        })
+                );
 
-                Promise.all(searchPromises)
-                .then(() => {
-                    console.log("USER RESPONSES:", this.userResponses, "EXERCISE RESPONSES:", this.exerciseResponses, "TEMPLATE RESPONSES:", this.templateResponses);
+                Promise.all(searchPromises).then(() => {
+                    console.log(
+                        "USER RESPONSES:",
+                        this.userResponses,
+                        "EXERCISE RESPONSES:",
+                        this.exerciseResponses,
+                        "TEMPLATE RESPONSES:",
+                        this.templateResponses
+                    );
                     this.isLoading = false;
-                })
+                });
             } else {
                 this.isLoading = false;
             }
         }
     }
-}
+};
 </script>
 
 <style scoped>
-    .searchHeader,
-    .searchResults {
-        margin-top: 40px;
-    }
+.searchHeader,
+.searchResults {
+    margin-top: 40px;
+}
 </style>
 
 <style>
-    .tabNav {
-        display: none !important;
-    }
+.tabNav {
+    display: none !important;
+}
 </style>
