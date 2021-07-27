@@ -22,7 +22,7 @@
             </b-card>
             <div class="exercisesCont sortableContainer mb-2">
                 <ExerciseRecorder
-                    v-for="exercise in workout.exercises"
+                    v-for="exercise in workout.recordedExercises"
                     :key="exercise.uid"
                     @addSet="addSet"
                     @removeSet="removeSet"
@@ -78,6 +78,7 @@
 
         <b-modal
             id="startWorkoutModal"
+            ref="startworkoutmodal"
             centered
             @hide="preventModal"
             @cancel="$router.push('/workout')"
@@ -96,10 +97,11 @@
             <div v-if="!emptyWorkout">
                 <b-list-group>
                     <b-list-group-item
-                        v-for="(exercise, index) in workout.exercises"
+                        v-for="(recordedExercise,
+                        index) in workout.recordedExercises"
                         :key="index"
                     >
-                        {{ exercise.name }}
+                        {{ recordedExercise.exerciseReference.name }}
                     </b-list-group-item>
                 </b-list-group>
             </div>
@@ -141,7 +143,7 @@
 </template>
 
 <script>
-import { templatesCollection, userWorkoutsCollection } from "@/firebase";
+import { API } from "aws-amplify";
 import Sortable from "sortablejs";
 
 import ExerciseRecorder from "@/components/Exercise/ExerciseRecorder.vue";
@@ -244,274 +246,227 @@ export default {
     },
 
     methods: {
-        downloadTemplates: function() {
-            let promises = [];
-
+        downloadTemplates: async function() {
             // Build to Workout format based on if its a template or workout.
             if (this.$route.query.w) {
-                promises.push(
-                    templatesCollection()
-                        .doc(this.$route.query.w)
-                        .get()
-                        .then(templateDoc => {
-                            let data = templateDoc.data();
-                            data.id = templateDoc.id;
+                let path = "/template/" + this.$route.query.w;
+                let myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
+                    }
+                };
 
-                            console.log(this.$store.state);
+                const templateDocument = (
+                    await API.get(
+                        this.$store.state.apiName,
+                        path,
+                        myInit
+                    ).catch(err => {
+                        throw err;
+                    })
+                ).data;
 
-                            this.$store.commit("activeWorkout/setWorkout", {
-                                exercises: data.exercises,
-                                template: {
-                                    id: data.id,
-                                    name: data.name
-                                },
-                                name: data.name,
-                                notes: ""
-                            });
+                let recordedExercises = [];
 
-                            console.log(
-                                "WORKOUT STORE",
-                                this.workoutStore.workout
-                            );
-
-                            // Generate a unique ID for each exercise (for the keys).
-                            // As we may have multiple of the same exercise, can not use ID as key.
-                            this.workoutStore.workout.exercises.forEach(
-                                (exercise, i) => {
-                                    this.$store.commit(
-                                        "activeWorkout/setExerciseValue",
-                                        {
-                                            exerciseIndex: i,
-                                            key: "uid",
-                                            value: this.generateId(16)
-                                        }
-                                    );
-                                    this.$store.commit(
-                                        "activeWorkout/setExerciseValue",
-                                        {
-                                            exerciseIndex: i,
-                                            key: "notes",
-                                            value: ""
-                                        }
-                                    );
-
-                                    if (!exercise.sets) {
-                                        this.$store.commit(
-                                            "activeWorkout/setExerciseValue",
-                                            {
-                                                exerciseIndex: i,
-                                                key: "sets",
-                                                value: [
-                                                    {
-                                                        kg: 0,
-                                                        measureAmount: 0,
-                                                        measureBy: "Reps"
-                                                    }
-                                                ]
-                                            }
-                                        );
-                                    }
+                templateDocument.exerciseReferences.forEach(
+                    exerciseReference => {
+                        recordedExercises.push({
+                            uid: this.generateId(16),
+                            notes: "",
+                            sets: [
+                                {
+                                    kg: 0,
+                                    measureAmount: 0,
+                                    measureBy: "kg"
                                 }
-                            );
-
-                            // Check if user has done this template before (so we can populate previousWorkout).
-                            return userWorkoutsCollection(
-                                this.$store.state.userProfile.data.uid
-                            )
-                                .where("template.id", "==", this.$route.query.w)
-                                .orderBy("createdAt", "desc")
-                                .limit(1)
-                                .get();
-                        })
-                        .then(workoutSnapshot => {
-                            if (workoutSnapshot.size > 0) {
-                                workoutSnapshot.forEach(workoutDoc => {
-                                    const data = workoutDoc.data();
-                                    console.log("WORKOUT DATA:", data);
-
-                                    this.$store.commit(
-                                        "activeWorkout/setPreviousWorkout",
-                                        {
-                                            exercises: data.exercises,
-                                            template: {
-                                                id: data.template.id,
-                                                name: data.template.name
-                                            },
-                                            name: data.name,
-                                            duration: data.duration,
-                                            notes: data.notes
-                                        }
-                                    );
-
-                                    // Match up previous workout exercises with UID.
-                                    // First loop through each previous workout exercise (no UID currently set).
-                                    let i = 0;
-                                    this.workoutStore.previousWorkout.exercises.forEach(
-                                        exercise => {
-                                            // Now pull the index of every occurence of this exercise ID within previous workout exercises (current iterator will be one of these)
-                                            const prevWorkoutMatchingExercisesIndices = this.workoutStore.previousWorkout.exercises
-                                                .map((x, i) =>
-                                                    x.id === exercise.id
-                                                        ? i
-                                                        : ""
-                                                )
-                                                .filter(String);
-
-                                            // Now filter workout exercises to just this exercise.
-                                            const workoutMatchingExercises = this.workoutStore.workout.exercises.filter(
-                                                x => x.id === exercise.id
-                                            );
-
-                                            /*
-                                             * In our array of indices, find what index i is currently at.
-                                             * This tells us how many of this exercise ID we have already set the UID for,
-                                             * So we can ensure to grab the next UID and not duplicate.
-                                             * i.e. if this is 2, then we have already set the 0th and 1st occurence of exercise.id within
-                                             * this.workout.exercises and so must now set the second to avoid duplication.
-                                             * VERY confusing stuff and could probably be cleaner but it works.
-                                             */
-
-                                            const arrayOfIndicesIndex = prevWorkoutMatchingExercisesIndices.indexOf(
-                                                i
-                                            );
-
-                                            if (
-                                                workoutMatchingExercises[
-                                                    arrayOfIndicesIndex
-                                                ]
-                                            ) {
-                                                this.workoutStore.previousWorkout.exercises[
-                                                    i
-                                                ].uid =
-                                                    workoutMatchingExercises[
-                                                        arrayOfIndicesIndex
-                                                    ].uid;
-                                            } else {
-                                                this.workoutStore.previousWorkout.exercises[
-                                                    i
-                                                ].uid = this.generateId(16);
-                                            }
-
-                                            i++;
-                                        }
-                                    );
-                                });
-                            } else {
-                                // User hasn't done this workout before.
-                                this.$store.commit(
-                                    "activeWorkout/setPreviousWorkout",
-                                    JSON.parse(
-                                        JSON.stringify(
-                                            this.workoutStore.workout
-                                        )
-                                    )
-                                );
-
-                                this.workoutStore.previousWorkout.exercises.forEach(
-                                    (exercise, i) => {
-                                        this.$store.commit(
-                                            "activeWorkout/setExerciseValue",
-                                            {
-                                                exerciseIndex: i,
-                                                key: "sets",
-                                                value: []
-                                            }
-                                        );
-                                    }
-                                );
-
-                                console.log("User hasn't done this template.");
+                            ],
+                            exerciseReference: {
+                                exerciseId: exerciseReference.exerciseId,
+                                name: exerciseReference.name,
+                                muscleGroups: exerciseReference.muscleGroups,
+                                tags: exerciseReference.tags
                             }
-
-                            this.$store.commit(
-                                "activeWrokout/setEmptyWorkout",
-                                false
-                            );
-                        })
+                        });
+                    }
                 );
-            } else if (this.$route.query.b) {
-                promises.push(
-                    userWorkoutsCollection(
-                        this.$store.state.userProfile.data.uid
-                    )
-                        .doc(this.$route.query.b)
-                        .get()
-                        .then(workoutDoc => {
-                            const data = workoutDoc.data();
-
-                            this.$store.commit("activeWorkout/setWorkout", {
-                                exercises: data.exercises,
-                                template: {
-                                    id: data.template.id,
-                                    name: data.template.name
-                                },
-                                name: data.name,
-                                notes: data.notes
-                            });
-
-                            // Generate a unique ID for each exercise (for the keys).
-                            // As we may have multiple of the same exercise, can not use ID as key.
-                            this.workoutStore.workout.exercises.forEach(
-                                (exercise, i) => {
-                                    this.$store.commit(
-                                        "activeWorkout/setExerciseValue",
-                                        {
-                                            exerciseIndex: i,
-                                            key: "uid",
-                                            value: this.generateId(16)
-                                        }
-                                    );
-                                }
-                            );
-
-                            this.$store.commit(
-                                "activeWorkout/previousWorkout",
-                                JSON.parse(JSON.stringify(this.workout))
-                            );
-                            this.$store.commit(
-                                "activeWrokout/setEmptyWorkout",
-                                false
-                            );
-                        })
-                );
-            } else {
-                this.$store.commit("activeWorkout/setEmptyWorkout", true);
 
                 this.$store.commit("activeWorkout/setWorkout", {
-                    exercises: [],
-                    name: "Empty Workout",
-                    template: {
-                        id: "",
-                        name: ""
+                    recordedExercises: recordedExercises,
+                    templateReference: {
+                        templateId: templateDocument._id,
+                        name: templateDocument.name,
+                        muscleGroups: templateDocument.muscleGroups,
+                        tags: templateDocument.tags
                     },
-                    notes: ""
+                    name: templateDocument.name,
+                    notes: "",
+                    duration: 0
                 });
 
-                this.$store.commit("activeWorkout/setPreviousWorkout", {
-                    exercises: [],
-                    name: "Empty Workout",
-                    template: {
-                        id: "",
-                        name: ""
-                    },
-                    notes: ""
+                // Check if user has done this before.
+                path = "/workout";
+                myInit.queryStringParameters = {
+                    templateId: this.$route.query.w,
+                    loadAmount: 1
+                };
+
+                let workoutDocument;
+
+                try {
+                    workoutDocument = (
+                        await API.get(this.$store.state.apiName, path, myInit)
+                    ).data[0];
+                } catch {
+                    workoutDocument = null;
+                } finally {
+                    if (workoutDocument) {
+                        this.$store.commit(
+                            "activeWorkout/setPreviousWorkout",
+                            workoutDocument
+                        );
+
+                        // Match up previous workout exercises with UID.
+                        // First loop through each previous workout exercises (no UID currently set)
+                        let i = 0;
+                        this.workoutStore.previousWorkout.recordedExercises.forEach(
+                            exercise => {
+                                // Now pull the index of every occurence of this exercise ID within previous workout exercises (current iterator will be one of these)
+                                const prevWorkoutMatchingExercisesIndices = this.workoutStore.previousWorkout.recordedExercises
+                                    .map((x, i) =>
+                                        x.id === exercise.id ? i : ""
+                                    )
+                                    .filter(String);
+
+                                // Now filter workout exercises to just this exercise.
+                                const workoutMatchingExercises = this.workoutStore.workout.recordedExercises.filter(
+                                    x => x.id === exercise.id
+                                );
+
+                                /*
+                                 * In our array of indices, find what index i is currently at.
+                                 * This tells us how many of this exercise ID we have already set the UID for,
+                                 * So we can ensure to grab the next UID and not duplicate.
+                                 * i.e. if this is 2, then we have already set the 0th and 1st occurence of exercise.id within
+                                 * this.workout.exercises and so must now set the second to avoid duplication.
+                                 * VERY confusing stuff and could probably be cleaner but it works.
+                                 */
+
+                                const arrayOfIndicesIndex = prevWorkoutMatchingExercisesIndices.indexOf(
+                                    i
+                                );
+
+                                if (
+                                    workoutMatchingExercises[
+                                        arrayOfIndicesIndex
+                                    ]
+                                ) {
+                                    this.workoutStore.previousWorkout.recordedExercises[
+                                        i
+                                    ].uid =
+                                        workoutMatchingExercises[
+                                            arrayOfIndicesIndex
+                                        ].uid;
+                                } else {
+                                    this.workoutStore.previousWorkout.recordedExercises[
+                                        i
+                                    ].uid = this.generateId(16);
+                                }
+
+                                i++;
+                            }
+                        );
+                    } else {
+                        // User hasn't done this template before.
+                        this.$store.commit(
+                            "activeWorkout/setPreviousWorkout",
+                            JSON.parse(
+                                JSON.stringify(this.workoutStore.workout)
+                            )
+                        );
+
+                        this.$store.commit(
+                            "activeWorkout/setEmptyWorkout",
+                            false
+                        );
+                    }
+                }
+            } else if (this.$route.query.b) {
+                let path = "/workout/" + this.$route.query.b;
+                let myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
+                    }
+                };
+
+                const workoutDocument = (
+                    await API.get(
+                        this.$store.state.apiName,
+                        path,
+                        myInit
+                    ).catch(err => {
+                        throw err;
+                    })
+                ).data;
+
+                this.$store.commit("activeWorkout/setWorkout", {
+                    recordedExercises: workoutDocument.recordedExercises,
+                    templateReference: workoutDocument.templateReference,
+                    name: workoutDocument.name,
+                    notes: workoutDocument.notes,
+                    duration: 0
                 });
+
+                // Generate a unique ID for each exercise (for the keys).
+                // As we may have multiple of the same exercise, can not use ID as key.
+                this.workoutStore.workout.recordedExercises.forEach(
+                    (recordedExercise, i) => {
+                        this.$store.commit("activeWorkout/setExerciseValue", {
+                            exerciseIndex: i,
+                            key: "uid",
+                            value: this.generateId(16)
+                        });
+                    }
+                );
+
+                this.$store.commit(
+                    "activeWorkout/previousWorkout",
+                    JSON.parse(JSON.stringify(this.workout))
+                );
+
+                this.$store.commit("activeWrokout/setEmptyWorkout", false);
+            } else {
+                console.log("EMPTY WORKOUT");
+                this.$store.commit("activeWorkout/setEmptyWorkout", true);
+
+                const workout = {
+                    duration: 0,
+                    name: "Empty Workout",
+                    notes: "",
+                    recordedExercises: []
+                };
+
+                this.$store.commit(
+                    "activeWorkout/setWorkout",
+                    JSON.parse(JSON.stringify(workout))
+                );
+                this.$store.commit(
+                    "activeWorkout/setPreviousWorkout",
+                    JSON.parse(JSON.stringify(workout))
+                );
             }
 
-            Promise.all(promises).then(() => {
-                console.log(
-                    "WORKOUT:",
-                    this.workout,
-                    "PREV:",
-                    this.previousWorkout
-                );
-                this.isLoading = false;
-                this.$bvModal.show("startWorkoutModal");
+            this.isLoading = false;
+            this.$nextTick(() => {
+                this.$refs["startworkoutmodal"].show();
             });
         },
 
         addSet: function(uid, set) {
-            const index = this.workout.exercises.findIndex(x => x.uid == uid);
+            const index = this.workout.recordedExercises.findIndex(
+                x => x.uid == uid
+            );
             this.$store.commit("activeWorkout/addSet", {
                 exerciseIndex: index,
                 set: set
@@ -519,37 +474,41 @@ export default {
         },
 
         removeSet: function(uid) {
-            const index = this.workout.exercises.findIndex(x => x.uid == uid);
+            const index = this.workout.recordedExercises.findIndex(
+                x => x.uid == uid
+            );
 
-            if (this.workout.exercises[index].sets.length > 1) {
+            if (this.workout.recordedExercises[index].sets.length > 1) {
                 this.$store.commit("activeWorkout/removeSet", index);
             }
         },
 
         addExercise: function(exercise) {
             this.$store.commit("activeWorkout/addExercise", {
-                id: exercise.id,
-                name: exercise.name,
+                uid: this.generateId(16),
                 notes: "",
                 sets: [
                     {
                         kg: 0,
                         measureAmount: 0,
-                        measureBy: exercise.measureBy
+                        measureBy: "kg"
                     }
-                ]
+                ],
+                exerciseReference: exercise
             });
 
             // Match up with previousWorkout UID (if applicable, else generate new one).
 
             // Pull the index of every occurence of this exercise within current workout (will include this newly created one).
-            const workoutMatchingExercises = this.workoutStore.workout.exercises.filter(
-                x => x.id === exercise.id
+            const workoutMatchingExercises = this.workoutStore.workout.recordedExercises.filter(
+                x => x.exerciseReference.exerciseId === exercise.exerciseId
             );
 
             // Now pull all UIDs from previous workout of this exercise.
-            const prevWorkoutMatchingExerciseUIDs = this.workoutStore.previousWorkout.exercises
-                .filter(x => x.id === exercise.id)
+            const prevWorkoutMatchingExerciseUIDs = this.workoutStore.previousWorkout.recordedExercises
+                .filter(
+                    x => x.exerciseReference.exerciseId === exercise.exerciseId
+                )
                 .map(x => x.uid);
 
             if (
@@ -558,7 +517,7 @@ export default {
             ) {
                 this.$store.commit("activeWorkout/setExerciseValue", {
                     exerciseIndex:
-                        this.workoutStore.workout.exercises.length - 1,
+                        this.workoutStore.workout.recordedExercises.length - 1,
                     key: "uid",
                     value: this.generateId(16)
                 });
@@ -579,7 +538,8 @@ export default {
                         console.log("Changing");
                         this.$store.commit("activeWorkout/setExerciseValue", {
                             exerciseIndex:
-                                this.workoutStore.workout.exercises.length - 1,
+                                this.workoutStore.workout.recordedExercises
+                                    .length - 1,
                             key: "uid",
                             value: uid
                         });
@@ -599,7 +559,9 @@ export default {
         },
 
         removeExercise: function(uid) {
-            const index = this.workout.exercises.findIndex(x => x.uid === uid);
+            const index = this.workout.recordedExercises.findIndex(
+                x => x.uid === uid
+            );
             this.$store.commit("activeWorkout/removeExercise", index);
         },
 
@@ -672,10 +634,7 @@ export default {
 
         uploadWorkout: function() {
             this.$store
-                .dispatch(
-                    "activeWorkout/uploadWorkout",
-                    this.$store.state.userProfile.data.uid
-                )
+                .dispatch("activeWorkout/uploadWorkout")
                 .then(() => {
                     this.$router.push("/workout/recent");
                 });
@@ -697,7 +656,7 @@ export default {
         },
 
         setSetValue: function(uid, setIndex, key, value) {
-            const exerciseIndex = this.workout.exercises.findIndex(
+            const exerciseIndex = this.workout.recordedExercises.findIndex(
                 x => x.uid == uid
             );
             console.log("WORK NEW", uid, setIndex, key, value);
@@ -721,7 +680,7 @@ export default {
         },
 
         relevantPreviousExercise: function(uid) {
-            let temp = this.previousWorkout.exercises.filter(
+            let temp = this.previousWorkout.recordedExercises.filter(
                 x => x.uid === uid
             );
 

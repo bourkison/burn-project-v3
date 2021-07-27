@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { db } from "@/firebase";
+import { API } from 'aws-amplify'
 
 export default {
     name: "ExerciseSearch",
@@ -80,55 +80,41 @@ export default {
         };
     },
 
-    created: function() {
-        let exerciseDownloadPromises = [];
-
-        db.collection("users")
-            .doc(this.$store.state.userProfile.data.uid)
-            .collection("exercises")
-            .get()
-            .then(exerciseSnapshot => {
-                exerciseSnapshot.forEach(exerciseDoc => {
-                    let userExerciseData = exerciseDoc.data();
-                    userExerciseData.id = exerciseDoc.id;
-
-                    if (userExerciseData.isFollow) {
-                        exerciseDownloadPromises.push(
-                            db
-                                .collection("exercises")
-                                .doc(userExerciseData.id)
-                                .get()
-                                .then(exerciseDoc => {
-                                    let exerciseData = exerciseDoc.data();
-                                    exerciseData.id = exerciseDoc.id;
-
-                                    this.followedExercises.push(exerciseData);
-                                })
-                        );
-                    } else {
-                        exerciseDownloadPromises.push(
-                            db
-                                .collection("exercises")
-                                .doc(userExerciseData.id)
-                                .get()
-                                .then(exerciseDoc => {
-                                    let exerciseData = exerciseDoc.data();
-                                    exerciseData.id = exerciseDoc.id;
-
-                                    this.createdExercises.push(exerciseData);
-                                })
-                        );
-                    }
-                });
-
-                return Promise.all(exerciseDownloadPromises);
+    created: async function() {
+        try {
+            const path = '/exercise'
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                },
+                queryStringParameters: {
+                    loadAmount: 25,
+                    user: true
+                }
+            }
+    
+            const exerciseResults = (await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                throw err;
+            })).data;
+    
+            exerciseResults.forEach(exercise => {
+                if (exercise.isFollow) {
+                    this.followedExercises.push(exercise);
+                } else {
+                    this.createdExercises.push(exercise);
+                }
             })
-            .then(() => {
-                this.isLoading = false;
-            })
-            .catch(e => {
-                console.error("Error downloading exercises:", e);
-            });
+        }
+        catch (err) {
+            if (err.response && err.response.status === 404) {
+                console.error("No exercises");
+            } else {
+                // ERROR HERE.
+            }
+        }
+        finally {
+            this.isLoading = false;
+        }
     },
 
     computed: {

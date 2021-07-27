@@ -6,7 +6,7 @@ let MONGODB_URI;
 
 // GET request /template/{proxy+}
 const getTemplate = async function(event) {
-    const templateId = event.pathParameters.proxy;
+    const templateId = ObjectId(event.pathParameters.proxy);
     const Template = (await MongooseModels(MONGODB_URI)).Template;
 
     let response = {
@@ -43,7 +43,7 @@ const getTemplate = async function(event) {
 // GET request /template
 const queryTemplate = async function(event) {
     const username = event.requestContext.authorizer.claims["cognito:username"];
-    const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
+    const loadAmount = (event.queryStringParameters.loadAmount) ? Number(event.queryStringParameters.loadAmount) : 5;
     const userBool = event.queryStringParameters.user === "true";
     const muscleGroups = event.queryStringParameters.muscleGroups
         ? event.queryStringParameters.muscleGroups.split(",")

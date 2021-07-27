@@ -20,6 +20,8 @@
 <script>
 import WorkoutComponent from "@/components/Workout/WorkoutComponent";
 
+import { API } from 'aws-amplify'
+
 export default {
     name: "WorkoutRecent",
     components: { WorkoutComponent },
@@ -31,15 +33,21 @@ export default {
     },
 
     created: async function() {
-        if (this.$store.state.userWorkouts === null) {
-            await this.$store
-                .dispatch("fetchWorkouts", this.$store.state.userProfile.data)
-                .catch(e => {
-                    console.error(e);
-                });
+        const path = '/workout';
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+            },
+            queryStringParameters: {
+                loadAmount: 10
+            }
         }
 
-        this.workouts = this.$store.state.userWorkouts;
+        const workouts = (await API.get(this.$store.state.apiName, path, myInit)).workouts;
+
+        console.log("WORKOUTS:", workouts);
+
+        this.workouts = workouts.workouts;
         this.isLoading = false;
     }
 };

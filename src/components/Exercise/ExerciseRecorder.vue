@@ -2,7 +2,7 @@
     <b-card no-body class="mt-2">
         <b-card-body>
             <div class="d-flex">
-                <h6>{{ exercise.name }}</h6>
+                <h6>{{ exercise.exerciseReference.name }}</h6>
                 <div class="ml-auto">
                     <b-icon-chevron-expand
                         v-if="!setsExpanded"

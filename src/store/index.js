@@ -35,40 +35,40 @@ const activeWorkoutModule = {
         },
 
         addExercise: function(state, exercise) {
-            state.workout.exercises.push(exercise);
+            state.workout.recordedExercises.push(exercise);
         },
 
         removeExercise: function(state, exerciseIndex) {
-            state.workout.exercises.splice(exerciseIndex, 1);
+            state.workout.recordedExercises.splice(exerciseIndex, 1);
         },
 
         changeExerciseOrder: function(state, data) {
-            state.workout.exercises.splice(
+            state.workout.recordedExercises.splice(
                 data.n,
                 0,
-                state.workout.exercises.splice(data.o, 1)[0]
+                state.workout.recordedExercises.splice(data.o, 1)[0]
             );
         },
 
         setExerciseValue: function(state, data) {
             Vue.set(
-                state.workout.exercises[data.exerciseIndex],
+                state.workout.recordedExercises[data.exerciseIndex],
                 data.key,
                 data.value
             );
         },
 
         addSet: function(state, data) {
-            state.workout.exercises[data.exerciseIndex].sets.push(data.set);
+            state.workout.recordedExercises[data.exerciseIndex].sets.push(data.set);
         },
 
         removeSet: function(state, exerciseIndex) {
-            state.workout.exercises[exerciseIndex].sets.pop();
+            state.workout.recordedExercises[exerciseIndex].sets.pop();
         },
 
         setSetValue: function(state, data) {
             Vue.set(
-                state.workout.exercises[data.exerciseIndex].sets[data.setIndex],
+                state.workout.recordedExercises[data.exerciseIndex].sets[data.setIndex],
                 data.key,
                 data.value
             );
@@ -166,7 +166,8 @@ const activeWorkoutModule = {
             state.workoutCommenced = false;
             state.workout = {};
             state.previousWorkout = {};
-            (state.emptyWorkout = true), (state.startTime = 0);
+            state.emptyWorkout = true,
+            state.startTime = 0;
             state.finishTime = 0;
             state.interval = null;
             state.timeString = "00:00";
@@ -175,12 +176,16 @@ const activeWorkoutModule = {
     },
 
     actions: {
-        async uploadWorkout({ state, commit }, userId) {
+        async uploadWorkout({ state, commit, getters }) {
             let payload = JSON.parse(JSON.stringify(state.workout));
 
-            // Put unique exercises into array so we can query in Firebase.
-            payload.exerciseIds = [];
-            payload.exercises.forEach(exercise => {
+            payload.uniqueExercises = [];
+            payload.recordedExercises.forEach(exercise => {
+                delete exercise.exerciseReference._id;
+                delete exercise.exerciseReference.createdAt;
+                delete exercise.exerciseReference.updatedAt;
+                delete exercise.exerciseReference.isFollow;
+
                 exercise.sets.forEach(set => {
                     if (!set.kg) {
                         set.kg = 0;
@@ -199,18 +204,31 @@ const activeWorkoutModule = {
                     exercise.notes = "";
                 }
 
-                if (!payload.exerciseIds.includes(exercise.id)) {
-                    payload.exerciseIds.push(exercise.id);
+                if (!payload.uniqueExercises.includes(exercise.exerciseReference.exerciseId)) {
+                    payload.uniqueExercises.push(exercise.exerciseReference.exerciseId);
                 }
             });
 
-            payload.createdAt = new Date();
-            payload.duration = state.finishTime - state.startTime;
+            const path = '/workout';
+            const myInit = {
+                headers: {
+                    Authorization: getters.userProfile.data.idToken.jwtToken
+                },
+                body: {
+                    workoutForm: payload
+                }
+            }
 
-            const d = await userWorkoutsCollection(userId).add(payload);
-            let temp = d.data();
-            temp.id = d.id;
-            commit("pushWorkoutToUserWorkouts", temp);
+            console.log(JSON.stringify({workoutForm: payload}));
+
+
+            
+            const result = (await API.post(getters.apiName, path, myInit).catch(err => {
+                console.error("Error uploading result:", err);
+            })).data.workout;
+            
+            commit("pushWorkoutToUserWorkouts", result, { root: true });
+            console.log(payload, result);
         }
     }
 };

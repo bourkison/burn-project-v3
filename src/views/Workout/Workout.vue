@@ -52,10 +52,10 @@
                     </b-list-group>
                 </b-card>
 
-                <RecentWorkoutsChart
+                <!-- <RecentWorkoutsChart
                     class="recentWorkoutsChart"
                     :userId="$store.state.userProfile.data.uid"
-                />
+                /> -->
             </b-col>
 
             <b-col sm="6">
@@ -63,7 +63,7 @@
             </b-col>
 
             <b-col sm="3">
-                <OneRepMaxExerciseChart
+                <!-- <OneRepMaxExerciseChart
                     class="firstOneRepMaxExerciseChart"
                     :exercisePosition="0"
                     :userId="$store.state.userProfile.data.uid"
@@ -72,19 +72,19 @@
                     class="oneRepMaxExerciseChart"
                     :exercisePosition="1"
                     :userId="$store.state.userProfile.data.uid"
-                />
+                /> -->
             </b-col>
         </b-row>
     </b-container>
 </template>
 
 <script>
-import RecentWorkoutsChart from "@/components/Charts/RecentWorkoutsChart.vue";
-import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
+// import RecentWorkoutsChart from "@/components/Charts/RecentWorkoutsChart.vue";
+// import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
 
 export default {
     name: "Workout",
-    components: { RecentWorkoutsChart, OneRepMaxExerciseChart }
+    // components: { RecentWorkoutsChart, OneRepMaxExerciseChart }
 };
 </script>
 
