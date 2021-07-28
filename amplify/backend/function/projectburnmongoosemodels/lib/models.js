@@ -5,6 +5,7 @@ const ObjectId = mongoose.Types.ObjectId;
 
 mongoose.set("debug", (collectionName, methodName, ...methodArgs) => {
     console.log("MONGOOSE", collectionName, methodName, methodArgs);
+    console.log("MONGOOSE STRINGIFIED:", collectionName, methodName, JSON.stringify(methodArgs));
 });
 
 const userReferenceSchema = new mongoose.Schema(
@@ -32,11 +33,11 @@ const exerciseReferenceSchema = new mongoose.Schema(
             required: true
         },
         muscleGroups: {
-            type: Array,
+            type: [String],
             default: []
         },
         tags: {
-            type: Array,
+            type: [String],
             default: []
         },
         isFollow: {
@@ -49,8 +50,8 @@ const exerciseReferenceSchema = new mongoose.Schema(
 
 const postReferenceSchema = new mongoose.Schema(
     {
-        postId: {
-            type: ObjectId,
+        createdBy: {
+            type: userReferenceSchema,
             required: true
         }
     },
@@ -68,11 +69,11 @@ const templateReferenceSchema = new mongoose.Schema(
             required: true
         },
         muscleGroups: {
-            type: Array,
+            type: [String],
             default: []
         },
         tags: {
-            type: Array,
+            type: [String],
             default: []
         },
         isFollow: {
@@ -141,7 +142,7 @@ const recordedExerciseSchema = new mongoose.Schema(
         },
         exerciseReference: {
             type: exerciseReferenceSchema,
-            default: []
+            required: true
         },
         notes: {
             type: String,
@@ -336,6 +337,10 @@ const userSchema = new mongoose.Schema(
         postReferences: {
             type: [postReferenceSchema],
             default: []
+        },
+        postFeed: {
+            type: [postReferenceSchema],
+            default: []
         }
     },
     { timestamps: true }
@@ -422,7 +427,7 @@ const templateSchema = new mongoose.Schema(
             default: []
         },
         muscleGroups: {
-            type: Array,
+            type: [String],
             default: []
         },
         name: {
@@ -430,7 +435,7 @@ const templateSchema = new mongoose.Schema(
             required: true
         },
         tags: {
-            type: Array,
+            type: [String],
             default: []
         },
         likes: {

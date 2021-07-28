@@ -199,9 +199,7 @@ const queryExercise = async function(event) {
     }
 
     response.statusCode = 200;
-    response.body = JSON.stringify(
-        JSON.stringify({ success: true, data: result })
-    );
+    response.body = JSON.stringify({ success: true, data: result });
 
     return response;
 };
@@ -209,6 +207,7 @@ const queryExercise = async function(event) {
 // POST request.
 const createExercise = async function(event) {
     let exerciseForm = JSON.parse(event.body).exerciseForm;
+    const username = event.requestContext.authorizer.claims["cognito:username"];
 
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
@@ -226,17 +225,13 @@ const createExercise = async function(event) {
     let fields = "username";
     const user = await User.findOne(
         {
-            username: event.requestContext.authorizer.claims["cognito:username"]
+            username: username
         },
         fields
     ).exec();
 
     if (!user) {
-        const errorResponse =
-            "Error finding user: " +
-            event.requestContext.authorizer.claims["cognito:username"] +
-            ".\n" +
-            JSON.stringify(event.requestContext.authorizer);
+        const errorResponse = "Error finding user: " + username
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse

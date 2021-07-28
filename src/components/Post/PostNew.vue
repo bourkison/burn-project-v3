@@ -100,7 +100,10 @@
 </template>
 
 <script>
-import { storage, functions } from "@/firebase";
+import { API, Storage } from 'aws-amplify'
+
+import crypto from "crypto";
+import util from "util";
 
 import ImageUploader from "@/components/Utility/ImageUploader.vue";
 
@@ -139,55 +142,65 @@ export default {
     },
 
     methods: {
-        createPost: function() {
-            this.isPosting = true;
-            let imageUploadPromises = [];
+        createPost: async function() {
+            try {
+                console.log(JSON.stringify(JSON.stringify(this.post)));
+                this.isPosting = true;
+    
+                // First upload all images using .map (see ExerciseNew.vue for further explanation)
+                const imageResults = await Promise.all(
+                    this.imagesToUpload.map(async (image, i) => {
+                        const imageId = await this.generateId(16);
+                        const imageName = "username/" + this.store.state.userProfile.docData.username + "/exercises/" + imageId;
+    
+                        const imageData = await fetch(image.url);
+                        const blob = await imageData.blob();
+    
+                        console.log("UPLOADING:", imageName, blob);
+    
+                        const imageResponse = await Storage.put(imageName, blob, {
+                            contentType: blob.type,
+                            progressCallback: function(progress) {
+                                console.log("Image:", i, progress.loaded / progress.total);
+                            }
+                        }).catch(err => {
+                            console.error("Error uploading image:", i, err);
+                        });
+    
+                        return imageResponse;
+                    })
+                )
+    
+                imageResults.forEach(result => {
+                    this.post.filePaths.push(result.key);
+                })
+    
+                const path = "/post";
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    body: {
+                        postForm: JSON.parse(JSON.stringify(this.post))
+                    }
+                }
+    
+                const response = await API.post(
+                    this.$store.state.apiName,
+                    path,
+                    myInit
+                );
 
-            this.post.id = this.generateId(16);
-
-            // Upload images.
-            if (this.imagesToUpload.length > 0) {
-                this.imagesToUpload.forEach(image => {
-                    let imageRef = storage.ref(
-                        "posts/" +
-                            this.post.id +
-                            "/images/" +
-                            Number(new Date()) +
-                            "-" +
-                            this.generateId(4)
-                    );
-                    imageUploadPromises.push(
-                        imageRef.putString(image.url, "data_url")
-                    );
-                    this.post.filePaths.push(imageRef.fullPath);
-                });
+                console.log("POST CREATED:", response);
+                this.$emit("newPost", this.post);
+                this.isPosting = false;
+                this.resetVariablesIncrementor++;
+                this.resetVariables();
+            }
+            catch(err) {
+                console.error("Error creating post.");
             }
 
-            Promise.all(imageUploadPromises)
-                .then(() => {
-                    // Once images uploaded, call New Post function.
-                    const createPost = functions.httpsCallable("createPost");
-                    const user = {
-                        username: this.$store.state.userProfile.docData
-                            .username,
-                        profilePhoto: this.$store.state.userProfile.docData
-                            .profilePhoto
-                    };
-
-                    return createPost({ postForm: this.post, user: user });
-                })
-                .then(() => {
-                    this.$emit("newPost", this.post);
-                    this.isPosting = false;
-                    this.resetVariablesIncrementor++;
-                    console.log("WTF", this.resetVariablesIncrementor);
-
-                    this.resetVariables();
-                })
-                .catch(e => {
-                    console.error("Error creating post:", e);
-                    this.isPosting = false;
-                });
         },
 
         addWorkout: function(workout) {
@@ -231,17 +244,12 @@ export default {
                 (this.imagesToUpload = []);
         },
 
-        generateId(n) {
-            let randomChars =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            let id = "";
-            // 7 random characters
-            for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(
-                    Math.floor(Math.random() * randomChars.length)
-                );
-            }
-            return id;
+        generateId: async function(n) {
+            const randomBytes = util.promisify(crypto.randomBytes);
+            const rawBytes = await randomBytes(n);
+
+            const hex = await rawBytes.toString("hex");
+            return hex;
         }
     }
 };

@@ -24,20 +24,20 @@
                 </b-row>
 
                 <div
-                    v-for="(exercise, index) in workout.exercises"
+                    v-for="(exercise, index) in workout.recordedExercises"
                     :key="index"
                 >
                     <b-row class="text-center mt-1">
                         <b-col
                             cols="1"
                             class="setAmountHoverable"
-                            v-b-toggle="'setsCollapse-' + workout.id + index"
+                            v-b-toggle="'setsCollapse-' + workout._id + index"
                             >{{ exercise.sets.length }}</b-col
                         >
 
                         <b-col cols="5">
-                            <router-link :to="'/exercises/' + exercise.id">{{
-                                exercise.name
+                            <router-link :to="'/exercises/' + exercise.exerciseReference.exerciseId">{{
+                                exercise.exerciseReference.name
                             }}</router-link>
                         </b-col>
 
@@ -50,7 +50,7 @@
                         </b-col>
                     </b-row>
 
-                    <b-collapse :id="'setsCollapse-' + workout.id + index">
+                    <b-collapse :id="'setsCollapse-' + workout._id + index">
                         <b-row
                             v-for="(set, index) in exercise.sets"
                             :key="index"
@@ -107,7 +107,7 @@ export default {
         dayjs.extend(relativeTime);
 
         this.createdAtText = dayjs(
-            dayjs.unix(this.$props.workout.createdAt.seconds)
+            dayjs(this.$props.workout.createdAt)
         ).fromNow();
 
         // Duration text:

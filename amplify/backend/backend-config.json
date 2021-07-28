@@ -1,10 +1,5 @@
 {
   "function": {
-    "projectburnmongoosemodels": {
-      "providerPlugin": "awscloudformation",
-      "service": "LambdaLayer",
-      "build": true
-    },
     "projectburnUserHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -130,6 +125,11 @@
           ]
         }
       ]
+    },
+    "projectburnmongoosemodels": {
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer",
+      "build": true
     }
   },
   "api": {

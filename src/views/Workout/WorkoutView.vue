@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { templatesCollection, userTemplatesCollection } from "@/firebase";
+import { API } from 'aws-amplify';
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -82,62 +82,37 @@ export default {
 
     created: async function() {
         dayjs.extend(relativeTime);
-        let promises = [];
 
         // First download user templates.
-        promises.push(
-            userTemplatesCollection(this.$store.state.userProfile.data.uid)
-                .orderBy("createdAt", "desc")
-                .get()
-                .then(templateSnapshot => {
-                    let templatePromises = [];
-
-                    templateSnapshot.forEach(template => {
-                        templatePromises.push(
-                            templatesCollection()
-                                .doc(template.id)
-                                .get()
-                        );
-                    });
-
-                    return Promise.all(templatePromises).then(templateDocs => {
-                        templateDocs.forEach(templateDoc => {
-                            let data = templateDoc.data();
-                            data.id = templateDoc.id;
-
-                            this.userTemplates.push(data);
-                        });
-                    });
-                })
-        );
-
-        // Then get user workouts from store.
-        if (this.$store.state.userWorkouts === null) {
-            await this.$store
-                .dispatch("fetchWorkouts", this.$store.state.userProfile.data)
-                .catch(e => {
-                    console.error(e);
-                });
+        let path = '/template';
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+            },
+            queryStringParameters: {
+                loadAmount: 15
+            }
         }
 
+        this.userTemplates = (await API.get(this.$store.state.apiName, path, myInit)).data;
+
+        // Next download user workouts.
+        path = '/workout'
+        const workouts = (await API.get(this.$store.state.apiName, path, myInit)).data;
+
+        console.log("WORKOUTS:", workouts);
+
         let uniqueNames = [];
-        this.$store.state.userWorkouts.forEach(workout => {
-            let b = workout;
 
-            if (!uniqueNames.includes(b.name)) {
-                b.createdAtText = dayjs(
-                    dayjs.unix(b.createdAt.seconds)
-                ).fromNow();
-                this.userWorkouts.push(b);
-                uniqueNames.push(b.name);
+        workouts.forEach(workout => {
+            if (!uniqueNames.includes(workout.name)) {
+                workout.createdAtText = dayjs(workout.createdAt).fromNow();
+                this.userWorkouts.push(workout);
+                uniqueNames.push(workout.name);
             }
-        });
+        })
 
-        Promise.all(promises).then(() => {
-            this.isLoading = false;
-            console.log("Workouts:", this.userWorkouts);
-            console.log("Templates:", this.userTemplates);
-        });
+        this.isLoading = false;
     },
 
     computed: {

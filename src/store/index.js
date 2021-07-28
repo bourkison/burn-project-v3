@@ -176,9 +176,10 @@ const activeWorkoutModule = {
     },
 
     actions: {
-        async uploadWorkout({ state, commit, getters }) {
+        async uploadWorkout({ state, commit, rootState }) {
             let payload = JSON.parse(JSON.stringify(state.workout));
 
+            payload.duration = state.finishTime - state.startTime;
             payload.uniqueExercises = [];
             payload.recordedExercises.forEach(exercise => {
                 delete exercise.exerciseReference._id;
@@ -209,10 +210,11 @@ const activeWorkoutModule = {
                 }
             });
 
+
             const path = '/workout';
             const myInit = {
                 headers: {
-                    Authorization: getters.userProfile.data.idToken.jwtToken
+                    Authorization: rootState.userProfile.data.idToken.jwtToken
                 },
                 body: {
                     workoutForm: payload
@@ -220,14 +222,13 @@ const activeWorkoutModule = {
             }
 
             console.log(JSON.stringify({workoutForm: payload}));
-
-
             
-            const result = (await API.post(getters.apiName, path, myInit).catch(err => {
+            const result = (await API.post(rootState.apiName, path, myInit).catch(err => {
                 console.error("Error uploading result:", err);
             })).data.workout;
             
             commit("pushWorkoutToUserWorkouts", result, { root: true });
+            commit("resetVariables");
             console.log(payload, result);
         }
     }
@@ -254,7 +255,11 @@ export default new Vuex.Store({
         },
 
         pushWorkoutToUserWorkouts: function(state, workout) {
-            state.userWorkouts.unshift(workout);
+            if (!state.workouts) {
+                state.userWorkouts = [workout]
+            } else {
+                state.userWorkouts.unshift(workout);
+            }
         }
     },
     actions: {

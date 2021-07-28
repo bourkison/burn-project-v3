@@ -50,7 +50,7 @@ const queryWorkout = async function(event) {
 
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    const result = await User.findOne(
+    const result = (await User.findOne(
         {
             username: username
         },
@@ -59,7 +59,7 @@ const queryWorkout = async function(event) {
                 $slice: ["$workouts", 0 - loadAmount]
             }
         }
-    );
+    )).workouts.reverse();
 
     if (!result || !result.length) {
         const errorResponse = "Workouts not found for user: " + username + ".";
@@ -106,7 +106,7 @@ const createWorkout = async function(event) {
         });
 
         let exerciseReference = {
-            exerciseId: exercise.exerciseReference,
+            exerciseId: ObjectId(exercise.exerciseReference.exerciseId),
             name: exercise.exerciseReference.name,
             muscleGroups: exercise.exerciseReference.muscleGroups,
             tags: exercise.exerciseReference.tags
@@ -129,28 +129,33 @@ const createWorkout = async function(event) {
 
     if (workoutForm.templateReference) {
         workout.templateReference = workoutForm.templateReference;
+    } else {
+        workout.templateReference = null;
     }
+    let userResult;
+    try {
+        userResult = await User.updateOne(
+            { username: username },
+            { $push: { workouts: workout } }
+        );
 
-    const userResult = await User.updateOne(
-        { username: username },
-        { $push: { workouts: workout } }
-    ).catch(err => {
-        const errorResponse = "Error creating workout: " + JSON.stringify(err);
+        response.statusCode = 200;
+        response.body = JSON.stringify({
+            success: true,
+            data: { workout: workout, response: userResult }
+        });
+
+        return response;
+    } catch (err) {
+        console.error("Error creating USER:", err);
+        const errorResponse = "Error creating workout.";
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
         });
 
         return response;
-    });
-
-    response.statusCode = 200;
-    response.body = JSON.stringify({
-        success: true,
-        data: { workout: workout, response: userResult }
-    });
-
-    return response;
+    }
 };
 
 exports.handler = async (event, context) => {

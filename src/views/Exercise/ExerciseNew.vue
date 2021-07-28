@@ -192,7 +192,6 @@ export default {
                                 "Image:",
                                 i,
                                 progress.loaded / progress.total,
-                                progress
                             );
                         }
                     }).catch(err => {

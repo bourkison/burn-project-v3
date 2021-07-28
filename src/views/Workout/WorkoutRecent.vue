@@ -43,11 +43,11 @@ export default {
             }
         }
 
-        const workouts = (await API.get(this.$store.state.apiName, path, myInit)).workouts;
+        const workouts = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
         console.log("WORKOUTS:", workouts);
 
-        this.workouts = workouts.workouts;
+        this.workouts = workouts;
         this.isLoading = false;
     }
 };

@@ -15,7 +15,7 @@
       "function": {
         "projectburnExerciseHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnExerciseHandler-6a664365765456797978-build.zip"
+          "s3Key": "amplify-builds/projectburnExerciseHandler-4d674a59663634772f5a-build.zip"
         },
         "projectburnLikeHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -23,11 +23,7 @@
         },
         "projectburnWorkoutHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnWorkoutHandler-5256456c396a37536874-build.zip"
-        },
-        "projectburnmongoosemodels": {
-          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion289c8719-build.zip"
+          "s3Key": "amplify-builds/projectburnWorkoutHandler-4f51664b4d4152555039-build.zip"
         },
         "projectburnTemplateHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -39,7 +35,7 @@
         },
         "projectburnPostHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnPostHandler-56634a5942796a586b42-build.zip"
+          "s3Key": "amplify-builds/projectburnPostHandler-674961455a58546b4634-build.zip"
         },
         "projectburnUserHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -56,6 +52,10 @@
         "AdminQueries635d72f9": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
           "s3Key": "amplify-builds/AdminQueries635d72f9-5867774a6e4d46447879-build.zip"
+        },
+        "projectburnmongoosemodels": {
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion7d74bc4f-build.zip"
         }
       },
       "auth": {
