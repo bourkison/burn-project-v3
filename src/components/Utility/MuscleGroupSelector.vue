@@ -102,6 +102,9 @@ export default {
                 this.availableMuscleGroups = this.availableMuscleGroups.filter(
                     x => x !== e.target.value
                 );
+
+                // Emit updated.
+                this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
             }
 
             this.inputText = "";
@@ -113,6 +116,8 @@ export default {
                 x => x !== mg
             );
             this.availableMuscleGroups.push(mg);
+
+            this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         },
 
         muscleGroupClickHandler: function(id) {
@@ -133,14 +138,11 @@ export default {
                 // Add to available.
                 this.availableMuscleGroups.push(id);
             }
-        }
-    },
 
-    watch: {
-        selectedMuscleGroups: function() {
+            // Emit updated.
             this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         }
-    }
+    },
 };
 </script>
 

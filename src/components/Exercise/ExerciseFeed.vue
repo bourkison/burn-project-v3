@@ -31,12 +31,12 @@ export default {
     components: { ExerciseComponent, LoadingComponent },
     props: {
         exercises: {
-            required: true,
-            type: Array
+            type: Array,
+            required: true
         },
         isLoading: {
+            type: Boolean,
             required: true,
-            type: Boolean
         }
     },
     data() {

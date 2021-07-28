@@ -15,7 +15,7 @@
                                 <b-list-group-item
                                     class="d-flex"
                                     align-v="center"
-                                    :to="'/workout/new?b=' + workout.id"
+                                    :to="'/workout/new?b=' + workout._id"
                                     v-for="workout in filteredWorkouts"
                                     :key="workout.id"
                                 >
@@ -36,7 +36,7 @@
                                 <b-list-group-item
                                     class="d-flex"
                                     align-v="center"
-                                    :to="'/workout/new?w=' + template.id"
+                                    :to="'/workout/new?w=' + template._id"
                                     v-for="template in filteredTemplates"
                                     :key="template.id"
                                 >
@@ -86,7 +86,27 @@ export default {
 
         // First download user templates.
         let path = '/template';
-        const myInit = {
+        let myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+            },
+            queryStringParameters: {
+                loadAmount: 15,
+                user: true
+            }
+        }
+        
+        promises.push(API.get(this.$store.state.apiName, path, myInit).then(templates => {
+            this.userTemplates = templates.data;
+        }).catch(err => {
+            this.templates = [];
+            console.error(err);
+        }))
+
+
+        // Next download user workouts.
+        path = '/workout'
+        myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
             },
@@ -94,14 +114,6 @@ export default {
                 loadAmount: 15
             }
         }
-        
-        promises.push(API.get(this.$store.state.apiName, path, myInit).then(templates => {
-            this.userTemplates = templates.data;
-        }))
-
-
-        // Next download user workouts.
-        path = '/workout'
 
         promises.push(API.get(this.$store.state.apiName, path, myInit).then(workouts => {
             let uniqueNames = [];
@@ -113,6 +125,9 @@ export default {
                     uniqueNames.push(workout.name)
                 }
             })
+        }).catch(err => {
+            this.workouts = [];
+            console.error(err);
         }))
 
         await Promise.all(promises);

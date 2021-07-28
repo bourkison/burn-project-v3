@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!isLoading" class="mb-4">
+    <div class="mb-4">
         <b-card no-body class="newPost">
             <b-card-body>
                 <b-card-title>
@@ -19,7 +19,7 @@
                 </div>
             </b-card-body>
         </b-card>
-        <PostFeed @addPost="addPost" :posts="posts" />
+        <PostFeed @addPost="addPost" :posts="posts" :isLoading="isLoading" />
 
         <div class="text-center" v-if="moreToLoad">
             <b-button
@@ -33,7 +33,6 @@
             </b-button>
         </div>
     </div>
-    <div v-else class="text-center"><b-spinner /></div>
 </template>
 
 <script>

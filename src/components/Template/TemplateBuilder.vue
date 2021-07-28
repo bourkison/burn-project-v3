@@ -96,8 +96,6 @@ export default {
     },
 
     created: async function() {
-        let exerciseDownloadPromises = [];
-
         let path = "/exercise";
         let myInit = {
             headers: {
@@ -119,28 +117,12 @@ export default {
                 headers: myInit.headers
             };
 
-            console.log("EXERCISE REFERENCE:", exerciseReference);
-
             if (exerciseReference.isFollow) {
-                exerciseDownloadPromises.push(
-                    API.get(this.$store.state.apiName, path, myInit).then(
-                        exerciseResponse => {
-                            this.followedExercises.push(exerciseResponse.data);
-                        }
-                    )
-                );
+                this.followedExercises.push(exerciseReference);
             } else {
-                exerciseDownloadPromises.push(
-                    API.get(this.$store.state.apiName, path, myInit).then(
-                        exerciseResponse => {
-                            this.createdExercises.push(exerciseResponse.data);
-                        }
-                    )
-                );
+                this.createdExercises.push(exerciseReference);
             }
         });
-
-        await Promise.all(exerciseDownloadPromises);
 
         // Once exercises are downloaded, check for initExercises.
         if (this.$props.initExercises) {

@@ -7,7 +7,8 @@ let MONGODB_URI;
 // GET request /workout/{proxy+}
 const getWorkout = async function(event) {
     const workoutId = ObjectId(event.pathParameters.proxy);
-    const Workout = (await MongooseModels(MONGODB_URI)).Workout;
+    const username = event.requestContext.authorizer.claims["cognito:username"];
+    const User = (await MongooseModels(MONGODB_URI)).User;
 
     let response = {
         statusCode: 500,
@@ -18,7 +19,18 @@ const getWorkout = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    const result = await Workout.findOne({ _id: workoutId }).exec();
+    const result = (await User.findOne(
+        {
+            username: username
+        },
+        {
+            workouts: {
+                $elemMatch: {
+                    _id: workoutId
+                }
+            }
+        }
+    )).workouts[0];
 
     if (!result) {
         const errorResponse = "Workout: " + workoutId + " not found.";
@@ -28,6 +40,9 @@ const getWorkout = async function(event) {
             errorMessage: errorResponse
         });
     }
+
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: result });
 
     return response;
 };

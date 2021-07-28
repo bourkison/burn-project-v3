@@ -35,6 +35,7 @@ Hub.listen("auth", async ({ payload: { event, data } }) => {
             break;
         case "signOut":
             console.log("SIGNEDOUT");
+            store.commit("activeWorkout/resetVariables");
             store.commit("setLoggedInUser", {
                 loggedIn: false,
                 data: data,

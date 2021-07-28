@@ -152,7 +152,7 @@ export default {
                     const imageResults = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             const imageId = await this.generateId(16);
-                            const imageName = "username/" + this.store.state.userProfile.docData.username + "/exercises/" + imageId;
+                            const imageName = "username/" + this.$store.state.userProfile.docData.username + "/posts/" + imageId;
         
                             const imageData = await fetch(image.url);
                             const blob = await imageData.blob();
@@ -199,7 +199,7 @@ export default {
                     this.resetVariables();
                 }
                 catch(err) {
-                    console.error("Error creating post.");
+                    console.error("Error creating post:", err);
                 }
             }
         },

@@ -233,6 +233,10 @@ export default {
             this.downloadTemplates();
         } else {
             this.isLoading = false;
+            this.$nextTick(() => { this.sortable = new Sortable(
+                document.querySelector(".sortableContainer"),
+                this.sortableOptions
+            )});
         }
     },
 
@@ -384,12 +388,12 @@ export default {
                                 JSON.stringify(this.workoutStore.workout)
                             )
                         );
-
-                        this.$store.commit(
-                            "activeWorkout/setEmptyWorkout",
-                            false
-                        );
                     }
+
+                    this.$store.commit(
+                        "activeWorkout/setEmptyWorkout",
+                        false
+                    );
                 }
             } else if (this.$route.query.b) {
                 let path = "/workout/" + this.$route.query.b;
@@ -409,6 +413,8 @@ export default {
                         throw err;
                     })
                 ).data;
+
+                console.log("WORKOUT DOCUMENT:", workoutDocument);
 
                 this.$store.commit("activeWorkout/setWorkout", {
                     recordedExercises: workoutDocument.recordedExercises,
@@ -431,11 +437,11 @@ export default {
                 );
 
                 this.$store.commit(
-                    "activeWorkout/previousWorkout",
+                    "activeWorkout/setPreviousWorkout",
                     JSON.parse(JSON.stringify(this.workout))
                 );
 
-                this.$store.commit("activeWrokout/setEmptyWorkout", false);
+                this.$store.commit("activeWorkout/setEmptyWorkout", false);
             } else {
                 console.log("EMPTY WORKOUT");
                 this.$store.commit("activeWorkout/setEmptyWorkout", true);

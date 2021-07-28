@@ -1,78 +1,75 @@
 <template>
-    <b-card no-body header-bg-variant="transparent">
-        <!-- Header -->
-        <template #header>
-            <div v-if="!isLoading" class="d-flex alignHeader" align-v="center">
-                <div class="d-flex centeredHeader" align-v="center">
-                    <b-avatar
-                        :to="'/' + postData.createdBy.username"
-                        size="1.5rem"
-                        class="mr-1 disableAvatarHover"
-                        :src="postData.createdBy.profilePhoto"
-                    />
-                    <span
-                        ><router-link
+    <div v-if="!isLoading">
+        <b-card no-body header-bg-variant="transparent">
+            <!-- Header -->
+            <template #header>
+                <div v-if="!isLoading" class="d-flex alignHeader" align-v="center">
+                    <div class="d-flex centeredHeader" align-v="center">
+                        <b-avatar
                             :to="'/' + postData.createdBy.username"
-                            class="text-dark username"
-                            >{{ postData.createdBy.username }}</router-link
-                        >&#32;&nbsp;
-                    </span>
-                    <span class="ml-1" v-if="postData.share.type">
-                        <span v-if="postData.share.type == 'exercise'"
-                            >&nbsp;shared an
-                            <router-link :to="'/exercises/' + postData.share.id"
-                                >exercise</router-link
-                            >.</span
-                        >
-                        <span v-if="postData.share.type == 'template'"
-                            >&nbsp;shared a
-                            <router-link :to="'/templates/' + postData.share.id"
-                                >template</router-link
-                            >.</span
-                        >
-                        <span v-if="postData.share.type == 'workout'"
-                            >&nbsp;shared a workout.</span
-                        >
-                    </span>
-                </div>
-                <div class="d-flex ml-auto text-muted centeredHeader">
-                    <span
-                        class="createdAtText"
-                        :title="Date(postData.createdAt).toLocaleString()"
-                        ><em>{{ createdAtText }}</em></span
-                    >
-                    <b-dropdown
-                        left
-                        variant="outline"
-                        size="sm"
-                        style="padding-top:1px;"
-                    >
+                            size="1.5rem"
+                            class="mr-1 disableAvatarHover"
+                            :src="postData.createdBy.profilePhoto"
+                        />
                         <span
-                            v-if="
-                                postData.createdBy.id ===
-                                    $store.state.userProfile.data.uid
-                            "
+                            ><router-link
+                                :to="'/' + postData.createdBy.username"
+                                class="text-dark username"
+                                >{{ postData.createdBy.username }}</router-link
+                            >&#32;&nbsp;
+                        </span>
+                        <span class="ml-1" v-if="postData.share.type">
+                            <span v-if="postData.share.type == 'exercise'"
+                                >&nbsp;shared an
+                                <router-link :to="'/exercises/' + postData.share.id"
+                                    >exercise</router-link
+                                >.</span
+                            >
+                            <span v-if="postData.share.type == 'template'"
+                                >&nbsp;shared a
+                                <router-link :to="'/templates/' + postData.share.id"
+                                    >template</router-link
+                                >.</span
+                            >
+                            <span v-if="postData.share.type == 'workout'"
+                                >&nbsp;shared a workout.</span
+                            >
+                        </span>
+                    </div>
+                    <div class="d-flex ml-auto text-muted centeredHeader">
+                        <span
+                            class="createdAtText"
+                            :title="Date(postData.createdAt).toLocaleString()"
+                            ><em>{{ createdAtText }}</em></span
                         >
-                            <b-dropdown-item>Edit</b-dropdown-item>
-                            <b-dropdown-item variant="danger"
-                                >Delete</b-dropdown-item
+                        <b-dropdown
+                            left
+                            variant="outline"
+                            size="sm"
+                            style="padding-top:1px;"
+                        >
+                            <span
+                                v-if="
+                                    postData.createdBy.id ===
+                                        $store.state.userProfile.data.uid
+                                "
                             >
-                        </span>
-                        <span v-else>
-                            <b-dropdown-item variant="danger"
-                                >Report</b-dropdown-item
-                            >
-                        </span>
-                    </b-dropdown>
+                                <b-dropdown-item>Edit</b-dropdown-item>
+                                <b-dropdown-item variant="danger"
+                                    >Delete</b-dropdown-item
+                                >
+                            </span>
+                            <span v-else>
+                                <b-dropdown-item variant="danger"
+                                    >Report</b-dropdown-item
+                                >
+                            </span>
+                        </b-dropdown>
+                    </div>
                 </div>
-            </div>
-            <div v-else>
-                Loading...
-            </div>
-        </template>
+            </template>
 
-        <!-- Content -->
-        <div v-if="!isLoading">
+            <!-- Content -->
             <div v-if="imgUrls.length > 1">
                 <b-carousel
                     v-model="carouselModel"
@@ -118,20 +115,20 @@
                 coll="post"
                 :followableComponent="false"
             />
-        </div>
-        <div v-else>
+        </b-card>
+    </div>
+    <div v-else>
+        <b-card no-body>
             <b-card-body>
                 <b-skeleton
-                    v-for="index in Math.floor(Math.random() * 4) + 3"
+                    v-for="index in skeletonAmount"
                     :key="index"
                     animation="wave"
-                    :width="
-                        (Math.floor(Math.random() * 50) + 50).toString() + '%'
-                    "
+                    :width="skeletonWidth[index]"
                 ></b-skeleton>
             </b-card-body>
-        </div>
-    </b-card>
+        </b-card>
+    </div>
 </template>
 
 <script>
@@ -144,7 +141,7 @@ import WorkoutShare from "@/components/Workout/WorkoutShare.vue";
 import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
 import TemplateShare from "@/components/Template/TemplateShare.vue";
 
-import { API } from 'aws-amplify';
+import { API, Storage } from 'aws-amplify';
 
 export default {
     name: "PostComponent",
@@ -153,6 +150,14 @@ export default {
         postId: {
             required: true,
             type: String
+        },
+        skeletonAmount: {
+            type: Number,
+            required: true
+        },
+        skeletonWidth: {
+            type: Array,
+            required: true
         }
     },
 
@@ -173,48 +178,42 @@ export default {
     },
 
     mounted: async function() {
-        // db.collection("posts")
-        //     .doc(this.$props.postId)
-        //     .get()
-        //     .then(postDoc => {
-        //         this.postData = postDoc.data();
-        //         this.postData.id = postDoc.id;
+        try {
+            const path = "/post/" + this.$props.postId
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                }
+            }
 
-        //         if (this.postData.filePaths.length > 0) {
-        //             let imageDownloadPromises = [];
+            this.postData = (await API.get(this.$store.state.apiName, path, myInit).catch(err => { console.error(err) })).data;
 
-        //             this.postData.filePaths.forEach(imgPath => {
-        //                 imageDownloadPromises.push(
-        //                     storage.ref(imgPath).getDownloadURL()
-        //                 );
-        //             });
+            try {
+                let urlPromises = [];
 
-        //             return Promise.all(imageDownloadPromises).then(imgUrls => {
-        //                 imgUrls.forEach(url => {
-        //                     this.imgUrls.push(url);
-        //                 });
-        //             });
-        //         }
-        //     })
-        //     .then(() => {
-        //         this.isLoading = false;
-        //         this.createdAtText = dayjs(
-        //             dayjs.unix(this.postData.createdAt.seconds)
-        //         ).fromNow();
-        //     })
-        //     .catch(e => {
-        //         console.error("Error downloading post:", e);
-        //         this.isLoading = false;
-        //     });
+                if (this.postData.filePaths.forEach(path => {
+                    urlPromises.push(Storage.get(path))
+                }));
 
-        const path = "/post/" + this.$props.postId
-        const myInit = {
-            headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                const imageUrls = await Promise.all(urlPromises);
+
+                imageUrls.forEach(url => {
+                    this.imgUrls.push(url);
+                })
+            }
+            catch (err) {
+                console.error("Error getting image URLs:", err);
+            }
+            finally {
+                if (this.postData) {
+                    this.isLoading = false;
+                }
             }
         }
+        catch (err) {
+            console.error("Error downloading post", err);
+        }
 
-        this.postData = (await API.get(this.$store.state.apiName, path, myInit).catch(err => { console.error(err) })).data;
         this.isLoading = false;
     }
 };

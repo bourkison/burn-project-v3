@@ -72,7 +72,7 @@
                                         size="sm"
                                         class="text-center"
                                         :to="
-                                            '/workout/new?w=' + templateData.id
+                                            '/workout/new?w=' + templateData._id
                                         "
                                     >
                                         Start Template

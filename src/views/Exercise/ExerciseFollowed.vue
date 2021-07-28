@@ -95,6 +95,16 @@
                             exercises.</em
                         >
                     </div>
+                    <b-alert
+                        class="position-fixed fixed-bottom m-0 rounded-0"
+                        variant="danger"
+                        dismissible
+                        fade
+                        style="z-index: 2000;"
+                        v-model="errorCountdown"
+                    >
+                        {{ errorMessage }}
+                    </b-alert>
                 </b-container>
             </b-col>
 
@@ -139,7 +149,12 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedExercise: null
+            lastLoadedExercise: null,
+
+            // Errror handling:
+            errorCountdown: 0,
+            errorMessage: "",
+            errorInterval: null
         };
     },
 
@@ -187,50 +202,71 @@ export default {
         },
 
         downloadExercises: async function() {
-            this.isLoading = true;
-            this.exercises = [];
+            try {
 
-            const path = "/exercise";
-            let myInit = {
-                headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken
-                        .jwtToken
-                },
-                queryStringParameters: {
-                    loadAmount: 5,
-                    user: true
+                this.isLoading = true;
+                this.exercises = [];
+    
+                const path = "/exercise";
+                let myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken
+                            .jwtToken
+                    },
+                    queryStringParameters: {
+                        loadAmount: 5,
+                        user: true
+                    }
+                };
+    
+                if (this.selectedMgs.length > 0) {
+                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(
+                        ","
+                    );
                 }
-            };
-
-            if (this.selectedMgs.length > 0) {
-                myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(
-                    ","
-                );
+    
+                if (this.selectedTags.length > 0) {
+                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
+                }
+    
+                const response = await API.get(
+                    this.$store.state.apiName,
+                    path,
+                    myInit
+                ).catch(err => {
+                    console.log("ERROR:", err.response);
+                    if (err.response.status === 404) {
+                        this.exercises = [];
+                    } else {
+                        throw err;
+                    }
+                });
+    
+                if (!response) {
+                    throw new Error("No response");
+                }
+    
+                if (!response.success) {
+                    throw new Error("Unsuccessful: " + response.errorMessage);
+                }
+    
+    
+                this.exercises = response.data;
+                this.moreToLoad = false;
+                this.isLoadingMore = false;
             }
-
-            if (this.selectedTags.length > 0) {
-                myInit.queryStringParameters.tags = this.selectedTags.join(",");
+            catch (err) {
+                if (err.response && err.response.status !== 404) {
+                    this.displayError(err);
+                }
             }
-
-            const response = await API.get(
-                this.$store.state.apiName,
-                path,
-                myInit
-            );
-
-            this.exercises = response.data;
-
-            if (this.exercises.length > 0) {
+            finally {
                 this.isLoading = false;
             }
-
-            this.moreToLoad = false;
-            this.isLoadingMore = false;
-
-            console.log("API RESPONSE", response);
         },
 
         updateMuscleGroups: function(muscleGroups) {
+            console.log("UPDATING MUSCLE GROUPS");
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
@@ -254,6 +290,8 @@ export default {
         },
 
         updateTags: function(tags) {
+            console.log("UPDATING TAGS");
+
             this.selectedTags = tags;
             let isFiltered = false;
 
@@ -275,7 +313,23 @@ export default {
                 this.$router.replace({ path: "/exercises", query: null });
             }
             this.downloadExercises();
-        }
+        },
+
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage =
+                "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {
+                    this.errorCountdown -= 1;
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
+        },
     }
 };
 </script>

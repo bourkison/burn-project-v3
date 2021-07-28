@@ -140,6 +140,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            templateExists: false,
             templates: [],
 
             // Filters:
@@ -205,7 +206,11 @@ export default {
                     path,
                     myInit
                 ).catch(err => {
-                    throw err;
+                    if (err.response.status === 404) {
+                        this.templates = [];
+                    } else {
+                        throw err;
+                    }
                 });
 
                 if (!response) {
