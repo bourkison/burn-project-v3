@@ -73,7 +73,7 @@
                         class="ml-1"
                         variant="outline-success"
                         size="sm"
-                        :to="'/workout/new?b=' + workout.id"
+                        :to="'/workout/new?b=' + workout._id"
                     >
                         Start Workout
                         <b-icon-play />

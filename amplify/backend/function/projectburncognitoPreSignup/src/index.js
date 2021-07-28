@@ -1,17 +1,19 @@
 const aws = require('aws-sdk');
 const MongooseModels = require('/opt/models');
 
-const { Parameters } = await (new aws.SSM())
-.getParameters({
-    Names: ["MONGODB_URI"].map(secretName => process.env[secretName]),
-    WithDecryption: true,
-})
-.promise();
-
-const MONGODB_URI = Parameters[0].Value;
-
-
 exports.handler = async (event, context, callback) => {
+    /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */
+    context.callbackWaitsForEmptyEventLoop = false;
+
+    const { Parameters } = await (new aws.SSM())
+    .getParameters({
+        Names: ["MONGODB_URI"].map(secretName => process.env[secretName]),
+        WithDecryption: true,
+    })
+    .promise();
+
+    const MONGODB_URI = Parameters[0].Value;
+
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     // Check user doesn't already exist.
@@ -30,11 +32,7 @@ exports.handler = async (event, context, callback) => {
         surname: event.request.userAttributes.family_name,
         gender: event.request.userAttributes.gender,
         dob: event.request.userAttributes.birthdate,
-        height: event.request.userAttributes['custom:height'],
-        weight: event.request.userAttributes['custom:weight'],
-        metric: (event.request.userAttributes['custom:metric'] === "true"),
         country: event.request.userAttributes.locale,
-        profilePhoto: event.request.userAttributes.picture,
         followerCount: 0,
         followingCount: 0,
         followers: [],
@@ -42,14 +40,14 @@ exports.handler = async (event, context, callback) => {
         exercises: [],
         templates: [],
         workouts: [],
-        workouts: [],
         likes: [],
-        comments: []
+        comments: [],
+        postFeed: [],
+        postReferences: []
     });
 
-    const result = await user.save().catch(() => {
-        let denyError = new Error("Error creating document.");
-        callback(denyError, event);
+    await user.save().catch(err => {
+        callback(err, event);
     });
 
     callback(null, event);

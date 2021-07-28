@@ -1,5 +1,5 @@
 <template>
-    <b-container>
+    <b-container v-if="$store.state.userProfile.loggedIn">
         <b-row>
             <b-col sm="3">
                 <QuickStart class="quickStart" />
@@ -22,6 +22,9 @@
                  </div>
             </b-col>
         </b-row>
+    </b-container>
+    <b-container v-else>
+        Sign Up or Sign In to get Started!
     </b-container>
 </template>
 

@@ -38,6 +38,7 @@
 
 <script>
 import { db } from "@/firebase";
+import { API } from 'aws-amplify';
 
 import PostNew from "@/components/Post/PostNew.vue";
 import PostFeed from "@/components/Post/PostFeed.vue";
@@ -57,31 +58,24 @@ export default {
         };
     },
 
-    created: function() {
-        db.collection("users")
-            .doc(this.$store.state.userProfile.data.uid)
-            .collection("feed")
-            .orderBy("createdAt", "desc")
-            .limit(5)
-            .get()
-            .then(postSnapshot => {
-                postSnapshot.forEach(post => {
-                    this.posts.push(post.id);
-                });
+    created: async function() {
+        const path = "/post"
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+            },
+            queryStringParameters: {
+                loadAmount: 5
+            }
+        }
 
-                if (postSnapshot.size < 5) {
-                    this.moreToLoad = false;
-                }
+        const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-                this.isLoading = false;
-                setTimeout(() => {
-                    this.isLoadingMore = false;
-                }, 500);
-                this.lastLoadedPost = postSnapshot.docs[postSnapshot.size - 1];
-            })
-            .catch(e => {
-                console.error("Error loading initial posts:", e);
-            });
+        postResult.forEach(post => {
+            this.posts.push(post)
+        });
+
+        this.isLoading = false;
     },
 
     methods: {

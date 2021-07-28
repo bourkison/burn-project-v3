@@ -279,12 +279,12 @@ const userSchema = new mongoose.Schema(
             required: true
         },
         height: {
-            type: String,
-            required: true
+            type: Number,
+            default: 0
         },
         weight: {
-            type: String,
-            required: true
+            type: Number,
+            default: 0  
         },
         metric: {
             type: Boolean,

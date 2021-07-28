@@ -31,11 +31,11 @@ Hub.listen("auth", async ({ payload: { event, data } }) => {
     switch (event) {
         case "signIn":
             console.log("SIGNEDIN");
-            await this.$store.dispatch("fetchUser", data);
+            await store.dispatch("fetchUser", data);
             break;
         case "signOut":
             console.log("SIGNEDOUT");
-            this.$store.commit("setLoggedInUser", {
+            store.commit("setLoggedInUser", {
                 loggedIn: false,
                 data: data,
                 docData: data

@@ -1,40 +1,41 @@
 <template>
     <div>
-        <div v-if="!verifyingEmail">
+        <div class="mb-4">
+            <b-progress
+                :value="progressAmount"
+                :max="100"
+                class="mb-2"
+                height="0.5rem"
+            />
+            <b-row class="font-size-8">
+                <b-col cols="4" class="text-center">
+                    <b-icon-circle-fill
+                        variant="primary"
+                        v-if="progressAmount >= 15"
+                    />
+                    <b-icon-circle variant="primary" v-else /><br />
+                    Sign Up
+                </b-col>
+                <b-col cols="4" class="text-center">
+                    <b-icon-circle-fill
+                        variant="primary"
+                        v-if="progressAmount >= 50"
+                    />
+                    <b-icon-circle variant="primary" v-else /><br />
+                    Verify
+                </b-col>
+                <b-col cols="4" class="text-center">
+                    <b-icon-circle-fill
+                        variant="primary"
+                        v-if="progressAmount >= 86"
+                    />
+                    <b-icon-circle variant="primary" v-else /><br />
+                    Final
+                </b-col>
+            </b-row>
+        </div>
+        <div v-if="progressAmount === 15">
             <b-form @submit.prevent="signUp">
-                <div class="text-center">
-                    <div v-if="editingImage">
-                        <AvatarEditor
-                            :inputImage="fileInput"
-                            @addImage="addImage"
-                            @cancelEdit="cancelImageEdit"
-                        />
-                    </div>
-                    <b-form-group description="Upload profile photo">
-                        <div v-if="!editingImage">
-                            <label for="profilePhotoUpload">
-                                <b-avatar
-                                    v-if="!imageURL"
-                                    size="9rem"
-                                    class="profilePhotoUploadAvatar"
-                                />
-                                <b-avatar
-                                    v-else
-                                    size="9rem"
-                                    class="profilePhotoUploadAvatar"
-                                    :src="imageURL"
-                                />
-                            </label>
-                        </div>
-                        <b-form-file
-                            class="d-none"
-                            v-model="fileInput"
-                            @change="handleFileUpload"
-                            id="profilePhotoUpload"
-                        />
-                    </b-form-group>
-                </div>
-
                 <b-form-group
                     label="Username"
                     label-for="usernameInput"
@@ -178,53 +179,6 @@
                     </div>
                 </b-form-group>
 
-                <b-form-group
-                    label="Height and Weight"
-                    :label-for="
-                        signUpForm.height && !signUpForm.weight
-                            ? 'weightInput'
-                            : 'heightInput'
-                    "
-                >
-                    <b-input-group>
-                        <b-form-input
-                            id="heightInput"
-                            v-model="signUpForm.height"
-                            type="text"
-                            required
-                            :disabled="isCreating"
-                        />
-                        <b-input-group-addon is-text>{{
-                            signUpForm.metric ? "cm" : "inches"
-                        }}</b-input-group-addon>
-                        <b-form-input
-                            id="weightInput"
-                            v-model="signUpForm.weight"
-                            type="text"
-                            required
-                            :disabled="isCreating"
-                        />
-                        <b-input-group-addon is-text>{{
-                            signUpForm.metric ? "kg" : "lbs"
-                        }}</b-input-group-addon>
-                        <b-input-group-append>
-                            <b-dropdown
-                                variant="outline-dark"
-                                :disabled="isCreating"
-                            >
-                                <b-dropdown-item
-                                    @click="signUpForm.metric = true"
-                                    >Metric</b-dropdown-item
-                                >
-                                <b-dropdown-item
-                                    @click="signUpForm.metric = false"
-                                    >Imperial</b-dropdown-item
-                                >
-                            </b-dropdown>
-                        </b-input-group-append>
-                    </b-input-group>
-                </b-form-group>
-
                 <b-form-group label="Country" label-for="countryInput">
                     <b-form-select
                         id="countryInput"
@@ -258,7 +212,7 @@
                 </div>
             </b-form>
         </div>
-        <div v-else>
+        <div v-else-if="progressAmount === 50">
             <b-form @submit.prevent="verifyEmail">
                 <b-form-group
                     label="Verification Code"
@@ -292,13 +246,102 @@
                 </div>
             </b-form>
         </div>
+        <div v-else-if="progressAmount === 86">
+            <b-form @submit.prevent="finaliseSignUp">
+                <div class="text-center">
+                    <div v-if="editingImage">
+                        <AvatarEditor
+                            :inputImage="fileInput"
+                            @addImage="addImage"
+                            @cancelEdit="cancelImageEdit"
+                        />
+                    </div>
+                    <b-form-group description="Upload profile photo (optional)">
+                        <div v-if="!editingImage">
+                            <label for="profilePhotoUpload">
+                                <b-avatar
+                                    v-if="!imageURL"
+                                    size="9rem"
+                                    class="profilePhotoUploadAvatar"
+                                />
+                                <b-avatar
+                                    v-else
+                                    size="9rem"
+                                    class="profilePhotoUploadAvatar"
+                                    :src="imageURL"
+                                />
+                            </label>
+                        </div>
+                        <b-form-file
+                            class="d-none"
+                            v-model="fileInput"
+                            @change="handleFileUpload"
+                            id="profilePhotoUpload"
+                        />
+                    </b-form-group>
+                </div>
+
+                <b-form-group label="Measurement">
+                    <div class="text-center">
+                        <b-form-radio-group
+                            v-model="finalSignUpForm.metric"
+                            :options="measurements"
+                            buttons
+                            :disabled="isFinalising"
+                        />
+                    </div>
+                </b-form-group>
+
+                <b-form-group
+                    label="Height and Weight (optional)"
+                    :label-for="
+                        finalSignUpForm.height && !finalSignUpForm.weight
+                            ? 'weightInput'
+                            : 'heightInput'
+                    "
+                >
+                    <b-input-group>
+                        <b-form-input
+                            id="heightInput"
+                            v-model="finalSignUpForm.height"
+                            type="text"
+                            required
+                            :disabled="isFinalising"
+                        />
+                        <b-input-group-addon is-text>{{
+                            finalSignUpForm.metric ? "cm" : "inches"
+                        }}</b-input-group-addon>
+                        <b-form-input
+                            id="weightInput"
+                            v-model="finalSignUpForm.weight"
+                            type="text"
+                            required
+                            :disabled="isFinalising"
+                        />
+                        <b-input-group-addon is-text>{{
+                            finalSignUpForm.metric ? "kg" : "lbs"
+                        }}</b-input-group-addon>
+                    </b-input-group>
+                </b-form-group>
+
+                <div class="text-center">
+                    <b-button
+                        type="submit"
+                        variant="primary"
+                        :disabled="isFinalising"
+                    >
+                        <span v-if="!isFinalising">Get Started!</span>
+                        <span v-else><b-spinner small/></span>
+                    </b-button>
+                </div>
+            </b-form>
+        </div>
     </div>
 </template>
 
 <script>
-// import { auth, db, functions, storage } from '@/firebase'
 import { db } from "@/firebase";
-import { Auth, Storage } from "aws-amplify";
+import { Auth, Storage, API } from "aws-amplify";
 
 import dayjs from "dayjs";
 import crypto from "crypto";
@@ -313,6 +356,7 @@ export default {
         return {
             isCreating: false,
             isVerifying: false,
+            isFinalising: false,
             isResending: false,
 
             imageURL: null,
@@ -327,11 +371,14 @@ export default {
                 surname: "",
                 gender: "male",
                 dob: "",
+                country: "United States",
+            },
+
+            finalSignUpForm: {
+                profilePhoto: "",
                 height: "",
                 weight: "",
                 metric: true,
-                country: "United States",
-                profilePhoto: ""
             },
 
             usernameUnique: false,
@@ -599,7 +646,12 @@ export default {
                 { text: "Female", value: "female" },
                 { text: "Other", value: "other" }
             ],
-            editingImage: false
+            measurements: [
+                { text: 'Metric', value: true },
+                { text: 'Imperial', value: false }
+            ],
+            editingImage: false,
+            progressAmount: 15
         };
     },
 
@@ -634,42 +686,74 @@ export default {
 
         signUp: async function() {
             try {
-                try {
-                    // Try upload profilePhoto.
-                    // TODO: Image doesn't get uploaded.
-                    this.isCreating = true;
-                    this.signUpForm.profilePhoto = await this.uploadProfilePhoto(
-                        this.imageURL,
-                        this.signUpForm.username
-                    );
-                } catch (err) {
-                    console.error("Image upload error", err);
-                } finally {
-                    // First build user in database.
-                    const user = await Auth.signUp({
-                        username: this.signUpForm.username,
-                        password: this.signUpForm.password,
-                        attributes: {
-                            email: this.signUpForm.email,
-                            birthdate: dayjs(this.signUpForm.dob).format(
-                                "YYYY-MM-DD"
-                            ),
-                            gender: this.signUpForm.gender,
-                            given_name: this.signUpForm.firstName,
-                            family_name: this.signUpForm.surname,
-                            locale: this.signUpForm.country,
-                            picture: this.signUpForm.profilePhoto,
-                            "custom:height": this.signUpForm.height,
-                            "custom:weight": this.signUpForm.weight,
-                            "custom:metric": this.signUpForm.metric.toString()
-                        }
-                    });
+                this.isCreating = true;
 
-                    this.cognitoUsername = user.user.username;
-                    this.verifyingEmail = true;
-                }
-            } catch (err) {
+                // First build user in database.
+                const user = await Auth.signUp({
+                    username: this.signUpForm.username,
+                    password: this.signUpForm.password,
+                    attributes: {
+                        email: this.signUpForm.email,
+                        birthdate: dayjs(this.signUpForm.dob).format(
+                            "YYYY-MM-DD"
+                        ),
+                        gender: this.signUpForm.gender,
+                        given_name: this.signUpForm.firstName,
+                        family_name: this.signUpForm.surname,
+                        locale: this.signUpForm.country
+                    }
+                });
+
+                this.cognitoUsername = user.user.username;
+                this.isCreating = false;
+                this.progressAmount = 50;
+            } 
+            catch (err) {
                 console.error("Error creating user!");
+            }
+        },
+
+        verifyEmail: async function() {
+            this.isVerifying = true;
+
+            await Auth.confirmSignUp(this.cognitoUsername, this.verificationCode);
+            const user = await Auth.signIn(this.signUpForm.username, this.signUpForm.password);
+            await this.$store.dispatch("fetchUser", user.signInUserSession);
+            this.isVerifying = false;
+            this.progressAmount = 86;
+        },
+
+        finaliseSignUp: async function() {
+            try {
+                // Try upload profilePhoto.
+                // TODO: Image doesn't get uploaded.
+                this.isFinalising = true;
+                this.finalSignUpForm.profilePhoto = await this.uploadProfilePhoto(
+                    this.imageURL,
+                    this.signUpForm.username
+                );
+
+
+                const path = "/user/" + this.$store.state.userProfile.docData.username;
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    body: {
+                        userForm: this.finalSignUpForm
+                    }
+                }
+
+                await API.put(this.$store.state.apiName, path, myInit);
+                // Fetch user data again.
+                await this.$store.dispatch("fetchUser", this.$store.state.userProfile.data);
+                
+                this.isFinalising = false;
+                this.$emit("closeSignUpModal");
+
+            } 
+            catch (err) {
+                console.error("Image upload error", err);
             }
         },
 
@@ -704,27 +788,7 @@ export default {
             });
 
             console.log("IMAGE UPLOADED:", result);
-        },
-
-        verifyEmail: function() {
-            this.isVerifying = true;
-
-            Auth.confirmSignUp(this.cognitoUsername, this.verificationCode)
-                .then(() => {
-                    return Auth.signIn(
-                        this.signUpForm.username,
-                        this.signUpForm.password
-                    );
-                })
-                .then(() => {
-                    this.$emit("closeSignUpModal");
-                    this.$store.dispatch("fetchUser", false);
-                    this.isVerifying = false;
-                })
-                .catch(err => {
-                    this.isVerifying = false;
-                    alert(err.message || JSON.stringify(err));
-                });
+            return result.key;
         },
 
         resendVerification: function() {
@@ -784,5 +848,9 @@ export default {
 .profilePhotoUploadAvatar:hover,
 #countryInput:hover {
     cursor: pointer;
+}
+
+.font-size-8 {
+    font-size: 12px;
 }
 </style>

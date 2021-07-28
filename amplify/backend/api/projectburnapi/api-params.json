@@ -1,196 +1,223 @@
 {
-  "paths": [
-    {
-      "name": "/user",
-      "lambdaFunction": "projectburnUserHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/GET",
-          "/PUT",
-          "/PATCH"
-        ]
-      },
-      "policyResourceName": "/user"
+    "paths": [
+        {
+            "name": "/user",
+            "lambdaFunction": "projectburnUserHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/GET",
+                    "/PUT",
+                    "/PATCH"
+                ]
+            },
+            "policyResourceName": "/user"
+        },
+        {
+            "name": "/exercise",
+            "lambdaFunction": "projectburnExerciseHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/exercise"
+        },
+        {
+            "name": "/template",
+            "lambdaFunction": "projectburnTemplateHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/template"
+        },
+        {
+            "name": "/workout",
+            "lambdaFunction": "projectburnWorkoutHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/workout"
+        },
+        {
+            "name": "/post",
+            "lambdaFunction": "projectburnPostHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/post"
+        },
+        {
+            "name": "/like",
+            "lambdaFunction": "projectburnLikeHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/like"
+        },
+        {
+            "name": "/comment",
+            "lambdaFunction": "projectburnCommentHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/comment"
+        },
+        {
+            "name": "/follow",
+            "lambdaFunction": "projectburnFollowHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/follow"
+        }
+    ],
+    "resourceName": "projectburnapi",
+    "apiName": "projectburnapi",
+    "functionArns": [
+        {
+            "lambdaFunction": "projectburnUserHandler"
+        },
+        {
+            "lambdaFunction": "projectburnExerciseHandler"
+        },
+        {
+            "lambdaFunction": "projectburnTemplateHandler"
+        },
+        {
+            "lambdaFunction": "projectburnWorkoutHandler"
+        },
+        {
+            "lambdaFunction": "projectburnPostHandler"
+        },
+        {
+            "lambdaFunction": "projectburnLikeHandler"
+        },
+        {
+            "lambdaFunction": "projectburnCommentHandler"
+        },
+        {
+            "lambdaFunction": "projectburnFollowHandler"
+        }
+    ],
+    "privacy": {
+        "auth": 8,
+        "unauth": 0,
+        "authRoleName": "amplify-projectburn-dev-203659-authRole",
+        "unAuthRoleName": "amplify-projectburn-dev-203659-unauthRole"
     },
-    {
-      "name": "/exercise",
-      "lambdaFunction": "projectburnExerciseHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/POST",
-          "/GET",
-          "/PUT",
-          "/PATCH",
-          "/DELETE"
-        ]
-      },
-      "policyResourceName": "/exercise"
-    },
-    {
-      "name": "/template",
-      "lambdaFunction": "projectburnTemplateHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/POST",
-          "/GET",
-          "/PUT",
-          "/PATCH",
-          "/DELETE"
-        ]
-      },
-      "policyResourceName": "/template"
-    },
-    {
-      "name": "/workout",
-      "lambdaFunction": "projectburnWorkoutHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/POST",
-          "/GET",
-          "/PUT",
-          "/PATCH",
-          "/DELETE"
-        ]
-      },
-      "policyResourceName": "/workout"
-    },
-    {
-      "name": "/post",
-      "lambdaFunction": "projectburnPostHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/POST",
-          "/GET",
-          "/PUT",
-          "/PATCH",
-          "/DELETE"
-        ]
-      },
-      "policyResourceName": "/post"
-    },
-    {
-      "name": "/like",
-      "lambdaFunction": "projectburnLikeHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/POST",
-          "/GET",
-          "/PUT",
-          "/PATCH",
-          "/DELETE"
-        ]
-      },
-      "policyResourceName": "/like"
-    },
-    {
-      "name": "/comment",
-      "lambdaFunction": "projectburnCommentHandler",
-      "privacy": {
-        "private": true,
-        "auth": [
-          "/POST",
-          "/GET",
-          "/PUT",
-          "/PATCH",
-          "/DELETE"
-        ]
-      },
-      "policyResourceName": "/comment"
-    }
-  ],
-  "resourceName": "projectburnapi",
-  "apiName": "projectburnapi",
-  "functionArns": [
-    {
-      "lambdaFunction": "projectburnUserHandler"
-    },
-    {
-      "lambdaFunction": "projectburnExerciseHandler"
-    },
-    {
-      "lambdaFunction": "projectburnTemplateHandler"
-    },
-    {
-      "lambdaFunction": "projectburnWorkoutHandler"
-    },
-    {
-      "lambdaFunction": "projectburnPostHandler"
-    },
-    {
-      "lambdaFunction": "projectburnLikeHandler"
-    },
-    {
-      "lambdaFunction": "projectburnCommentHandler"
-    }
-  ],
-  "privacy": {
-    "auth": 7,
-    "unauth": 0,
-    "authRoleName": "amplify-projectburn-dev-203659-authRole",
-    "unAuthRoleName": "amplify-projectburn-dev-203659-unauthRole"
-  },
-  "dependsOn": [
-    {
-      "category": "function",
-      "resourceName": "projectburnUserHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    },
-    {
-      "category": "function",
-      "resourceName": "projectburnExerciseHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    },
-    {
-      "category": "function",
-      "resourceName": "projectburnTemplateHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    },
-    {
-      "category": "function",
-      "resourceName": "projectburnWorkoutHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    },
-    {
-      "category": "function",
-      "resourceName": "projectburnPostHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    },
-    {
-      "category": "function",
-      "resourceName": "projectburnLikeHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    },
-    {
-      "category": "function",
-      "resourceName": "projectburnCommentHandler",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    }
-  ]
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "projectburnUserHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnExerciseHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnTemplateHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnWorkoutHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnPostHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnLikeHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnCommentHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnFollowHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ],
+    "uuid": "bc244db2"
 }

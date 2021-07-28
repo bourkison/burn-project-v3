@@ -267,14 +267,17 @@ export default new Vuex.Store({
             const path = "/user/" + data.idToken.payload["cognito:username"];
             const myInit = {
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: data.idToken.jwtToken
                 }
             };
 
-            const docData = (
-                await API.get(state.apiName, path, myInit).catch(() => {
-                    console.error("Error getting user doc.");
+            console.log("PATH:", path);
+            console.log("INIT:", myInit);
+
+            const docData = (await API.get(state.apiName, path, myInit).catch(err => {
+                    console.error("USER DOC ERR:", err);
+                    commit("setLoggedInUser", { loggedIn: false, data: null, docData: null })
+                    return;
                 })
             ).data;
 
@@ -283,19 +286,21 @@ export default new Vuex.Store({
                 data: data,
                 docData: docData
             });
+
+            return;
         },
 
         // As this function may get callled multiple times from different components,
         // Store the promise in an array to avoid loading it multiple times.
-        fetchWorkouts: async function({ commit }, user) {
-            if (this.state.workoutPromises.length === 0) {
+        fetchWorkouts: async function({ commit, state }, user) {
+            if (state.workoutPromises.length === 0) {
                 commit("setLoadingWorkouts", [
                     userWorkoutsCollection(user.uid)
                         .orderBy("createdAt", "desc")
                         .get()
                 ]);
 
-                const responses = await Promise.all(this.state.workoutPromises);
+                const responses = await Promise.all(state.workoutPromises);
 
                 responses.forEach(workoutSnapshot => {
                     let workouts = [];
@@ -311,7 +316,7 @@ export default new Vuex.Store({
                     commit("setLoadingWorkouts", []);
                 });
             } else {
-                await Promise.all(this.state.workoutPromises).then(() => {
+                await Promise.all(state.workoutPromises).then(() => {
                     commit("setLoadingWorkouts", []);
                 });
             }

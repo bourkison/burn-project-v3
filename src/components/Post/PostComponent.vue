@@ -114,8 +114,8 @@
                 </b-card-text>
             </b-card-body>
             <CommentSection
-                :docId="postData.id"
-                collection="posts"
+                :docId="postData._id"
+                coll="post"
                 :followableComponent="false"
             />
         </div>
@@ -144,7 +144,7 @@ import WorkoutShare from "@/components/Workout/WorkoutShare.vue";
 import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
 import TemplateShare from "@/components/Template/TemplateShare.vue";
 
-import { db, storage } from "@/firebase";
+import { API } from 'aws-amplify';
 
 export default {
     name: "PostComponent",
@@ -172,40 +172,50 @@ export default {
         dayjs.extend(relativeTime);
     },
 
-    mounted: function() {
-        db.collection("posts")
-            .doc(this.$props.postId)
-            .get()
-            .then(postDoc => {
-                this.postData = postDoc.data();
-                this.postData.id = postDoc.id;
+    mounted: async function() {
+        // db.collection("posts")
+        //     .doc(this.$props.postId)
+        //     .get()
+        //     .then(postDoc => {
+        //         this.postData = postDoc.data();
+        //         this.postData.id = postDoc.id;
 
-                if (this.postData.filePaths.length > 0) {
-                    let imageDownloadPromises = [];
+        //         if (this.postData.filePaths.length > 0) {
+        //             let imageDownloadPromises = [];
 
-                    this.postData.filePaths.forEach(imgPath => {
-                        imageDownloadPromises.push(
-                            storage.ref(imgPath).getDownloadURL()
-                        );
-                    });
+        //             this.postData.filePaths.forEach(imgPath => {
+        //                 imageDownloadPromises.push(
+        //                     storage.ref(imgPath).getDownloadURL()
+        //                 );
+        //             });
 
-                    return Promise.all(imageDownloadPromises).then(imgUrls => {
-                        imgUrls.forEach(url => {
-                            this.imgUrls.push(url);
-                        });
-                    });
-                }
-            })
-            .then(() => {
-                this.isLoading = false;
-                this.createdAtText = dayjs(
-                    dayjs.unix(this.postData.createdAt.seconds)
-                ).fromNow();
-            })
-            .catch(e => {
-                console.error("Error downloading post:", e);
-                this.isLoading = false;
-            });
+        //             return Promise.all(imageDownloadPromises).then(imgUrls => {
+        //                 imgUrls.forEach(url => {
+        //                     this.imgUrls.push(url);
+        //                 });
+        //             });
+        //         }
+        //     })
+        //     .then(() => {
+        //         this.isLoading = false;
+        //         this.createdAtText = dayjs(
+        //             dayjs.unix(this.postData.createdAt.seconds)
+        //         ).fromNow();
+        //     })
+        //     .catch(e => {
+        //         console.error("Error downloading post:", e);
+        //         this.isLoading = false;
+        //     });
+
+        const path = "/post/" + this.$props.postId
+        const myInit = {
+            headers: {
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+            }
+        }
+
+        this.postData = (await API.get(this.$store.state.apiName, path, myInit).catch(err => { console.error(err) })).data;
+        this.isLoading = false;
     }
 };
 </script>

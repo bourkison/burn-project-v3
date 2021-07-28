@@ -1,8 +1,8 @@
 <template>
     <div class="postFeed">
-        <b-row v-for="post in posts" :key="post">
+        <b-row v-for="post in posts" :key="post._id">
             <b-col sm="12">
-                <PostComponent :postId="post" class="post" />
+                <PostComponent :postId="post._id" class="post" />
             </b-col>
         </b-row>
     </div>

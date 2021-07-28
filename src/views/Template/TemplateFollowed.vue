@@ -313,6 +313,8 @@ export default {
 
             if (isFiltered) {
                 this.$router.replace({ path: "/templates", query: query });
+            } else {
+                this.$router.replace({ path: "/templates", query: null });
             }
             this.downloadTemplates();
         }

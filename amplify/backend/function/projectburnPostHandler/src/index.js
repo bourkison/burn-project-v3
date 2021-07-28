@@ -4,6 +4,43 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
 
+// GET request /post/{proxy+}
+const getPost = async function(event) {
+    const postId = event.pathParameters.proxy;
+    const Post = (await MongooseModels(MONGODB_URI)).Post;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    }
+
+    let fields = "content filePaths share createdBy createdAt"
+    const result = await Post.findOne({ _id: postId }, fields).exec();
+
+    if (!result) {
+        const errorResponse = "Post: " + postId + " not found." ;
+        response.statusCode = 404;
+        response.body = JSON.stringify({
+            success: false,
+            errorMessage: errorResponse
+        })
+
+        return response;
+    }
+
+    response.statusCode = 200;
+    response.body = JSON.stringify({
+        success: true,
+        data: result
+    });
+
+    return response;
+}
+
 // GET request /post
 const queryPost = async function(event) {
     const username = event.requestContext.authorizer.claims["cognito:username"];
@@ -25,6 +62,7 @@ const queryPost = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     if (userId) {
+        console.log ("IN FIRST BLOCK", userId)
         result = await (User.findOne(
             {
                 _id: userId
@@ -46,7 +84,7 @@ const queryPost = async function(event) {
 
             return response;
         } else {
-            result = result.postReferences
+            result = result.postReferences.reverse();
         }
     } else {
         result = await (User.findOne(
@@ -55,13 +93,13 @@ const queryPost = async function(event) {
             },
             {
                 postFeed: {
-                    $slice: ["$feed", 0 - loadAmount]
+                    $slice: ["$postFeed", 0 - loadAmount]
                 }
             }
         ))
 
-        if (result.postReferences) {
-            const errorResponse = "Feed not found for user: " + userId;
+        if (!result.postFeed) {
+            const errorResponse = "Feed not found for user: " + username;
             response.statusCode = 404;
             response.body = JSON.stringify({
                 success: false,
@@ -70,7 +108,7 @@ const queryPost = async function(event) {
 
             return response;
         } else {
-            result = result.postReferences
+            result = result.postFeed.reverse();
         }
     }
 
@@ -208,7 +246,11 @@ exports.handler = async (event, context) => {
 
     switch (event.httpMethod) {
         case "GET":
-            response = await queryPost(event);
+            if (event.resource === "/post") {
+                response = await queryPost(event);
+            } else {
+                response = await getPost(event);
+            }
             break;
         case "POST":
             response = await createPost(event);

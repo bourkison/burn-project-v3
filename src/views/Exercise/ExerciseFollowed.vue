@@ -271,6 +271,8 @@ export default {
 
             if (isFiltered) {
                 this.$router.replace({ path: "/exercises", query: query });
+            } else {
+                this.$router.replace({ path: "/exercises", query: null });
             }
             this.downloadExercises();
         }

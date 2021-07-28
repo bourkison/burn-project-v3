@@ -130,6 +130,20 @@
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
       "build": true
+    },
+    "projectburnFollowHandler": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "projectburnmongoosemodels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
     }
   },
   "api": {
@@ -210,6 +224,14 @@
         {
           "category": "function",
           "resourceName": "projectburnCommentHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnFollowHandler",
           "attributes": [
             "Name",
             "Arn"

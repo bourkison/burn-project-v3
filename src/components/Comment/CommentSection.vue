@@ -210,16 +210,6 @@ export default {
         //     promises.push(this.checkIfUserFollowed());
         // }
 
-        // promises.push(this.downloadCounters());
-
-        // Promise.all(promises)
-        // .then(() => {
-        //     this.isLoading = false;
-        // })
-        // .catch(e => {
-        //     console.error("Error pulling comment data:", e);
-        // })
-
         let promises = [];
         let path = "/like";
         let myInit = {

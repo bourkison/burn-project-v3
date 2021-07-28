@@ -82,6 +82,7 @@ export default {
 
     created: async function() {
         dayjs.extend(relativeTime);
+        let promises = [];
 
         // First download user templates.
         let path = '/template';
@@ -93,25 +94,28 @@ export default {
                 loadAmount: 15
             }
         }
+        
+        promises.push(API.get(this.$store.state.apiName, path, myInit).then(templates => {
+            this.userTemplates = templates.data;
+        }))
 
-        this.userTemplates = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
         // Next download user workouts.
         path = '/workout'
-        const workouts = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-        console.log("WORKOUTS:", workouts);
+        promises.push(API.get(this.$store.state.apiName, path, myInit).then(workouts => {
+            let uniqueNames = [];
 
-        let uniqueNames = [];
+            workouts.data.forEach(workout => {
+                if (!uniqueNames.includes(workout.name)) {
+                    workout.createdAtText = dayjs(workout.createdAt).fromNow();
+                    this.userWorkouts.push(workout);
+                    uniqueNames.push(workout.name)
+                }
+            })
+        }))
 
-        workouts.forEach(workout => {
-            if (!uniqueNames.includes(workout.name)) {
-                workout.createdAtText = dayjs(workout.createdAt).fromNow();
-                this.userWorkouts.push(workout);
-                uniqueNames.push(workout.name);
-            }
-        })
-
+        await Promise.all(promises);
         this.isLoading = false;
     },
 

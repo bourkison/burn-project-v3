@@ -25,6 +25,7 @@ import TemplateEdit from "@/views/Template/TemplateEdit.vue";
 import TemplateFollowed from "@/views/Template/TemplateFollowed.vue";
 import TemplateNew from "@/views/Template/TemplateNew.vue";
 import TemplateView from "@/views/Template/TemplateView.vue";
+import store from "../store";
 
 Vue.use(VueRouter);
 
@@ -167,8 +168,8 @@ const router = new VueRouter({
 
 // This function checks if user is logged in based on route metadata.
 // Calls a promise in firebase.js to wait for user to log in (if on initial load).
-router.beforeEach(async (to, from, next) => {
-    // const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
+router.beforeEach((to, from, next) => {
+    const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
 
     // if (requiresAuth && !await store.dispatch('fetchUser', false)) {
     //     next('home');
@@ -177,7 +178,11 @@ router.beforeEach(async (to, from, next) => {
     // }
 
     // next();
-    next();
+    if (requiresAuth && (!store.state.userProfile || !store.state.userProfile.loggedIn)) {
+        next('');
+    } else {
+        next();
+    }
 });
 
 export default router;

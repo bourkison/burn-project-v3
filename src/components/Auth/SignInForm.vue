@@ -55,24 +55,17 @@ export default {
     },
 
     methods: {
-        signIn: function() {
+        signIn: async function() {
             this.isLoading = true;
 
-            Auth.signIn(this.signInForm.username, this.signInForm.password)
-                .then(user => {
-                    if (this.rememberDevice) {
-                        return Auth.rememberDevice();
-                    }
+            const user = await Auth.signIn(this.signInForm.username, this.signInForm.password);
 
-                    this.$store.dispatch("fetchUser", false);
-                    console.log(user);
-                })
-                .then(() => {
-                    this.isLoading = false;
-                })
-                .catch(err => {
-                    alert(err.message || JSON.stringify(err));
-                });
+            if (this.rememberDevice) {
+                await Auth.rememberDevice();
+            }
+
+            await this.$store.dispatch("fetchUser", user.signInUserSession);
+            this.isLoading = false;
         }
     }
 };

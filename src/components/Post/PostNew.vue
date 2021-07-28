@@ -143,64 +143,65 @@ export default {
 
     methods: {
         createPost: async function() {
-            try {
-                console.log(JSON.stringify(JSON.stringify(this.post)));
-                this.isPosting = true;
-    
-                // First upload all images using .map (see ExerciseNew.vue for further explanation)
-                const imageResults = await Promise.all(
-                    this.imagesToUpload.map(async (image, i) => {
-                        const imageId = await this.generateId(16);
-                        const imageName = "username/" + this.store.state.userProfile.docData.username + "/exercises/" + imageId;
-    
-                        const imageData = await fetch(image.url);
-                        const blob = await imageData.blob();
-    
-                        console.log("UPLOADING:", imageName, blob);
-    
-                        const imageResponse = await Storage.put(imageName, blob, {
-                            contentType: blob.type,
-                            progressCallback: function(progress) {
-                                console.log("Image:", i, progress.loaded / progress.total);
-                            }
-                        }).catch(err => {
-                            console.error("Error uploading image:", i, err);
-                        });
-    
-                        return imageResponse;
+            if (!this.isPosting) {
+                try {
+                    console.log(JSON.stringify(JSON.stringify(this.post)));
+                    this.isPosting = true;
+        
+                    // First upload all images using .map (see ExerciseNew.vue for further explanation)
+                    const imageResults = await Promise.all(
+                        this.imagesToUpload.map(async (image, i) => {
+                            const imageId = await this.generateId(16);
+                            const imageName = "username/" + this.store.state.userProfile.docData.username + "/exercises/" + imageId;
+        
+                            const imageData = await fetch(image.url);
+                            const blob = await imageData.blob();
+        
+                            console.log("UPLOADING:", imageName, blob);
+        
+                            const imageResponse = await Storage.put(imageName, blob, {
+                                contentType: blob.type,
+                                progressCallback: function(progress) {
+                                    console.log("Image:", i, progress.loaded / progress.total);
+                                }
+                            }).catch(err => {
+                                console.error("Error uploading image:", i, err);
+                            });
+        
+                            return imageResponse;
+                        })
+                    )
+        
+                    imageResults.forEach(result => {
+                        this.post.filePaths.push(result.key);
                     })
-                )
-    
-                imageResults.forEach(result => {
-                    this.post.filePaths.push(result.key);
-                })
-    
-                const path = "/post";
-                const myInit = {
-                    headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
-                    },
-                    body: {
-                        postForm: JSON.parse(JSON.stringify(this.post))
+        
+                    const path = "/post";
+                    const myInit = {
+                        headers: {
+                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        },
+                        body: {
+                            postForm: JSON.parse(JSON.stringify(this.post))
+                        }
                     }
-                }
+        
+                    const response = await API.post(
+                        this.$store.state.apiName,
+                        path,
+                        myInit
+                    );
     
-                const response = await API.post(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                );
-
-                console.log("POST CREATED:", response);
-                this.$emit("newPost", this.post);
-                this.isPosting = false;
-                this.resetVariablesIncrementor++;
-                this.resetVariables();
+                    console.log("POST CREATED:", response);
+                    this.$emit("newPost", this.post);
+                    this.isPosting = false;
+                    this.resetVariablesIncrementor++;
+                    this.resetVariables();
+                }
+                catch(err) {
+                    console.error("Error creating post.");
+                }
             }
-            catch(err) {
-                console.error("Error creating post.");
-            }
-
         },
 
         addWorkout: function(workout) {

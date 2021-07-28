@@ -292,6 +292,11 @@ export default {
                     path: "/exercises/discover",
                     query: query
                 });
+            } else {
+                this.$router.replace({
+                    path: "/exercises/discover",
+                    query: null
+                });
             }
             this.downloadExercises();
         },
