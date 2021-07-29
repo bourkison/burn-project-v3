@@ -4,9 +4,9 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
 
-// GET request /like
-const queryLike = async function(event) {
-    const docId = ObjectId(event.queryStringParameters.docId);
+// GET request /like/{proxy+}
+const getLike = async function(event) {
+    const docId = ObjectId(event.pathParameters.proxy);
     const coll = event.queryStringParameters.coll;
     const loadAmount = Number(event.queryStringParameters.loadAmount);
 
@@ -40,25 +40,27 @@ const queryLike = async function(event) {
             return response;
     }
 
-    // First pull load amount likes from collection.
-    const likes = (await Model.findOne(
-        {
-            _id: docId
-        },
-        {
-            likes: {
-                $slice: [ "$likes", 0 - loadAmount ]
-            }
+    let findProjection = {
+        likes: {
+            $slice: [ "$likes", 0 - loadAmount ]
         }
-    )).likes
+    };
 
-    if (!likes) {
+    // Only get like count if we're not getting user likes.
+    if (coll !== "user") {
+        findProjection.likeCount = 1;
+    }
+
+    const likeResult = (await Model.findOne({ _id: docId }, findProjection));
+
+    if (!likeResult) {
         const errorResponse =
-            "Likes not found for id: " +
-            docId +
-            " in collection: " +
-            coll +
-            ".";
+        "Likes not found for id: " +
+        docId +
+        " in collection: " +
+        coll +
+        ".";
+        response.statusCode = 404;
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
@@ -67,58 +69,11 @@ const queryLike = async function(event) {
         return response;
     }
 
-    // We only need to return likeCount and isLiked if we are pulling from a collection.
-    if (coll !== "user") {
-        // First pull likeCount from collection.
-        const username = event.requestContext.authorizer.claims["cognito:username"];
-        
-        const likeResult = await Model.findOne(
-            {
-                _id: docId
-            },
-            {
-                likeCount: 1,
-                likes: {
-                    $elemMatch: {
-                        "createdBy.username": username
-                    }
-                }
-            }
-        );
-
-        const likeCount = likeResult.likeCount;
-
-        if (isNaN(likeCount)) {
-            const errorResponse =
-                "Id: " +
-                docId +
-                " for collection: " +
-                coll +
-                " likeCount not found.";
-            response.statusCode = 404;
-            response.body = JSON.stringify({
-                success: false,
-                errorMessage: errorResponse
-            });
-
-            return response;
-        }
-
-        const isLiked = (likeResult.likes && likeResult.likes.length) ? true : false;
-
-        response.statusCode = 200;
-        response.body = JSON.stringify({
-            success: true,
-            data: { likeCount: likeCount, likes: likes, isLiked: isLiked }
-        });
-    } else {
-        // TODO: Pull the comment data from the relevant collections.
-        response.statusCode = 200;
-        response.body = JSON.stringify({
-            success: true,
-            data: { likes: likes }
-        });
-    }
+    response.statusCode = 200;
+    response.body = JSON.stringify({
+        success: true,
+        data: { likeCount: likeResult.likeCount, likes: likeResult.likes }
+    });
 
     return response;
 };
@@ -558,7 +513,7 @@ exports.handler = async (event, context) => {
 
     switch (event.httpMethod) {
         case "GET":
-            response = await queryLike(event);
+            response = await getLike(event);
             break;
         case "POST":
             response = await createLike(event);

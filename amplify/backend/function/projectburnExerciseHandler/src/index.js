@@ -6,8 +6,10 @@ let MONGODB_URI;
 
 // GET request /exercise/{proxy+}
 const getExercise = async function(event) {
-    const exerciseId = event.pathParameters.proxy;
+    const exerciseId = ObjectId(event.pathParameters.proxy);
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+    const username = event.requestContext.authorizer.claims["cognito:username"];
+    const counters = (event.queryStringParameters && event.queryStringParameters.counters === "true") || false;
 
     let response = {
         statusCode: 500,
@@ -18,9 +20,35 @@ const getExercise = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    let fields =
-        "createdBy description difficulty filePaths measureBy muscleGroups name tags";
-    const result = await Exercise.findOne({ _id: exerciseId }, fields).exec();
+    let findProjection = {
+        createdBy: 1,
+        description: 1,
+        difficulty: 1,
+        filePaths: 1,
+        measureBy: 1,
+        muscleGroups: 1,
+        name: 1,
+        tags: 1
+    };
+
+    if (counters) {
+        findProjection.likeCount = 1;
+        findProjection.commentCount = 1;
+        findProjection.followCount = 1;
+        findProjection.likes = { 
+            $elemMatch: {
+                "createdBy.username": username
+            }  
+        };
+        findProjection.follows = {
+            $elemMatch: {
+                "username": username
+            }
+        };
+    }
+
+    const result = await Exercise.findOne({ _id: exerciseId }, findProjection).exec();
+
 
     if (!result) {
         const errorResponse =
@@ -34,8 +62,33 @@ const getExercise = async function(event) {
         return response;
     }
 
+    let responseData = {
+        _id: result._id,
+        createdBy: result.createdBy,
+        description: result.description,
+        difficulty: result.difficulty,
+        filePaths: result.filePaths,
+        measureBy: result.measureBy,
+        muscleGroups: result.muscleGroups,
+        name: result.name,
+        tags: result.tags,
+    }
+
+    if (counters) {
+        const isLiked = (result.likes && result.likes.length) ? true : false;
+        const isFollowed = (result.follows && result.follows.length) ? true : false;
+        const isFollowable = (result.createdBy && result.createdBy.username !== username) ? true : false
+
+        responseData.likeCount = result.likeCount;
+        responseData.commentCount = result.commentCount;
+        responseData.followCount = result.followCount;
+        responseData.isLiked = isLiked;
+        responseData.isFollowed = isFollowed;
+        responseData.isFollowable = isFollowable;
+    }
+
     response.statusCode = 200;
-    response.body = JSON.stringify({ success: true, data: result });
+    response.body = JSON.stringify({ success: true, data: responseData });
 
     return response;
 };
@@ -286,7 +339,8 @@ const createExercise = async function(event) {
         muscleGroups: exerciseResult.muscleGroups,
         tags: exerciseResult.tags,
         isFollow: false,
-        name: exerciseResult.name
+        name: exerciseResult.name,
+        createdBy: userReference
     };
 
     await User.update(

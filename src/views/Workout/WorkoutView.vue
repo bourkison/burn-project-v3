@@ -98,6 +98,7 @@ export default {
         
         promises.push(API.get(this.$store.state.apiName, path, myInit).then(templates => {
             this.userTemplates = templates.data;
+            console.log("TEMPLATES:", templates);
         }).catch(err => {
             this.templates = [];
             console.error(err);

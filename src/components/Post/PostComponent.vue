@@ -114,6 +114,11 @@
                 :docId="postData._id"
                 coll="post"
                 :followableComponent="false"
+                :likeCount="likeCount"
+                :commentCount="commentCount"
+                :isLiked="isLiked"
+                @like="handleLike(1)"
+                @unlike="handleLike(-1)"
             />
         </b-card>
     </div>
@@ -168,6 +173,10 @@ export default {
             imgUrls: [],
             createdAtText: "",
 
+            likeCount: 0,
+            commentCount: 0,
+            isLiked: false,
+
             // Bootstrap:
             carouselModel: 0
         };
@@ -186,7 +195,20 @@ export default {
                 }
             }
 
-            this.postData = (await API.get(this.$store.state.apiName, path, myInit).catch(err => { console.error(err) })).data;
+            const response = (await API.get(this.$store.state.apiName, path, myInit).catch(err => { console.error(err) })).data;
+
+            this.postData = {
+                _id: response._id,
+                createdBy: response.createdBy,
+                createdAt: response.createdAt,
+                content: response.content,
+                filePaths: response.filePaths,
+                share: response.share,
+            }
+
+            this.likeCount = response.likeCount;
+            this.commentCount = response.commentCount;
+            this.isLiked = response.isLiked;
 
             try {
                 let urlPromises = [];
@@ -215,6 +237,18 @@ export default {
         }
 
         this.isLoading = false;
+    },
+
+    methods: {
+        handleLike: function(x) {
+            if (x > 0) {
+                this.isLiked = true;
+                this.likeCount ++;
+            } else {
+                this.isLiked = false;
+                this.likeCount --;
+            }
+        }
     }
 };
 </script>

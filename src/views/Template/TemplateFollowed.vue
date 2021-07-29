@@ -13,7 +13,6 @@
                             class="navItem"
                             to="/templates"
                             active-class="unset"
-                            active
                         >
                             <div class="d-flex align-items-center">
                                 Templates
@@ -22,11 +21,11 @@
                         </b-list-group-item>
                         <b-list-group-item
                             class="navItem"
-                            to="/templates/discover"
-                            active-class="unset"
+                            to="/templates/followed"
+                            active
                         >
                             <div class="d-flex align-items-center">
-                                Discover
+                                Followed
                                 <b-icon-search class="ml-auto" />
                             </div>
                         </b-list-group-item>
@@ -112,7 +111,7 @@
                     Ads here.
                  -->
                 <div class="adTest bg-warning text-center">
-                    Template Home Ad Here.
+                    Template Followed Ad Here.
                 </div>
             </b-col>
         </b-row>

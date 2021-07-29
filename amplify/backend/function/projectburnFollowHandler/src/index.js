@@ -4,12 +4,11 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
 
-// GET request /follow
-const queryFollow = async function(event) {
-    const docId = ObjectId(event.queryStringParameters.docId);
+// GET request /follow/{proxy+}
+const getFollow = async function(event) {
+    const docId = ObjectId(event.pathParameters.proxy);
     const coll = event.queryStringParameters.coll;
     const loadAmount = Number(event.queryStringParameters.loadAmount);
-    const username = event.requestContext.authorizer.claims["cognito:username"];
 
     let Model;
 
@@ -38,74 +37,42 @@ const queryFollow = async function(event) {
             return response;
     }
 
-    let result;
+    let findProjection = {};
 
     if (coll !== "user") {
-        const collResult = await Model.findOne(
-            {
-                _id: docId
-            },
-            {
-                followCount: 1,
-                createdBy: 1,
-                follows: {
-                    $elemMatch: {
-                        username: username
-                    }
-                },
-                recentFollows: {
-                    $slice: [ "$follows", 0 - loadAmount ]
-                }
-            }
-        );
-
-        if (!collResult) {
-            const errorResponse = "No document found: " + docId;
-            response.statusCode = 404;
-            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
-
-            return response;
-        }
-
-        result = {
-            followCount: collResult.followCount,
-            follows: collResult.recentFollows,
-            isFollowed: (collResult.follows && collResult.follows.length > 0) ? true : false,
-            isFollowable: (collResult.createdBy.username !== username) ? true : false
+        findProjection.followCount = 1;
+        findProjection.follows = {
+            $slice: [ "$follows", 0 - loadAmount ]
         }
     } else {
-        const collResult = await Model.findOne(
-            {
-                _id: docId
-            },
-            {
-                followerCount: 1,
-                followingCount: 1,
-                followers: {
-                    $elemMatch: {
-                        username: username
-                    }
-                }
-            }
-        );
-
-        if (!collResult) {
-            const errorResponse = "User not found: " + docId;
-            response.statusCode = 404;
-            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
-
-            return response;
-        }
-
-        result = {
-            followerCount: collResult.followerCount,
-            followingCount: collResult.followingCount,
-            isFollowed: (collResult.followers && collResult.followers.length > 0) ? true : false
+        findProjection.followerCount = 1;
+        findProjection.followers = {
+            $slice: [ "$followers", 0 - loadAmount ]
         }
     }
 
+    const collResult = await Model.findOne({ _id: docId }, findProjection);
+
+    if (!collResult) {
+        const errorResponse = "No document found: " + docId;
+        response.statusCode = 404;
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+
+        return response;
+    }
+
+    let responseData = {};
+
+    if (coll !== "user") {
+        responseData.follows = collResult.follows;
+        responseData.followCount = collResult.followCount;
+    } else {
+        responseData.followers = collResult.followers;
+        responseData.followerCount = collResult.followerCount;
+    }
+
     response.statusCode = 200;
-    response.body = JSON.stringify({ success: true, data: result });
+    response.body = JSON.stringify({ success: true, data: responseData });
 
     return response;
 }
@@ -152,6 +119,7 @@ const createFollow = async function(event) {
                 name: 1,
                 muscleGroups: 1,
                 tags: 1,
+                createdBy: 1,
                 follows: {
                     $elemMatch: {
                         "username": username
@@ -160,7 +128,7 @@ const createFollow = async function(event) {
             }
         );
 
-        if (collResult) {
+        if (!collResult) {
             const errorResponse = "No exercise found: " + docId
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
@@ -173,13 +141,19 @@ const createFollow = async function(event) {
         }
 
         // First push to user references.
+        const createdByReference = {
+            username: collResult.createdBy.username,
+            userId: collResult.createdBy.userId
+        }
+
         const exerciseReference = {
             exerciseId: collResult._id,
             name: collResult.name,
             muscleGroups: collResult.muscleGroups,
             tags: collResult.tags,
             isFollow: true,
-            _id: _id
+            _id: _id,
+            createdBy: createdByReference
         }
 
         const userResult = await User.updateOne(
@@ -233,6 +207,7 @@ const createFollow = async function(event) {
                 name: 1,
                 muscleGroups: 1,
                 tags: 1,
+                createdBy: 1,
                 follows: {
                     $elemMatch: {
                         "username": username
@@ -241,7 +216,7 @@ const createFollow = async function(event) {
             }
         );
 
-        if (collResult) {
+        if (!collResult) {
             const errorResponse = "No template found: " + docId
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
@@ -254,13 +229,19 @@ const createFollow = async function(event) {
         }
 
         // First push to user references.
+        const createdByReference = {
+            username: collResult.createdBy.username,
+            userId: collResult.createdBy.userId
+        }
+
         const templateReference = {
             templateId: collResult._id,
             name: collResult.name,
             muscleGroups: collResult.muscleGroups,
             tags: collResult.tags,
             isFollow: true,
-            _id: _id
+            _id: _id,
+            createdBy: createdByReference
         }
 
         const userResult = await User.updateOne(
@@ -318,7 +299,7 @@ const createFollow = async function(event) {
             }
         );
 
-        if (followedUser) {
+        if (!followedUser) {
             const errorResponse = "No user found: " + docId
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
@@ -378,6 +359,8 @@ const createFollow = async function(event) {
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
             return response;
         }
+
+        // TODO: Add followed users posts to the user's postFeed.
     } else {
         const errorResponse = "Collection does not exist.";
         response.statusCode = 400;
@@ -387,6 +370,217 @@ const createFollow = async function(event) {
 
     response.statusCode = 200;
     response.body = JSON.stringify({ success: true })
+
+    return response;
+}
+
+
+// DELETE request /follow
+const deleteFollow = async function(event) {
+    const docId = ObjectId(event.queryStringParameters.docId);
+    const coll = event.queryStringParameters.coll;
+    const username = event.requestContext.authorizer.claims["cognito:username"];
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    };
+
+    const User = (await MongooseModels(MONGODB_URI)).User;
+
+    if (coll === "exercise" || coll === "template") {
+        let Model;
+
+        if (coll === "exercise") {
+            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+        } else {
+            Model = (await MongooseModels(MONGODB_URI)).Template;
+        }
+
+        // First check if user has followed already.
+        const collResult = await Model.findOne(
+            {
+                _id: docId
+            },
+            {
+                name: 1,
+                muscleGroups: 1,
+                tags: 1,
+                follows: {
+                    $elemMatch: {
+                        "username": username
+                    }
+                }
+            }
+        );
+
+        if (!collResult) {
+            const errorResponse = "No exercise found: " + docId
+            response.statusCode = 404;
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
+            return response;
+        } else if (collResult.follows.length === 0) {
+            const errorResponse = "Not followed!";
+            response.statusCode = 403;
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+            return response;
+        }
+
+        let userResult;
+
+        if (coll === "exercise") {
+            // First pull reference from user's follows.
+            userResult = await User.updateOne(
+                {
+                    username: username
+                },
+                {
+                    $pull: {
+                        exerciseReferences: {
+                            exerciseId: docId
+                        }
+                    }
+                }
+            );
+        } else {
+            userResult = await User.updateOne(
+                {
+                    username: username
+                },
+                {
+                    $pull: {
+                        templateReferences: {
+                            templateId: docId
+                        }
+                    }
+                }
+            );
+        }
+
+        if (!userResult) {
+            const errorResponse = "Error pulling reference from user. No response: " + docId;
+            response.body = JSON.stringify({
+                success: false,
+                errorMessage: errorResponse
+            })
+
+            return response;
+        }
+
+        // Next pull for exercise's follows.
+        const modelPullResult = await Model.updateOne(
+            {
+                _id: docId
+            },
+            {
+                $pull: {
+                    follows: {
+                        "username": username
+                    }
+                },
+                $inc: {
+                    followCount: -1
+                }
+            }
+        );
+
+        if (!modelPullResult) {
+            const errorResponse = "Couldn't pull follow from exercise. No response.";
+            response.body = JSON.stringify({
+                success: false,
+                errorMessage: errorResponse
+            })
+        }
+    } else if (coll === "user") {
+        // First check if user is actually following the other user.
+        const followedUser = await User.findOne(
+
+            {
+                _id: docId
+            },
+            {
+                username: 1,
+                followers: {
+                    $elemMatch: {
+                        "username": username
+                    }
+                }
+            }
+        );
+
+        if (!followedUser) {
+            const errorResponse = "No user found: " + docId
+            response.statusCode = 404;
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
+            return response;
+        } else if (followedUser.follows.length === 0) {
+            const errorResponse = "Not followed!";
+            response.statusCode = 403;
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+            return response;
+        }
+
+        // First remove from user following.
+        const followingPullResult = await User.updateOne(
+            {
+                username: username
+            },
+            {
+                $pull: {
+                    following: {
+                        userId: docId
+                    }
+                },
+                $inc: {
+                    followingCount: -1
+                }
+            }
+        );
+
+        if (!followingPullResult) {
+            const errorResponse = "Not pulled from users following.";
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+            return response;
+        }
+
+        // Now pull from followed user's followers.
+        const followerPullResult = await User.updateOne(
+            {
+                _id: docId
+            },
+            {
+                $pull: {
+                    followers: {
+                        username: username
+                    }
+                },
+                $inc: {
+                    followerCount: -1
+                }
+            }
+        );
+
+        if (!followerPullResult) {
+            // TODO: Remove from following above.
+            const errorResponse = "Not pushed to target user's followers.";
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+            return response;
+        }
+
+        // TODO: Remove followed users posts from the user's postFeed.
+    } else {
+        const errorResponse = "Collection does not exist.";
+        response.statusCode = 400;
+        response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
+        return response;
+    }
+
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true });
 
     return response;
 }
@@ -407,10 +601,13 @@ exports.handler = async (event, context) => {
 
     switch (event.httpMethod) {
         case "GET":
-            response = await queryFollow(event);
+            response = await getFollow(event);
             break;
         case "POST":
             response = await createFollow(event);
+            break;
+        case "DELETE":
+            response = await deleteFollow(event);
             break;
         default:
             response = {

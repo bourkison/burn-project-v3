@@ -48,6 +48,16 @@
                     :docId="templateData._id"
                     coll="template"
                     :followableComponent="true"
+                    :likeCount="likeCount"
+                    :commentCount="commentCount"
+                    :followCount="followCount"
+                    :isLiked="isLiked"
+                    :isFollowed="isFollowed"
+                    :isFollowable="isFollowable"
+                    @like="handleLike(1)"
+                    @unlike="handleLike(-1)"
+                    @follow="handleFollow(1)"
+                    @unfollow="handleFollow(-1)"
                 />
             </div>
         </div>
@@ -96,6 +106,14 @@ export default {
             isLoading: true,
             templateData: {},
 
+            likeCount: 0,
+            commentCount: 0,
+            followCount: 0,
+
+            isLiked: false,
+            isFollowed: false,
+            isFollowable: false,
+
             // Error handling
             loadedSuccessfully: false
         };
@@ -108,6 +126,9 @@ export default {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken
                         .jwtToken
+                },
+                queryStringParameters: {
+                    counters: true
                 }
             };
 
@@ -141,7 +162,24 @@ export default {
             }
 
             this.loadedSuccessfully = true;
-            this.templateData = response.data;
+            this.templateData = {
+                _id: response.data._id,
+                createdBy: response.data.createdBy,
+                description: response.data.description,
+                difficulty: response.data.difficulty,
+                exerciseReferences: response.data.exerciseReferences,
+                muscleGroups: response.data.muscleGroups,
+                name: response.data.name,
+                tags: response.data.tags
+            };
+
+            this.likeCount = response.data.likeCount;
+            this.commentCount = response.data.commentCount;
+            this.followCount = response.data.followCount;
+            this.isLiked = response.data.isLiked;
+            this.isFollowed = response.data.isFollowed;
+            this.isFollowable = response.data.isFollowable;
+
         } catch (err) {
             this.displayError(err);
         } finally {
@@ -152,6 +190,26 @@ export default {
     methods: {
         displayError: function(err) {
             console.error(err);
+        },
+
+        handleLike: function(x) {
+            if (x > 0) {
+                this.likeCount ++;
+                this.isLiked = true;
+            } else {
+                this.likeCount --;
+                this.isLiked = false;
+            }
+        },
+
+        handleFollow: function(x) {
+            if (x > 0) {
+                this.followCount ++;
+                this.isFollowed = true;
+            } else {
+                this.followCount --;
+                this.isFollowed = false;
+            }
         }
     }
 };

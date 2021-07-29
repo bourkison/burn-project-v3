@@ -7,7 +7,7 @@
 						<b-list-group-item
 							class="navItem"
 							to="/templates"
-							active-class="unset"
+							active
 						>
 							<div class="d-flex align-items-center">
 								Templates
@@ -16,12 +16,11 @@
 						</b-list-group-item>
 						<b-list-group-item
 							class="navItem"
-							to="/templates/discover"
+							to="/templates/followed"
 							active-class="unset"
-							active
 						>
 							<div class="d-flex align-items-center">
-								Discover
+								Followed
 								<b-icon-search class="ml-auto" />
 							</div>
 						</b-list-group-item>
@@ -94,6 +93,9 @@
 				<!-- 
                     Ads here.
                  -->
+                <div class="adTest bg-warning text-center">
+                    Template Home Ad Here.
+                </div>
 			</b-col>
 		</b-row>
 	</b-container>
@@ -321,6 +323,16 @@ export default {
 .navCard,
 .templateFeed {
 	margin-top: 40px;
+}
+
+.adTest {
+    position: sticky;
+    top: 100px;
+    height: 250px;
+    width: 300px;
+    padding: 0;
+    margin-top: 40px;
+    line-height: 250px;
 }
 </style>
 

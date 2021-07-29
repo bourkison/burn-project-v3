@@ -7,6 +7,7 @@ let MONGODB_URI;
 // GET request /post/{proxy+}
 const getPost = async function(event) {
     const postId = event.pathParameters.proxy;
+    const username = event.requestContext.authorizer.claims["cognito:username"];
     const Post = (await MongooseModels(MONGODB_URI)).Post;
 
     let response = {
@@ -18,8 +19,24 @@ const getPost = async function(event) {
         body: JSON.stringify({ success: false })
     }
 
-    let fields = "content filePaths share createdBy createdAt"
-    const result = await Post.findOne({ _id: postId }, fields).exec();
+    const result = await Post.findOne(
+        { 
+            _id: postId 
+        }, 
+        {
+            content: 1,
+            filePaths: 1,
+            share: 1,
+            createdBy: 1,
+            createdAt: 1,
+            likeCount: 1,
+            likes: {
+                $elemMatch: {
+                    "createdBy.username": username
+                }
+            },
+            commentCount: 1
+        }).exec();
 
     if (!result) {
         const errorResponse = "Post: " + postId + " not found." ;
@@ -32,10 +49,24 @@ const getPost = async function(event) {
         return response;
     }
 
+    const isLiked = (result.likes && result.likes.length) ? true : false;
+
+    const responseData = {
+        _id: result._id,
+        content: result.content,
+        filePaths: result.filePaths,
+        share: result.share,
+        createdAt: result.createdAt,
+        createdBy: result.createdBy,
+        likeCount: result.likeCount,
+        commentCount: result.commentCount,
+        isLiked: isLiked
+    }
+
     response.statusCode = 200;
     response.body = JSON.stringify({
         success: true,
-        data: result
+        data: responseData
     });
 
     return response;

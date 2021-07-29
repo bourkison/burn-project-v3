@@ -38,8 +38,8 @@ Hub.listen("auth", async ({ payload: { event, data } }) => {
             store.commit("activeWorkout/resetVariables");
             store.commit("setLoggedInUser", {
                 loggedIn: false,
-                data: data,
-                docData: data
+                data: null,
+                docData: null
             });
             break;
         default:

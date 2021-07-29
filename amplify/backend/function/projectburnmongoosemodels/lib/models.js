@@ -43,6 +43,10 @@ const exerciseReferenceSchema = new mongoose.Schema(
         isFollow: {
             type: Boolean,
             required: false
+        },
+        createdBy: {
+            type: userReferenceSchema,
+            required: true
         }
     },
     { timestamps: true }
@@ -79,6 +83,10 @@ const templateReferenceSchema = new mongoose.Schema(
         isFollow: {
             type: Boolean,
             required: false
+        },
+        createdBy: {
+            type: userReferenceSchema,
+            required: true
         }
     },
     { timestamps: true }

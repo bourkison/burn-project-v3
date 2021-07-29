@@ -34,19 +34,15 @@
                     /></span>
                 </span>
                 <span class="ml-auto text-muted">
-                    <span class="count" @click="expandLikes"
-                        ><span v-if="!isLoading">{{ likeCount }}</span
-                        ><span v-else>...</span>&nbsp;<span
-                            v-if="likeCount == 1"
-                            >like</span
-                        ><span v-else>likes</span></span
+                    <span class="count" @click="expandLikes">
+                        <span>{{ likeCount }}</span
+                        >&nbsp;<span v-if="likeCount == 1">like</span
+                        ><span v-else>likes</span> </span
                     >&nbsp;
-                    <span class="count" @click="expandComments"
-                        ><span v-if="!isLoading">{{ commentCount }}</span
-                        ><span v-else>...</span>&nbsp;<span
-                            v-if="commentCount == 1"
-                            >comment</span
-                        ><span v-else>comments</span></span
+                    <span class="count" @click="expandComments">
+                        <span>{{ commentCount }}</span
+                        >&nbsp;<span v-if="commentCount == 1">comment</span
+                        ><span v-else>comments</span> </span
                     >&nbsp;
                     <span
                         class="count"
@@ -119,7 +115,7 @@
                     </b-list-group>
                 </div>
                 <div v-else>
-                    <b-spinner />
+                    <div class="text-center "><b-spinner small /></div>
                 </div>
             </div>
         </b-modal>
@@ -134,13 +130,13 @@
                     <b-list-group>
                         <UserList
                             v-for="follow in follows"
-                            :key="follow.createdBy.id"
-                            :userData="follow.createdBy"
+                            :key="follow._id"
+                            :userData="follow"
                         />
                     </b-list-group>
                 </div>
                 <div v-else>
-                    <b-spinner />
+                    <div class="text-center"><b-spinner small /></div>
                 </div>
             </div>
         </b-modal>
@@ -148,7 +144,7 @@
 </template>
 
 <script>
-import { db, fv } from "@/firebase";
+import { db } from "@/firebase";
 import { API } from "aws-amplify";
 
 import UserList from "@/components/User/UserList.vue";
@@ -171,26 +167,41 @@ export default {
         followableComponent: {
             type: Boolean,
             required: true
+        },
+        likeCount: {
+            type: Number,
+            required: true
+        },
+        commentCount: {
+            type: Number,
+            required: true
+        },
+        isLiked: {
+            type: Boolean,
+            required: true
+        },
+        followCount: {
+            type: Number,
+            required: false
+        },
+        isFollowed: {
+            type: Boolean,
+            required: false
+        },
+        isFollowable: {
+            type: Boolean,
+            required: false
         }
     },
     data() {
         return {
-            isLoading: true,
+            isLoading: false,
             isLiking: false,
             isFollowing: false,
             isLoadingLikes: false,
             isLoadingComments: false,
             isLoadingFollows: false,
             isLoadingMoreComments: false,
-
-            isLiked: "",
-            isFollowed: false,
-            isFollowable: false,
-
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
-            numShards: 10,
 
             commentsExpanded: false,
 
@@ -203,68 +214,28 @@ export default {
     },
 
     created: async function() {
-        // Check if liked and get like count and most recent likes.
-        let promises = [];
-        let path = "/like";
+        // Get most recent comments and comment count.
+        this.isLoadingComments = true;
+        const path = "/comment/" + this.$props.docId;
+
         let myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken
                     .jwtToken
             },
             queryStringParameters: {
-                docId: this.$props.docId,
                 coll: this.$props.coll,
                 loadAmount: 5
             }
         };
 
-        promises.push(
-            API.get(this.$store.state.apiName, path, myInit).then(
-                likeResponse => {
-                    this.isLiked = likeResponse.data.isLiked;
-                    this.likeCount = likeResponse.data.likeCount;
-                    this.likes = likeResponse.data.likes;
-                }
-            )
+        const commentResponse = await API.get(
+            this.$store.state.apiName,
+            path,
+            myInit
         );
-
-
-        // Get most recent comments and comment count.
-        path = "/comment";
-
-        promises.push(
-            API.get(this.$store.state.apiName, path, myInit).then(
-                commentResponse => {
-                    this.commentCount = commentResponse.data.commentCount;
-                    this.comments = commentResponse.data.comments;
-
-                    console.log("COMMENT RESPONSE:", commentResponse);
-                }
-            )
-        );
-
-        if (this.$props.followableComponent) {
-            path = "/follow";
-    
-            promises.push(
-                API.get(this.$store.state.apiName, path, myInit).then(
-                    followResponse => {
-                        this.followCount = followResponse.data.followCount;
-                        this.follows = followResponse.data.follows;
-                        this.isFollowable = followResponse.data.isFollowable;
-    
-                        if (this.isFollowable) {
-                            this.isFollowed = followResponse.data.isFollowed;
-                        }
-                    }
-                )
-            )
-        }
-
-        // Check if liked and get follow count and most recent follows.
-        await Promise.all(promises);
-
-        this.isLoading = false;
+        this.comments = commentResponse.data.comments;
+        this.isLoadingComments = false;
     },
 
     methods: {
@@ -288,8 +259,7 @@ export default {
                 if (!this.isLiked) {
                     // Add like.
                     console.log("LIKING...");
-                    this.likeCount++;
-                    this.isLiked = true;
+                    this.$emit("like");
 
                     try {
                         const likeResponse = await API.post(
@@ -300,15 +270,13 @@ export default {
                         console.log("LIKED:", likeResponse);
                     } catch (err) {
                         console.error("Liking error", err);
-                        this.likeCount--;
-                        this.isLiked = false;
+                        this.$emit("unlike");
                     } finally {
                         this.isLiking = false;
                     }
                 } else {
                     console.log("UNLIKING...");
-                    this.likeCount--;
-                    this.isLiked = false;
+                    this.$emit("unlike");
 
                     try {
                         const likeResponse = await API.del(
@@ -319,8 +287,7 @@ export default {
                         console.log("UNLIKED:", likeResponse);
                     } catch (err) {
                         console.error("Unliking error", err);
-                        this.likeCount++;
-                        this.isLiked = true;
+                        this.$emit("like");
                     } finally {
                         this.isLiking = false;
                     }
@@ -328,167 +295,85 @@ export default {
             }
         },
 
-        toggleFollow: function() {
+        toggleFollow: async function() {
             if (this.isFollowable && !this.isFollowing) {
                 this.isFollowing = true;
-                const batch = db.batch();
-                const timestamp = new Date();
+                const path = "/follow";
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data
+                            .idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        docId: this.$props.docId,
+                        coll: this.$props.coll
+                    }
+                };
 
-                // Following is basically the same as a like.
-                // Though instead of adding to a "likes" collection in the user doc, we just add to the relevant collection.
-                // That way we differ between created and followed by the createdBy value.
-                // In the relevant collection, follow IDs will be the User ID.
-                // In the User collection, follows will be the document ID.
                 if (!this.isFollowed) {
-                    this.isFollowed = this.$props.docId;
+                    this.$emit("follow");
 
-                    // First add to the relevant document.
-                    batch.set(
-                        db
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId)
-                            .collection("follows")
-                            .doc(this.$store.state.userProfile.data.uid),
-                        {
-                            createdBy: {
-                                username: this.$store.state.userProfile.docData
-                                    .username,
-                                id: this.$store.state.userProfile.data.uid,
-                                profilePhoto: this.$store.state.userProfile
-                                    .docData.profilePhoto
-                            },
-                            createdAt: timestamp
-                        }
-                    );
-
-                    // Then add to the user document.
-                    batch.set(
-                        db
-                            .collection("users")
-                            .doc(this.$store.state.userProfile.data.uid)
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId),
-                        {
-                            createdAt: timestamp,
-                            isFollow: true
-                        }
-                    );
-
-                    // Increment the follow counter.
-                    batch.update(
-                        db
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId)
-                            .collection("counters")
-                            .doc(
-                                Math.floor(
-                                    Math.random() * this.numShards
-                                ).toString()
-                            ),
-                        {
-                            followCount: fv.increment(1)
-                        }
-                    );
-
-                    // Update lastActivity
-                    batch.update(
-                        db
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId),
-                        {
-                            lastActivity: timestamp
-                        }
-                    );
-
-                    // Commit the batch.
-                    batch
-                        .commit()
-                        .then(() => {
-                            this.followCount++;
-                            this.isFollowed = this.$props.docId;
-                            this.isFollowing = false;
-                        })
-                        .catch(e => {
-                            console.error("Error creating follow:", e);
-                            this.isFollowed = "";
-                        });
+                    try {
+                        const followResponse = await API.post(
+                            this.$store.state.apiName,
+                            path,
+                            myInit
+                        );
+                        console.log("FOLLOWED:", followResponse);
+                    } catch (err) {
+                        console.error("Following error", err);
+                        this.$emit("unfollow");
+                    } finally {
+                        this.isFollowing = false;
+                    }
                 } else {
                     // Unfollow.
-                    this.isFollowed = "";
+                    this.$emit("unfollow");
 
-                    // First delete from relevant collection.
-                    batch.delete(
-                        db
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId)
-                            .collection("follows")
-                            .doc(this.$store.state.userProfile.data.uid)
-                    );
+                    try {
+                        const followResponse = await API.del(
+                            this.$store.state.apiName,
+                            path,
+                            myInit
+                        );
+                        console.log("UNFOLLOWED:", followResponse);
+                    } catch (err) {
+                        this.$emit("follow");
+                        console.error("Unfollowing error", err);
+                    } finally {
+                        this.isFollowing = false;
+                    }
 
-                    // Then delete from users collection.
-                    batch.delete(
-                        db
-                            .collection("users")
-                            .doc(this.$store.state.userProfile.data.uid)
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId)
-                    );
-
-                    // Decrement the follow counter.
-                    batch.update(
-                        db
-                            .collection(this.$props.collection)
-                            .doc(this.$props.docId)
-                            .collection("counters")
-                            .doc(
-                                Math.floor(
-                                    Math.random() * this.numShards
-                                ).toString()
-                            ),
-                        {
-                            followCount: fv.increment(-1)
-                        }
-                    );
-
-                    // Commit the batch.
-                    batch
-                        .commit()
-                        .then(() => {
-                            this.isFollowed = "";
-                            this.followCount--;
-                            this.isFollowing = false;
-                        })
-                        .catch(e => {
-                            console.error("Error deleting follow:", e);
-                            this.isFollowing = false;
-                            this.isFollowed = this.$props.docId;
-                        });
+                    console.log("UNFOLLOW");
                 }
                 document.activeElement.blur();
             }
         },
 
-        expandLikes: function() {
+        expandLikes: async function() {
             if (this.likeCount > 0 && !this.isLoadingLikes) {
                 if (this.likes.length == 0) {
                     this.isLoadingLikes = true;
+                    this.$bvModal.show(this.$props.docId + "-likeModal");
                     console.log("Downloading likes");
 
-                    db.collection(this.$props.collection)
-                        .doc(this.$props.docId)
-                        .collection("likes")
-                        .get()
-                        .then(likeSnapshot => {
-                            likeSnapshot.forEach(like => {
-                                this.likes.push(like.data());
-                            });
+                    const path = "/like/" + this.$props.docId;
+                    const myInit = {
+                        headers: {
+                            Authorization: this.$store.state.userProfile.data
+                                .idToken.jwtToken
+                        },
+                        queryStringParameters: {
+                            loadAmount: 15,
+                            coll: this.$props.coll
+                        }
+                    };
 
-                            this.isLoadingLikes = false;
-                            console.log(this.likes);
-                            this.$bvModal.show(
-                                this.$props.docId + "-likeModal"
-                            );
-                        });
+                    this.likes = (
+                        await API.get(this.$store.state.apiName, path, myInit)
+                    ).data.likes;
+
+                    this.isLoadingLikes = false;
                 } else {
                     this.$bvModal.show(this.$props.docId + "-likeModal");
                 }
@@ -497,55 +382,31 @@ export default {
 
         expandComments: function() {
             this.commentsExpanded = !this.commentsExpanded;
-
-            if (
-                this.commentsExpanded &&
-                this.comments.length == 0 &&
-                this.commentCount > 0
-            ) {
-                this.isLoadingComments = true;
-
-                db.collection(this.$props.collection)
-                    .doc(this.$props.docId)
-                    .collection("comments")
-                    .orderBy("createdAt", "desc")
-                    .limit(5)
-                    .get()
-                    .then(commentSnapshot => {
-                        commentSnapshot.forEach(comment => {
-                            let data = comment.data();
-                            data.id = comment.id;
-                            this.comments.push(data);
-                        });
-
-                        this.isLoadingComments = false;
-                        this.lastLoadedComment =
-                            commentSnapshot.docs[commentSnapshot.size - 1];
-                    });
-            }
         },
 
-        expandFollows: function() {
+        expandFollows: async function() {
             if (this.followCount > 0 && !this.isLoadingFollows) {
                 if (this.follows.length == 0) {
                     this.isLoadingFollows = true;
+                    this.$bvModal.show(this.$props.docId + "-followModal");
                     console.log("Downloading follows");
 
-                    db.collection(this.$props.collection)
-                        .doc(this.$props.docId)
-                        .collection("follows")
-                        .get()
-                        .then(followSnapshot => {
-                            followSnapshot.forEach(follow => {
-                                this.follows.push(follow.data());
-                            });
+                    const path = "/follow/" + this.$props.docId;
+                    const myInit = {
+                        headers: {
+                            Authorization: this.$store.state.userProfile.data
+                                .idToken.jwtToken
+                        },
+                        queryStringParameters: {
+                            coll: this.$props.coll,
+                            loadAmount: 15
+                        }
+                    };
 
-                            this.isLoadingFollows = false;
-                            console.log(this.follows);
-                            this.$bvModal.show(
-                                this.$props.docId + "-followModal"
-                            );
-                        });
+                    this.follows = (
+                        await API.get(this.$store.state.apiName, path, myInit)
+                    ).data.follows;
+                    this.isLoadingFollows = false;
                 } else {
                     this.$bvModal.show(this.$props.docId + "-followModal");
                 }
@@ -651,5 +512,9 @@ export default {
 .count:hover {
     cursor: pointer;
     text-decoration: underline;
+}
+
+.align-center {
+    align-self: center;
 }
 </style>

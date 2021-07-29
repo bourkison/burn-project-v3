@@ -35,6 +35,16 @@
                 :docId="exerciseData._id"
                 coll="exercise"
                 :followableComponent="true"
+                :likeCount="likeCount"
+                :commentCount="commentCount"
+                :followCount="followCount"
+                :isLiked="isLiked"
+                :isFollowed="isFollowed"
+                :isFollowable="isFollowable"
+                @like="handleLike(1)"
+                @unlike="handleLike(-1)"
+                @follow="handleFollow(1)"
+                @unfollow="handleFollow(-1)"
             />
         </div>
         <div v-else>
@@ -82,6 +92,14 @@ export default {
             exerciseData: {},
             imageUrls: [],
 
+            likeCount: 0,
+            commentCount: 0,
+            followCount: 0,
+
+            isLiked: false,
+            isFollowed: false,
+            isFollowable: false,
+
             // Bootstrap:
             carouselModel: 0
         };
@@ -101,15 +119,36 @@ export default {
                     headers: {
                         Authorization: this.$store.state.userProfile.data
                             .idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        counters: true
                     }
                 };
 
-                const response = await API.get(
+                const response = (await API.get(
                     this.$store.state.apiName,
                     path,
                     myInit
-                );
-                this.exerciseData = response.data;
+                )).data;
+
+                this.exerciseData = {
+                    _id: response._id,
+                    createdBy: response.createdBy,
+                    description: response.description,
+                    difficulty: response.difficulty,
+                    filePaths: response.filePaths,
+                    measureBy: response.measureBy,
+                    muscleGroups: response.muscleGroups,
+                    name: response.name,
+                    tags: response.tags,
+                }
+
+                this.likeCount = response.likeCount;
+                this.commentCount = response.commentCount;
+                this.followCount = response.followCount;
+                this.isLiked = response.isLiked;
+                this.isFollowed = response.isFollowed;
+                this.isFollowable = response.isFollowable;
 
                 try {
                     if (this.exerciseData.filePaths) {
@@ -138,6 +177,26 @@ export default {
                     this.$props.exerciseId,
                     err
                 );
+            }
+        },
+
+        handleLike: function(x) {
+            if (x > 0) {
+                this.likeCount ++;
+                this.isLiked = true;
+            } else {
+                this.likeCount --;
+                this.isLiked = false;
+            }
+        },
+
+        handleFollow: function(x) {
+            if (x > 0) {
+                this.followCount ++;
+                this.isFollowed = true;
+            } else {
+                this.followCount --;
+                this.isFollowed = false;
             }
         }
     },

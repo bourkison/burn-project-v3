@@ -8,6 +8,8 @@ let MONGODB_URI;
 const getTemplate = async function(event) {
     const templateId = ObjectId(event.pathParameters.proxy);
     const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const username = event.requestContext.authorizer.claims["cognito:username"];
+    const counters = (event.queryStringParameters && event.queryStringParameters.counters === "true") || false;
 
     let response = {
         statusCode: 500,
@@ -18,9 +20,33 @@ const getTemplate = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    let fields =
-        "createdBy description difficulty exerciseReferences muscleGroups name tags";
-    const result = await Template.findOne({ _id: templateId }, fields).exec();
+    let findProjection = {
+        createdBy: 1,
+        description: 1,
+        difficulty: 1,
+        exerciseReferences: 1,
+        muscleGroups: 1,
+        name: 1,
+        tags: 1
+    }
+
+    if (counters) {
+        findProjection.likeCount = 1;
+        findProjection.commentCount = 1;
+        findProjection.followCount = 1;
+        findProjection.likes = { 
+            $elemMatch: {
+                "createdBy.username": username
+            }  
+        };
+        findProjection.follows = {
+            $elemMatch: {
+                "username": username
+            }
+        };
+    }
+
+    const result = await Template.findOne({ _id: templateId }, findProjection).exec();
 
     if (!result) {
         const errorResponse =
@@ -34,8 +60,32 @@ const getTemplate = async function(event) {
         return response;
     }
 
+    const responseData = {
+        _id: result._id,
+        createdBy: result.createdBy,
+        description: result.description,
+        difficulty: result.difficulty,
+        exerciseReferences: result.exerciseReferences,
+        muscleGroups: result.muscleGroups,
+        name: result.name,
+        tags: result.tags
+    }
+
+    if (counters) {
+        const isLiked = (result.likes && result.likes.length) ? true : false;
+        const isFollowed = (result.follows && result.follows.length) ? true : false;
+        const isFollowable = (result.createdBy && result.createdBy.username !== username) ? true : false
+
+        responseData.likeCount = result.likeCount;
+        responseData.commentCount = result.commentCount;
+        responseData.followCount = result.followCount;
+        responseData.isLiked = isLiked;
+        responseData.isFollowed = isFollowed;
+        responseData.isFollowable = isFollowable;
+    }
+
     response.statusCode = 200;
-    response.body = JSON.stringify({ success: true, data: result });
+    response.body = JSON.stringify({ success: true, data: responseData });
 
     return response;
 };
@@ -284,7 +334,8 @@ const createTemplate = async function(event) {
         name: templateResult.name,
         muscleGroups: templateResult.muscleGroups,
         tags: templateResult.tags,
-        isFollow: false
+        isFollow: false,
+        createdBy: userReference
     };
 
     await User.updateOne(

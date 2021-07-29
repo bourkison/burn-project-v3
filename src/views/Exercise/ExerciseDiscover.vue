@@ -8,7 +8,7 @@
                             class="navItem"
                             ref="homeExerciseLink"
                             to="/exercises"
-                            active-class="unset"
+                            active
                         >
                             <div class="d-flex align-items-center">
                                 Exercises
@@ -18,11 +18,11 @@
                         <b-list-group-item
                             class="navItem"
                             ref="discoverExerciseLink"
-                            to="/exercises/discover"
-                            active
+                            to="/exercises/followed"
+                            active-class="unset"
                         >
                             <div class="d-flex align-items-center">
-                                Discover
+                                Followed
                                 <b-icon-search class="ml-auto" />
                             </div>
                         </b-list-group-item>
@@ -107,7 +107,7 @@
                     AD HERE.
                  -->
                 <div class="adTest bg-warning text-center">
-                    Exercise Discover Ad Here.
+                    Exercise Home Ad Here.
                 </div>
             </b-col>
         </b-row>

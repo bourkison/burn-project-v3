@@ -4,9 +4,9 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
 
-// GET request /comment
+// GET request /comment/{proxy+}
 const queryComment = async function(event) {
-    const docId = ObjectId(event.queryStringParameters.docId);
+    const docId = ObjectId(event.pathParameters.proxy);
     const coll = event.queryStringParameters.coll;
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
     const username = event.requestContext.authorizer.claims["cognito:username"];
@@ -41,62 +41,72 @@ const queryComment = async function(event) {
             return response;
     }
 
+    let aggregateProjectionFirst = {
+        $project: {
+            comments: {
+                $slice: ["$comments", loadAmount]
+            }
+        }
+    }
+
+    let aggregateProjectionSecond = {
+        $project: {
+            comments: {
+                $map: {
+                    input: "$comments",
+                    as: "c",
+                    in: {
+                        _id: "$$c._id",
+                        docId: "$$c.docId",
+                        content: "$$c.content",
+                        likeCount: "$$c.likeCount",
+                        createdAt: "$$c.createdAt",
+                        updatedAt: "$$c.updatedAt",
+                        createdBy: "$$c.createdBy",
+                        isLiked: {
+                            $anyElementTrue: [
+                                {
+                                    $map: {
+                                        input: "$$c.likes",
+                                        as: "l",
+                                        in: {
+                                            $eq: [
+                                                "$$l.createdBy.username",
+                                                username
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        likes: []
+                    }
+                }
+            }
+        }
+    }
+
+    // Get comment count if coll !== user.
+    if (coll !== "user") {
+        aggregateProjectionFirst.$project.commentCount = 1;
+        aggregateProjectionSecond.$project.commentCount = 1;
+    }
+
     // First pull comment amount from collection.
     // Instead of pulling all likes, will just pull true/false based on if user has liked.
-    const comments = (
+    const commentResult = (
         await Model.aggregate([
             {
                 $match: {
                     _id: docId
                 }
             },
-            {
-                $project: {
-                    comments: {
-                        $slice: ["$comments", loadAmount]
-                    }
-                }
-            },
-            {
-                $project: {
-                    comments: {
-                        $map: {
-                            input: "$comments",
-                            as: "c",
-                            in: {
-                                _id: "$$c._id",
-                                docId: "$$c.docId",
-                                content: "$$c.content",
-                                likeCount: "$$c.likeCount",
-                                createdAt: "$$c.createdAt",
-                                updatedAt: "$$c.updatedAt",
-                                createdBy: "$$c.createdBy",
-                                isLiked: {
-                                    $anyElementTrue: [
-                                        {
-                                            $map: {
-                                                input: "$$c.likes",
-                                                as: "l",
-                                                in: {
-                                                    $eq: [
-                                                        "$$l.createdBy.username",
-                                                        username
-                                                    ]
-                                                }
-                                            }
-                                        }
-                                    ]
-                                },
-                                likes: []
-                            }
-                        }
-                    }
-                }
-            }
+            aggregateProjectionFirst,
+            aggregateProjectionSecond
         ])
-    )[0].comments.reverse();
+    )[0];
 
-    if (!comments) {
+    if (!commentResult) {
         const errorResponse =
             "Comments not found for id: " +
             docId +
@@ -111,42 +121,20 @@ const queryComment = async function(event) {
         return response;
     }
 
-    // We only need to return commentCount if we are pulling from a collection.
-    if (coll !== "user") {
-        // First pull commentCount from collection.
-        let fields = "commentCount";
-        const commentCount = (
-            await Model.findOne({ _id: docId }, fields).exec()
-        ).commentCount;
-
-        if (isNaN(commentCount)) {
-            const errorResponse =
-                "Id: " +
-                docId +
-                " for collection: " +
-                coll +
-                " commentCount not found.";
-            response.statusCode = 404;
-            response.body = JSON.stringify({
-                success: false,
-                errorMessage: errorResponse
-            });
-
-            return response;
-        }
-
-        response.statusCode = 200;
-        response.body = JSON.stringify({
-            success: true,
-            data: { comments: comments, commentCount: commentCount }
-        });
-    } else {
-        response.statusCode = 200;
-        response.body = JSON.stringify({
-            success: true,
-            data: { comments: comments }
-        });
+    let responseData = {
+        comments: commentResult.comments.reverse()
     }
+
+    if (coll !== "user") {
+        responseData.commentCount = commentResult.commentCount;
+    }
+
+    
+    response.statusCode = 200;
+    response.body = JSON.stringify({
+        success: true,
+        data: responseData
+    });
 
     return response;
 };
