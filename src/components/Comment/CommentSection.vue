@@ -184,7 +184,7 @@ export default {
             isLoadingMoreComments: false,
 
             isLiked: "",
-            isFollowed: "",
+            isFollowed: false,
             isFollowable: false,
 
             likeCount: 0,
@@ -203,13 +203,7 @@ export default {
     },
 
     created: async function() {
-        // let promises = [];
-        // promises.push(this.checkIfUserLiked());
-
-        // if (this.$props.followableComponent) {
-        //     promises.push(this.checkIfUserFollowed());
-        // }
-
+        // Check if liked and get like count and most recent likes.
         let promises = [];
         let path = "/like";
         let myInit = {
@@ -234,6 +228,8 @@ export default {
             )
         );
 
+
+        // Get most recent comments and comment count.
         path = "/comment";
 
         promises.push(
@@ -247,6 +243,25 @@ export default {
             )
         );
 
+        if (this.$props.followableComponent) {
+            path = "/follow";
+    
+            promises.push(
+                API.get(this.$store.state.apiName, path, myInit).then(
+                    followResponse => {
+                        this.followCount = followResponse.data.followCount;
+                        this.follows = followResponse.data.follows;
+                        this.isFollowable = followResponse.data.isFollowable;
+    
+                        if (this.isFollowable) {
+                            this.isFollowed = followResponse.data.isFollowed;
+                        }
+                    }
+                )
+            )
+        }
+
+        // Check if liked and get follow count and most recent follows.
         await Promise.all(promises);
 
         this.isLoading = false;
@@ -562,22 +577,6 @@ export default {
                     this.isLoadingMoreComments = false;
                     this.lastLoadedComment =
                         commentSnapshot.docs[commentSnapshot.size - 1];
-                });
-        },
-
-        checkIfUserLiked: function() {
-            return db
-                .collection("users")
-                .doc(this.$store.state.userProfile.data.uid)
-                .collection("likes")
-                .where("id", "==", this.$props.docId)
-                .get()
-                .then(likeSnapshot => {
-                    likeSnapshot.forEach(like => {
-                        if (like.exists) {
-                            this.isLiked = like.id;
-                        }
-                    });
                 });
         },
 

@@ -8,7 +8,7 @@ let MONGODB_URI;
 const queryLike = async function(event) {
     const docId = ObjectId(event.queryStringParameters.docId);
     const coll = event.queryStringParameters.coll;
-    const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
+    const loadAmount = Number(event.queryStringParameters.loadAmount);
 
     let Model;
 
@@ -41,22 +41,16 @@ const queryLike = async function(event) {
     }
 
     // First pull load amount likes from collection.
-    const likes = (
-        await Model.aggregate([
-            {
-                $match: {
-                    _id: docId
-                }
-            },
-            {
-                $project: {
-                    likes: {
-                        $slice: ["$likes", loadAmount]
-                    }
-                }
+    const likes = (await Model.findOne(
+        {
+            _id: docId
+        },
+        {
+            likes: {
+                $slice: [ "$likes", 0 - loadAmount ]
             }
-        ])
-    )[0].likes;
+        }
+    )).likes
 
     if (!likes) {
         const errorResponse =
@@ -76,9 +70,23 @@ const queryLike = async function(event) {
     // We only need to return likeCount and isLiked if we are pulling from a collection.
     if (coll !== "user") {
         // First pull likeCount from collection.
-        let fields = "likeCount";
-        const likeCount = (await Model.findOne({ _id: docId }, fields).exec())
-            .likeCount;
+        const username = event.requestContext.authorizer.claims["cognito:username"];
+        
+        const likeResult = await Model.findOne(
+            {
+                _id: docId
+            },
+            {
+                likeCount: 1,
+                likes: {
+                    $elemMatch: {
+                        "createdBy.username": username
+                    }
+                }
+            }
+        );
+
+        const likeCount = likeResult.likeCount;
 
         if (isNaN(likeCount)) {
             const errorResponse =
@@ -96,29 +104,7 @@ const queryLike = async function(event) {
             return response;
         }
 
-        // Now we check to see if the user has like this document.
-        let isLiked = false;
-        const username =
-            event.requestContext.authorizer.claims["cognito:username"];
-
-        const userResult = (
-            await Model.findOne(
-                {
-                    _id: docId
-                },
-                {
-                    likes: {
-                        $elemMatch: {
-                            "createdBy.username": username
-                        }
-                    }
-                }
-            )
-        ).likes;
-
-        if (userResult.length > 0) {
-            isLiked = true;
-        }
+        const isLiked = (likeResult.likes && likeResult.likes.length) ? true : false;
 
         response.statusCode = 200;
         response.body = JSON.stringify({
@@ -184,7 +170,7 @@ const createLike = async function(event) {
             break;
         default:
             response.statusCode = 400;
-            response.body = "Incorrect collection provided";
+            response.body = JSON.stringify({ success: false, errorMessage: "Incorrect collection provided"});
             return response;
     }
 

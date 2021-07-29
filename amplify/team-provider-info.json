@@ -19,7 +19,7 @@
         },
         "projectburnLikeHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnLikeHandler-797834382b7a58364452-build.zip"
+          "s3Key": "amplify-builds/projectburnLikeHandler-55355962524b77446644-build.zip"
         },
         "projectburnWorkoutHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -59,7 +59,7 @@
         },
         "projectburnFollowHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnFollowHandler-3043723753794a4f4a4d-build.zip"
+          "s3Key": "amplify-builds/projectburnFollowHandler-4d6f575a345a74727365-build.zip"
         }
       },
       "auth": {
