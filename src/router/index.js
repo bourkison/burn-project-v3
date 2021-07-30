@@ -19,6 +19,7 @@ import ExerciseView from "@/views/Exercise/ExerciseView.vue";
 
 import Profile from "@/views/User/Profile.vue";
 
+import Admin from '@/views/Utility/Admin.vue';
 import Search from "@/views/Utility/Search.vue";
 
 // import Template from '@/views/Template/Template.vue'
@@ -152,6 +153,16 @@ const routes = [
         component: Search,
         meta: {
             requiresAuth: true
+        }
+    },
+    // ADMIN
+    {
+        path: '/admin',
+        name: "Admin",
+        component: Admin,
+        meta: {
+            requiresAuth: true,
+            requiresAdmin: true
         }
     },
     // USER + 404

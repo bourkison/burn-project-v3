@@ -1,19 +1,24 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda resource stack creation using Amplify CLI",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
   "Parameters": {
-    "env": {
-      "Type": "String"
-    },
-    "authprojectburncognitoUserPoolId": {
+    "CloudWatchRule": {
       "Type": "String",
-      "Default": "authprojectburncognitoUserPoolId"
+      "Default": "NONE",
+      "Description": " Schedule Expression"
     },
     "deploymentBucketName": {
       "Type": "String"
     },
+    "env": {
+      "Type": "String"
+    },
     "s3Key": {
       "Type": "String"
+    },
+    "functionprojectburnmongoosemodelsArn": {
+      "Type": "String",
+      "Default": "functionprojectburnmongoosemodelsArn"
     }
   },
   "Conditions": {
@@ -34,16 +39,24 @@
         "aws:asset:property": "Code"
       },
       "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": {
+            "Ref": "s3Key"
+          }
+        },
         "Handler": "index.handler",
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "AdminQueries635d72f9",
+            "projectburnStatsHandler",
             {
               "Fn::Join": [
                 "",
                 [
-                  "AdminQueries635d72f9",
+                  "projectburnStatsHandler",
                   "-",
                   {
                     "Ref": "env"
@@ -58,9 +71,28 @@
             "ENV": {
               "Ref": "env"
             },
-            "GROUP": "admin",
-            "USERPOOL": {
-              "Ref": "authprojectburncognitoUserPoolId"
+            "REGION": {
+              "Ref": "AWS::Region"
+            },
+            "MONGODB_URI": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Fn::Sub": [
+                      "/amplify/${appId}/${env}/AMPLIFY_${functionName}_",
+                      {
+                        "appId": "d3tp6kskh7ft9m",
+                        "env": {
+                          "Ref": "env"
+                        },
+                        "functionName": "projectburnStatsHandler"
+                      }
+                    ]
+                  },
+                  "MONGODB_URI"
+                ]
+              ]
             }
           }
         },
@@ -71,15 +103,12 @@
           ]
         },
         "Runtime": "nodejs14.x",
-        "Timeout": "25",
-        "Code": {
-          "S3Bucket": {
-            "Ref": "deploymentBucketName"
-          },
-          "S3Key": {
-            "Ref": "s3Key"
+        "Layers": [
+          {
+            "Ref": "functionprojectburnmongoosemodelsArn"
           }
-        }
+        ],
+        "Timeout": "25"
       }
     },
     "LambdaExecutionRole": {
@@ -88,12 +117,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "AdminQueries635d72f9LambdaRole",
+            "projectburnLambdaRole2cb4bc64",
             {
               "Fn::Join": [
                 "",
                 [
-                  "AdminQueries635d72f9LambdaRole",
+                  "projectburnLambdaRole2cb4bc64",
                   "-",
                   {
                     "Ref": "env"
@@ -159,27 +188,34 @@
                   }
                 ]
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    "AmplifyFunctionSecretsPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-function-secrets-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
             {
               "Effect": "Allow",
               "Action": [
-                "cognito-idp:ListUsersInGroup",
-                "cognito-idp:AdminUserGlobalSignOut",
-                "cognito-idp:AdminEnableUser",
-                "cognito-idp:AdminDisableUser",
-                "cognito-idp:AdminRemoveUserFromGroup",
-                "cognito-idp:AdminAddUserToGroup",
-                "cognito-idp:AdminListGroupsForUser",
-                "cognito-idp:AdminGetUser",
-                "cognito-idp:AdminConfirmSignUp",
-                "cognito-idp:ListUsers",
-                "cognito-idp:ListGroups"
+                "ssm:GetParameter",
+                "ssm:GetParameters"
               ],
               "Resource": {
                 "Fn::Join": [
                   "",
                   [
-                    "arn:aws:cognito-idp:",
+                    "arn:aws:ssm:",
                     {
                       "Ref": "AWS::Region"
                     },
@@ -187,17 +223,30 @@
                     {
                       "Ref": "AWS::AccountId"
                     },
-                    ":userpool/",
+                    ":parameter",
                     {
-                      "Ref": "authprojectburncognitoUserPoolId"
-                    }
+                      "Fn::Sub": [
+                        "/amplify/${appId}/${env}/AMPLIFY_${functionName}_",
+                        {
+                          "appId": "d3tp6kskh7ft9m",
+                          "env": {
+                            "Ref": "env"
+                          },
+                          "functionName": "projectburnStatsHandler"
+                        }
+                      ]
+                    },
+                    "*"
                   ]
                 ]
               }
             }
           ]
         }
-      }
+      },
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ]
     }
   },
   "Outputs": {

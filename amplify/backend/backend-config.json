@@ -112,20 +112,6 @@
         }
       ]
     },
-    "AdminQueries635d72f9": {
-      "service": "Lambda",
-      "providerPlugin": "awscloudformation",
-      "build": true,
-      "dependsOn": [
-        {
-          "category": "auth",
-          "resourceName": "projectburncognito",
-          "attributes": [
-            "UserPoolId"
-          ]
-        }
-      ]
-    },
     "projectburnmongoosemodels": {
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
@@ -144,31 +130,37 @@
           ]
         }
       ]
-    }
-  },
-  "api": {
-    "AdminQueries": {
-      "service": "API Gateway",
+    },
+    "projectburnAdminHandler": {
+      "build": true,
       "providerPlugin": "awscloudformation",
-      "authorizationType": "AMAZON_COGNITO_USER_POOLS",
+      "service": "Lambda",
       "dependsOn": [
         {
-          "category": "auth",
-          "resourceName": "projectburncognito",
-          "attributes": [
-            "UserPoolId"
-          ]
-        },
-        {
           "category": "function",
-          "resourceName": "AdminQueries635d72f9",
+          "resourceName": "projectburnmongoosemodels",
           "attributes": [
-            "Arn",
-            "Name"
+            "Arn"
           ]
         }
       ]
     },
+    "projectburnStatsHandler": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "projectburnmongoosemodels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    }
+  },
+  "api": {
     "projectburnapi": {
       "service": "API Gateway",
       "providerPlugin": "awscloudformation",
@@ -232,6 +224,22 @@
         {
           "category": "function",
           "resourceName": "projectburnFollowHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnAdminHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnStatsHandler",
           "attributes": [
             "Name",
             "Arn"
