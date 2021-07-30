@@ -6,6 +6,11 @@
         "env": {
             "Type": "String"
         },
+
+        "projectburnUserPool": {
+          "Type": "String",
+          "Default": "EchxupRGJ"
+        },
     
     
           "functionprojectburnUserHandlerName": {
@@ -283,6 +288,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -296,7 +307,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -388,6 +399,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -401,7 +418,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -494,6 +511,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -507,7 +530,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -599,6 +622,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -612,7 +641,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -705,6 +734,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -718,7 +753,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -810,6 +845,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -823,7 +864,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -916,6 +957,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -929,7 +976,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1021,6 +1068,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1034,7 +1087,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1127,6 +1180,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1140,7 +1199,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1232,6 +1291,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1245,7 +1310,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1338,6 +1403,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1351,7 +1422,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1443,6 +1514,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1456,7 +1533,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1549,6 +1626,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1562,7 +1645,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1654,6 +1737,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1667,7 +1756,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1760,6 +1849,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1773,7 +1868,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1865,6 +1960,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1878,7 +1979,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -1971,6 +2072,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -1984,7 +2091,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -2076,6 +2183,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -2089,7 +2202,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -2182,6 +2295,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -2195,7 +2314,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -2287,6 +2406,12 @@
                       "schema": {
                         "$ref": "#/definitions/RequestSchema"
                       }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
                     }
                   ],
                   "responses": {
@@ -2300,7 +2425,7 @@
                   
                     "security": [
                         {
-                          "sigv4": []
+                          "Cognito": []
                         }
                       ],
                   
@@ -2338,11 +2463,41 @@
               
             },
             "securityDefinitions": {
-              "sigv4": {
+              "Cognito": {
                 "type": "apiKey",
                 "name": "Authorization",
                 "in": "header",
-                "x-amazon-apigateway-authtype": "awsSigv4"
+                "x-amazon-apigateway-authtype": "cognito_user_pools",
+                "x-amazon-apigateway-authorizer": {
+                  "providerARNs": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:cognito-idp:",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            ":",
+                            {
+                              "Ref": "AWS::AccountId"
+                            },
+                            ":userpool/",
+                            {
+                                            
+                              "Ref": "AWS::Region"
+                            },
+                            "_",
+                            {
+                              "Ref": "projectburnUserPool"
+                            }
+
+                          ]
+                        ]
+                      }
+                  ],
+                  "type": "cognito_user_pools"
+                }
               }
             },
             "definitions": {
