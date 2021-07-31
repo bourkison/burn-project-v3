@@ -79,11 +79,13 @@ exports.handler = async (event, context) => {
     let exerciseReferencePromises = [];
     let templatePromises = [];
     let templateReferencePromises = [];
+    let workoutPromises = [];
     let postPromises = [];
     let postReferencePromises = [];
 
     let createdExercises = [];
     let createdTemplates = [];
+    // let createdWorkouts = [];
     let createdPosts = [];
 
     // First create exercises.
@@ -270,6 +272,110 @@ exports.handler = async (event, context) => {
     await Promise.all(templatePromises);
     await Promise.all(templateReferencePromises);
 
+    // Next create workouts.
+    for (let i = 0; i < databaseForm.usernames.length; i++) {
+        const username = databaseForm.usernames[i].toLowerCase();
+
+        let workoutAmount = Math.floor(Math.random() * databaseForm.workoutAmount) * 2;
+        let workoutsToPush = [];
+
+        for (let j = 0; j < workoutAmount; j ++) {
+            const createdAt = faker.date.past(1);
+            let templateReference = null;
+            let notes = "";
+    
+            if (Math.floor(Math.random() * 2)) {
+                notes = faker.lorem.sentences(Math.floor(Math.random() * 3) + 1);
+            }
+    
+            if (Math.floor(Math.random() * 2)) {
+                let template = createdTemplates[Math.floor(Math.random() * createdTemplates.length)];
+    
+                templateReference = {
+                    templateId: template._id,
+                    name: template.name,
+                    muscleGroups: template.muscleGroups,
+                    tags: template.tags,
+                    createdAt: createdAt,
+                    updatedAt: createdAt
+                }
+            }
+    
+            let recordedExercises = [];
+            let uniqueExercises = [];
+
+            let exercisePerWorkoutAmount = Math.floor(Math.random() * databaseForm.exercisePerWorkoutAmount * 2) + 1;
+    
+            for (let k = 0; k < exercisePerWorkoutAmount; k++) {
+                let exercise = createdExercises[Math.floor(Math.random() * createdExercises.length)];
+                let sets = [];
+                let setMeasureAmount = Math.floor(Math.random() * 20) + 5
+                let exerciseNotes = "";
+    
+                if (Math.floor(Math.random() * 3)) {
+                    exerciseNotes = faker.lorem.sentences(Math.floor(Math.random() * 3) + 1);
+                }
+
+                let setAmount = Math.floor(Math.random() * databaseForm.setAmount);
+    
+                for (let l = 0; l < setAmount; l++) {
+                    sets.push({
+                        kg: Math.floor(Math.random() * 30) + 10,
+                        measureAmount: setMeasureAmount,
+                        measureBy: "kg"
+                    })
+                }
+    
+                const exerciseReference = {
+                    exerciseId: exercise._id,
+                    name: exercise.name,
+                    muscleGroups: exercise.muscleGroups,
+                    tags: exercise.tags,
+                    createdAt: createdAt,
+                    updatedAt: createdAt
+                }
+    
+                let recordedExercise = {
+                    sets: sets,
+                    exerciseReference: exerciseReference,
+                    notes: exerciseNotes
+                }
+    
+                recordedExercises.push(recordedExercise);
+    
+                if (!uniqueExercises.includes(exerciseReference.exerciseId)) {
+                    uniqueExercises.push(exerciseReference.exerciseId);
+                }
+            }
+    
+            let workoutObj = {
+                duration: Math.floor(Math.random() * 5400) + 600,
+                name: faker.lorem.words(Math.floor(Math.random() * 4 + 1)),
+                notes: notes,
+                recordedExercises: recordedExercises,
+                uniqueExercises: uniqueExercises,
+                templateReference: templateReference
+            }
+
+            workoutsToPush.push(workoutObj);
+    
+            
+        }
+
+        workoutPromises.push(User.updateOne(
+            {
+                username: username
+            },
+            {
+                $push: {
+                    workouts: workoutsToPush
+                }
+            }
+        ))
+    }
+
+    await Promise.all(workoutPromises);
+
     // Next create posts.
     for (let i = 0; i < databaseForm.usernames.length; i++) {
         const username = databaseForm.usernames[i].toLowerCase();
@@ -354,6 +460,14 @@ exports.handler = async (event, context) => {
             postsToCreate --;
         }
     }
+
+    // Next create likes and comments for exercises.
+    // for (let i = 0; i < createdExercises.length; i ++) {
+    //     const docId = createdExercises[i]._id;
+    //     const username = databaseForm.usernames[Math.floor(Math.random() * databaseForm.usernames.length)];
+
+
+    // }
 
     await Promise.all(postPromises);
     await Promise.all(postReferencePromises);

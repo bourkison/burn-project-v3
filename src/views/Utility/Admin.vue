@@ -305,7 +305,7 @@ export default {
 
     created: function() {
         for(let i = 0; i < 5; i ++) {
-            console.log(faker.vehicle.vehicle());
+            console.log(faker.lorem.words(Math.floor(Math.random() * 4 + 1)));
         }
     },
 
