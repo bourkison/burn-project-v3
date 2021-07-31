@@ -169,7 +169,10 @@ const routes = [
     {
         path: "/:profileid",
         name: "Profile",
-        component: Profile
+        component: Profile,
+        meta: {
+            requiresAuth: true
+        }
     }
 ];
 

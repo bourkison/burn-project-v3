@@ -17,12 +17,12 @@ const getPost = async function(event) {
             "Access-Control-Allow-Origin": "*"
         },
         body: JSON.stringify({ success: false })
-    }
+    };
 
     const result = await Post.findOne(
-        { 
-            _id: postId 
-        }, 
+        {
+            _id: postId
+        },
         {
             content: 1,
             filePaths: 1,
@@ -36,20 +36,21 @@ const getPost = async function(event) {
                 }
             },
             commentCount: 1
-        }).exec();
+        }
+    ).exec();
 
     if (!result) {
-        const errorResponse = "Post: " + postId + " not found." ;
+        const errorResponse = "Post: " + postId + " not found.";
         response.statusCode = 404;
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
-        })
+        });
 
         return response;
     }
 
-    const isLiked = (result.likes && result.likes.length) ? true : false;
+    const isLiked = result.likes && result.likes.length ? true : false;
 
     const responseData = {
         _id: result._id,
@@ -61,7 +62,7 @@ const getPost = async function(event) {
         likeCount: result.likeCount,
         commentCount: result.commentCount,
         isLiked: isLiked
-    }
+    };
 
     response.statusCode = 200;
     response.body = JSON.stringify({
@@ -70,15 +71,14 @@ const getPost = async function(event) {
     });
 
     return response;
-}
+};
 
 // GET request /post
 const queryPost = async function(event) {
-    const username = event.requestContext.authorizer.claims["cognito:username"];
     const loadAmount = event.queryStringParameters.loadAmount
         ? Number(event.queryStringParameters.loadAmount)
         : 5;
-    const userId = (event.queryStringParameters.userId) ? event.queryStringParameters.userId : null
+    const userId = event.queryStringParameters ? event.queryStringParameters.userId : null;
 
     let response = {
         statusCode: 500,
@@ -93,8 +93,8 @@ const queryPost = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     if (userId) {
-        console.log ("IN FIRST BLOCK", userId)
-        result = await (User.findOne(
+        console.log("IN FIRST BLOCK", userId);
+        result = await User.findOne(
             {
                 _id: userId
             },
@@ -103,7 +103,7 @@ const queryPost = async function(event) {
                     $slice: ["$postReferences", 0 - loadAmount]
                 }
             }
-        ));
+        );
 
         if (!result.postReferences) {
             const errorResponse = "Posts not found for user: " + userId;
@@ -111,14 +111,16 @@ const queryPost = async function(event) {
             response.body = JSON.stringify({
                 success: false,
                 errorMessage: errorResponse
-            })
+            });
 
             return response;
         } else {
             result = result.postReferences.reverse();
         }
     } else {
-        result = await (User.findOne(
+        const username = event.requestContext.authorizer.claims["cognito:username"];
+
+        result = await User.findOne(
             {
                 username: username
             },
@@ -127,7 +129,7 @@ const queryPost = async function(event) {
                     $slice: ["$postFeed", 0 - loadAmount]
                 }
             }
-        ))
+        );
 
         if (!result.postFeed) {
             const errorResponse = "Feed not found for user: " + username;
@@ -135,7 +137,7 @@ const queryPost = async function(event) {
             response.body = JSON.stringify({
                 success: false,
                 errorMessage: errorResponse
-            })
+            });
 
             return response;
         } else {
@@ -231,8 +233,7 @@ const createPost = async function(event) {
         }
     ).catch(err => {
         // TODO: Delete previously created post.
-        const errorResponse =
-            "Error creating post in user document: " + JSON.stringify(err);
+        const errorResponse = "Error creating post in user document: " + JSON.stringify(err);
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
@@ -242,12 +243,7 @@ const createPost = async function(event) {
     // Now push the post reference to the all the followers feed array.
     let feedPromises = [];
     user.followers.forEach(follow => {
-        feedPromises.push(
-            User.update(
-                { _id: follow.userId },
-                { $push: { feed: postReference } }
-            )
-        );
+        feedPromises.push(User.update({ _id: follow.userId }, { $push: { feed: postReference } }));
     });
 
     await Promise.all(feedPromises);
@@ -256,7 +252,7 @@ const createPost = async function(event) {
     response.body = JSON.stringify({
         success: true,
         data: { postReference: postReference }
-    })
+    });
 
     return response;
 };
@@ -274,6 +270,8 @@ exports.handler = async (event, context) => {
         .promise();
 
     MONGODB_URI = Parameters[0].Value;
+
+    console.log("EVENT:", JSON.stringify(event));
 
     switch (event.httpMethod) {
         case "GET":

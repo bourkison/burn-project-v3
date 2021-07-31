@@ -5,15 +5,41 @@ let MONGODB_URI;
 // GET request.
 const getUser = async function(event) {
     let username = event.pathParameters.proxy;
+    const view = event.queryStringParameters ? event.queryStringParameters.view : null;
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    let fields =
-        "username email firstName surname gender dob height weight country metric";
+    let fields;
+
+    if (view === "profile") {
+        fields = {
+            username: 1,
+            followerCount: 1,
+            followingCount: 1,
+            followers: {
+                $elemMatch: {
+                    "username": username
+                }
+            }
+        }
+    } else {
+        fields = {
+            username: 1,
+            email: 1,
+            firstName: 1,
+            surname: 1,
+            gender: 1,
+            dob: 1,
+            height: 1,
+            weight: 1,
+            country: 1,
+            metric: 1
+        }
+    }
+
     const result = await User.findOne({ username: username }, fields).exec();
 
     if (!result) {
-        const errorResponse =
-            "User: " + username + " not found." + JSON.stringify(event);
+        const errorResponse = "User: " + username + " not found." + JSON.stringify(event);
 
         const response = {
             statusCode: 404,
@@ -27,13 +53,38 @@ const getUser = async function(event) {
         return response;
     }
 
+    let responseData;
+
+    if (view === "profile") {
+        responseData = {
+            username: result.username,
+            followerCount: result.followerCount,
+            followingCount: result.followingCount,
+            isFollowed: result.followers && result.followers.length ? true : false,
+            isLoggedInUser: (username === event.requestContext.authorizer.claims["cognito:username"]) ? true : false
+        }
+    } else {
+        responseData = {
+            username: result.username,
+            email: result.email,
+            firstName: result.firstName,
+            surname: result.surname,
+            gender: result.gender,
+            dob: result.dob,
+            height: result.height,
+            weight: result.weight,
+            country: result.country,
+            metric: result.metric
+        }
+    }
+
     const response = {
         statusCode: 200,
         headers: {
             "Access-Control-Allow-Headers": "*",
             "Access-Control-Allow-Origin": "*"
         },
-        body: JSON.stringify({ success: true, data: result })
+        body: JSON.stringify({ success: true, data: responseData })
     };
 
     return response;
@@ -69,10 +120,7 @@ const updateUser = async function(event) {
     console.log("USER FORM:", userForm);
 
     // Update the user document.
-    const result = await User.findOneAndUpdate(
-        { username: username },
-        userForm
-    );
+    const result = await User.findOneAndUpdate({ username: username }, userForm);
 
     response.statusCode = 200;
     response.body = JSON.stringify({ success: true, data: result });

@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { db } from "@/firebase";
+import { API } from "aws-amplify";
 
 import ProfileView from "@/views/User/ProfileView.vue";
 
@@ -36,39 +36,24 @@ export default {
     },
 
     methods: {
-        downloadUser: function() {
+        downloadUser: async function() {
             this.isLoading = true;
             this.profileExists = false;
             this.profile = {};
 
-            if (!this.$store.state.userProfile.loggedIn) {
-                console.log("Not logged in");
-            } else if (
-                this.$route.params.profileid !==
-                this.$store.state.userProfile.docData.username
-            ) {
-                db.collection("users")
-                    .where("username", "==", this.$route.params.profileid)
-                    .get()
-                    .then(userSnapshot => {
-                        if (userSnapshot.size > 0) {
-                            userSnapshot.forEach(user => {
-                                this.profile = user.data();
-                                this.profile.id = user.id;
-                                this.profileExists = true;
-                                this.isLoading = false;
-                            });
-                        } else {
-                            this.profileExists = false;
-                            this.isLoading = false;
-                        }
-                    });
-            } else {
-                this.profile = this.$store.state.userProfile.docData;
-                this.profile.id = this.$store.state.userProfile.data.uid;
-                this.profileExists = true;
-                this.isLoading = false;
-            }
+            const path = "/user/" + this.$route.params.profileid;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                },
+                queryStringParameters: {
+                    view: "profile"
+                }
+            };
+
+            this.profile = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            this.profileExists = true;
+            this.isLoading = false;
         }
     }
 };

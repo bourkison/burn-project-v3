@@ -35,11 +35,11 @@
         },
         "projectburnPostHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnPostHandler-644939317776304e5767-build.zip"
+          "s3Key": "amplify-builds/projectburnPostHandler-387a3079686f6f555577-build.zip"
         },
         "projectburnUserHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnUserHandler-764b3239372b37664277-build.zip"
+          "s3Key": "amplify-builds/projectburnUserHandler-6f59754b55346a735a47-build.zip"
         },
         "AdminQueriesfa34869c": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
