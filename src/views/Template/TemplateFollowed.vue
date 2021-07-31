@@ -293,7 +293,9 @@ export default {
             }
 
             if (isFiltered) {
-                this.$router.replace({ path: "/templates", query: query });
+                this.$router.replace({ path: "/templates/followed", query: query });
+            } else {
+                this.$router.replace({ path: "/templates/followed", query: null })
             }
 
             this.downloadTemplates();
@@ -316,9 +318,9 @@ export default {
             }
 
             if (isFiltered) {
-                this.$router.replace({ path: "/templates", query: query });
+                this.$router.replace({ path: "/templates/followed", query: query });
             } else {
-                this.$router.replace({ path: "/templates", query: null });
+                this.$router.replace({ path: "/templates/followed", query: null });
             }
             this.downloadTemplates();
         }

@@ -263,8 +263,13 @@ export default {
 
             if (isFiltered) {
                 this.$router.replace({
-                    path: "/exercises/discover",
+                    path: "/exercises",
                     query: query
+                });
+            } else {
+                this.$router.replace({
+                    path: "/exercises",
+                    query: null
                 });
             }
 
@@ -289,12 +294,12 @@ export default {
 
             if (isFiltered) {
                 this.$router.replace({
-                    path: "/exercises/discover",
+                    path: "/exercises",
                     query: query
                 });
             } else {
                 this.$router.replace({
-                    path: "/exercises/discover",
+                    path: "/exercises",
                     query: null
                 });
             }

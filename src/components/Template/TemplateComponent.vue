@@ -25,7 +25,7 @@
                                 :exercise="exercise"
                                 :accordionIndex="index"
                                 :templateId="templateData._id"
-                                :key="exercise.exerciseId"
+                                :key="index"
                                 :lazy="true"
                             />
                         </div>

@@ -283,7 +283,9 @@ export default {
             }
 
             if (isFiltered) {
-                this.$router.replace({ path: "/exercises", query: query });
+                this.$router.replace({ path: "/exercises/followed", query: query });
+            } else {
+                this.$router.replace({ path: "/exercises/followed", query: null });
             }
 
             this.downloadExercises();
@@ -308,9 +310,9 @@ export default {
             }
 
             if (isFiltered) {
-                this.$router.replace({ path: "/exercises", query: query });
+                this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({ path: "/exercises", query: null });
+                this.$router.replace({ path: "/exercises/followed", query: null });
             }
             this.downloadExercises();
         },

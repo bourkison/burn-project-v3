@@ -59,7 +59,7 @@ exports.handler = async (event, context) => {
     MONGODB_URI = Parameters[0].Value;
 
     const User = (await MongooseModels(MONGODB_URI)).User;
-    // const Post = (await MongooseModels(MONGODB_URI)).Post;
+    const Post = (await MongooseModels(MONGODB_URI)).Post;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
     const Template = (await MongooseModels(MONGODB_URI)).Template;
     
@@ -72,13 +72,19 @@ exports.handler = async (event, context) => {
     let templatesToCreate = databaseForm.userAmount * databaseForm.templateAmount;
     console.log("TEMPLATES TO CREATE:", templatesToCreate);
 
+    let postsToCreate = databaseForm.userAmount * databaseForm.postAmount;
+    console.log("POSTS TO CREATE:", postsToCreate);
+
     let exercisePromises = [];
     let exerciseReferencePromises = [];
     let templatePromises = [];
     let templateReferencePromises = [];
+    let postPromises = [];
+    let postReferencePromises = [];
 
     let createdExercises = [];
     let createdTemplates = [];
+    let createdPosts = [];
 
     // First create exercises.
     for (let i = 0; i < databaseForm.usernames.length; i ++) {
@@ -95,7 +101,7 @@ exports.handler = async (event, context) => {
 
         let exerciseAmount = Math.floor(Math.random() * databaseForm.exerciseAmount) * 2;
 
-        if (exerciseAmount > exercisesToCreate) {
+        if (exerciseAmount > exercisesToCreate || i === databaseForm.usernames.length - 1) {
             exerciseAmount = exercisesToCreate;
         }
 
@@ -133,7 +139,6 @@ exports.handler = async (event, context) => {
             createdExercises.push(exerciseObject)
     
             const exercise = new Exercise(exerciseObject)
-
             exercisePromises.push(exercise.save());
             
             const exerciseReference = {
@@ -181,7 +186,7 @@ exports.handler = async (event, context) => {
 
         let templateAmount = Math.floor(Math.random() * databaseForm.templateAmount) * 2;
 
-        if (templateAmount > templatesToCreate) {
+        if (templateAmount > templatesToCreate || i === databaseForm.usernames.length - 1) {
             templateAmount = templatesToCreate
         }
 
@@ -264,6 +269,94 @@ exports.handler = async (event, context) => {
 
     await Promise.all(templatePromises);
     await Promise.all(templateReferencePromises);
+
+    // Next create posts.
+    for (let i = 0; i < databaseForm.usernames.length; i++) {
+        const username = databaseForm.usernames[i].toLowerCase();
+
+        const user = await User.findOne({ username: username }, { username: 1 }).exec();
+
+        let userReference = {
+            userId: ObjectId(user._id),
+            username: username
+        }
+
+        let postAmount = Math.floor(Math.random() * databaseForm.postAmount) * 2;
+
+        if (postAmount > postsToCreate || i === databaseForm.usernames.length - 1) { 
+            postAmount = postsToCreate;
+        }
+
+        console.log("POST AMOUNT:", postAmount, "FOR USERNAME:", username);
+
+        for (let j = 0; j < postAmount; j++) {
+            const createdAt = faker.date.past(1);
+            const _id = new ObjectId();
+            let filePaths = [];
+
+            userReference.createdAt = createdAt;
+            userReference.updatedAt = createdAt;
+
+            if (Math.floor(Math.random() * 3) == 0) {
+                for (let k = 0; k < Math.floor(Math.random() * 5); k ++) {
+                    filePaths.push("test/" + Math.floor(Math.random() * 25) + ".jpg");
+                }
+            }
+
+            let share = {};
+
+            if (Math.floor(Math.random() * 3) === 0) {
+                if (Math.floor(Math.random() * 2)) {
+                    share._id = createdExercises[Math.floor(Math.random() * createdExercises.length)]._id;
+                    share.type = "exercise";
+                } else {
+                    share._id = createdTemplates[Math.floor(Math.random() * createdTemplates.length)]._id;
+                    share.type = "template";
+                }
+            }
+            
+            const postObject = {
+                _id: _id,
+                createdBy: userReference,
+                content: faker.lorem.paragraph(Math.floor(Math.random() * 5) + 1),
+                filePaths: filePaths,
+                share: share
+            }
+
+            createdPosts.push(postObject);
+
+            const post = new Post(postObject);
+            postPromises.push(post.save());
+
+            const postReference = {
+                _id: _id,
+                createdBy: userReference,
+                createdAt: createdAt,
+                updatedAt: createdAt
+            }
+
+            postReferencePromises.push(User.update(
+                {
+                    username: username
+                },
+                {
+                    $push: {
+                        postFeed: postReference,
+                        postReferences: postReference
+                    }
+                }
+            ));
+
+            postReferencePromises.push(User.update(
+
+            ))
+
+            postsToCreate --;
+        }
+    }
+
+    await Promise.all(postPromises);
+    await Promise.all(postReferencePromises);
 
     response = {
         statusCode: 200,

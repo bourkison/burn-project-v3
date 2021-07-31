@@ -275,12 +275,12 @@ export default {
 
 			if (isFiltered) {
 				this.$router.replace({
-					path: "/templates/discover",
+					path: "/templates",
 					query: query
 				});
 			} else {
 				this.$router.replace({
-					path: "/templates/discover",
+					path: "/templates",
 					query: null
 				});
 			}
@@ -308,7 +308,7 @@ export default {
 				this.$router.replace({ path: "/templates", query: query });
 			} else {
 				this.$router.replace({
-					path: "/templates/discover",
+					path: "/templates",
 					query: null
 				});
 			}
