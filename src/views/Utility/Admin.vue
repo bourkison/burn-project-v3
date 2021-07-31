@@ -345,22 +345,22 @@ export default {
                 },
                 body: {
                     databaseForm: {
-                        userAmount: this.userAmount,
+                        userAmount: Number(this.userAmount),
                         usernames: usernames,
-                        postAmount: this.postAmount,
-                        exerciseAmount: this.exerciseAmount,
-                        exerciseFollowAmount: this.exerciseFollowAmount,
-                        templateAmount: this.templateAmount,
-                        templateFollowAmount: this.templateFollowAmount,
-                        workoutAmount: this.workoutAmount,
-                        exercisePerWorkoutAmount: this.exercisePerWorkoutAmount,
-                        setAmount: this.setAmount,
-                        likePerExerciseAmount: this.likePerExerciseAmount,
-                        likePerTemplateAmount: this.likePerTemplateAmount,
-                        likePerPostAmount: this.likePerPostAmount,
-                        commentPerPostAmount: this.commentPerPostAmount,
-                        commentPerExerciseAmount: this.commentPerExerciseAmount,
-                        commentPerTemplateAmount: this.commentPerTemplateAmount
+                        postAmount: Number(this.postAmount),
+                        exerciseAmount: Number(this.exerciseAmount),
+                        exerciseFollowAmount: Number(this.exerciseFollowAmount),
+                        templateAmount: Number(this.templateAmount),
+                        templateFollowAmount: Number(this.templateFollowAmount),
+                        workoutAmount: Number(this.workoutAmount),
+                        exercisePerWorkoutAmount: Number(this.exercisePerWorkoutAmount),
+                        setAmount: Number(this.setAmount),
+                        likePerExerciseAmount: Number(this.likePerExerciseAmount),
+                        likePerTemplateAmount: Number(this.likePerTemplateAmount),
+                        likePerPostAmount: Number(this.likePerPostAmount),
+                        commentPerPostAmount: Number(this.commentPerPostAmount),
+                        commentPerExerciseAmount: Number(this.commentPerExerciseAmount),
+                        commentPerTemplateAmount: Number(this.commentPerTemplateAmount)
                     }
                 } 
             }

@@ -61,29 +61,39 @@ exports.handler = async (event, context) => {
     const User = (await MongooseModels(MONGODB_URI)).User;
     // const Post = (await MongooseModels(MONGODB_URI)).Post;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
-    // const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const Template = (await MongooseModels(MONGODB_URI)).Template;
     
     const databaseForm = JSON.parse(event.body).databaseForm;
     console.log("DATABASE FORM:", databaseForm);
+
     let exercisesToCreate = databaseForm.userAmount * databaseForm.exerciseAmount;
     console.log("EXERCISES TO CREATE:", exercisesToCreate);
+
+    let templatesToCreate = databaseForm.userAmount * databaseForm.templateAmount;
+    console.log("TEMPLATES TO CREATE:", templatesToCreate);
+
     let exercisePromises = [];
     let exerciseReferencePromises = [];
+    let templatePromises = [];
+    let templateReferencePromises = [];
+
+    let createdExercises = [];
+    let createdTemplates = [];
 
     // First create exercises.
     for (let i = 0; i < databaseForm.usernames.length; i ++) {
         const username = databaseForm.usernames[i].toLowerCase();
-        console.log("USERNAME:", username, i);
+        console.log("USERNAME for EXERCISE:", username, i);
         const user = await User.findOne({ username: username }, { username: 1 }).exec();
 
         console.log("ID:", user._id);
 
-        const userReference = {
-            userId: user._id,
+        let userReference = {
+            userId: ObjectId(user._id),
             username: username
         }
 
-        let exerciseAmount = Math.floor(Math.random() * databaseForm.exerciseAmount * 2);
+        let exerciseAmount = Math.floor(Math.random() * databaseForm.exerciseAmount) * 2;
 
         if (exerciseAmount > exercisesToCreate) {
             exerciseAmount = exercisesToCreate;
@@ -100,8 +110,11 @@ exports.handler = async (event, context) => {
             for (let k = 0; k < Math.floor(Math.random() * 5); k ++) {
                 filePaths.push("test/" + Math.floor(Math.random() * 25) + ".jpg");
             }
-    
-            const exercise = new Exercise({
+
+            userReference.createdAt = createdAt;
+            userReference.updatedAt = createdAt;
+
+            const exerciseObject = {
                 _id: _id,
                 createdBy: userReference,
                 createdAt: createdAt,
@@ -115,7 +128,11 @@ exports.handler = async (event, context) => {
                 tags: tags,
                 follows: [userReference],
                 followCount: 1
-            })
+            }
+
+            createdExercises.push(exerciseObject)
+    
+            const exercise = new Exercise(exerciseObject)
 
             exercisePromises.push(exercise.save());
             
@@ -129,6 +146,9 @@ exports.handler = async (event, context) => {
                 createdAt: createdAt,
                 updatedAt: createdAt
             }
+
+            console.log("_ID:", _id);
+            console.log("EXERCISE REFERENCE", exerciseReference);
 
             exerciseReferencePromises.push(User.update(
                 {
@@ -145,6 +165,105 @@ exports.handler = async (event, context) => {
         }
     }
 
+    await Promise.all(exercisePromises);
+    await Promise.all(exerciseReferencePromises);
+
+    // Next create templates.
+    for (let i = 0; i < databaseForm.usernames.length; i ++) {
+        const username = databaseForm.usernames[i].toLowerCase();
+
+        const user = await User.findOne({ username: username }, { username: 1 }).exec();
+
+        let userReference = {
+            userId: ObjectId(user._id),
+            username: username
+        }
+
+        let templateAmount = Math.floor(Math.random() * databaseForm.templateAmount) * 2;
+
+        if (templateAmount > templatesToCreate) {
+            templateAmount = templatesToCreate
+        }
+
+        console.log("TEMPLATE AMOUNT:", templateAmount, "FOR USERNAME:", username);
+
+        for (let j = 0; j < templateAmount; j++) {
+            const createdAt = faker.date.past(1);
+            const _id = new ObjectId();
+            const muscleGroups = randomMuscleGroups(Math.floor(Math.random() * 10) + 1);
+            const tags = randomTags(Math.floor(Math.random() * 6));
+            const name = faker.vehicle.vehicle();
+
+            userReference.createdAt = createdAt;
+            userReference.updatedAt = createdAt;
+
+            let exerciseReferences = [];
+
+            for (let k = 0; k < (Math.floor(Math.random() * 8) + 1); k ++) {
+                const exercise = createdExercises[Math.floor(Math.random() * createdExercises.length)];
+
+                const exerciseReference = {
+                    exerciseId: exercise._id,
+                    muscleGroups: exercise.muscleGroups,
+                    tags: exercise.tags,
+                    name: exercise.name,
+                    createdBy: exercise.createdBy,
+                    createdAt: createdAt,
+                    updatedAt: createdAt
+                }
+
+                exerciseReferences.push(exerciseReference);
+            }
+
+            const templateObject = {
+                _id: _id,
+                createdBy: userReference,
+                createdAt: createdAt,
+                updatedAt: createdAt,
+                description: faker.lorem.paragraphs(),
+                difficulty: Math.floor(Math.random() * 5) + 1,
+                exerciseReferences: exerciseReferences,
+                muscleGroups: muscleGroups,
+                name: name,
+                tags: tags,
+                follows: [userReference],
+                followCount: 1
+            }
+
+            createdTemplates.push(templateObject)
+
+            const template = new Template(templateObject);
+
+            templatePromises.push(template.save());
+
+            const templateReference = {
+                templateId: _id,
+                muscleGroups: muscleGroups,
+                tags: tags,
+                isFollow: false,
+                name: name,
+                createdBy: userReference,
+                createdAt: createdAt,
+                updatedAt: createdAt
+            };
+
+            templateReferencePromises.push(User.update(
+                {
+                    username: username
+                },
+                {
+                    $push: {
+                        templateReferences: templateReference
+                    }
+                }
+            ));
+
+            templatesToCreate --;
+        }
+    }
+
+    await Promise.all(templatePromises);
+    await Promise.all(templateReferencePromises);
 
     response = {
         statusCode: 200,

@@ -411,6 +411,10 @@ const exerciseSchema = new mongoose.Schema(
         followCount: {
             type: Number,
             default: 0
+        },
+        templateReferences: {
+            type: [templateReferenceSchema],
+            default: []
         }
     },
     { timestamps: true }

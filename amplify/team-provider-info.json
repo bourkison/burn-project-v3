@@ -63,7 +63,7 @@
         },
         "projectburnAdminHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnAdminHandler-475241346777442f422b-build.zip"
+          "s3Key": "amplify-builds/projectburnAdminHandler-6c567373735979547a2b-build.zip"
         }
       },
       "auth": {
