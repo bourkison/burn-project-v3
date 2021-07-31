@@ -269,7 +269,9 @@
 </template>
 
 <script>
-import { API } from 'aws-amplify'
+import { API, Auth } from 'aws-amplify'
+import faker from 'faker';
+import dayjs from 'dayjs'
 
 export default {
     name: 'Admin',
@@ -301,11 +303,42 @@ export default {
         }
     },
 
+    created: function() {
+        for(let i = 0; i < 5; i ++) {
+            console.log(faker.vehicle.vehicle());
+        }
+    },
+
     methods: {
         populateDatabase: async function() {
             this.isLoading = true;
-            const apiName = "AdminQueries";
-            const path = "/";
+
+            // First create users.
+            let createUserPromises = [];
+            let usernames = [];
+
+            for (let i = 0; i < this.userAmount; i++) {
+                const username = faker.internet.userName();
+
+                createUserPromises.push(Auth.signUp({
+                    username: username,
+                    password: "Harrison1",
+                    attributes: {
+                        email: faker.internet.exampleEmail(),
+                        birthdate: dayjs(faker.date.between(new Date("1960-01-01"), new Date("2000-01-01"))).format("YYYY-MM-DD"),
+                        gender: (Math.floor(Math.random() * 2)) ? 'male' : 'female',
+                        given_name: faker.name.firstName(),
+                        family_name: faker.name.lastName(),
+                        locale: faker.address.country()
+                    }
+                }));
+
+                usernames.push(username);
+            }
+
+            await Promise.all(createUserPromises);
+
+            const path = "/admin";
             const myInit = {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken.jwtToken
@@ -313,6 +346,7 @@ export default {
                 body: {
                     databaseForm: {
                         userAmount: this.userAmount,
+                        usernames: usernames,
                         postAmount: this.postAmount,
                         exerciseAmount: this.exerciseAmount,
                         exerciseFollowAmount: this.exerciseFollowAmount,
@@ -331,7 +365,7 @@ export default {
                 } 
             }
 
-            const result = await API.post(apiName, path, myInit);
+            const result = await API.post(this.$store.state.apiName, path, myInit);
             console.log(result);
             this.isLoading = false;
         }
