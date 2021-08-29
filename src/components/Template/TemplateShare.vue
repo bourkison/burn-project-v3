@@ -2,19 +2,19 @@
     <b-container>
         <div :id="template.id + 'accordion'" class="accordion" role="tablist">
             <ExerciseExpandable
-                v-for="(exercise, index) in template.exercises"
+                v-for="(exercise, index) in template.exerciseReferences"
                 :exercise="exercise"
                 :accordionIndex="index"
-                :templateId="template.id"
-                :key="exercise.id"
-                :lazy="false"
+                :templateId="template._id"
+                :key="exercise._id"
+                :lazy="true"
             />
         </div>
     </b-container>
 </template>
 
 <script>
-import { templatesCollection } from "@/firebase";
+import { API } from 'aws-amplify';
 
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 
@@ -39,18 +39,25 @@ export default {
     },
 
     methods: {
-        downloadTemplate: function() {
+        downloadTemplate: async function() {
             this.isLoading = true;
 
-            templatesCollection()
-                .doc(this.$props.templateId)
-                .get()
-                .then(templateDoc => {
-                    this.template = templateDoc.data();
-                    this.template.id = templateDoc.id;
+            const path = "/template/" + this.$props.templateId;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                }
+            }
 
-                    this.isLoading = false;
-                });
+            try {
+                this.template = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            }
+            catch (err) {
+                console.error(err)
+            }
+            finally {
+                this.isLoading = false;
+            }
         }
     },
 

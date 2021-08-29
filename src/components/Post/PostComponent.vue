@@ -16,18 +16,18 @@
                                 :to="'/' + postData.createdBy.username"
                                 class="text-dark username"
                                 >{{ postData.createdBy.username }}</router-link
-                            >&#32;&nbsp;
+                            >
                         </span>
                         <span class="ml-1" v-if="postData.share.type">
                             <span v-if="postData.share.type == 'exercise'"
                                 >&nbsp;shared an
-                                <router-link :to="'/exercises/' + postData.share.id"
+                                <router-link :to="'/exercises/' + postData.share._id"
                                     >exercise</router-link
                                 >.</span
                             >
                             <span v-if="postData.share.type == 'template'"
                                 >&nbsp;shared a
-                                <router-link :to="'/templates/' + postData.share.id"
+                                <router-link :to="'/templates/' + postData.share._id"
                                     >template</router-link
                                 >.</span
                             >
@@ -42,27 +42,15 @@
                             :title="Date(postData.createdAt).toLocaleString()"
                             ><em>{{ createdAtText }}</em></span
                         >
-                        <b-dropdown
-                            left
-                            variant="outline"
-                            size="sm"
-                            style="padding-top:1px;"
-                        >
+                        <b-dropdown left variant="outline" size="sm" style="padding-top:1px;">
                             <span
-                                v-if="
-                                    postData.createdBy.id ===
-                                        $store.state.userProfile.data.uid
-                                "
+                                v-if="postData.createdBy.userId === $store.state.userProfile.docData._id"
                             >
                                 <b-dropdown-item>Edit</b-dropdown-item>
-                                <b-dropdown-item variant="danger"
-                                    >Delete</b-dropdown-item
-                                >
+                                <b-dropdown-item variant="danger">Delete</b-dropdown-item>
                             </span>
                             <span v-else>
-                                <b-dropdown-item variant="danger"
-                                    >Report</b-dropdown-item
-                                >
+                                <b-dropdown-item variant="danger">Report</b-dropdown-item>
                             </span>
                         </b-dropdown>
                     </div>
@@ -71,17 +59,9 @@
 
             <!-- Content -->
             <div v-if="imgUrls.length > 1">
-                <b-carousel
-                    v-model="carouselModel"
-                    controls
-                    indicators
-                    :interval="0"
-                >
+                <b-carousel v-model="carouselModel" controls indicators :interval="0">
                     <b-aspect
-                        ><b-carousel-slide
-                            v-for="img in imgUrls"
-                            :key="img"
-                            :img-src="img"
+                        ><b-carousel-slide v-for="img in imgUrls" :key="img" :img-src="img"
                     /></b-aspect>
                 </b-carousel>
             </div>
@@ -93,17 +73,17 @@
                 <b-card-text>
                     <div v-if="postData.share.type" class="mb-3">
                         <div v-if="postData.share.type == 'exercise'">
-                            <ExerciseShare :exerciseId="postData.share.id" />
+                            <ExerciseShare :exerciseId="postData.share._id" />
                         </div>
 
                         <div v-else-if="postData.share.type == 'template'">
-                            <TemplateShare :templateId="postData.share.id" />
+                            <TemplateShare :templateId="postData.share._id" />
                         </div>
 
                         <div v-else-if="postData.share.type == 'workout'">
                             <WorkoutShare
-                                :workoutId="postData.share.id"
-                                :userId="postData.createdBy.id"
+                                :workoutId="postData.share._id"
+                                :userId="postData.createdBy.userId"
                             />
                         </div>
                     </div>
@@ -146,7 +126,7 @@ import WorkoutShare from "@/components/Workout/WorkoutShare.vue";
 import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
 import TemplateShare from "@/components/Template/TemplateShare.vue";
 
-import { API, Storage } from 'aws-amplify';
+import { API, Storage } from "aws-amplify";
 
 export default {
     name: "PostComponent",
@@ -184,18 +164,23 @@ export default {
 
     created: function() {
         dayjs.extend(relativeTime);
+        console.log(this.$store.state.userProfile.docData._id);
     },
 
     mounted: async function() {
         try {
-            const path = "/post/" + this.$props.postId
+            const path = "/post/" + this.$props.postId;
             const myInit = {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 }
-            }
+            };
 
-            const response = (await API.get(this.$store.state.apiName, path, myInit).catch(err => { console.error(err) })).data;
+            const response = (
+                await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    console.error(err);
+                })
+            ).data;
 
             this.postData = {
                 _id: response._id,
@@ -203,8 +188,8 @@ export default {
                 createdAt: response.createdAt,
                 content: response.content,
                 filePaths: response.filePaths,
-                share: response.share,
-            }
+                share: response.share
+            };
 
             this.likeCount = response.likeCount;
             this.commentCount = response.commentCount;
@@ -213,26 +198,25 @@ export default {
             try {
                 let urlPromises = [];
 
-                if (this.postData.filePaths.forEach(path => {
-                    urlPromises.push(Storage.get(path))
-                }));
+                if (
+                    this.postData.filePaths.forEach(path => {
+                        urlPromises.push(Storage.get(path));
+                    })
+                );
 
                 const imageUrls = await Promise.all(urlPromises);
 
                 imageUrls.forEach(url => {
                     this.imgUrls.push(url);
-                })
-            }
-            catch (err) {
+                });
+            } catch (err) {
                 console.error("Error getting image URLs:", err);
-            }
-            finally {
+            } finally {
                 if (this.postData) {
                     this.isLoading = false;
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.error("Error downloading post", err);
         }
 
@@ -243,10 +227,10 @@ export default {
         handleLike: function(x) {
             if (x > 0) {
                 this.isLiked = true;
-                this.likeCount ++;
+                this.likeCount++;
             } else {
                 this.isLiked = false;
-                this.likeCount --;
+                this.likeCount--;
             }
         }
     }

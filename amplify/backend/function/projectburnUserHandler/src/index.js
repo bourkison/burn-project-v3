@@ -17,7 +17,7 @@ const getUser = async function(event) {
             followingCount: 1,
             followers: {
                 $elemMatch: {
-                    "username": username
+                    "username": event.requestContext.authorizer.claims["cognito:username"]
                 }
             }
         }
@@ -56,15 +56,19 @@ const getUser = async function(event) {
     let responseData;
 
     if (view === "profile") {
+        console.log("PROFILE RESULT:", result);
+
         responseData = {
+            _id: result._id,
             username: result.username,
             followerCount: result.followerCount,
             followingCount: result.followingCount,
-            isFollowed: result.followers && result.followers.length ? true : false,
+            isFollowed: result.followers && result.followers.length > 0 ? true : false,
             isLoggedInUser: (username === event.requestContext.authorizer.claims["cognito:username"]) ? true : false
         }
     } else {
         responseData = {
+            _id: result._id,
             username: result.username,
             email: result.email,
             firstName: result.firstName,

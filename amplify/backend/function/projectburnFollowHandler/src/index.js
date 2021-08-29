@@ -295,7 +295,8 @@ const createFollow = async function(event) {
                     $elemMatch: {
                         "username": username
                     }
-                }
+                },
+                postReferences: 1
             }
         );
 
@@ -304,7 +305,7 @@ const createFollow = async function(event) {
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
             return response;
-        } else if (followedUser.follows.length > 0) {
+        } else if (followedUser.followers.length > 0) {
             const errorResponse = "Already followed!";
             response.statusCode = 403;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
@@ -324,7 +325,13 @@ const createFollow = async function(event) {
             },
             {
                 $push: {
-                    following: followedUserReference
+                    following: followedUserReference,
+                    postFeed: {
+                        $each: followedUser.postReferences,
+                        $sort: {
+                            createdAt: 1
+                        }
+                    }
                 },
                 $inc: {
                     followingCount: 1
@@ -360,7 +367,7 @@ const createFollow = async function(event) {
             return response;
         }
 
-        // TODO: Add followed users posts to the user's postFeed.
+
     } else {
         const errorResponse = "Collection does not exist.";
         response.statusCode = 400;
@@ -517,7 +524,7 @@ const deleteFollow = async function(event) {
             response.statusCode = 404;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
             return response;
-        } else if (followedUser.follows.length === 0) {
+        } else if (!followedUser.followers || followedUser.followers.length === 0) {
             const errorResponse = "Not followed!";
             response.statusCode = 403;
             response.body = JSON.stringify({ success: false, errorMessage: errorResponse });
@@ -533,6 +540,9 @@ const deleteFollow = async function(event) {
                 $pull: {
                     following: {
                         userId: docId
+                    },
+                    postFeed: {
+                        "createdBy.username": followedUser.username
                     }
                 },
                 $inc: {

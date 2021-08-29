@@ -34,7 +34,7 @@
 
 <script>
 import { Viewer } from "@toast-ui/vue-editor";
-import { db } from "@/firebase";
+import { API } from 'aws-amplify'
 
 export default {
     name: "ExerciseShare",
@@ -60,18 +60,25 @@ export default {
     },
 
     methods: {
-        downloadExercise: function() {
+        downloadExercise: async function() {
             this.isLoading = true;
 
-            db.collection("exercises")
-                .doc(this.$props.exerciseId)
-                .get()
-                .then(exerciseDoc => {
-                    this.exercise = exerciseDoc.data();
-                    this.exercise.id = exerciseDoc.id;
+            const path = "/exercise/" + this.$props.exerciseId;
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                }
+            }
 
-                    this.isLoading = false;
-                });
+            try {
+                this.exercise = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            }
+            catch(err) {
+                console.error(err);
+            }
+            finally {
+                this.isLoading = false;
+            }
         }
     },
 

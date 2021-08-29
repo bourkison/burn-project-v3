@@ -7,24 +7,15 @@
                         <b-card-body>
                             <b-card-title>
                                 {{ exerciseData.name }}
-                                <b-dropdown
-                                    right
-                                    class="float-right"
-                                    variant="outline"
-                                >
+                                <b-dropdown right class="float-right" variant="outline">
                                     <span
                                         v-if="
                                             exerciseData.createdBy.userId ===
-                                                this.$store.state.userProfile
-                                                    .docData._id
+                                                this.$store.state.userProfile.docData._id
                                         "
                                     >
                                         <b-dropdown-item
-                                            :to="
-                                                '/exercises/' +
-                                                    exerciseData._id +
-                                                    '/edit'
-                                            "
+                                            :to="'/exercises/' + exerciseData._id + '/edit'"
                                             >Edit</b-dropdown-item
                                         >
                                         <b-dropdown-item
@@ -39,9 +30,7 @@
                                         </b-dropdown-item>
                                     </span>
                                     <span v-else>
-                                        <b-dropdown-item variant="danger"
-                                            >Report</b-dropdown-item
-                                        >
+                                        <b-dropdown-item variant="danger">Report</b-dropdown-item>
                                     </span>
                                 </b-dropdown>
                             </b-card-title>
@@ -50,12 +39,7 @@
                             </b-card-sub-title>
                         </b-card-body>
                         <div v-if="imageUrls.length > 1">
-                            <b-carousel
-                                v-model="carouselModel"
-                                controls
-                                indicators
-                                :interval="0"
-                            >
+                            <b-carousel v-model="carouselModel" controls indicators :interval="0">
                                 <b-aspect
                                     ><b-carousel-slide
                                         v-for="img in imageUrls"
@@ -69,9 +53,7 @@
                         </div>
                         <b-card-body>
                             <b-card-text>
-                                <Viewer
-                                    :initialValue="exerciseData.description"
-                                />
+                                <Viewer :initialValue="exerciseData.description" />
                             </b-card-text>
                         </b-card-body>
                         <CommentSection
@@ -118,9 +100,7 @@
                             <b-card-title>
                                 Muscle Groups
                             </b-card-title>
-                            <MuscleGroup
-                                :selectedGroups="exerciseData.muscleGroups"
-                            />
+                            <MuscleGroup :selectedGroups="exerciseData.muscleGroups" />
                         </b-card-body>
                     </b-card>
 
@@ -133,8 +113,7 @@
                                 <div style="text-center">
                                     <b-badge
                                         class="tags"
-                                        v-for="(tag,
-                                        index) in exerciseData.tags"
+                                        v-for="(tag, index) in exerciseData.tags"
                                         :key="index"
                                         :variant="variants[index]"
                                         >{{ tag }}</b-badge
@@ -165,8 +144,7 @@
             :ok-title-html="isDeleting ? '<b-spinner />' : 'Ok'"
         >
             <div>
-                Are you sure you want to delete this exercise? This can not be
-                undone.
+                Are you sure you want to delete this exercise? This can not be undone.
             </div>
 
             <template #modal-footer="{ ok, cancel }">
@@ -174,12 +152,7 @@
                     <div>Cancel</div>
                 </b-button>
 
-                <b-button
-                    size="sm"
-                    variant="danger"
-                    @click="ok"
-                    :disabled="isDeleting"
-                >
+                <b-button size="sm" variant="danger" @click="ok" :disabled="isDeleting">
                     <div v-if="!isDeleting">OK</div>
                     <div v-else><b-spinner small /></div>
                 </b-button>
@@ -220,7 +193,7 @@ export default {
             likeCount: 0,
             commentCount: 0,
             followCount: 0,
-            
+
             isLiked: false,
             isFollowed: false,
             isFollowable: false,
@@ -253,20 +226,15 @@ export default {
                 const myInit = {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         counters: true
                     }
                 };
 
-                const response = (await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                )).data;
-                
+                const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
+
                 this.exerciseData = {
                     _id: response._id,
                     createdBy: response.createdBy,
@@ -276,8 +244,8 @@ export default {
                     measureBy: response.measureBy,
                     muscleGroups: response.muscleGroups,
                     name: response.name,
-                    tags: response.tags,
-                }
+                    tags: response.tags
+                };
 
                 this.likeCount = response.likeCount;
                 this.commentCount = response.commentCount;
@@ -287,10 +255,7 @@ export default {
                 this.isFollowable = response.isFollowable;
 
                 if (this.exerciseData) {
-                    console.log(
-                        "EXERCISE DOWNLOAD SUCCESS:",
-                        this.exerciseData
-                    );
+                    console.log("EXERCISE DOWNLOAD SUCCESS:", this.exerciseData);
                     this.exerciseExists = true;
                 } else {
                     throw new Error("Exercise does not exist");
@@ -332,16 +297,11 @@ export default {
             const path = "/exercise/" + this.$route.params.exerciseid;
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken
-                        .jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 }
             };
 
-            const response = await API.del(
-                this.$store.state.apiName,
-                path,
-                myInit
-            );
+            const response = await API.del(this.$store.state.apiName, path, myInit);
             console.log("Deletion success!", response);
 
             this.isDeleting = false;
@@ -351,20 +311,20 @@ export default {
 
         handleLike: function(x) {
             if (x > 0) {
-                this.likeCount ++;
+                this.likeCount++;
                 this.isLiked = true;
             } else {
-                this.likeCount --;
+                this.likeCount--;
                 this.isLiked = false;
             }
         },
 
         handleFollow: function(x) {
             if (x > 0) {
-                this.followCount ++;
+                this.followCount++;
                 this.isFollowed = true;
             } else {
-                this.followCount --;
+                this.followCount--;
                 this.isFollowed = false;
             }
         }

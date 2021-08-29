@@ -15,11 +15,7 @@
                         v-else
                         @click="toggleLike"
                     />
-                    <b-icon-chat
-                        class="ml-1 mr-1 icon"
-                        font-scale="1.4"
-                        @click="expandComments"
-                    />
+                    <b-icon-chat class="ml-1 mr-1 icon" font-scale="1.4" @click="expandComments" />
                     <span v-if="isFollowable"
                         ><b-icon-plus-square
                             class="ml-1 mr-1 icon"
@@ -44,14 +40,9 @@
                         >&nbsp;<span v-if="commentCount == 1">comment</span
                         ><span v-else>comments</span> </span
                     >&nbsp;
-                    <span
-                        class="count"
-                        @click="expandFollows"
-                        v-if="followableComponent"
+                    <span class="count" @click="expandFollows" v-if="followableComponent"
                         ><span v-if="!isLoading">{{ followCount }}</span
-                        ><span v-else>...</span>&nbsp;<span
-                            v-if="followCount == 1"
-                            >follow</span
+                        ><span v-else>...</span>&nbsp;<span v-if="followCount == 1">follow</span
                         ><span v-else>follows</span></span
                     >
                 </span>
@@ -77,9 +68,7 @@
                             variant="outline"
                             class="mb-2"
                         >
-                            <span v-if="isLoadingMoreComments"
-                                ><b-spinner small
-                            /></span>
+                            <span v-if="isLoadingMoreComments"><b-spinner small/></span>
                             <span v-else>More</span>
                         </b-button>
                     </div>
@@ -91,11 +80,7 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <CommentNew
-                    @addComment="addComment"
-                    :coll="coll"
-                    :docId="docId"
-                />
+                <CommentNew @addComment="addComment" :coll="coll" :docId="docId" />
             </b-container>
         </b-collapse>
 
@@ -128,11 +113,7 @@
             <div class="d-block">
                 <div v-if="!isLoadingFollows">
                     <b-list-group>
-                        <UserList
-                            v-for="follow in follows"
-                            :key="follow._id"
-                            :userData="follow"
-                        />
+                        <UserList v-for="follow in follows" :key="follow._id" :userData="follow" />
                     </b-list-group>
                 </div>
                 <div v-else>
@@ -220,8 +201,7 @@ export default {
 
         let myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken
-                    .jwtToken
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
             },
             queryStringParameters: {
                 coll: this.$props.coll,
@@ -229,11 +209,7 @@ export default {
             }
         };
 
-        const commentResponse = await API.get(
-            this.$store.state.apiName,
-            path,
-            myInit
-        );
+        const commentResponse = await API.get(this.$store.state.apiName, path, myInit);
         this.comments = commentResponse.data.comments;
         this.isLoadingComments = false;
     },
@@ -246,8 +222,7 @@ export default {
                 const path = "/like";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -279,11 +254,7 @@ export default {
                     this.$emit("unlike");
 
                     try {
-                        const likeResponse = await API.del(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
+                        const likeResponse = await API.del(this.$store.state.apiName, path, myInit);
                         console.log("UNLIKED:", likeResponse);
                     } catch (err) {
                         console.error("Unliking error", err);
@@ -301,8 +272,7 @@ export default {
                 const path = "/follow";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -360,8 +330,7 @@ export default {
                     const path = "/like/" + this.$props.docId;
                     const myInit = {
                         headers: {
-                            Authorization: this.$store.state.userProfile.data
-                                .idToken.jwtToken
+                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                         },
                         queryStringParameters: {
                             loadAmount: 15,
@@ -394,8 +363,7 @@ export default {
                     const path = "/follow/" + this.$props.docId;
                     const myInit = {
                         headers: {
-                            Authorization: this.$store.state.userProfile.data
-                                .idToken.jwtToken
+                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                         },
                         queryStringParameters: {
                             coll: this.$props.coll,
@@ -436,8 +404,7 @@ export default {
                     });
 
                     this.isLoadingMoreComments = false;
-                    this.lastLoadedComment =
-                        commentSnapshot.docs[commentSnapshot.size - 1];
+                    this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
                 });
         },
 
@@ -481,13 +448,10 @@ export default {
         },
 
         generateId: function(n) {
-            let randomChars =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             let id = "";
             for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(
-                    Math.floor(Math.random() * randomChars.length)
-                );
+                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
             }
             return id;
         }

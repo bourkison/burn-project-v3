@@ -1,6 +1,6 @@
 <template>
     <div v-if="!isLoading && profileExists">
-        <ProfileView :profile="profile" />
+        <ProfileView :profile="profile" @follow="handleFollow(1)" @unfollow="handleFollow(-1)" />
     </div>
     <div v-else-if="!isLoading && !profileExists">
         404
@@ -54,6 +54,10 @@ export default {
             this.profile = (await API.get(this.$store.state.apiName, path, myInit)).data;
             this.profileExists = true;
             this.isLoading = false;
+        },
+
+        handleFollow: function(x) {
+            this.profile.followerCount += x;
         }
     }
 };
