@@ -19,6 +19,10 @@
             />
         </b-form-group>
 
+        <b-alert variant="danger" class="mt-2" fade :show="alertCountdown" dismissible @dismissed="alertCoundown = 0" @dismiss-count-down="alertCountdownChanged">
+            {{ errorMessage }}
+        </b-alert>
+
         <b-form-group class="text-center">
             <b-form-checkbox
                 inline
@@ -50,7 +54,12 @@ export default {
                 username: "",
                 password: ""
             },
-            rememberDevice: false
+            rememberDevice: false,
+
+            // Error Handling
+            dismissSecs: 10,
+            alertCountdown: 0,
+            errorMessage: ''
         };
     },
 
@@ -58,14 +67,26 @@ export default {
         signIn: async function() {
             this.isLoading = true;
 
-            const user = await Auth.signIn(this.signInForm.username, this.signInForm.password);
+            const user = await Auth.signIn(this.signInForm.username, this.signInForm.password)
+            .catch(err => {
+                console.log("ERROR:", err);
+                this.errorMessage = err.message;
+                this.alertCountdown = this.dismissSecs;
+                this.isLoading = false;
+            });
 
-            if (this.rememberDevice) {
-                await Auth.rememberDevice();
+            if (user) {
+                if (this.rememberDevice) {
+                    await Auth.rememberDevice();
+                }
+    
+                await this.$store.dispatch("fetchUser", user.signInUserSession);
+                this.isLoading = false;
             }
+        },
 
-            await this.$store.dispatch("fetchUser", user.signInUserSession);
-            this.isLoading = false;
+        alertCountdownChanged: function(alertCountdown) {
+            this.alertCountdown = alertCountdown;
         }
     }
 };
