@@ -41,9 +41,7 @@
                         <b-col cols="1"></b-col>
                         <b-col cols="5">{{ index + 1 }}</b-col>
                         <b-col cols="3">{{ exercise.sets[index].kg }}</b-col>
-                        <b-col cols="3">{{
-                            exercise.sets[index].measureAmount
-                        }}</b-col>
+                        <b-col cols="3">{{ exercise.sets[index].measureAmount }}</b-col>
                     </b-row>
                 </b-collapse>
             </div>

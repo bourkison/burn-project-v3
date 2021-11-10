@@ -21,10 +21,7 @@
                                     required
                                 />
                             </b-form-group>
-                            <b-form-group
-                                label="Image/Video"
-                                label-for="imageInput"
-                            >
+                            <b-form-group label="Image/Video" label-for="imageInput">
                                 <ImageUploader
                                     @updateImages="updateImages"
                                     @deleteInitImage="deleteInitImage"
@@ -92,9 +89,7 @@
                 <b-container class="buttonsCont">
                     <b-button
                         variant="outline-danger"
-                        @click="
-                            $router.push('/exercises/' + newExerciseData.id)
-                        "
+                        @click="$router.push('/exercises/' + newExerciseData.id)"
                         >Cancel</b-button
                     >
                     <b-button
@@ -195,16 +190,11 @@ export default {
                 const path = "/exercise/" + this.$route.params.exerciseid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     }
                 };
 
-                const response = await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                );
+                const response = await API.get(this.$store.state.apiName, path, myInit);
                 this.newExerciseData = response.data;
                 this.oldExerciseData = response.data;
 
@@ -237,12 +227,7 @@ export default {
         },
 
         updateExercise: async function() {
-            console.log(
-                "Update",
-                this.newExerciseData,
-                this.imagesToUpload,
-                this.imagesToDelete
-            );
+            console.log("Update", this.newExerciseData, this.imagesToUpload, this.imagesToDelete);
             console.log("JSON:", JSON.stringify(this.newExerciseData));
 
             this.isUpdating = true;
@@ -266,30 +251,24 @@ export default {
                                 const imageId = await this.generateId(16);
                                 const imageName =
                                     "username/" +
-                                    this.$store.state.userProfile.docData
-                                        .username +
+                                    this.$store.state.userProfile.docData.username +
                                     "/exercises/" +
                                     imageId;
 
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
 
-                                const imageResponse = await Storage.put(
-                                    imageName,
-                                    blob,
-                                    {
-                                        contentType: blob.type,
-                                        progressCallback: function(progress) {
-                                            console.log(
-                                                "Image:",
-                                                i,
-                                                progress.loaded /
-                                                    progress.total,
-                                                progress
-                                            );
-                                        }
+                                const imageResponse = await Storage.put(imageName, blob, {
+                                    contentType: blob.type,
+                                    progressCallback: function(progress) {
+                                        console.log(
+                                            "Image:",
+                                            i,
+                                            progress.loaded / progress.total,
+                                            progress
+                                        );
                                     }
-                                ).catch(err => {
+                                }).catch(err => {
                                     throw new Error(i + " " + err);
                                 });
 
@@ -310,19 +289,14 @@ export default {
                     const path = "/exercise/" + this.$route.params.exerciseid;
                     const myInit = {
                         headers: {
-                            Authorization: this.$store.state.userProfile.data
-                                .idToken.jwtToken
+                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                         },
                         body: {
                             exerciseForm: this.newExerciseData
                         }
                     };
 
-                    const response = await API.put(
-                        this.$store.state.apiName,
-                        path,
-                        myInit
-                    );
+                    const response = await API.put(this.$store.state.apiName, path, myInit);
 
                     this.$router.push("/exercises/" + response.data._id);
                 }
@@ -334,9 +308,7 @@ export default {
         },
 
         updateDescription: function() {
-            this.newExerciseData.description = this.$refs.toastuiEditor.invoke(
-                "getMarkdown"
-            );
+            this.newExerciseData.description = this.$refs.toastuiEditor.invoke("getMarkdown");
         },
 
         updateImages: function(images) {

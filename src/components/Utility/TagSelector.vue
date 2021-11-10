@@ -22,10 +22,7 @@
                 @keydown="detectEnter"
                 size="sm"
             ></b-form-input>
-            <b-form-datalist
-                id="tagList"
-                :options="tagOptions"
-            ></b-form-datalist>
+            <b-form-datalist id="tagList" :options="tagOptions"></b-form-datalist>
         </div>
     </div>
 </template>
@@ -65,9 +62,7 @@ export default {
                 this.selectedTags.push(e.target.value);
 
                 // Remove from available.
-                this.tagOptions = this.tagOptions.filter(
-                    x => x !== e.target.value
-                );
+                this.tagOptions = this.tagOptions.filter(x => x !== e.target.value);
 
                 // Reset input text.
                 this.inputText = "";
@@ -75,20 +70,14 @@ export default {
         },
 
         detectEnter: function(e) {
-            if (
-                e.key === "Enter" &&
-                this.inputText.trim() !== "" &&
-                this.selectedTags.length < 5
-            ) {
+            if (e.key === "Enter" && this.inputText.trim() !== "" && this.selectedTags.length < 5) {
                 // Check its not already selected.
                 if (!this.selectedTags.includes(this.inputText)) {
                     // Push input text to selectedTags
                     this.selectedTags.push(this.inputText.toLowerCase());
 
                     // Remove from available (if it's there).
-                    this.tagOptions = this.tagOptions.filter(
-                        x => x !== this.inputText
-                    );
+                    this.tagOptions = this.tagOptions.filter(x => x !== this.inputText);
                 }
 
                 this.inputText = "";

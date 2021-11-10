@@ -44,7 +44,10 @@
                         >
                         <b-dropdown left variant="outline" size="sm" style="padding-top:1px;">
                             <span
-                                v-if="postData.createdBy.userId === $store.state.userProfile.docData._id"
+                                v-if="
+                                    postData.createdBy.userId ===
+                                        $store.state.userProfile.docData._id
+                                "
                             >
                                 <b-dropdown-item>Edit</b-dropdown-item>
                                 <b-dropdown-item variant="danger">Delete</b-dropdown-item>

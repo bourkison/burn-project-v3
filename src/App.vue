@@ -21,13 +21,18 @@
                         <b-nav-item-dropdown right>
                             <template #button-content>
                                 <span v-if="$store.state.userProfile.docData.profilePhoto">
-                                    <b-avatar size="1.666em" :src="$store.state.userProfile.docData.profilePhoto" />
+                                    <b-avatar
+                                        size="1.666em"
+                                        :src="$store.state.userProfile.docData.profilePhoto"
+                                    />
                                 </span>
                                 <span v-else>
-                                    <b-icon-person-circle font-scale="1.5"/>
+                                    <b-icon-person-circle font-scale="1.5" />
                                 </span>
                             </template>
-                            <b-dropdown-item :to="'/' + $store.state.userProfile.docData.username">Profile</b-dropdown-item>
+                            <b-dropdown-item :to="'/' + $store.state.userProfile.docData.username"
+                                >Profile</b-dropdown-item
+                            >
                             <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
                         </b-nav-item-dropdown>
                     </b-navbar-nav>
@@ -37,19 +42,38 @@
                 <b-collapse v-else id="nav-collapse" is-nav>
                     <b-navbar-nav class="ml-auto">
                         <b-nav-item @click="$bvModal.show('login-modal')">Login</b-nav-item>
-                        <b-nav-item @click="$bvModal.show('signup-modal');signingUp = true;">Sign Up</b-nav-item>
+                        <b-nav-item
+                            @click="
+                                $bvModal.show('signup-modal');
+                                signingUp = true;
+                            "
+                            >Sign Up</b-nav-item
+                        >
                     </b-navbar-nav>
 
                     <b-modal hide-footer centered id="login-modal" title="Login">
-                        <SignInForm  @closeSignInModal="$bvModal.hide('login-modal');signingUp = false;"/>
+                        <SignInForm
+                            @closeSignInModal="
+                                $bvModal.hide('login-modal');
+                                signingUp = false;
+                            "
+                        />
                     </b-modal>
                 </b-collapse>
             </b-navbar>
             <div>
-                <router-view/>
+                <router-view />
                 <WorkoutToast />
             </div>
-            <b-modal v-if="!$store.state.userProfile.loggedIn || signingUp" id="signup-modal" hide-footer no-close-on-esc no-close-on-backdrop centered title="Sign Up">
+            <b-modal
+                v-if="!$store.state.userProfile.loggedIn || signingUp"
+                id="signup-modal"
+                hide-footer
+                no-close-on-esc
+                no-close-on-backdrop
+                centered
+                title="Sign Up"
+            >
                 <SignUpForm @closeSignUpModal="$bvModal.hide('signup-modal')" />
             </b-modal>
         </div>
@@ -63,32 +87,32 @@
 
 <script>
 // import { auth } from '@/firebase'
-import { Auth } from 'aws-amplify'
+import { Auth } from "aws-amplify";
 
-import SignInForm from '@/components/Auth/SignInForm.vue'
-import SignUpForm from '@/components/Auth/SignUpForm.vue'
-import MainSearch from '@/components/Search/MainSearch.vue'
-import WorkoutToast from '@/components/Workout/WorkoutToast.vue'
+import SignInForm from "@/components/Auth/SignInForm.vue";
+import SignUpForm from "@/components/Auth/SignUpForm.vue";
+import MainSearch from "@/components/Search/MainSearch.vue";
+import WorkoutToast from "@/components/Workout/WorkoutToast.vue";
 
 export default {
     components: { MainSearch, SignInForm, SignUpForm, WorkoutToast },
     data() {
         return {
             signingUp: false
-        }
+        };
     },
     methods: {
         signOut: function() {
             Auth.signOut()
-            .then(() => {
-                this.$router.push("/");
-            })
-            .catch(err => {
-                alert(err.message || JSON.stringify(err));
-            });
+                .then(() => {
+                    this.$router.push("/");
+                })
+                .catch(err => {
+                    alert(err.message || JSON.stringify(err));
+                });
         }
     }
-}
+};
 </script>
 
 <style>

@@ -29,9 +29,7 @@
                             <h5>Exercises</h5>
                             <TemplateBuilder
                                 @updateExercises="updateExercises"
-                                :initExercises="
-                                    oldTemplateData.exerciseReferences
-                                "
+                                :initExercises="oldTemplateData.exerciseReferences"
                             />
                         </b-card-body>
                     </b-card>
@@ -93,9 +91,7 @@
                 <b-container class="buttonsCont">
                     <b-button
                         variant="outline-danger"
-                        @click="
-                            $router.push('/templates/' + newTemplateData.id)
-                        "
+                        @click="$router.push('/templates/' + newTemplateData.id)"
                         >Cancel</b-button
                     >
                     <b-button
@@ -202,24 +198,21 @@ export default {
                 const path = "/template/" + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     }
                 };
 
-                const response = await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                ).catch(err => {
-                    console.error(err);
-                    throw new Error(
-                        "Error downloading template: " +
-                            this.$route.params.templateid +
-                            " at promise catch: " +
-                            (JSON.parse(err.response).message || err)
-                    );
-                });
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        console.error(err);
+                        throw new Error(
+                            "Error downloading template: " +
+                                this.$route.params.templateid +
+                                " at promise catch: " +
+                                (JSON.parse(err.response).message || err)
+                        );
+                    }
+                );
 
                 if (!response) {
                     throw new Error(
@@ -251,29 +244,23 @@ export default {
         updateTemplate: async function() {
             try {
                 this.isUpdating = true;
-                console.log(
-                    "Updating with:",
-                    JSON.stringify(this.newTemplateData)
-                );
+                console.log("Updating with:", JSON.stringify(this.newTemplateData));
 
                 const path = "/template/" + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     body: {
                         templateForm: this.newTemplateData
                     }
                 };
 
-                const response = await API.put(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                ).catch(err => {
-                    throw new Error("at promise catch: " + err);
-                });
+                const response = await API.put(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        throw new Error("at promise catch: " + err);
+                    }
+                );
 
                 if (!response) {
                     throw new Error("no API response");
@@ -292,9 +279,7 @@ export default {
         },
 
         updateDescription: function() {
-            this.newTemplateData.description = this.$refs.toastuiEditor.invoke(
-                "getMarkdown"
-            );
+            this.newTemplateData.description = this.$refs.toastuiEditor.invoke("getMarkdown");
         },
 
         updateTags: function(tags) {
@@ -321,8 +306,7 @@ export default {
         displayError: function(err) {
             this.errorCountdown = 30;
             console.error(err);
-            this.errorMessage =
-                "Oops, an error has occured... Please try again later.";
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
 
             this.errorInterval = window.setInterval(() => {
                 if (this.errorCountdown > 0) {

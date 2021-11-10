@@ -37,23 +37,13 @@
                 </b-list-group>
             </div>
 
-            <div
-                v-if="
-                    createdExercises.length == 0 &&
-                        followedExercises.length == 0
-                "
-                class="mt-3"
-            >
-                <em
-                    >Looks like you haven't created or followed any
-                    exercises!</em
-                >
+            <div v-if="createdExercises.length == 0 && followedExercises.length == 0" class="mt-3">
+                <em>Looks like you haven't created or followed any exercises!</em>
             </div>
 
             <div
                 v-else-if="
-                    filteredCreatedExercises.length == 0 &&
-                        filteredFollowedExercises.length == 0
+                    filteredCreatedExercises.length == 0 && filteredFollowedExercises.length == 0
                 "
                 class="mt-3"
             >
@@ -67,7 +57,7 @@
 </template>
 
 <script>
-import { API } from 'aws-amplify'
+import { API } from "aws-amplify";
 
 export default {
     name: "ExerciseSearch",
@@ -82,7 +72,7 @@ export default {
 
     created: async function() {
         try {
-            const path = '/exercise'
+            const path = "/exercise";
             const myInit = {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken.jwtToken
@@ -91,28 +81,28 @@ export default {
                     loadAmount: 25,
                     user: true
                 }
-            }
-    
-            const exerciseResults = (await API.get(this.$store.state.apiName, path, myInit).catch(err => {
-                throw err;
-            })).data;
-    
+            };
+
+            const exerciseResults = (
+                await API.get(this.$store.state.apiName, path, myInit).catch(err => {
+                    throw err;
+                })
+            ).data;
+
             exerciseResults.forEach(exercise => {
                 if (exercise.isFollow) {
                     this.followedExercises.push(exercise);
                 } else {
                     this.createdExercises.push(exercise);
                 }
-            })
-        }
-        catch (err) {
+            });
+        } catch (err) {
             if (err.response && err.response.status === 404) {
                 console.error("No exercises");
             } else {
                 // ERROR HERE.
             }
-        }
-        finally {
+        } finally {
             this.isLoading = false;
         }
     },

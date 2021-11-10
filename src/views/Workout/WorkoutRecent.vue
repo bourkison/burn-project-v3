@@ -20,7 +20,7 @@
 <script>
 import WorkoutComponent from "@/components/Workout/WorkoutComponent";
 
-import { API } from 'aws-amplify'
+import { API } from "aws-amplify";
 
 export default {
     name: "WorkoutRecent",
@@ -33,7 +33,7 @@ export default {
     },
 
     created: async function() {
-        const path = '/workout';
+        const path = "/workout";
         const myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
@@ -41,7 +41,7 @@ export default {
             queryStringParameters: {
                 loadAmount: 10
             }
-        }
+        };
 
         const workouts = (await API.get(this.$store.state.apiName, path, myInit)).data;
 

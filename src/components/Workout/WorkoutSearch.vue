@@ -64,9 +64,7 @@ export default {
         filteredWorkouts: function() {
             if (this.searchText) {
                 return this.workouts.filter(workout => {
-                    return workout.name
-                        .toLowerCase()
-                        .includes(this.searchText.toLowerCase());
+                    return workout.name.toLowerCase().includes(this.searchText.toLowerCase());
                 });
             } else {
                 return this.workouts;

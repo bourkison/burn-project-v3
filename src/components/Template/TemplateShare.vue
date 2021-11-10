@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { API } from 'aws-amplify';
+import { API } from "aws-amplify";
 
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 
@@ -47,15 +47,13 @@ export default {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 }
-            }
+            };
 
             try {
                 this.template = (await API.get(this.$store.state.apiName, path, myInit)).data;
-            }
-            catch (err) {
-                console.error(err)
-            }
-            finally {
+            } catch (err) {
+                console.error(err);
+            } finally {
                 this.isLoading = false;
             }
         }

@@ -51,11 +51,7 @@ const activeWorkoutModule = {
         },
 
         setExerciseValue: function(state, data) {
-            Vue.set(
-                state.workout.recordedExercises[data.exerciseIndex],
-                data.key,
-                data.value
-            );
+            Vue.set(state.workout.recordedExercises[data.exerciseIndex], data.key, data.value);
         },
 
         addSet: function(state, data) {
@@ -103,18 +99,14 @@ const activeWorkoutModule = {
                 const now = new Date().getTime();
                 let duration = now - state.startTime;
 
-                let hours = Math.floor(
-                    (duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
-                );
+                let hours = Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
                 let minutes = Math.floor(
                     (duration % (1000 * 60 * 60)) / (1000 * 60)
                 ).toLocaleString("en-US", {
                     minimumIntegerDigits: 2,
                     useGrouping: false
                 });
-                let seconds = Math.floor(
-                    (duration % (1000 * 60)) / 1000
-                ).toLocaleString("en-US", {
+                let seconds = Math.floor((duration % (1000 * 60)) / 1000).toLocaleString("en-US", {
                     minimumIntegerDigits: 2,
                     useGrouping: false
                 });
@@ -123,8 +115,7 @@ const activeWorkoutModule = {
                     if (!hours) {
                         state.timeString = minutes + ":" + seconds;
                     } else {
-                        state.timeString =
-                            hours + ":" + minutes + ":" + seconds;
+                        state.timeString = hours + ":" + minutes + ":" + seconds;
                     }
                 }
             }, timer);
@@ -134,18 +125,15 @@ const activeWorkoutModule = {
             const now = new Date().getTime();
             let duration = now - state.startTime;
 
-            let hours = Math.floor(
-                (duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
+            let hours = Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
+            let minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60)).toLocaleString(
+                "en-US",
+                {
+                    minimumIntegerDigits: 2,
+                    useGrouping: false
+                }
             );
-            let minutes = Math.floor(
-                (duration % (1000 * 60 * 60)) / (1000 * 60)
-            ).toLocaleString("en-US", {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-            });
-            let seconds = Math.floor(
-                (duration % (1000 * 60)) / 1000
-            ).toLocaleString("en-US", {
+            let seconds = Math.floor((duration % (1000 * 60)) / 1000).toLocaleString("en-US", {
                 minimumIntegerDigits: 2,
                 useGrouping: false
             });
@@ -166,8 +154,7 @@ const activeWorkoutModule = {
             state.workoutCommenced = false;
             state.workout = {};
             state.previousWorkout = {};
-            state.emptyWorkout = true,
-            state.startTime = 0;
+            (state.emptyWorkout = true), (state.startTime = 0);
             state.finishTime = 0;
             state.interval = null;
             state.timeString = "00:00";
@@ -210,8 +197,7 @@ const activeWorkoutModule = {
                 }
             });
 
-
-            const path = '/workout';
+            const path = "/workout";
             const myInit = {
                 headers: {
                     Authorization: rootState.userProfile.data.idToken.jwtToken
@@ -219,14 +205,16 @@ const activeWorkoutModule = {
                 body: {
                     workoutForm: payload
                 }
-            }
+            };
 
-            console.log(JSON.stringify({workoutForm: payload}));
-            
-            const result = (await API.post(rootState.apiName, path, myInit).catch(err => {
-                console.error("Error uploading result:", err);
-            })).data.workout;
-            
+            console.log(JSON.stringify({ workoutForm: payload }));
+
+            const result = (
+                await API.post(rootState.apiName, path, myInit).catch(err => {
+                    console.error("Error uploading result:", err);
+                })
+            ).data.workout;
+
             commit("pushWorkoutToUserWorkouts", result, { root: true });
             commit("resetVariables");
             console.log(payload, result);
@@ -256,7 +244,7 @@ export default new Vuex.Store({
 
         pushWorkoutToUserWorkouts: function(state, workout) {
             if (!state.workouts) {
-                state.userWorkouts = [workout]
+                state.userWorkouts = [workout];
             } else {
                 state.userWorkouts.unshift(workout);
             }
@@ -274,9 +262,10 @@ export default new Vuex.Store({
             console.log("PATH:", path);
             console.log("INIT:", myInit);
 
-            const docData = (await API.get(state.apiName, path, myInit).catch(err => {
+            const docData = (
+                await API.get(state.apiName, path, myInit).catch(err => {
                     console.error("USER DOC ERR:", err);
-                    commit("setLoggedInUser", { loggedIn: false, data: null, docData: null })
+                    commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
                     return;
                 })
             ).data;

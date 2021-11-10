@@ -6,11 +6,7 @@
                     <b-card class="newExerciseCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{
-                                    exerciseForm.name
-                                        ? exerciseForm.name
-                                        : "New Exercise"
-                                }}
+                                {{ exerciseForm.name ? exerciseForm.name : "New Exercise" }}
                             </b-card-title>
                             <b-form-group label="Name" label-for="nameInput">
                                 <b-form-input
@@ -21,10 +17,7 @@
                                     required
                                 />
                             </b-form-group>
-                            <b-form-group
-                                label="Image/Video"
-                                label-for="imageInput"
-                            >
+                            <b-form-group label="Image/Video" label-for="imageInput">
                                 <ImageUploader
                                     @updateImages="updateImages"
                                     :inlineDisplay="false"
@@ -55,18 +48,14 @@
                     <b-card class="difficultySelectCard" no-body>
                         <b-card-body>
                             <h5>Difficulty</h5>
-                            <DifficultySelector
-                                @updateDifficulty="updateDifficulty"
-                            />
+                            <DifficultySelector @updateDifficulty="updateDifficulty" />
                         </b-card-body>
                     </b-card>
 
                     <b-card class="muscleGroupCard" no-body>
                         <b-card-body>
                             <h5>Muscle Groups</h5>
-                            <MuscleGroupSelector
-                                @updateMuscleGroups="updateMuscleGroups"
-                            />
+                            <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
                         </b-card-body>
                     </b-card>
 
@@ -82,9 +71,7 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button
-                        variant="outline-danger"
-                        @click="$router.push('/exercises/')"
+                    <b-button variant="outline-danger" @click="$router.push('/exercises/')"
                         >Cancel</b-button
                     >
                     <b-button
@@ -188,11 +175,7 @@ export default {
                     const imageResponse = await Storage.put(imageName, blob, {
                         contentType: blob.type,
                         progressCallback: function(progress) {
-                            console.log(
-                                "Image:",
-                                i,
-                                progress.loaded / progress.total,
-                            );
+                            console.log("Image:", i, progress.loaded / progress.total);
                         }
                     }).catch(err => {
                         console.error("Error uploading image:", i, err);
@@ -210,19 +193,14 @@ export default {
             const path = "/exercise";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken
-                        .jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 },
                 body: {
                     exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
                 }
             };
 
-            const response = await API.post(
-                this.$store.state.apiName,
-                path,
-                myInit
-            ).catch(err => {
+            const response = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
                 this.isCreating = false;
                 alert(err.message || JSON.stringify(err));
                 return;
@@ -233,9 +211,7 @@ export default {
         },
 
         updateDescription: function() {
-            this.exerciseForm.description = this.$refs.toastuiEditor.invoke(
-                "getMarkdown"
-            );
+            this.exerciseForm.description = this.$refs.toastuiEditor.invoke("getMarkdown");
         },
 
         updateImages: function(images) {

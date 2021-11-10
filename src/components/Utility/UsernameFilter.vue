@@ -36,9 +36,7 @@ export default {
     },
 
     created: function() {
-        this.suggestedUsernames.push(
-            this.$store.state.userProfile.docData.username
-        );
+        this.suggestedUsernames.push(this.$store.state.userProfile.docData.username);
     },
 
     methods: {

@@ -11,9 +11,7 @@
                 >
                     <span v-if="!isLoading">{{ exercise.name }}</span>
                     <span v-else><b-spinner small/></span>
-                    <strong v-if="isVisible" aria-hidden="true" class="ml-auto"
-                        >-</strong
-                    >
+                    <strong v-if="isVisible" aria-hidden="true" class="ml-auto">-</strong>
                     <strong v-else aria-hidden="true" class="ml-auto">+</strong>
                 </b-button>
             </b-card-header>
@@ -34,7 +32,7 @@
 
 <script>
 import { Viewer } from "@toast-ui/vue-editor";
-import { API } from 'aws-amplify'
+import { API } from "aws-amplify";
 
 export default {
     name: "ExerciseShare",
@@ -68,15 +66,13 @@ export default {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 }
-            }
+            };
 
             try {
                 this.exercise = (await API.get(this.$store.state.apiName, path, myInit)).data;
-            }
-            catch(err) {
+            } catch (err) {
                 console.error(err);
-            }
-            finally {
+            } finally {
                 this.isLoading = false;
             }
         }

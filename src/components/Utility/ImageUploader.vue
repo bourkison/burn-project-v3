@@ -1,10 +1,6 @@
 <template>
     <div>
-        <div
-            ref="mImgEdit"
-            class="imageEditor"
-            style="visibility:hidden;position:absolute;"
-        >
+        <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
             <ImageEditor
                 :imagesToAdd="addedFiles"
                 :initId="initId"
@@ -152,10 +148,7 @@ export default {
                     )
                     .then(value => {
                         if (value) {
-                            this.$emit(
-                                "deleteInitImage",
-                                this.sortedFiles[sortedIndex].path
-                            );
+                            this.$emit("deleteInitImage", this.sortedFiles[sortedIndex].path);
                             this.editedFiles.splice(editedIndex, 1);
                             this.sortedFiles.splice(sortedIndex, 1);
                         }

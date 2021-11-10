@@ -65,15 +65,10 @@ export default {
         let i = 0;
         let j = 0;
 
-        while (
-            i < this.workoutsLoadedIn &&
-            j < this.$store.state.userWorkouts.length
-        ) {
+        while (i < this.workoutsLoadedIn && j < this.$store.state.userWorkouts.length) {
             if (!uniqueNames.includes(this.$store.state.userWorkouts[j].name)) {
                 let temp = this.$store.state.userWorkouts[j];
-                temp.createdAtText = dayjs(
-                    dayjs.unix(temp.createdAt.seconds)
-                ).fromNow();
+                temp.createdAtText = dayjs(dayjs.unix(temp.createdAt.seconds)).fromNow();
                 this.recentWorkouts.push(temp);
                 i++;
             }

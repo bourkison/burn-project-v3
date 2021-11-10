@@ -2,7 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 // import store from '@/store'
 
-import { Auth } from 'aws-amplify'
+import { Auth } from "aws-amplify";
 
 import Home from "@/views/Home.vue";
 
@@ -19,7 +19,7 @@ import ExerciseView from "@/views/Exercise/ExerciseView.vue";
 
 import Profile from "@/views/User/Profile.vue";
 
-import Admin from '@/views/Utility/Admin.vue';
+import Admin from "@/views/Utility/Admin.vue";
 import Search from "@/views/Utility/Search.vue";
 
 // import Template from '@/views/Template/Template.vue'
@@ -157,7 +157,7 @@ const routes = [
     },
     // ADMIN
     {
-        path: '/admin',
+        path: "/admin",
         name: "Admin",
         component: Admin,
         meta: {
@@ -185,7 +185,7 @@ const router = new VueRouter({
 // This function checks if user is logged in based on route metadata.
 // Calls a promise in firebase.js to wait for user to log in (if on initial load).
 router.beforeEach(async (to, from, next) => {
-    const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
+    const requiresAuth = to.matched.some(x => x.meta.requiresAuth);
 
     // if (requiresAuth && !await store.dispatch('fetchUser', false)) {
     //     next('home');
@@ -198,9 +198,9 @@ router.beforeEach(async (to, from, next) => {
         const user = (await Auth.currentAuthenticatedUser()).signInUserSession;
 
         if (!user) {
-            next('');
+            next("");
         } else {
-            await store.dispatch('fetchUser', user);
+            await store.dispatch("fetchUser", user);
             next();
         }
     } else {

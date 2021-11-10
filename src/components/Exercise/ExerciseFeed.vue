@@ -3,9 +3,7 @@
         <ExerciseComponent
             class="exercise"
             v-for="(exercise, index) in exercises"
-            :exerciseId="
-                exercise.exerciseId ? exercise.exerciseId : exercise._id
-            "
+            :exerciseId="exercise.exerciseId ? exercise.exerciseId : exercise._id"
             :key="exercise._id"
             :skeletonAmount="skeleton[index][0]"
             :skeletonWidth="skeleton[index][1]"
@@ -36,7 +34,7 @@ export default {
         },
         isLoading: {
             type: Boolean,
-            required: true,
+            required: true
         }
     },
     data() {
@@ -52,9 +50,7 @@ export default {
             let widths = [];
 
             for (let j = 0; j < amount; j++) {
-                widths.push(
-                    (Math.floor(Math.random() * 50) + 50).toString() + "%"
-                );
+                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
             }
             this.skeleton.push([amount, widths]);
         }

@@ -36,11 +36,7 @@
                             @click="addImage(index)"
                             >Add Image</b-btn
                         >
-                        <b-btn
-                            v-else
-                            size="sm"
-                            variant="outline-dark"
-                            @click="addImage(index)"
+                        <b-btn v-else size="sm" variant="outline-dark" @click="addImage(index)"
                             >Edit Image</b-btn
                         >
                     </div>
@@ -110,12 +106,7 @@ export default {
                             el.style.visibility = "visible";
                             this.isLoading = false;
                             this.cropperSet++;
-                            console.log(
-                                "Cropper ready!",
-                                this.isLoadingArr,
-                                i,
-                                el
-                            );
+                            console.log("Cropper ready!", this.isLoadingArr, i, el);
                             this.$set(this.isLoadingArr, i, false);
                         }
                     })
@@ -267,15 +258,9 @@ export default {
 
                             this.$nextTick(() => {
                                 let imageIndex =
-                                    i +
-                                    this.images.length -
-                                    this.$props.imagesToAdd.length;
-                                const imgEl = document.querySelector(
-                                    "#cropper" + imageIndex
-                                );
-                                const imgCont = document.querySelector(
-                                    "#imgCont" + imageIndex
-                                );
+                                    i + this.images.length - this.$props.imagesToAdd.length;
+                                const imgEl = document.querySelector("#cropper" + imageIndex);
+                                const imgCont = document.querySelector("#imgCont" + imageIndex);
 
                                 let height = width / ratio;
 
@@ -288,19 +273,8 @@ export default {
                                     imgCont.style.width = width + "px";
                                 }
 
-                                console.log(
-                                    "Setting cropper",
-                                    imgEl,
-                                    i,
-                                    width,
-                                    height
-                                );
-                                this.setCropper(
-                                    imgEl,
-                                    imageIndex,
-                                    width,
-                                    height
-                                );
+                                console.log("Setting cropper", imgEl, i, width, height);
+                                this.setCropper(imgEl, imageIndex, width, height);
                             });
                         }
                     })
@@ -314,9 +288,7 @@ export default {
             if (n.length > 0) {
                 // Only difference between inputImages and images is the edit key/value.
                 // Set that to true.
-                const image = this.inputImages.find(
-                    x => x.id === n[n.length - 1]
-                );
+                const image = this.inputImages.find(x => x.id === n[n.length - 1]);
                 image.edit = true;
                 this.images.push(JSON.parse(JSON.stringify(image)));
 
@@ -343,12 +315,7 @@ export default {
 
                     console.log(height);
 
-                    this.setCropper(
-                        imgEl,
-                        this.images.length - 1,
-                        width,
-                        height
-                    );
+                    this.setCropper(imgEl, this.images.length - 1, width, height);
                 });
             }
         },

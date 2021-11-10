@@ -26,12 +26,12 @@ import { API } from "aws-amplify";
 
 export default {
     name: "RecentWorkoutsChart",
-    // props: {
-    //     userId: {
-    //         type: String,
-    //         required: true
-    //     }
-    // },
+    props: {
+        username: {
+            type: String,
+            required: true
+        }
+    },
     data() {
         return {
             isLoading: true,
@@ -60,11 +60,11 @@ export default {
                 queryStringParameters: {
                     startDate: this.chartLabels[0].getTime(),
                     endDate: new Date().getTime(),
-                    username: this.$store.state.userProfile.docData.username
+                    username: this.$props.username
                 }
-            }
+            };
 
-            const response = await API.get(this.$store.state.apiName, path, myInit)
+            const response = await API.get(this.$store.state.apiName, path, myInit);
 
             this.buildChartData(response.data);
         },
@@ -100,9 +100,7 @@ export default {
                             context.mode === "default" &&
                             !this.delayed
                         ) {
-                            delay =
-                                context.dataIndex * 300 +
-                                context.datasetIndex * 100;
+                            delay = context.dataIndex * 300 + context.datasetIndex * 100;
                         }
                         return delay;
                     }
@@ -170,7 +168,7 @@ export default {
             let data = [];
 
             // First change data to be same length as labels, with all 0s.
-            for (let i = 0; i < this.chartLabels.length; i ++) {
+            for (let i = 0; i < this.chartLabels.length; i++) {
                 data.push(0);
             }
 
@@ -180,7 +178,7 @@ export default {
                 for (let i = 0; i < dates.length; i++) {
                     let date = new Date(dates[i]);
 
-                    for (let j = 0; j < this.chartLabels.length; j ++) {
+                    for (let j = 0; j < this.chartLabels.length; j++) {
                         // If we're on last iterator, push to last value in data array.
                         if (j === this.chartLabels.length - 1) {
                             data[j] += amounts[i];
@@ -188,7 +186,10 @@ export default {
                         }
 
                         // Else check if data is greater than this iterator, and less than the next.
-                        if (date.getTime() >= new Date(this.chartLabels[j]).getTime() && date.getTime() < new Date(this.chartLabels[j + 1]).getTime()) {
+                        if (
+                            date.getTime() >= new Date(this.chartLabels[j]).getTime() &&
+                            date.getTime() < new Date(this.chartLabels[j + 1]).getTime()
+                        ) {
                             data[j] += amounts[i];
                             break;
                         }
@@ -196,7 +197,7 @@ export default {
                 }
 
                 // Finally, prettify Chart Labels.
-                for (let i = 0; i < this.chartLabels.length; i ++) {
+                for (let i = 0; i < this.chartLabels.length; i++) {
                     this.chartLabels[i] = dayjs(this.chartLabels[i]).format("DD MMM");
                 }
             } else {
@@ -207,9 +208,11 @@ export default {
             this.chartData = data;
             this.isLoading = false;
             console.log("DATA:", this.chartLabels, this.chartData);
-            this.$nextTick(() => { this.buildChart() });
+            this.$nextTick(() => {
+                this.buildChart();
+            });
         }
-    },
+    }
 
     // watch: {
     //     userId: function() {

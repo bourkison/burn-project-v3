@@ -82,9 +82,7 @@ export default {
 
             this.$props.initMgs.forEach(mg => {
                 // Remove from available.
-                this.availableMuscleGroups = this.availableMuscleGroups.filter(
-                    x => x !== mg
-                );
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== mg);
             });
         }
     },
@@ -112,9 +110,7 @@ export default {
         },
 
         pillRemove: function(mg) {
-            this.selectedMuscleGroups = this.selectedMuscleGroups.filter(
-                x => x !== mg
-            );
+            this.selectedMuscleGroups = this.selectedMuscleGroups.filter(x => x !== mg);
             this.availableMuscleGroups.push(mg);
 
             this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
@@ -126,14 +122,10 @@ export default {
                 this.selectedMuscleGroups.push(id);
 
                 // Remove from available.
-                this.availableMuscleGroups = this.availableMuscleGroups.filter(
-                    x => x !== id
-                );
+                this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== id);
             } else {
                 // Remove from selected.
-                this.selectedMuscleGroups = this.selectedMuscleGroups.filter(
-                    x => x !== id
-                );
+                this.selectedMuscleGroups = this.selectedMuscleGroups.filter(x => x !== id);
 
                 // Add to available.
                 this.availableMuscleGroups.push(id);
@@ -142,7 +134,7 @@ export default {
             // Emit updated.
             this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         }
-    },
+    }
 };
 </script>
 

@@ -5,13 +5,8 @@
                 <div>
                     <h5>{{ workout.name }}</h5>
                 </div>
-                <div
-                    class="ml-auto text-muted font-weight-light"
-                    align-v="center"
-                >
-                    <span class="subs"
-                        >{{ durationText }} | {{ createdAtText }}</span
-                    >
+                <div class="ml-auto text-muted font-weight-light" align-v="center">
+                    <span class="subs">{{ durationText }} | {{ createdAtText }}</span>
                 </div>
             </div>
 
@@ -23,10 +18,7 @@
                     <b-col cols="3">Reps</b-col>
                 </b-row>
 
-                <div
-                    v-for="(exercise, index) in workout.recordedExercises"
-                    :key="index"
-                >
+                <div v-for="(exercise, index) in workout.recordedExercises" :key="index">
                     <b-row class="text-center mt-1">
                         <b-col
                             cols="1"
@@ -36,9 +28,10 @@
                         >
 
                         <b-col cols="5">
-                            <router-link :to="'/exercises/' + exercise.exerciseReference.exerciseId">{{
-                                exercise.exerciseReference.name
-                            }}</router-link>
+                            <router-link
+                                :to="'/exercises/' + exercise.exerciseReference.exerciseId"
+                                >{{ exercise.exerciseReference.name }}</router-link
+                            >
                         </b-col>
 
                         <b-col cols="3">
@@ -58,12 +51,8 @@
                         >
                             <b-col cols="1"></b-col>
                             <b-col cols="5">{{ index + 1 }}</b-col>
-                            <b-col cols="3">{{
-                                exercise.sets[index].kg
-                            }}</b-col>
-                            <b-col cols="3">{{
-                                exercise.sets[index].measureAmount
-                            }}</b-col>
+                            <b-col cols="3">{{ exercise.sets[index].kg }}</b-col>
+                            <b-col cols="3">{{ exercise.sets[index].measureAmount }}</b-col>
                         </b-row>
                     </b-collapse>
                 </div>
@@ -106,14 +95,11 @@ export default {
     created: function() {
         dayjs.extend(relativeTime);
 
-        this.createdAtText = dayjs(
-            dayjs(this.$props.workout.createdAt)
-        ).fromNow();
+        this.createdAtText = dayjs(dayjs(this.$props.workout.createdAt)).fromNow();
 
         // Duration text:
         let hours = Math.floor(
-            (this.$props.workout.duration % (1000 * 60 * 60 * 24)) /
-                (1000 * 60 * 24)
+            (this.$props.workout.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
         );
         let minutes = Math.floor(
             (this.$props.workout.duration % (1000 * 60 * 60)) / (1000 * 60)

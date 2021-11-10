@@ -26,7 +26,7 @@ const getStats = async function(event) {
     }
 
     return response;
-}
+};
 
 const getRecentWorkouts = async function(event) {
     let startDate = event.queryStringParameters.startDate;
@@ -43,46 +43,48 @@ const getRecentWorkouts = async function(event) {
             "Access-Control-Allow-Origin": "*"
         },
         body: JSON.stringify({ success: false })
-    }
+    };
 
     const User = (await MongooseModels(MONGODB_URI)).User;
 
-    let workoutResult = (await User.aggregate([
-        {
-            $match: { username: username }
-        },
-        {
-            $project: {
-                workouts: {
-                    $map: {
-                        input: {
-                            $filter: {
-                                input: "$workouts",
-                                as: "w",
-                                cond: {
-                                    $and: [
-                                        { $gte: [ "$$w.createdAt", startDate ] },
-                                        { $lte: [ "$$w.createdAt", endDate ] }
-                                    ]
+    let workoutResult = (
+        await User.aggregate([
+            {
+                $match: { username: username }
+            },
+            {
+                $project: {
+                    workouts: {
+                        $map: {
+                            input: {
+                                $filter: {
+                                    input: "$workouts",
+                                    as: "w",
+                                    cond: {
+                                        $and: [
+                                            { $gte: ["$$w.createdAt", startDate] },
+                                            { $lte: ["$$w.createdAt", endDate] }
+                                        ]
+                                    }
                                 }
+                            },
+                            as: "w",
+                            in: {
+                                createdAt: "$$w.createdAt"
                             }
-                        },
-                        as: "w",
-                        in: {
-                            "createdAt": "$$w.createdAt"
                         }
                     }
                 }
             }
-        }
-    ]))[0];
+        ])
+    )[0];
 
     if (!workoutResult) {
-        const errorResponse = "Comments not found for username: " + username
+        const errorResponse = "Comments not found for username: " + username;
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
-        })
+        });
 
         return response;
     }
@@ -97,19 +99,19 @@ const getRecentWorkouts = async function(event) {
         let mm = d.getMonth() + 1;
         let dd = d.getDate();
 
-        let s = [d.getFullYear(), ( mm > 9 ? '' : '0' ) + mm, ( dd > 9 ? '' : '0' ) + dd].join("-");
+        let s = [d.getFullYear(), (mm > 9 ? "" : "0") + mm, (dd > 9 ? "" : "0") + dd].join("-");
 
-        responseData[s] = responseData[s] ? responseData[s] + 1 : 1
-    })
+        responseData[s] = responseData[s] ? responseData[s] + 1 : 1;
+    });
 
     response.statusCode = 200;
     response.body = JSON.stringify({
         success: true,
         data: responseData
-    })
+    });
 
     return response;
-}
+};
 
 exports.handler = async (event, context) => {
     /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */

@@ -4,15 +4,11 @@
             <div v-if="loadedSuccessfully">
                 <b-card-body>
                     <b-card-title
-                        ><router-link
-                            :to="'/templates/' + templateId"
-                            class="componentLink"
-                            >{{ templateData.name }}</router-link
-                        ></b-card-title
+                        ><router-link :to="'/templates/' + templateId" class="componentLink">{{
+                            templateData.name
+                        }}</router-link></b-card-title
                     >
-                    <b-card-sub-title>{{
-                        templateData.createdBy.username
-                    }}</b-card-sub-title>
+                    <b-card-sub-title>{{ templateData.createdBy.username }}</b-card-sub-title>
                     <b-card-text>
                         <div
                             :id="templateData._id + 'accordion'"
@@ -20,8 +16,7 @@
                             role="tablist"
                         >
                             <ExerciseExpandable
-                                v-for="(exercise,
-                                index) in templateData.exerciseReferences"
+                                v-for="(exercise, index) in templateData.exerciseReferences"
                                 :exercise="exercise"
                                 :accordionIndex="index"
                                 :templateId="templateData._id"
@@ -124,41 +119,24 @@ export default {
             const path = "/template/" + this.$props.templateId;
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken
-                        .jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 },
                 queryStringParameters: {
                     counters: true
                 }
             };
 
-            const response = await API.get(
-                this.$store.state.apiName,
-                path,
-                myInit
-            ).catch(err => {
+            const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
                 console.error(err);
-                throw new Error(
-                    "Template promise catch:" +
-                        this.$props.templateId +
-                        " | " +
-                        err
-                );
+                throw new Error("Template promise catch:" + this.$props.templateId + " | " + err);
             });
 
             if (!response) {
-                throw new Error(
-                    "Template no response:" + this.$props.templateId
-                );
+                throw new Error("Template no response:" + this.$props.templateId);
             }
 
             if (!response.success) {
-                throw new Error(
-                    "Template " +
-                        this.$props.templateId +
-                        " " +
-                        response.errorMessage
-                );
+                throw new Error("Template " + this.$props.templateId + " " + response.errorMessage);
             }
 
             this.loadedSuccessfully = true;
@@ -179,7 +157,6 @@ export default {
             this.isLiked = response.data.isLiked;
             this.isFollowed = response.data.isFollowed;
             this.isFollowable = response.data.isFollowable;
-
         } catch (err) {
             this.displayError(err);
         } finally {
@@ -194,20 +171,20 @@ export default {
 
         handleLike: function(x) {
             if (x > 0) {
-                this.likeCount ++;
+                this.likeCount++;
                 this.isLiked = true;
             } else {
-                this.likeCount --;
+                this.likeCount--;
                 this.isLiked = false;
             }
         },
 
         handleFollow: function(x) {
             if (x > 0) {
-                this.followCount ++;
+                this.followCount++;
                 this.isFollowed = true;
             } else {
-                this.followCount --;
+                this.followCount--;
                 this.isFollowed = false;
             }
         }

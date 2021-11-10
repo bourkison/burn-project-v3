@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { API } from 'aws-amplify';
+import { API } from "aws-amplify";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -85,7 +85,7 @@ export default {
         let promises = [];
 
         // First download user templates.
-        let path = '/template';
+        let path = "/template";
         let myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
@@ -94,19 +94,22 @@ export default {
                 loadAmount: 15,
                 user: true
             }
-        }
-        
-        promises.push(API.get(this.$store.state.apiName, path, myInit).then(templates => {
-            this.userTemplates = templates.data;
-            console.log("TEMPLATES:", templates);
-        }).catch(err => {
-            this.templates = [];
-            console.error(err);
-        }))
+        };
 
+        promises.push(
+            API.get(this.$store.state.apiName, path, myInit)
+                .then(templates => {
+                    this.userTemplates = templates.data;
+                    console.log("TEMPLATES:", templates);
+                })
+                .catch(err => {
+                    this.templates = [];
+                    console.error(err);
+                })
+        );
 
         // Next download user workouts.
-        path = '/workout'
+        path = "/workout";
         myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
@@ -114,22 +117,26 @@ export default {
             queryStringParameters: {
                 loadAmount: 15
             }
-        }
+        };
 
-        promises.push(API.get(this.$store.state.apiName, path, myInit).then(workouts => {
-            let uniqueNames = [];
+        promises.push(
+            API.get(this.$store.state.apiName, path, myInit)
+                .then(workouts => {
+                    let uniqueNames = [];
 
-            workouts.data.forEach(workout => {
-                if (!uniqueNames.includes(workout.name)) {
-                    workout.createdAtText = dayjs(workout.createdAt).fromNow();
-                    this.userWorkouts.push(workout);
-                    uniqueNames.push(workout.name)
-                }
-            })
-        }).catch(err => {
-            this.workouts = [];
-            console.error(err);
-        }))
+                    workouts.data.forEach(workout => {
+                        if (!uniqueNames.includes(workout.name)) {
+                            workout.createdAtText = dayjs(workout.createdAt).fromNow();
+                            this.userWorkouts.push(workout);
+                            uniqueNames.push(workout.name);
+                        }
+                    });
+                })
+                .catch(err => {
+                    this.workouts = [];
+                    console.error(err);
+                })
+        );
 
         await Promise.all(promises);
         this.isLoading = false;
@@ -139,9 +146,7 @@ export default {
         filteredWorkouts: function() {
             if (this.searchText) {
                 return this.userWorkouts.filter(recentWorkout => {
-                    return recentWorkout.name
-                        .toLowerCase()
-                        .includes(this.searchText.toLowerCase());
+                    return recentWorkout.name.toLowerCase().includes(this.searchText.toLowerCase());
                 });
             } else {
                 return this.userWorkouts;
@@ -151,9 +156,7 @@ export default {
         filteredTemplates: function() {
             if (this.searchText) {
                 return this.userTemplates.filter(template => {
-                    return template.name
-                        .toLowerCase()
-                        .includes(this.searchText.toLowerCase());
+                    return template.name.toLowerCase().includes(this.searchText.toLowerCase());
                 });
             } else {
                 return this.userTemplates;

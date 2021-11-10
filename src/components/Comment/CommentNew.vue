@@ -45,8 +45,7 @@ export default {
                 const path = "/comment";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -64,8 +63,7 @@ export default {
                         payload.likeCount = 0;
                         payload.likes = [];
                         payload.createdBy = {
-                            username: this.$store.state.userProfile.docData
-                                .username,
+                            username: this.$store.state.userProfile.docData.username,
                             _id: this.$store.state.userProfile.docData._id
                         };
 

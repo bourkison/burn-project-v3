@@ -2,17 +2,9 @@
     <b-card no-body>
         <div v-if="!isLoading">
             <div v-if="imageUrls.length > 1">
-                <b-carousel
-                    v-model="carouselModel"
-                    controls
-                    indicators
-                    :interval="0"
-                >
+                <b-carousel v-model="carouselModel" controls indicators :interval="0">
                     <b-aspect
-                        ><b-carousel-slide
-                            v-for="img in imageUrls"
-                            :key="img"
-                            :img-src="img"
+                        ><b-carousel-slide v-for="img in imageUrls" :key="img" :img-src="img"
                     /></b-aspect>
                 </b-carousel>
             </div>
@@ -26,9 +18,7 @@
                         exerciseData.name
                     }}</router-link></b-card-title
                 >
-                <b-card-sub-title>{{
-                    exerciseData.createdBy.username
-                }}</b-card-sub-title>
+                <b-card-sub-title>{{ exerciseData.createdBy.username }}</b-card-sub-title>
                 <Viewer :initialValue="exerciseData.description" />
             </b-card-body>
             <CommentSection
@@ -117,19 +107,14 @@ export default {
                 const path = "/exercise/" + this.$props.exerciseId;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         counters: true
                     }
                 };
 
-                const response = (await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                )).data;
+                const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
                 this.exerciseData = {
                     _id: response._id,
@@ -140,8 +125,8 @@ export default {
                     measureBy: response.measureBy,
                     muscleGroups: response.muscleGroups,
                     name: response.name,
-                    tags: response.tags,
-                }
+                    tags: response.tags
+                };
 
                 this.likeCount = response.likeCount;
                 this.commentCount = response.commentCount;
@@ -172,30 +157,26 @@ export default {
                     }
                 }
             } catch (err) {
-                console.error(
-                    "Error downloading exercise:",
-                    this.$props.exerciseId,
-                    err
-                );
+                console.error("Error downloading exercise:", this.$props.exerciseId, err);
             }
         },
 
         handleLike: function(x) {
             if (x > 0) {
-                this.likeCount ++;
+                this.likeCount++;
                 this.isLiked = true;
             } else {
-                this.likeCount --;
+                this.likeCount--;
                 this.isLiked = false;
             }
         },
 
         handleFollow: function(x) {
             if (x > 0) {
-                this.followCount ++;
+                this.followCount++;
                 this.isFollowed = true;
             } else {
-                this.followCount --;
+                this.followCount--;
                 this.isFollowed = false;
             }
         }

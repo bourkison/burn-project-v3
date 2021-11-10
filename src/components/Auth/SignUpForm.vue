@@ -1,34 +1,20 @@
 <template>
     <div>
         <div class="mb-4">
-            <b-progress
-                :value="progressAmount"
-                :max="100"
-                class="mb-2"
-                height="0.5rem"
-            />
+            <b-progress :value="progressAmount" :max="100" class="mb-2" height="0.5rem" />
             <b-row class="font-size-8">
                 <b-col cols="4" class="text-center">
-                    <b-icon-circle-fill
-                        variant="primary"
-                        v-if="progressAmount >= 15"
-                    />
+                    <b-icon-circle-fill variant="primary" v-if="progressAmount >= 15" />
                     <b-icon-circle variant="primary" v-else /><br />
                     Sign Up
                 </b-col>
                 <b-col cols="4" class="text-center">
-                    <b-icon-circle-fill
-                        variant="primary"
-                        v-if="progressAmount >= 50"
-                    />
+                    <b-icon-circle-fill variant="primary" v-if="progressAmount >= 50" />
                     <b-icon-circle variant="primary" v-else /><br />
                     Verify
                 </b-col>
                 <b-col cols="4" class="text-center">
-                    <b-icon-circle-fill
-                        variant="primary"
-                        v-if="progressAmount >= 86"
-                    />
+                    <b-icon-circle-fill variant="primary" v-if="progressAmount >= 86" />
                     <b-icon-circle variant="primary" v-else /><br />
                     Final
                 </b-col>
@@ -115,17 +101,14 @@
                         <b-input-group-append>
                             <b-button
                                 v-if="
-                                    signUpForm.password ===
-                                        signUpForm.confPassword &&
+                                    signUpForm.password === signUpForm.confPassword &&
                                         signUpForm.password.length >= 8
                                 "
                                 variant="success"
                                 disabled
                                 ><b-icon-check
                             /></b-button>
-                            <b-button v-else variant="danger" disabled
-                                ><b-icon-x
-                            /></b-button>
+                            <b-button v-else variant="danger" disabled><b-icon-x /></b-button>
                         </b-input-group-append>
                     </b-input-group>
                 </b-form-group>
@@ -189,23 +172,14 @@
                 </b-form-group>
 
                 <b-form-group>
-                    <b-form-checkbox
-                        inline
-                        required
-                        name="termsCheckbox"
-                        :disabled="isCreating"
-                    >
+                    <b-form-checkbox inline required name="termsCheckbox" :disabled="isCreating">
                         I agree to the
                         <a href="#" target="_blank">Terms and Conditions</a>.
                     </b-form-checkbox>
                 </b-form-group>
 
                 <div class="text-center">
-                    <b-button
-                        type="submit"
-                        variant="primary"
-                        :disabled="isCreating"
-                    >
+                    <b-button type="submit" variant="primary" :disabled="isCreating">
                         <span v-if="!isCreating">Sign Up</span>
                         <span v-else><b-spinner small/></span>
                     </b-button>
@@ -214,10 +188,7 @@
         </div>
         <div v-else-if="progressAmount === 50">
             <b-form @submit.prevent="verifyEmail">
-                <b-form-group
-                    label="Verification Code"
-                    label-for="verificationInput"
-                >
+                <b-form-group label="Verification Code" label-for="verificationInput">
                     <b-form-input
                         if="verificationInput"
                         v-model="verificationCode"
@@ -235,11 +206,7 @@
                         <span v-if="!isResending">Resend</span>
                         <span v-else><b-spinner small/></span>
                     </b-button>
-                    <b-button
-                        type="submit"
-                        variant="primary"
-                        :disabled="isVerifying"
-                    >
+                    <b-button type="submit" variant="primary" :disabled="isVerifying">
                         <span v-if="!isVerifying">Verify Email</span>
                         <span v-else><b-spinner small/></span>
                     </b-button>
@@ -325,11 +292,7 @@
                 </b-form-group>
 
                 <div class="text-center">
-                    <b-button
-                        type="submit"
-                        variant="primary"
-                        :disabled="isFinalising"
-                    >
+                    <b-button type="submit" variant="primary" :disabled="isFinalising">
                         <span v-if="!isFinalising">Get Started!</span>
                         <span v-else><b-spinner small/></span>
                     </b-button>
@@ -371,14 +334,14 @@ export default {
                 surname: "",
                 gender: "male",
                 dob: "",
-                country: "United States",
+                country: "United States"
             },
 
             finalSignUpForm: {
                 profilePhoto: "",
                 height: "",
                 weight: "",
-                metric: true,
+                metric: true
             },
 
             usernameUnique: false,
@@ -647,8 +610,8 @@ export default {
                 { text: "Other", value: "other" }
             ],
             measurements: [
-                { text: 'Metric', value: true },
-                { text: 'Imperial', value: false }
+                { text: "Metric", value: true },
+                { text: "Imperial", value: false }
             ],
             editingImage: false,
             progressAmount: 15
@@ -694,9 +657,7 @@ export default {
                     password: this.signUpForm.password,
                     attributes: {
                         email: this.signUpForm.email,
-                        birthdate: dayjs(this.signUpForm.dob).format(
-                            "YYYY-MM-DD"
-                        ),
+                        birthdate: dayjs(this.signUpForm.dob).format("YYYY-MM-DD"),
                         gender: this.signUpForm.gender,
                         given_name: this.signUpForm.firstName,
                         family_name: this.signUpForm.surname,
@@ -707,8 +668,7 @@ export default {
                 this.cognitoUsername = user.user.username;
                 this.isCreating = false;
                 this.progressAmount = 50;
-            } 
-            catch (err) {
+            } catch (err) {
                 console.error("Error creating user!");
             }
         },
@@ -733,7 +693,6 @@ export default {
                     this.signUpForm.username
                 );
 
-
                 const path = "/user/" + this.$store.state.userProfile.docData.username;
                 const myInit = {
                     headers: {
@@ -742,17 +701,15 @@ export default {
                     body: {
                         userForm: this.finalSignUpForm
                     }
-                }
+                };
 
                 await API.put(this.$store.state.apiName, path, myInit);
                 // Fetch user data again.
                 await this.$store.dispatch("fetchUser", this.$store.state.userProfile.data);
-                
+
                 this.isFinalising = false;
                 this.$emit("closeSignUpModal");
-
-            } 
-            catch (err) {
+            } catch (err) {
                 console.error("Image upload error", err);
             }
         },

@@ -1,9 +1,7 @@
 <template>
     <b-container>
         <b-row>
-            <b-col cols="2">
-
-            </b-col>
+            <b-col cols="2"> </b-col>
             <b-col cols="8">
                 <b-card no-body class="mainCard">
                     <b-card-body>
@@ -18,7 +16,7 @@
                                     label-for="userAmountInput"
                                     :description="userAmount + ' selected'"
                                 >
-                                    <b-form-input 
+                                    <b-form-input
                                         id="userAmountInput"
                                         v-model="userAmount"
                                         type="range"
@@ -33,9 +31,14 @@
                                 <b-form-group
                                     label="Posts Created per User"
                                     label-for="postAmountInput"
-                                    :description="postAmount + ' selected. ' + postAmount * userAmount + ' total.'"
+                                    :description="
+                                        postAmount +
+                                            ' selected. ' +
+                                            postAmount * userAmount +
+                                            ' total.'
+                                    "
                                 >
-                                    <b-form-input 
+                                    <b-form-input
                                         id="postAmountInput"
                                         v-model="postAmount"
                                         type="range"
@@ -50,9 +53,14 @@
                                 <b-form-group
                                     label="Exercises Created per User"
                                     label-for="exerciseAmountInput"
-                                    :description="exerciseAmount + ' selected. ' + exerciseAmount * userAmount + ' total.'"
+                                    :description="
+                                        exerciseAmount +
+                                            ' selected. ' +
+                                            exerciseAmount * userAmount +
+                                            ' total.'
+                                    "
                                 >
-                                    <b-form-input 
+                                    <b-form-input
                                         id="exerciseAmountInput"
                                         v-model="exerciseAmount"
                                         type="range"
@@ -65,9 +73,14 @@
                                 <b-form-group
                                     label="Exercises Followed per User"
                                     label-for="exerciseFollowAmountInput"
-                                    :description="exerciseFollowAmount + ' selected. ' + exerciseFollowAmount * userAmount + ' total.'"
+                                    :description="
+                                        exerciseFollowAmount +
+                                            ' selected. ' +
+                                            exerciseFollowAmount * userAmount +
+                                            ' total.'
+                                    "
                                 >
-                                    <b-form-input 
+                                    <b-form-input
                                         id="exerciseFollowAmountInput"
                                         v-model="exerciseFollowAmount"
                                         type="range"
@@ -82,9 +95,14 @@
                                 <b-form-group
                                     label="Templates Created per User"
                                     label-for="templateAmountInput"
-                                    :description="templateAmount + ' selected. ' + templateAmount * userAmount + ' total.'"
+                                    :description="
+                                        templateAmount +
+                                            ' selected. ' +
+                                            templateAmount * userAmount +
+                                            ' total.'
+                                    "
                                 >
-                                    <b-form-input 
+                                    <b-form-input
                                         id="templateAmountInput"
                                         v-model="templateAmount"
                                         type="range"
@@ -97,9 +115,14 @@
                                 <b-form-group
                                     label="Templates Followed per User"
                                     label-for="templateFollowAmountInput"
-                                    :description="templateFollowAmount + ' selected. ' + templateFollowAmount * userAmount + ' total.'"
+                                    :description="
+                                        templateFollowAmount +
+                                            ' selected. ' +
+                                            templateFollowAmount * userAmount +
+                                            ' total.'
+                                    "
                                 >
-                                    <b-form-input 
+                                    <b-form-input
                                         id="templateFollowAmountInput"
                                         v-model="templateFollowAmount"
                                         type="range"
@@ -114,7 +137,12 @@
                                 <b-form-group
                                     label="Workouts per User"
                                     label-for="workoutAmountInput"
-                                    :description="workoutAmount + ' selected. ' + workoutAmount * userAmount + ' total.'"
+                                    :description="
+                                        workoutAmount +
+                                            ' selected. ' +
+                                            workoutAmount * userAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="workoutAmountInput"
@@ -161,7 +189,12 @@
                                 <b-form-group
                                     label="Likes per Post"
                                     label-for="likePerPostAmountInput"
-                                    :description="likePerPostAmount + ' selected. ' + likePerPostAmount * postAmount + ' total.'"
+                                    :description="
+                                        likePerPostAmount +
+                                            ' selected. ' +
+                                            likePerPostAmount * postAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="likePerPostAmountInput"
@@ -176,7 +209,12 @@
                                 <b-form-group
                                     label="Likes per Exercise"
                                     label-for="likePerExerciseAmountInput"
-                                    :description="likePerExerciseAmount + ' selected. ' + likePerExerciseAmount * exerciseAmount + ' total.'"
+                                    :description="
+                                        likePerExerciseAmount +
+                                            ' selected. ' +
+                                            likePerExerciseAmount * exerciseAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="likePerExerciseAmountInput"
@@ -191,7 +229,12 @@
                                 <b-form-group
                                     label="Likes per Template"
                                     label-for="likePerTemplateAmountInput"
-                                    :description="likePerTemplateAmount + ' selected. ' + likePerTemplateAmount * templateAmount + ' total.'"
+                                    :description="
+                                        likePerTemplateAmount +
+                                            ' selected. ' +
+                                            likePerTemplateAmount * templateAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="likePerTemplateAmountInput"
@@ -205,10 +248,15 @@
 
                                 <!-- COMMENTS -->
                                 <h5 class="mt-4">Comments</h5>
-                                <b-form-group 
+                                <b-form-group
                                     label="Comments per Post"
                                     label-for="commentsPerPostAmountInput"
-                                    :description="commentPerExerciseAmount + ' selected. ' + commentPerExerciseAmount * postAmount + ' total.'"
+                                    :description="
+                                        commentPerExerciseAmount +
+                                            ' selected. ' +
+                                            commentPerExerciseAmount * postAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="commentPerPostAmount"
@@ -216,14 +264,19 @@
                                         type="range"
                                         required
                                         :min="0"
-                                        :max="(userAmount * postAmount) * 3"
+                                        :max="userAmount * postAmount * 3"
                                     />
                                 </b-form-group>
 
-                                <b-form-group 
+                                <b-form-group
                                     label="Comments per Exercise"
                                     label-for="commentsPerExerciseAmountInput"
-                                    :description="commentPerExerciseAmount + ' selected. ' + commentPerExerciseAmount * exerciseAmount + ' total.'"
+                                    :description="
+                                        commentPerExerciseAmount +
+                                            ' selected. ' +
+                                            commentPerExerciseAmount * exerciseAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="commentPerExerciseAmount"
@@ -231,14 +284,19 @@
                                         type="range"
                                         required
                                         :min="0"
-                                        :max="(userAmount * exerciseAmount) * 3"
+                                        :max="userAmount * exerciseAmount * 3"
                                     />
                                 </b-form-group>
 
-                                <b-form-group 
+                                <b-form-group
                                     label="Comments per Template"
                                     label-for="commentsPerTemplateAmountInput"
-                                    :description="commentPerTemplateAmount + ' selected. ' + commentPerTemplateAmount * templateAmount + ' total.'"
+                                    :description="
+                                        commentPerTemplateAmount +
+                                            ' selected. ' +
+                                            commentPerTemplateAmount * templateAmount +
+                                            ' total.'
+                                    "
                                 >
                                     <b-form-input
                                         id="commentPerTemplateAmount"
@@ -246,14 +304,14 @@
                                         type="range"
                                         required
                                         :min="0"
-                                        :max="(userAmount * templateAmount) * 3"
+                                        :max="userAmount * templateAmount * 3"
                                     />
                                 </b-form-group>
 
                                 <div class="mt-5 text-center">
                                     <b-button variant="primary" type="submit" :disabled="isLoading">
                                         <span v-if="!isLoading">Populate</span>
-                                        <span v-else><b-spinner small /></span>
+                                        <span v-else><b-spinner small/></span>
                                     </b-button>
                                 </div>
                             </b-form>
@@ -261,20 +319,18 @@
                     </b-card-body>
                 </b-card>
             </b-col>
-            <b-col cols="2">
-
-            </b-col>
+            <b-col cols="2"> </b-col>
         </b-row>
     </b-container>
 </template>
 
 <script>
-import { API, Auth } from 'aws-amplify'
-import faker from 'faker';
-import dayjs from 'dayjs'
+import { API, Auth } from "aws-amplify";
+import faker from "faker";
+import dayjs from "dayjs";
 
 export default {
-    name: 'Admin',
+    name: "Admin",
     data() {
         return {
             isLoading: false,
@@ -300,11 +356,11 @@ export default {
             commentPerPostAmount: 0,
             commentPerExerciseAmount: 0,
             commentPerTemplateAmount: 0
-        }
+        };
     },
 
     created: function() {
-        for(let i = 0; i < 5; i ++) {
+        for (let i = 0; i < 5; i++) {
             console.log(faker.lorem.words(Math.floor(Math.random() * 4 + 1)));
         }
     },
@@ -320,18 +376,22 @@ export default {
             for (let i = 0; i < this.userAmount; i++) {
                 const username = faker.internet.userName();
 
-                createUserPromises.push(Auth.signUp({
-                    username: username,
-                    password: "Harrison1",
-                    attributes: {
-                        email: faker.internet.exampleEmail(),
-                        birthdate: dayjs(faker.date.between(new Date("1960-01-01"), new Date("2000-01-01"))).format("YYYY-MM-DD"),
-                        gender: (Math.floor(Math.random() * 2)) ? 'male' : 'female',
-                        given_name: faker.name.firstName(),
-                        family_name: faker.name.lastName(),
-                        locale: faker.address.country()
-                    }
-                }));
+                createUserPromises.push(
+                    Auth.signUp({
+                        username: username,
+                        password: "Harrison1",
+                        attributes: {
+                            email: faker.internet.exampleEmail(),
+                            birthdate: dayjs(
+                                faker.date.between(new Date("1960-01-01"), new Date("2000-01-01"))
+                            ).format("YYYY-MM-DD"),
+                            gender: Math.floor(Math.random() * 2) ? "male" : "female",
+                            given_name: faker.name.firstName(),
+                            family_name: faker.name.lastName(),
+                            locale: faker.address.country()
+                        }
+                    })
+                );
 
                 usernames.push(username);
             }
@@ -362,15 +422,15 @@ export default {
                         commentPerExerciseAmount: Number(this.commentPerExerciseAmount),
                         commentPerTemplateAmount: Number(this.commentPerTemplateAmount)
                     }
-                } 
-            }
+                }
+            };
 
             const result = await API.post(this.$store.state.apiName, path, myInit);
             console.log(result);
             this.isLoading = false;
         }
     }
-}
+};
 </script>
 
 <style scoped>

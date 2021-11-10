@@ -14,16 +14,9 @@
                     >{{ comment.createdBy.username }}</router-link
                 >
                 <b-dropdown class="float-right" variant="outline">
-                    <span
-                        v-if="
-                            comment.createdBy.id ===
-                                $store.state.userProfile.data.uid
-                        "
-                    >
+                    <span v-if="comment.createdBy.id === $store.state.userProfile.data.uid">
                         <b-dropdown-item>Edit</b-dropdown-item>
-                        <b-dropdown-item
-                            variant="danger"
-                            @click="confirmDeleteComment"
+                        <b-dropdown-item variant="danger" @click="confirmDeleteComment"
                             >Delete</b-dropdown-item
                         >
                     </span>
@@ -45,14 +38,9 @@
                         @click="toggleLike"
                         font-scale=".8"
                     />
-                    <span
-                        class="ml-1 text-muted count"
-                        style="font-size:12px;"
-                        @click="expandLikes"
+                    <span class="ml-1 text-muted count" style="font-size:12px;" @click="expandLikes"
                         ><span v-if="!isLoading">{{ likeCount }}</span
-                        ><span v-else>...</span>&nbsp;<span
-                            v-if="likeCount == 1"
-                            >like</span
+                        ><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span
                         ><span v-else>likes</span></span
                     >
                 </div>
@@ -93,8 +81,7 @@
             :ok-title-html="isDeleting ? '<b-spinner />' : 'Ok'"
         >
             <div>
-                Are you sure you want to delete this comment? This can not be
-                undone.
+                Are you sure you want to delete this comment? This can not be undone.
             </div>
 
             <template #modal-footer="{ ok, cancel }">
@@ -102,12 +89,7 @@
                     <div>Cancel</div>
                 </b-button>
 
-                <b-button
-                    size="sm"
-                    variant="danger"
-                    @click="ok"
-                    :disabled="isDeleting"
-                >
+                <b-button size="sm" variant="danger" @click="ok" :disabled="isDeleting">
                     <div v-if="!isDeleting">Ok</div>
                     <div v-else><b-spinner small /></div>
                 </b-button>
@@ -174,8 +156,7 @@ export default {
                 const path = "/like";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -210,11 +191,7 @@ export default {
                     this.isLiked = false;
 
                     try {
-                        const likeResponse = await API.del(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
+                        const likeResponse = await API.del(this.$store.state.apiName, path, myInit);
                         console.log("UNLIKED:", likeResponse);
                     } catch (err) {
                         this.likeCount++;
@@ -246,14 +223,10 @@ export default {
 
                             this.isLoadingLikes = false;
                             console.log(this.likes);
-                            this.$bvModal.show(
-                                this.$props.comment._id + "-commentLikeModal"
-                            );
+                            this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
                         });
                 } else {
-                    this.$bvModal.show(
-                        this.$props.comment._id + "-commentLikeModal"
-                    );
+                    this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
                 }
             }
         },
@@ -270,8 +243,7 @@ export default {
             const path = "/comment";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken
-                        .jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 },
                 queryStringParameters: {
                     docId: this.$props.docId,
@@ -281,11 +253,7 @@ export default {
             };
 
             try {
-                const delCommentResponse = await API.del(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                );
+                const delCommentResponse = await API.del(this.$store.state.apiName, path, myInit);
                 console.log("DELETED:", delCommentResponse);
             } catch (err) {
                 console.error("ERROR DELETING COMMENT:", err);

@@ -51,17 +51,11 @@ export default {
     methods: {
         getWorkouts: async function() {
             if (this.$store.state.userWorkouts == null) {
-                await this.$store.dispatch(
-                    "fetchWorkouts",
-                    this.$store.state.userProfile.data
-                );
+                await this.$store.dispatch("fetchWorkouts", this.$store.state.userProfile.data);
             }
 
             this.workoutData = this.$store.state.userWorkouts.filter(x => {
-                if (
-                    x.exerciseIds &&
-                    x.exerciseIds.includes(this.$props.exerciseId)
-                ) {
+                if (x.exerciseIds && x.exerciseIds.includes(this.$props.exerciseId)) {
                     return true;
                 } else {
                     return false;
@@ -104,9 +98,7 @@ export default {
 
         buildLabels: function() {
             this.workoutData.forEach(workout => {
-                this.chartLabels.push(
-                    dayjs(workout.createdAt.toDate()).format("DD-MM")
-                );
+                this.chartLabels.push(dayjs(workout.createdAt.toDate()).format("DD-MM"));
             });
         },
 
@@ -151,9 +143,7 @@ export default {
                             context.mode === "default" &&
                             !this.delayed
                         ) {
-                            delay =
-                                context.dataIndex * 150 +
-                                context.datasetIndex * 50;
+                            delay = context.dataIndex * 150 + context.datasetIndex * 50;
                         }
                         return delay;
                     }

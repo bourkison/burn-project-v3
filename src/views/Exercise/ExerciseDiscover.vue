@@ -26,11 +26,7 @@
                                 <b-icon-search class="ml-auto" />
                             </div>
                         </b-list-group-item>
-                        <b-list-group-item
-                            class="navItem"
-                            to="/exercises/new"
-                            active-class="unset"
-                        >
+                        <b-list-group-item class="navItem" to="/exercises/new" active-class="unset">
                             <div class="d-flex align-items-center">
                                 New
                                 <b-icon-plus class="ml-auto" />
@@ -50,17 +46,12 @@
                             </div>
                             <div class="mt-3">
                                 <h6>Muscle Groups</h6>
-                                <MuscleGroupSelector
-                                    @updateMuscleGroups="updateMuscleGroups"
-                                />
+                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
                             </div>
 
                             <div class="mt-3">
                                 <h6>Tags</h6>
-                                <TagSelector
-                                    @updateTags="updateTags"
-                                    :initTags="selectedTags"
-                                />
+                                <TagSelector @updateTags="updateTags" :initTags="selectedTags" />
                             </div>
                         </div>
                     </b-card-body>
@@ -173,8 +164,7 @@ export default {
                 const path = "/exercise";
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         loadAmount: 5,
@@ -183,24 +173,18 @@ export default {
                 };
 
                 if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(
-                        ","
-                    );
+                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
                 }
 
                 if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(
-                        ","
-                    );
+                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
                 }
 
-                const response = await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                ).catch(err => {
-                    throw err;
-                });
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        throw err;
+                    }
+                );
 
                 this.exercises = response.data;
 
@@ -236,8 +220,7 @@ export default {
                         setTimeout(() => {
                             this.isLoadingMore = false;
                         }, 500);
-                        this.lastLoadedExercise =
-                            exerciseSnapshot.docs[exerciseSnapshot.size - 1];
+                        this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
                     })
                     .catch(e => {
                         console.error("Error downloading more exercises:", e);
@@ -309,8 +292,7 @@ export default {
         displayError: function(err) {
             this.errorCountdown = 30;
             console.error(err);
-            this.errorMessage =
-                "Oops, an error has occured... Please try again later.";
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
 
             this.errorInterval = window.setInterval(() => {
                 if (this.errorCountdown > 0) {

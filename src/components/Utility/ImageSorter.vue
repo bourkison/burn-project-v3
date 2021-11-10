@@ -1,16 +1,7 @@
 <template>
     <div class="imageSorterCont">
-        <b-row
-            v-if="imagesProp.length > 0"
-            class="sortableCont"
-            align-h="center"
-        >
-            <b-col
-                v-for="(img, i) in imagesProp"
-                :key="i"
-                sm="4"
-                class="sortableItem"
-            >
+        <b-row v-if="imagesProp.length > 0" class="sortableCont" align-h="center">
+            <b-col v-for="(img, i) in imagesProp" :key="i" sm="4" class="sortableItem">
                 <b-card :img-src="img.url" img-top>
                     <b-card-text class="text-center">
                         <b-icon-pencil-square
@@ -74,11 +65,7 @@ export default {
     methods: {
         changeOrder: function(e) {
             if (e.newIndex !== e.oldIndex) {
-                this.sortedImages.splice(
-                    e.newIndex,
-                    0,
-                    this.sortedImages.splice(e.oldIndex, 1)[0]
-                );
+                this.sortedImages.splice(e.newIndex, 0, this.sortedImages.splice(e.oldIndex, 1)[0]);
                 console.log("sort", e.oldIndex, "-->", e.newIndex);
                 this.$emit("sort", this.sortedImages);
             }

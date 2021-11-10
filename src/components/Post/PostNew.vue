@@ -8,11 +8,7 @@
 
         <div v-if="post.share.type" class="mt-1 mb-3">
             <div class="text-right">
-                <b-icon-x
-                    variant="danger"
-                    class="clickableIcon"
-                    @click="post.share = {}"
-                />
+                <b-icon-x variant="danger" class="clickableIcon" @click="post.share = {}" />
             </div>
 
             <div v-if="post.share.type == 'exercise'">
@@ -29,19 +25,11 @@
             </div>
         </div>
 
-        <b-form-textarea
-            v-model="post.content"
-            rows="3"
-            no-resize
-            placeholder="New post..."
-        />
+        <b-form-textarea v-model="post.content" rows="3" no-resize placeholder="New post..." />
         <div class="d-flex mt-1 p-1" align-v="center">
             <div>
                 <label for="file-input">
-                    <b-icon-card-image
-                        font-scale="1.2"
-                        class="mr-1 clickableIcon"
-                    />
+                    <b-icon-card-image font-scale="1.2" class="mr-1 clickableIcon" />
                 </label>
                 <b-icon-bicycle
                     v-b-modal.addExerciseModal
@@ -67,40 +55,22 @@
             </div>
         </div>
 
-        <b-modal
-            id="addExerciseModal"
-            centered
-            title="Exercises"
-            hide-footer
-            button-size="sm"
-        >
+        <b-modal id="addExerciseModal" centered title="Exercises" hide-footer button-size="sm">
             <ExerciseSearch @selectExercise="addExercise" />
         </b-modal>
 
-        <b-modal
-            id="addTemplateModal"
-            centered
-            title="Templates"
-            hide-footer
-            button-size="sm"
-        >
+        <b-modal id="addTemplateModal" centered title="Templates" hide-footer button-size="sm">
             <TemplateSearch @selectTemplate="addTemplate" />
         </b-modal>
 
-        <b-modal
-            id="addWorkoutModal"
-            centered
-            title="Workouts"
-            hide-footer
-            buttons-size="sm"
-        >
+        <b-modal id="addWorkoutModal" centered title="Workouts" hide-footer buttons-size="sm">
             <WorkoutSearch @selectWorkout="addWorkout" />
         </b-modal>
     </div>
 </template>
 
 <script>
-import { API, Storage } from 'aws-amplify'
+import { API, Storage } from "aws-amplify";
 
 import crypto from "crypto";
 import util from "util";
@@ -147,18 +117,22 @@ export default {
                 try {
                     console.log(JSON.stringify(JSON.stringify(this.post)));
                     this.isPosting = true;
-        
+
                     // First upload all images using .map (see ExerciseNew.vue for further explanation)
                     const imageResults = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             const imageId = await this.generateId(16);
-                            const imageName = "username/" + this.$store.state.userProfile.docData.username + "/posts/" + imageId;
-        
+                            const imageName =
+                                "username/" +
+                                this.$store.state.userProfile.docData.username +
+                                "/posts/" +
+                                imageId;
+
                             const imageData = await fetch(image.url);
                             const blob = await imageData.blob();
-        
+
                             console.log("UPLOADING:", imageName, blob);
-        
+
                             const imageResponse = await Storage.put(imageName, blob, {
                                 contentType: blob.type,
                                 progressCallback: function(progress) {
@@ -167,15 +141,15 @@ export default {
                             }).catch(err => {
                                 console.error("Error uploading image:", i, err);
                             });
-        
+
                             return imageResponse;
                         })
-                    )
-        
+                    );
+
                     imageResults.forEach(result => {
                         this.post.filePaths.push(result.key);
-                    })
-        
+                    });
+
                     const path = "/post";
                     const myInit = {
                         headers: {
@@ -184,21 +158,16 @@ export default {
                         body: {
                             postForm: JSON.parse(JSON.stringify(this.post))
                         }
-                    }
-        
-                    const response = await API.post(
-                        this.$store.state.apiName,
-                        path,
-                        myInit
-                    );
-    
+                    };
+
+                    const response = await API.post(this.$store.state.apiName, path, myInit);
+
                     console.log("POST CREATED:", response);
                     this.$emit("newPost", this.post);
                     this.isPosting = false;
                     this.resetVariablesIncrementor++;
                     this.resetVariables();
-                }
-                catch(err) {
+                } catch (err) {
                     console.error("Error creating post:", err);
                 }
             }

@@ -3,9 +3,7 @@
         <TemplateComponent
             class="template"
             v-for="(template, index) in templates"
-            :templateId="
-                template.templateId ? template.templateId : template._id
-            "
+            :templateId="template.templateId ? template.templateId : template._id"
             :key="template._id"
             :skeletonAmount="skeleton[index][0]"
             :skeletonWidth="skeleton[index][1]"
@@ -52,9 +50,7 @@ export default {
             let widths = [];
 
             for (let j = 0; j < amount; j++) {
-                widths.push(
-                    (Math.floor(Math.random() * 50) + 50).toString() + "%"
-                );
+                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
             }
             this.skeleton.push([amount, widths]);
         }

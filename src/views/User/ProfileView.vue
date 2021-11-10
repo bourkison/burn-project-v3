@@ -2,7 +2,7 @@
     <b-container class="profileCont">
         <b-row>
             <b-col cols="3">
-                <RecentWorkoutsChart :userId="profile.id" />
+                <RecentWorkoutsChart :username="profile.username" />
             </b-col>
 
             <b-col cols="6">
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { API } from 'aws-amplify';
+import { API } from "aws-amplify";
 
 import PostNew from "@/components/Post/PostNew.vue";
 import PostFeed from "@/components/Post/PostFeed.vue";
@@ -136,25 +136,22 @@ export default {
                 const path = "/post";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken,
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         userId: this.$props.profile._id,
                         loadAmount: 5
                     }
                 };
-    
+
                 this.posts = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
                 console.log("POSTS:", this.posts);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
-            }
-            finally {
+            } finally {
                 this.isLoading = false;
             }
-
         },
 
         handleFollow: async function() {
@@ -169,36 +166,40 @@ export default {
                         docId: this.profile._id,
                         coll: "user"
                     }
-                }
+                };
 
                 if (!this.isFollowed) {
                     try {
                         console.log("FOLLOWING");
-                        const followResponse = await API.post(this.$store.state.apiName, path, myInit);
+                        const followResponse = await API.post(
+                            this.$store.state.apiName,
+                            path,
+                            myInit
+                        );
                         this.isFollowed = true;
                         this.$emit("follow");
                         console.log("FOLLOWED:", followResponse);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         this.isFollowed = false;
                         console.error(err);
-                    }
-                    finally {
+                    } finally {
                         this.isFollowing = false;
                     }
                 } else {
                     try {
                         console.log("UNFOLLOWING");
-                        const unfollowResponse = await API.del(this.$store.state.apiName, path, myInit);
+                        const unfollowResponse = await API.del(
+                            this.$store.state.apiName,
+                            path,
+                            myInit
+                        );
                         this.isFollowed = false;
                         this.$emit("unfollow");
-                        console.log("UNFOLLOWED:", unfollowResponse)
-                    }
-                    catch (err) { 
+                        console.log("UNFOLLOWED:", unfollowResponse);
+                    } catch (err) {
                         this.isFollowed = true;
-                        console.error(err)
-                    }
-                    finally {
+                        console.error(err);
+                    } finally {
                         this.isFollowing = false;
                     }
                 }

@@ -35,10 +35,8 @@
                             <div
                                 class="d-flex align-items-center"
                                 v-if="
-                                    !$store.state.activeWorkout
-                                        .workoutCommenced ||
-                                        $router.currentRoute.name ===
-                                            'New Workout'
+                                    !$store.state.activeWorkout.workoutCommenced ||
+                                        $router.currentRoute.name === 'New Workout'
                                 "
                             >
                                 New Workout
@@ -83,7 +81,7 @@
 // import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
 
 export default {
-    name: "Workout",
+    name: "Workout"
     // components: { RecentWorkoutsChart, OneRepMaxExerciseChart }
 };
 </script>

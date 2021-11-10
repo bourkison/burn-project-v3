@@ -15,10 +15,7 @@
                         class="mr-1 clickableIcon"
                     />
                     <b-icon-grip-horizontal class="sortableIcon mr-1" />
-                    <b-icon-trash
-                        @click="removeExercise"
-                        class="clickableIcon"
-                    />
+                    <b-icon-trash @click="removeExercise" class="clickableIcon" />
                 </div>
             </div>
         </b-card-body>
@@ -36,25 +33,14 @@
             <b-list-group flush class="sortableContainer mt-2">
                 <b-list-group-item>
                     <b-row class="d-flex text-center" align-v="center">
-                        <b-col sm="5" style="font-weight:600;"
-                            ><span>Previous</span></b-col
-                        >
-                        <b-col sm="3" style="font-weight:600;"
-                            ><span>Kg</span></b-col
-                        >
-                        <b-col sm="3" style="font-weight:600;"
-                            ><span>Reps</span></b-col
-                        >
-                        <b-col sm="1"
-                            ><span style="visibility:hidden;">x</span></b-col
-                        >
+                        <b-col sm="5" style="font-weight:600;"><span>Previous</span></b-col>
+                        <b-col sm="3" style="font-weight:600;"><span>Kg</span></b-col>
+                        <b-col sm="3" style="font-weight:600;"><span>Reps</span></b-col>
+                        <b-col sm="1"><span style="visibility:hidden;">x</span></b-col>
                     </b-row>
                 </b-list-group-item>
 
-                <b-list-group-item
-                    v-for="(set, index) in exercise.sets"
-                    :key="index"
-                >
+                <b-list-group-item v-for="(set, index) in exercise.sets" :key="index">
                     <b-form inline>
                         <b-row class="d-flex" align-v="center">
                             <b-col sm="5">
@@ -66,13 +52,8 @@
                                     "
                                     class="text-muted text-center"
                                 >
-                                    {{
-                                        previousExerciseStored.sets[index].kg
-                                    }}kg x
-                                    {{
-                                        previousExerciseStored.sets[index]
-                                            .measureAmount
-                                    }}
+                                    {{ previousExerciseStored.sets[index].kg }}kg x
+                                    {{ previousExerciseStored.sets[index].measureAmount }}
                                 </div>
                                 <div v-else class="text-muted text-center">
                                     -
@@ -93,13 +74,7 @@
                                 <b-form-input
                                     type="text"
                                     :value="set.measureAmount"
-                                    @input="
-                                        setSetValue(
-                                            index,
-                                            'measureAmount',
-                                            $event
-                                        )
-                                    "
+                                    @input="setSetValue(index, 'measureAmount', $event)"
                                     size="sm"
                                     placeholder="Reps"
                                     style="width:100%;"
@@ -107,9 +82,7 @@
                                 ></b-form-input>
                             </b-col>
                             <b-col sm="1" class="pl-2">
-                                <b-form-checkbox
-                                    class="setCheck"
-                                ></b-form-checkbox>
+                                <b-form-checkbox class="setCheck"></b-form-checkbox>
                             </b-col>
                         </b-row>
                     </b-form>
@@ -163,9 +136,7 @@ export default {
     created: function() {
         // Store previous exercise so if order changed it isnt changed too (as its based off index).
         if (this.$props.previousExercise) {
-            this.previousExerciseStored = JSON.parse(
-                JSON.stringify(this.$props.previousExercise)
-            );
+            this.previousExerciseStored = JSON.parse(JSON.stringify(this.$props.previousExercise));
         }
     },
 
@@ -186,11 +157,7 @@ export default {
             let d;
 
             if (this.exercise.sets.length > 0) {
-                d = JSON.parse(
-                    JSON.stringify(
-                        this.exercise.sets[this.exercise.sets.length - 1]
-                    )
-                );
+                d = JSON.parse(JSON.stringify(this.exercise.sets[this.exercise.sets.length - 1]));
             } else {
                 d = { kg: 0, measureAmount: 0, measureBy: "Reps" };
             }

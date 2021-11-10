@@ -5,19 +5,13 @@
                 <b-container>
                     <b-card no-body class="searchHeader">
                         <b-card-body>
-                            <b-card-title
-                                >"{{ searchText }}" Results</b-card-title
-                            >
+                            <b-card-title>"{{ searchText }}" Results</b-card-title>
 
                             <b-card-text>
                                 <div class="text-center">
                                     <b-button
                                         pill
-                                        :variant="
-                                            tabIndex == 0
-                                                ? 'primary'
-                                                : 'outline-primary'
-                                        "
+                                        :variant="tabIndex == 0 ? 'primary' : 'outline-primary'"
                                         @click="tabIndex = 0"
                                         size="sm"
                                         class="mr-1"
@@ -25,11 +19,7 @@
                                     >
                                     <b-button
                                         pill
-                                        :variant="
-                                            tabIndex == 1
-                                                ? 'primary'
-                                                : 'outline-primary'
-                                        "
+                                        :variant="tabIndex == 1 ? 'primary' : 'outline-primary'"
                                         @click="tabIndex = 1"
                                         size="sm"
                                         class="ml-1 mr-1"
@@ -37,11 +27,7 @@
                                     >
                                     <b-button
                                         pill
-                                        :variant="
-                                            tabIndex == 2
-                                                ? 'primary'
-                                                : 'outline-primary'
-                                        "
+                                        :variant="tabIndex == 2 ? 'primary' : 'outline-primary'"
                                         @click="tabIndex = 2"
                                         size="sm"
                                         class="ml-1"
@@ -50,10 +36,7 @@
                                 </div>
 
                                 <div class="mt-3" v-if="!isLoading">
-                                    <b-tabs
-                                        v-model="tabIndex"
-                                        nav-class="tabNav"
-                                    >
+                                    <b-tabs v-model="tabIndex" nav-class="tabNav">
                                         <b-tab title="Users" lazy>
                                             <b-list-group>
                                                 <b-list-group-item
@@ -75,10 +58,7 @@
                                                 <b-list-group-item
                                                     v-for="exercise in exerciseResponses"
                                                     :key="exercise.objectID"
-                                                    :to="
-                                                        '/exercises/' +
-                                                            exercise.objectID
-                                                    "
+                                                    :to="'/exercises/' + exercise.objectID"
                                                 >
                                                     {{ exercise.name }}
                                                 </b-list-group-item>
@@ -90,10 +70,7 @@
                                                 <b-list-group-item
                                                     v-for="template in templateResponses"
                                                     :key="template.objectID"
-                                                    :to="
-                                                        '/templates/' +
-                                                            template.objectID
-                                                    "
+                                                    :to="'/templates/' + template.objectID"
                                                 >
                                                     {{ template.name }}
                                                 </b-list-group-item>
@@ -133,10 +110,7 @@ export default {
             tabIndex: 0,
 
             // Algolia:
-            searchClient: algoliasearch(
-                "O9KO1L25CJ",
-                "e6492bc28cfda8670d4981bb26e4bbbd"
-            ),
+            searchClient: algoliasearch("O9KO1L25CJ", "e6492bc28cfda8670d4981bb26e4bbbd"),
             userIndex: null,
             exerciseIndex: null,
             templateIndex: null
@@ -182,23 +156,19 @@ export default {
                 );
 
                 searchPromises.push(
-                    this.exerciseIndex
-                        .search(this.searchText)
-                        .then(responses => {
-                            responses.hits.forEach(hit => {
-                                this.exerciseResponses.push(hit);
-                            });
-                        })
+                    this.exerciseIndex.search(this.searchText).then(responses => {
+                        responses.hits.forEach(hit => {
+                            this.exerciseResponses.push(hit);
+                        });
+                    })
                 );
 
                 searchPromises.push(
-                    this.templateIndex
-                        .search(this.searchText)
-                        .then(responses => {
-                            responses.hits.forEach(hit => {
-                                this.templateResponses.push(hit);
-                            });
-                        })
+                    this.templateIndex.search(this.searchText).then(responses => {
+                        responses.hits.forEach(hit => {
+                            this.templateResponses.push(hit);
+                        });
+                    })
                 );
 
                 Promise.all(searchPromises).then(() => {

@@ -2,26 +2,14 @@
     <div id="avatarEditCont">
         <div v-if="image">
             <div id="imgCont">
-                <img
-                    id="cropperImg"
-                    style="visibility:hidden;"
-                    :src="image.url"
-                />
+                <img id="cropperImg" style="visibility:hidden;" :src="image.url" />
             </div>
 
             <div class="buttons mt-3 mb-1">
-                <b-button
-                    variant="outline-danger"
-                    class="mr-1"
-                    size="sm"
-                    @click="cancelEdit"
+                <b-button variant="outline-danger" class="mr-1" size="sm" @click="cancelEdit"
                     >Cancel</b-button
                 >
-                <b-button
-                    variant="outline-dark"
-                    class="ml-1"
-                    size="sm"
-                    @click="addImage"
+                <b-button variant="outline-dark" class="ml-1" size="sm" @click="addImage"
                     >Add Image</b-button
                 >
             </div>
@@ -87,8 +75,7 @@ export default {
                 // Once image is loaded, read the ratio.
                 .then(() => {
                     console.log(this.$refs);
-                    let width = document.querySelector("#avatarEditCont")
-                        .clientWidth;
+                    let width = document.querySelector("#avatarEditCont").clientWidth;
                     const ratio = image.width / image.height;
 
                     // Initial image and doesnt get changed from here so we can edit later.

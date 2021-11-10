@@ -7,24 +7,15 @@
                         <b-card-body>
                             <b-card-title>
                                 {{ templateData.name }}
-                                <b-dropdown
-                                    right
-                                    class="float-right"
-                                    variant="outline"
-                                >
+                                <b-dropdown right class="float-right" variant="outline">
                                     <span
                                         v-if="
                                             templateData.createdBy.id ===
-                                                this.$store.state.userProfile
-                                                    .data.uid
+                                                this.$store.state.userProfile.data.uid
                                         "
                                     >
                                         <b-dropdown-item
-                                            :to="
-                                                '/templates/' +
-                                                    templateData._id +
-                                                    '/edit'
-                                            "
+                                            :to="'/templates/' + templateData._id + '/edit'"
                                             >Edit</b-dropdown-item
                                         >
                                         <b-dropdown-item
@@ -39,9 +30,7 @@
                                         </b-dropdown-item>
                                     </span>
                                     <span v-else>
-                                        <b-dropdown-item variant="danger"
-                                            >Report</b-dropdown-item
-                                        >
+                                        <b-dropdown-item variant="danger">Report</b-dropdown-item>
                                     </span>
                                 </b-dropdown>
                             </b-card-title>
@@ -56,12 +45,11 @@
                                     role="tablist"
                                 >
                                     <ExerciseExpandable
-                                        v-for="(exercise,
-                                        index) in templateData.exerciseReferences"
+                                        v-for="(exercise, index) in templateData.exerciseReferences"
                                         :exercise="exercise"
                                         :accordionIndex="index"
                                         :templateId="templateData._id"
-                                        :key="exercise.exerciseId"
+                                        :key="index"
                                         :lazy="false"
                                     />
                                 </div>
@@ -71,18 +59,14 @@
                                         variant="outline-success"
                                         size="sm"
                                         class="text-center"
-                                        :to="
-                                            '/workout/new?w=' + templateData._id
-                                        "
+                                        :to="'/workout/new?w=' + templateData._id"
                                     >
                                         Start Template
                                         <b-icon-play />
                                     </b-button>
                                 </div>
                                 <div class="mt-4">
-                                    <Viewer
-                                        :initialValue="templateData.description"
-                                    />
+                                    <Viewer :initialValue="templateData.description" />
                                 </div>
                             </b-card-text>
                         </b-card-body>
@@ -129,9 +113,7 @@
                         <b-card-title>
                             Muscle Groups
                         </b-card-title>
-                        <MuscleGroup
-                            :selectedGroups="templateData.muscleGroups"
-                        />
+                        <MuscleGroup :selectedGroups="templateData.muscleGroups" />
                     </b-card-body>
                 </b-card>
 
@@ -166,8 +148,7 @@
             :ok-title-html="isDeleting ? '<b-spinner />' : 'Ok'"
         >
             <div>
-                Are you sure you want to delete this template? This can not be
-                undone.
+                Are you sure you want to delete this template? This can not be undone.
             </div>
 
             <template #modal-footer="{ ok, cancel }">
@@ -175,12 +156,7 @@
                     <div>Cancel</div>
                 </b-button>
 
-                <b-button
-                    size="sm"
-                    variant="danger"
-                    @click="ok"
-                    :disabled="isDeleting"
-                >
+                <b-button size="sm" variant="danger" @click="ok" :disabled="isDeleting">
                     <div v-if="!isDeleting">Ok</div>
                     <div v-else><b-spinner small /></div>
                 </b-button>
@@ -247,26 +223,23 @@ export default {
                 const path = "/template/" + this.$route.params.templateid;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     queryStringParameters: {
                         counters: true
                     }
                 };
 
-                const response = await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                ).catch(err => {
-                    throw new Error(
-                        "Error downloading template: " +
-                            this.$route.params.templateid +
-                            " at promise catch: " +
-                            err
-                    );
-                });
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        throw new Error(
+                            "Error downloading template: " +
+                                this.$route.params.templateid +
+                                " at promise catch: " +
+                                err
+                        );
+                    }
+                );
 
                 if (!response) {
                     throw new Error(
@@ -303,7 +276,6 @@ export default {
                 this.isLiked = response.data.isLiked;
                 this.isFollowed = response.data.isFollowed;
                 this.isFollowable = response.data.isFollowable;
-
             } catch (err) {
                 console.error(err);
             } finally {
@@ -323,16 +295,11 @@ export default {
             const path = "/template/" + this.$route.params.templateid;
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken
-                        .jwtToken
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                 }
             };
 
-            const response = await API.del(
-                this.$store.state.apiName,
-                path,
-                myInit
-            );
+            const response = await API.del(this.$store.state.apiName, path, myInit);
             console.log("Deletion success:", response);
 
             this.isDeleting = false;
@@ -342,20 +309,20 @@ export default {
 
         handleLike: function(x) {
             if (x > 0) {
-                this.likeCount ++;
+                this.likeCount++;
                 this.isLiked = true;
             } else {
-                this.likeCount --;
+                this.likeCount--;
                 this.isLiked = false;
             }
         },
 
         handleFollow: function(x) {
             if (x > 0) {
-                this.followCount ++;
+                this.followCount++;
                 this.isFollowed = true;
             } else {
-                this.followCount --;
+                this.followCount--;
                 this.isFollowed = false;
             }
         }

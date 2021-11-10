@@ -9,9 +9,7 @@
                 size="sm"
             >
                 {{ exercise.name }}
-                <strong v-if="isVisible" aria-hidden="true" class="ml-auto"
-                    >-</strong
-                >
+                <strong v-if="isVisible" aria-hidden="true" class="ml-auto">-</strong>
                 <strong v-else aria-hidden="true" class="ml-auto">+</strong>
             </b-button>
         </b-card-header>
@@ -81,23 +79,20 @@ export default {
                 const path = "/exercise/" + this.$props.exercise.exerciseId;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     }
                 };
 
-                const response = await API.get(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                ).catch(err => {
-                    throw new Error(
-                        "Error downloading exercise: " +
-                            this.$props.exercise.exerciseId +
-                            " at promise catch: " +
-                            err
-                    );
-                });
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        throw new Error(
+                            "Error downloading exercise: " +
+                                this.$props.exercise.exerciseId +
+                                " at promise catch: " +
+                                err
+                        );
+                    }
+                );
 
                 if (!response) {
                     throw new Error(

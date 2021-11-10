@@ -6,11 +6,7 @@
                     <b-card class="newTemplateCard" no-body>
                         <b-card-body>
                             <b-card-title>
-                                {{
-                                    templateForm.name
-                                        ? templateForm.name
-                                        : "New Template"
-                                }}
+                                {{ templateForm.name ? templateForm.name : "New Template" }}
                             </b-card-title>
                             <b-form-group label="Name" label-for="nameInput">
                                 <b-form-input
@@ -27,9 +23,7 @@
                     <b-card no-body class="exerciseSelectCard">
                         <b-card-body>
                             <h5>Exercises</h5>
-                            <TemplateBuilder
-                                @updateExercises="updateExercises"
-                            />
+                            <TemplateBuilder @updateExercises="updateExercises" />
                         </b-card-body>
                     </b-card>
 
@@ -55,18 +49,14 @@
                     <b-card class="difficultySelectCard" no-body>
                         <b-card-body>
                             <h5>Difficulty</h5>
-                            <DifficultySelector
-                                @updateDifficulty="updateDifficulty"
-                            />
+                            <DifficultySelector @updateDifficulty="updateDifficulty" />
                         </b-card-body>
                     </b-card>
 
                     <b-card class="muscleGroupSelectCard" no-body>
                         <b-card-body>
                             <h5>Muscle Groups</h5>
-                            <MuscleGroupSelector
-                                @updateMuscleGroups="updateMuscleGroups"
-                            />
+                            <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
                         </b-card-body>
                     </b-card>
 
@@ -82,9 +72,7 @@
         <b-row class="justify-content-md-center">
             <b-col cols="12" md="auto">
                 <b-container class="buttonsCont">
-                    <b-button
-                        variant="outline-danger"
-                        @click="$router.push('/templates/')"
+                    <b-button variant="outline-danger" @click="$router.push('/templates/')"
                         >Cancel</b-button
                     >
                     <b-button
@@ -161,36 +149,27 @@ export default {
             try {
                 this.isCreating = true;
 
-                console.log(
-                    JSON.stringify(
-                        JSON.stringify({ templateForm: this.templateForm })
-                    )
-                );
+                console.log(JSON.stringify(JSON.stringify({ templateForm: this.templateForm })));
 
                 const path = "/template";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data
-                            .idToken.jwtToken
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
                     },
                     body: {
                         templateForm: this.templateForm
                     }
                 };
 
-                const response = await API.post(
-                    this.$store.state.apiName,
-                    path,
-                    myInit
-                ).catch(err => {
-                    throw new Error("API Error at promise catch: " + err);
-                });
+                const response = await API.post(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        throw new Error("API Error at promise catch: " + err);
+                    }
+                );
 
                 if (!response.data) {
                     if (response.errorMessage) {
-                        throw new Error(
-                            "API Error in response: " + response.errorMessage
-                        );
+                        throw new Error("API Error in response: " + response.errorMessage);
                     }
                 }
 
@@ -201,9 +180,7 @@ export default {
         },
 
         updateDescription: function() {
-            this.templateForm.description = this.$refs.toastuiEditor.invoke(
-                "getMarkdown"
-            );
+            this.templateForm.description = this.$refs.toastuiEditor.invoke("getMarkdown");
         },
 
         updateDifficulty: function(difficulty) {

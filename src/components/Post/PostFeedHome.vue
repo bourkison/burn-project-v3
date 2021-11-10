@@ -4,9 +4,7 @@
             <b-card-body>
                 <b-card-title>
                     <div class="d-flex align-items">
-                        <b-avatar
-                            :src="$store.state.userProfile.docData.profilePhoto"
-                        />
+                        <b-avatar :src="$store.state.userProfile.docData.profilePhoto" />
                         <div class="ml-2">
                             Welcome,
                             {{ $store.state.userProfile.docData.firstName }}
@@ -37,7 +35,7 @@
 
 <script>
 import { db } from "@/firebase";
-import { API } from 'aws-amplify';
+import { API } from "aws-amplify";
 
 import PostNew from "@/components/Post/PostNew.vue";
 import PostFeed from "@/components/Post/PostFeed.vue";
@@ -58,7 +56,7 @@ export default {
     },
 
     created: async function() {
-        const path = "/post"
+        const path = "/post";
         const myInit = {
             headers: {
                 Authorization: this.$store.state.userProfile.data.idToken.jwtToken
@@ -66,12 +64,12 @@ export default {
             queryStringParameters: {
                 loadAmount: 5
             }
-        }
+        };
 
         const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
         postResult.forEach(post => {
-            this.posts.push(post)
+            this.posts.push(post);
         });
 
         this.isLoading = false;
@@ -106,8 +104,7 @@ export default {
                         setTimeout(() => {
                             this.isLoadingMore = false;
                         }, 500);
-                        this.lastLoadedPost =
-                            postSnapshot.docs[postSnapshot.size - 1];
+                        this.lastLoadedPost = postSnapshot.docs[postSnapshot.size - 1];
                     })
                     .catch(e => {
                         console.error("Error loading more posts", e);

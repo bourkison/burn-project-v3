@@ -3,9 +3,7 @@
         <b-card-body>
             <div v-if="!isLoading">
                 <b-card-title
-                    ><h6>
-                        {{ selectedExercise.name }} One Rep Max
-                    </h6></b-card-title
+                    ><h6>{{ selectedExercise.name }} One Rep Max</h6></b-card-title
                 >
                 <canvas id="oneRepMaxChart"></canvas>
             </div>
@@ -51,10 +49,7 @@ export default {
             console.log("Not loading 1RM chart for this user.");
         } else {
             if (this.$store.state.userWorkouts === null) {
-                await this.$store.dispatch(
-                    "fetchWorkouts",
-                    this.$store.state.userProfile.data
-                );
+                await this.$store.dispatch("fetchWorkouts", this.$store.state.userProfile.data);
             }
 
             this.buildChartData();
@@ -107,9 +102,7 @@ export default {
                             context.mode === "default" &&
                             !this.delayed
                         ) {
-                            delay =
-                                context.dataIndex * 150 +
-                                context.datasetIndex * 50;
+                            delay = context.dataIndex * 150 + context.datasetIndex * 50;
                         }
                         return delay;
                     }
@@ -170,9 +163,7 @@ export default {
                         ].createdAt = workout.createdAt.toDate();
                     } else {
                         exerciseData[exercise.id] = [exercise];
-                        exerciseData[
-                            exercise.id
-                        ][0].createdAt = workout.createdAt.toDate();
+                        exerciseData[exercise.id][0].createdAt = workout.createdAt.toDate();
                     }
                 });
             });
@@ -197,9 +188,7 @@ export default {
 
             for (let i = this.amountInChart - 1; i >= 0; i--) {
                 this.chartLabels.push(
-                    dayjs(this.selectedExercise.data[i].createdAt).format(
-                        "DD-MM"
-                    )
+                    dayjs(this.selectedExercise.data[i].createdAt).format("DD-MM")
                 );
 
                 // Calculate 1RM for every set and sort.

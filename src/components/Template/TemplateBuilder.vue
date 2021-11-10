@@ -99,17 +99,15 @@ export default {
         let path = "/exercise";
         let myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken
-                    .jwtToken
+                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
             },
             queryStringParameters: {
                 loadAmount: 99
             }
         };
 
-        const exerciseReferenceResponse = (
-            await API.get(this.$store.state.apiName, path, myInit)
-        ).data;
+        const exerciseReferenceResponse = (await API.get(this.$store.state.apiName, path, myInit))
+            .data;
 
         exerciseReferenceResponse.forEach(exerciseReference => {
             path = "/exercise/" + exerciseReference.exerciseId;
@@ -132,25 +130,19 @@ export default {
                 // Check we haven't downloaded already (i.e. in followed or created exercises)
                 let cIndex, fIndex;
 
-                cIndex = this.createdExercises.findIndex(
-                    x => x._id === exercise.exerciseId
-                );
+                cIndex = this.createdExercises.findIndex(x => x._id === exercise.exerciseId);
 
                 if (cIndex < 0) {
-                    fIndex = this.followedExercises.findIndex(
-                        x => x._id === exercise.exerciseId
-                    );
+                    fIndex = this.followedExercises.findIndex(x => x._id === exercise.exerciseId);
                 }
 
                 // If not, download.
                 if (cIndex < 0 && fIndex < 0) {
                     path = "/exercise/" + exercise.exerciseId;
                     initExercisePromises.push(
-                        API.get(this.$store.state.apiName, path, myInit).then(
-                            result => {
-                                return result.data;
-                            }
-                        )
+                        API.get(this.$store.state.apiName, path, myInit).then(result => {
+                            return result.data;
+                        })
                     );
                 } else if (cIndex >= 0) {
                     initExercisePromises.push(
@@ -173,9 +165,7 @@ export default {
                 exercises.forEach(exercise => {
                     this.selectedExercises.push(exercise);
                     this.$nextTick(() => {
-                        document
-                            .querySelector("#exercise-" + exercise._id)
-                            .classList.add("active");
+                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
                     });
                 });
             }
@@ -187,9 +177,7 @@ export default {
                 );
                 this.$props.initExercises.forEach(exercise => {
                     if (document.querySelector("#exercise-" + exercise._id)) {
-                        document
-                            .querySelector("#exercise-" + exercise._id)
-                            .classList.add("active");
+                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
                     }
                 });
             });
@@ -200,13 +188,8 @@ export default {
 
     methods: {
         addExercise: function(exercise) {
-            if (
-                this.selectedExercises.findIndex(x => x._id === exercise._id) <
-                0
-            ) {
-                document
-                    .querySelector("#exercise-" + exercise._id)
-                    .classList.add("active");
+            if (this.selectedExercises.findIndex(x => x._id === exercise._id) < 0) {
+                document.querySelector("#exercise-" + exercise._id).classList.add("active");
                 this.selectedExercises.push(exercise);
             } else {
                 this.removeExercise(exercise);
@@ -214,14 +197,10 @@ export default {
         },
 
         removeExercise: function(exercise) {
-            let index = this.selectedExercises.findIndex(
-                x => x._id === exercise._id
-            );
+            let index = this.selectedExercises.findIndex(x => x._id === exercise._id);
             this.selectedExercises.splice(index, 1);
 
-            document
-                .querySelector("#exercise-" + exercise._id)
-                .classList.remove("active");
+            document.querySelector("#exercise-" + exercise._id).classList.remove("active");
         },
 
         changeOrder: function(e) {

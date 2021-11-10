@@ -3,8 +3,15 @@
         <b-row>
             <b-col sm="3">
                 <QuickStart class="quickStart" />
-                <RecentWorkoutsChart class="recentWorkoutsChart" :userId="$store.state.userProfile.data.uid" />
-                <OneRepMaxExerciseChart class="oneRepMaxExerciseChart" :exercisePosition="0" :userId="$store.state.userProfile.data.uid" />
+                <RecentWorkoutsChart
+                    class="recentWorkoutsChart"
+                    :username="$store.state.userProfile.docData.username"
+                />
+                <OneRepMaxExerciseChart
+                    class="oneRepMaxExerciseChart"
+                    :exercisePosition="0"
+                    :userId="$store.state.userProfile.data.uid"
+                />
             </b-col>
             <b-col sm="6">
                 <b-container v-if="$store.state.userProfile.loggedIn">
@@ -19,7 +26,7 @@
                     <div class="adTest bg-warning text-center">
                         Homepage Ad Here.
                     </div>
-                 </div>
+                </div>
             </b-col>
         </b-row>
     </b-container>
@@ -29,15 +36,15 @@
 </template>
 
 <script>
-import QuickStart from '@/components/Utility/QuickStart.vue'
-import PostFeedHome from '@/components/Post/PostFeedHome.vue'
-import RecentWorkoutsChart from '@/components/Charts/RecentWorkoutsChart.vue'
-import OneRepMaxExerciseChart from '@/components/Charts/OneRepMaxExerciseChart.vue'
+import QuickStart from "@/components/Utility/QuickStart.vue";
+import PostFeedHome from "@/components/Post/PostFeedHome.vue";
+import RecentWorkoutsChart from "@/components/Charts/RecentWorkoutsChart.vue";
+import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
 
 export default {
-    name: 'Home',
+    name: "Home",
     components: { OneRepMaxExerciseChart, PostFeedHome, RecentWorkoutsChart, QuickStart }
-}
+};
 </script>
 
 <style scoped>
@@ -52,7 +59,7 @@ export default {
     width: 300px;
     padding: 0;
     margin-top: 40px;
-    line-height: 250px
+    line-height: 250px;
 }
 
 .quickStart,

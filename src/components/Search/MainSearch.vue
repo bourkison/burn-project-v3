@@ -23,10 +23,7 @@
                 <div
                     v-if="userResponses.length > 0"
                     :class="
-                        templateResponses.length > 0 ||
-                        exerciseResponses.length > 0
-                            ? 'mb-2'
-                            : ''
+                        templateResponses.length > 0 || exerciseResponses.length > 0 ? 'mb-2' : ''
                     "
                 >
                     <h6>Users</h6>
@@ -102,10 +99,7 @@ export default {
             displayPopover: false,
 
             // Algolia:
-            searchClient: algoliasearch(
-                "O9KO1L25CJ",
-                "e6492bc28cfda8670d4981bb26e4bbbd"
-            ),
+            searchClient: algoliasearch("O9KO1L25CJ", "e6492bc28cfda8670d4981bb26e4bbbd"),
             userIndex: null,
             exerciseIndex: null,
             templateIndex: null
@@ -158,23 +152,19 @@ export default {
                 );
 
                 searchPromises.push(
-                    this.exerciseIndex
-                        .search(this.searchText)
-                        .then(responses => {
-                            responses.hits.forEach(hit => {
-                                this.exerciseResponses.push(hit);
-                            });
-                        })
+                    this.exerciseIndex.search(this.searchText).then(responses => {
+                        responses.hits.forEach(hit => {
+                            this.exerciseResponses.push(hit);
+                        });
+                    })
                 );
 
                 searchPromises.push(
-                    this.templateIndex
-                        .search(this.searchText)
-                        .then(responses => {
-                            responses.hits.forEach(hit => {
-                                this.templateResponses.push(hit);
-                            });
-                        })
+                    this.templateIndex.search(this.searchText).then(responses => {
+                        responses.hits.forEach(hit => {
+                            this.templateResponses.push(hit);
+                        });
+                    })
                 );
 
                 Promise.all(searchPromises).then(() => {

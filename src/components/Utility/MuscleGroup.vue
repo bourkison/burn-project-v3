@@ -11,14 +11,7 @@
             xml:space="preserve"
             style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"
         >
-            <rect
-                id="Artboard1"
-                x="0"
-                y="0"
-                width="175.551"
-                height="206.785"
-                style="fill:none;"
-            />
+            <rect id="Artboard1" x="0" y="0" width="175.551" height="206.785" style="fill:none;" />
             <g id="Back-Muscles">
                 <g>
                     <g id="Trapezius">
@@ -288,27 +281,21 @@ export default {
             // Not sure what's happening here. Watcher appears to be broken when clicking on SVG.
             // Do this check to workaround as only happens when pushing to array.
             if (newVal.length == oldVal.length && newVal.length > 0) {
-                document
-                    .getElementById(newVal[newVal.length - 1])
-                    .children.forEach(child => {
-                        child.style.fill = "red";
-                    });
+                document.getElementById(newVal[newVal.length - 1]).children.forEach(child => {
+                    child.style.fill = "red";
+                });
             } else if (newVal.length > oldVal.length && newVal.length > 0) {
                 let difference = newVal.filter(x => !oldVal.includes(x));
                 difference.forEach(elementId => {
-                    document
-                        .getElementById(elementId)
-                        .children.forEach(child => {
-                            child.style.fill = "red";
-                        });
+                    document.getElementById(elementId).children.forEach(child => {
+                        child.style.fill = "red";
+                    });
                 });
             } else if (oldVal.length > 0) {
                 let difference = oldVal.filter(x => !newVal.includes(x));
-                document
-                    .getElementById(difference[0])
-                    .children.forEach(child => {
-                        child.style.fill = "rgb(64,64,64)";
-                    });
+                document.getElementById(difference[0]).children.forEach(child => {
+                    child.style.fill = "rgb(64,64,64)";
+                });
             }
         },
 
