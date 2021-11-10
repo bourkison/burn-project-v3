@@ -33,6 +33,9 @@ const getRecentWorkouts = async function(event) {
     let endDate = event.queryStringParameters.endDate;
     let username = event.queryStringParameters.username;
 
+    startDate = isNaN(Number(startDate)) ? new Date(startDate) : new Date(Number(startDate));
+    endDate = isNaN(Number(endDate)) ? new Date(endDate) : new Date(Number(endDate));
+
     let response = {
         statusCode: 500,
         headers: {
@@ -58,14 +61,14 @@ const getRecentWorkouts = async function(event) {
                                 as: "w",
                                 cond: {
                                     $and: [
-                                        { $gte: [ "$$w.createdAt", new Date(startDate) ] },
-                                        { $lte: [ "$$w.createdAt", new Date(endDate) ] }
+                                        { $gte: [ "$$w.createdAt", startDate ] },
+                                        { $lte: [ "$$w.createdAt", endDate ] }
                                     ]
                                 }
                             }
                         },
                         as: "w",
-                        cond: {
+                        in: {
                             "createdAt": "$$w.createdAt"
                         }
                     }
@@ -87,10 +90,10 @@ const getRecentWorkouts = async function(event) {
     workoutResult = workoutResult.workouts;
 
     // Data is object with date as key and amount in that date as value.
-    let responseData = [];
+    let responseData = {};
     workoutResult.forEach(workout => {
         // Convert to yyyy-mm-dd
-        let d = new Date(workout.dreatedAt);
+        let d = new Date(workout.createdAt);
         let mm = d.getMonth() + 1;
         let dd = d.getDate();
 
@@ -104,7 +107,7 @@ const getRecentWorkouts = async function(event) {
         success: true,
         data: responseData
     })
-    
+
     return response;
 }
 
@@ -124,7 +127,7 @@ exports.handler = async (event, context) => {
 
     switch (event.httpMethod) {
         case "GET":
-            await getStats(event);
+            response = await getStats(event);
             break;
         default:
             response = {

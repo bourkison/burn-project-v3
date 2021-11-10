@@ -3,11 +3,11 @@
         <b-card-body>
             <b-card-title><h6>Workouts per Week</h6></b-card-title>
 
-            <div v-if="!isLoading && recentWorkouts">
+            <div v-if="!isLoading && hasData">
                 <canvas id="recentWorkoutsChart"></canvas>
             </div>
             <div
-                v-else-if="!isLoading && !recentWorkouts"
+                v-else-if="!isLoading && !hasData"
                 class="align-items text-center text-muted small-font mt-3"
             >
                 No recent workouts!
@@ -20,24 +20,23 @@
 </template>
 
 <script>
-import { userWorkoutsCollection } from "@/firebase";
 import { Chart, registerables } from "chart.js";
 import dayjs from "dayjs";
+import { API } from "aws-amplify";
 
 export default {
     name: "RecentWorkoutsChart",
-    props: {
-        userId: {
-            type: String,
-            required: true
-        }
-    },
+    // props: {
+    //     userId: {
+    //         type: String,
+    //         required: true
+    //     }
+    // },
     data() {
         return {
             isLoading: true,
-            recentWorkouts: false,
             amountOfValues: 6,
-            workoutData: [],
+            hasData: false,
 
             // Chart.js
             delayed: false,
@@ -47,47 +46,27 @@ export default {
     },
 
     mounted: function() {
-        this.commenceBuild();
+        this.chartLabels = this.buildDayLabels();
+        this.getData();
     },
 
     methods: {
-        commenceBuild: async function() {
-            this.chartLabels = this.buildDayLabels();
-
-            if (this.$props.userId !== this.$store.state.userProfile.data.uid) {
-                userWorkoutsCollection(this.$store.state.userProfile.data.uid)
-                    .where("createdAt", ">=", this.chartLabels[0])
-                    .orderBy("createdAt")
-                    .get()
-                    .then(workoutSnapshot => {
-                        workoutSnapshot.forEach(workoutDoc => {
-                            this.workoutData.push(workoutDoc.data());
-                        });
-
-                        this.buildChartData();
-                    });
-            } else {
-                if (this.$store.state.userWorkouts === null) {
-                    await this.$store.dispatch(
-                        "fetchWorkouts",
-                        this.$store.state.userProfile.data
-                    );
+        getData: async function() {
+            const path = "/stats/recentWorkouts";
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                },
+                queryStringParameters: {
+                    startDate: this.chartLabels[0].getTime(),
+                    endDate: new Date().getTime(),
+                    username: this.$store.state.userProfile.docData.username
                 }
-
-                this.workoutData = this.$store.state.userWorkouts.filter(x => {
-                    if (
-                        dayjs(this.chartLabels[0]).isBefore(
-                            dayjs(x.createdAt.toDate())
-                        )
-                    ) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-
-                this.buildChartData();
             }
+
+            const response = await API.get(this.$store.state.apiName, path, myInit)
+
+            this.buildChartData(response.data);
         },
 
         buildChart: function() {
@@ -185,58 +164,65 @@ export default {
             return arrayOfDates;
         },
 
-        buildChartData: function() {
-            this.chartLabels.forEach((label, i) => {
-                let temp = this.workoutData.filter(x => {
-                    if (i !== this.chartLabels.length - 1) {
-                        if (
-                            dayjs(x.createdAt.toDate()).isAfter(dayjs(label)) &&
-                            dayjs(x.createdAt.toDate()).isBefore(
-                                dayjs(this.chartLabels[i + 1])
-                            )
-                        ) {
-                            return true;
+        buildChartData: function(input) {
+            let dates = Object.keys(input);
+            let amounts = Object.values(input);
+            let data = [];
+
+            // First change data to be same length as labels, with all 0s.
+            for (let i = 0; i < this.chartLabels.length; i ++) {
+                data.push(0);
+            }
+
+            if (dates.length) {
+                this.hasData = true;
+
+                for (let i = 0; i < dates.length; i++) {
+                    let date = new Date(dates[i]);
+
+                    for (let j = 0; j < this.chartLabels.length; j ++) {
+                        // If we're on last iterator, push to last value in data array.
+                        if (j === this.chartLabels.length - 1) {
+                            data[j] += amounts[i];
+                            break;
                         }
-                    } else {
-                        if (dayjs(x.createdAt.toDate()).isAfter(dayjs(label))) {
-                            return true;
+
+                        // Else check if data is greater than this iterator, and less than the next.
+                        if (date.getTime() >= new Date(this.chartLabels[j]).getTime() && date.getTime() < new Date(this.chartLabels[j + 1]).getTime()) {
+                            data[j] += amounts[i];
+                            break;
                         }
                     }
-                });
-
-                this.chartData.push(temp.length);
-                this.chartLabels[i] = dayjs(label).format("DD-MM");
-            });
-
-            this.chartData.forEach(week => {
-                if (week > 0) {
-                    this.recentWorkouts = true;
                 }
-            });
 
-            this.isLoading = false;
-
-            if (this.recentWorkouts) {
-                this.$nextTick(() => {
-                    this.buildChart();
-                });
+                // Finally, prettify Chart Labels.
+                for (let i = 0; i < this.chartLabels.length; i ++) {
+                    this.chartLabels[i] = dayjs(this.chartLabels[i]).format("DD MMM");
+                }
+            } else {
+                this.hasData = false;
+                this.isLoading = false;
             }
+
+            this.chartData = data;
+            this.isLoading = false;
+            console.log("DATA:", this.chartLabels, this.chartData);
+            this.$nextTick(() => { this.buildChart() });
         }
     },
 
-    watch: {
-        userId: function() {
-            this.isLoading = true;
-            this.workoutData = [];
-            this.delayed = false;
-            this.chartLabels = [];
-            this.chartData = [];
-            console.log("RESET");
-            this.$nextTick(() => {
-                this.commenceBuild();
-            });
-        }
-    }
+    // watch: {
+    //     userId: function() {
+    //         this.isLoading = true;
+    //         this.delayed = false;
+    //         this.chartLabels = [];
+    //         this.chartData = [];
+    //         console.log("RESET");
+    //         this.$nextTick(() => {
+    //             this.commenceBuild();
+    //         });
+    //     }
+    // }
 };
 </script>
 
