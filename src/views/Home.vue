@@ -10,7 +10,7 @@
                 <OneRepMaxExerciseChart
                     class="oneRepMaxExerciseChart"
                     :exercisePosition="0"
-                    :userId="$store.state.userProfile.data.uid"
+                    :username="$store.state.userProfile.docData.username"
                 />
             </b-col>
             <b-col sm="6">

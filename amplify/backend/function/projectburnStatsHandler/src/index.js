@@ -11,10 +11,10 @@ const getStats = async function(event) {
 
     switch (event.pathParameters.proxy) {
         case "recentworkouts":
-            response = await getRecentWorkouts(event);
+            response = await amountWorkouts(event);
             break;
         case "onerepmax":
-            response = await getOneRepMax(event);
+            response = await exerciseStats(event);
             break;
         default:
             response = {
@@ -34,7 +34,7 @@ const getStats = async function(event) {
     return response;
 };
 
-const getRecentWorkouts = async function(event) {
+const amountWorkouts = async function(event) {
     let startDate = event.queryStringParameters.startDate;
     let endDate = event.queryStringParameters.endDate;
     let username = event.queryStringParameters.username;
@@ -119,10 +119,11 @@ const getRecentWorkouts = async function(event) {
     return response;
 };
 
-const getOneRepMax = async function(event) {
+const exerciseStats = async function(event) {
     let exerciseId = event.queryStringParameters.exerciseId || "";
     let username = event.queryStringParameters.username;
     let exerciseIndex = event.queryStringParameters.exerciseIndex || 0;
+    let dataToPull = event.queryStringParameters.dataToPull.split(",") || ["orm"];
 
     let response = {
         statusCode: 500,
@@ -196,8 +197,18 @@ const getOneRepMax = async function(event) {
     
     // Data is object with date as key and highest one rep max for that date as value.
     let responseData = {};
+
+    if (dataToPull.includes("orm")) {
+        responseData.orm = {};
+    }
+
+    if (dataToPull.includes("totalReps")) {
+        responseData.totalReps = {};
+    }
+
     workoutResult.forEach(workout => {
         let maxOrm = 0;
+        let totalReps = 0;
 
         workout.exercises.forEach(exercise => {
             exercise.sets.forEach(set => {
@@ -208,6 +219,8 @@ const getOneRepMax = async function(event) {
                         maxOrm = orm;
                     }
                 }
+
+                totalReps += set.measureAmount;
             })
 
         })
@@ -219,8 +232,18 @@ const getOneRepMax = async function(event) {
 
         let s = [d.getFullYear(), (mm > 9 ? "" : "0") + mm, (dd > 9 ? "" : "0") + dd].join("-");
 
-        if (!responseData[s] || maxOrm > responseData[s]) {
-            responseData[s] = maxOrm;
+        if (dataToPull.includes("orm")) {
+            if (!responseData.orm[s] || maxOrm > responseData.orm[s]) {
+                responseData.orm[s] = maxOrm;
+            }
+        }
+
+        if (dataToPull.includes("totalReps")) {
+            if (responseData.totalReps[s]) {
+                responseData.totalReps[s] += totalReps;
+            } else {
+                responseData.totalReps[s] = totalReps;
+            }
         }
     });
 

@@ -52,7 +52,7 @@ export default {
 
     methods: {
         getData: async function() {
-            const path = "/stats/recentWorkouts";
+            const path = "/stats/recentworkouts";
             const myInit = {
                 headers: {
                     Authorization: this.$store.state.userProfile.data.idToken.jwtToken
