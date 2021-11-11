@@ -101,7 +101,6 @@
 <script>
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { db } from "@/firebase";
 import { API } from "aws-amplify";
 
 import UserList from "@/components/User/UserList.vue";
@@ -205,30 +204,30 @@ export default {
         },
 
         expandLikes: function() {
-            if (this.likeCount > 0) {
-                if (this.likes.length == 0) {
-                    this.isLoadingLikes = true;
-                    console.log("Downloading likes");
+            // if (this.likeCount > 0) {
+            //     if (this.likes.length == 0) {
+            //         this.isLoadingLikes = true;
+            //         console.log("Downloading likes");
 
-                    db.collection(this.$props.collection)
-                        .doc(this.$props.docId)
-                        .collection("comments")
-                        .doc(this.$props.comment.id)
-                        .collection("likes")
-                        .get()
-                        .then(likeSnapshot => {
-                            likeSnapshot.forEach(like => {
-                                this.likes.push(like.data());
-                            });
+            //         db.collection(this.$props.collection)
+            //             .doc(this.$props.docId)
+            //             .collection("comments")
+            //             .doc(this.$props.comment.id)
+            //             .collection("likes")
+            //             .get()
+            //             .then(likeSnapshot => {
+            //                 likeSnapshot.forEach(like => {
+            //                     this.likes.push(like.data());
+            //                 });
 
-                            this.isLoadingLikes = false;
-                            console.log(this.likes);
-                            this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
-                        });
-                } else {
-                    this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
-                }
-            }
+            //                 this.isLoadingLikes = false;
+            //                 console.log(this.likes);
+            //                 this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
+            //             });
+            //     } else {
+            //         this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
+            //     }
+            // }
         },
 
         confirmDeleteComment: function() {

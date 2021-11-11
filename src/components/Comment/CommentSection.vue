@@ -125,7 +125,6 @@
 </template>
 
 <script>
-import { db } from "@/firebase";
 import { API } from "aws-amplify";
 
 import UserList from "@/components/User/UserList.vue";
@@ -387,64 +386,25 @@ export default {
         },
 
         loadMoreComments: function() {
-            this.isLoadingMoreComments = true;
+            // this.isLoadingMoreComments = true;
 
-            db.collection(this.$props.collection)
-                .doc(this.$props.docId)
-                .collection("comments")
-                .orderBy("createdAt", "desc")
-                .startAfter(this.lastLoadedComment)
-                .limit(5)
-                .get()
-                .then(commentSnapshot => {
-                    commentSnapshot.forEach(comment => {
-                        let data = comment.data();
-                        data.id = comment.id;
-                        this.comments.push(data);
-                    });
+            // db.collection(this.$props.collection)
+            //     .doc(this.$props.docId)
+            //     .collection("comments")
+            //     .orderBy("createdAt", "desc")
+            //     .startAfter(this.lastLoadedComment)
+            //     .limit(5)
+            //     .get()
+            //     .then(commentSnapshot => {
+            //         commentSnapshot.forEach(comment => {
+            //             let data = comment.data();
+            //             data.id = comment.id;
+            //             this.comments.push(data);
+            //         });
 
-                    this.isLoadingMoreComments = false;
-                    this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
-                });
-        },
-
-        checkIfUserFollowed: function() {
-            return db
-                .collection("users")
-                .doc(this.$store.state.userProfile.data.uid)
-                .collection(this.$props.collection)
-                .doc(this.$props.docId)
-                .get()
-                .then(docRef => {
-                    if (docRef.exists) {
-                        if (!docRef.data().isFollow) {
-                            this.isFollowable = false;
-                        } else {
-                            this.isFollowable = true;
-                        }
-                        this.isFollowed = docRef.id; // Collection document ID.
-                    } else {
-                        this.isFollowable = true;
-                        this.isFollowed = "";
-                    }
-                });
-        },
-
-        downloadCounters: function() {
-            return db
-                .collection(this.$props.collection)
-                .doc(this.$props.docId)
-                .collection("counters")
-                .get()
-                .then(counterSnapshot => {
-                    counterSnapshot.forEach(counterDoc => {
-                        this.likeCount += counterDoc.data().likeCount;
-                        this.commentCount += counterDoc.data().commentCount;
-                        if (this.$props.followableComponent) {
-                            this.followCount += counterDoc.data().followCount;
-                        }
-                    });
-                });
+            //         this.isLoadingMoreComments = false;
+            //         this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
+            //     });
         },
 
         generateId: function(n) {

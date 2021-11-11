@@ -104,7 +104,6 @@
 </template>
 
 <script>
-import { userTemplatesCollection } from "@/firebase";
 import { API } from "aws-amplify";
 
 import TemplateFeed from "@/components/Template/TemplateFeed.vue";
@@ -212,28 +211,28 @@ export default {
 
         loadMoreTemplates: function() {
             if (!this.isLoadingMore) {
-                userTemplatesCollection(this.$store.state.userProfile.data.uid)
-                    .orderBy("createdAt", "desc")
-                    .startAfter(this.lastLoadedTemplate)
-                    .limit(5)
-                    .get()
-                    .then(templateSnapshot => {
-                        templateSnapshot.forEach(template => {
-                            this.templates.push(template.id);
-                        });
+                // userTemplatesCollection(this.$store.state.userProfile.data.uid)
+                //     .orderBy("createdAt", "desc")
+                //     .startAfter(this.lastLoadedTemplate)
+                //     .limit(5)
+                //     .get()
+                //     .then(templateSnapshot => {
+                //         templateSnapshot.forEach(template => {
+                //             this.templates.push(template.id);
+                //         });
 
-                        if (templateSnapshot.size < 5) {
-                            this.moreToLoad = false;
-                        }
+                //         if (templateSnapshot.size < 5) {
+                //             this.moreToLoad = false;
+                //         }
 
-                        setTimeout(() => {
-                            this.isLoadingMore = false;
-                        }, 500);
-                        this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-                    })
-                    .catch(e => {
-                        console.error("Error downloading more templates:", e);
-                    });
+                //         setTimeout(() => {
+                //             this.isLoadingMore = false;
+                //         }, 500);
+                //         this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
+                //     })
+                //     .catch(e => {
+                //         console.error("Error downloading more templates:", e);
+                //     });
             }
         },
 

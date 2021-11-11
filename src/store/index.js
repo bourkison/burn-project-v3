@@ -1,7 +1,6 @@
 import { API } from "aws-amplify";
 import Vue from "vue";
 import Vuex from "vuex";
-import { userWorkoutsCollection } from "../firebase";
 
 Vue.use(Vuex);
 
@@ -278,38 +277,6 @@ export default new Vuex.Store({
 
             return;
         },
-
-        // As this function may get callled multiple times from different components,
-        // Store the promise in an array to avoid loading it multiple times.
-        fetchWorkouts: async function({ commit, state }, user) {
-            if (state.workoutPromises.length === 0) {
-                commit("setLoadingWorkouts", [
-                    userWorkoutsCollection(user.uid)
-                        .orderBy("createdAt", "desc")
-                        .get()
-                ]);
-
-                const responses = await Promise.all(state.workoutPromises);
-
-                responses.forEach(workoutSnapshot => {
-                    let workouts = [];
-                    if (workoutSnapshot.size > 0) {
-                        workoutSnapshot.forEach(workout => {
-                            let d = workout.data();
-                            d.id = workout.id;
-                            workouts.push(d);
-                        });
-                    }
-
-                    commit("setLoggedInUserWorkouts", workouts);
-                    commit("setLoadingWorkouts", []);
-                });
-            } else {
-                await Promise.all(state.workoutPromises).then(() => {
-                    commit("setLoadingWorkouts", []);
-                });
-            }
-        }
     },
     modules: {
         activeWorkout: activeWorkoutModule

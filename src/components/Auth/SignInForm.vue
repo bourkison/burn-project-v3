@@ -109,6 +109,7 @@
                 <b-form-group label="Password" label-form="passwordInput">
                     <b-form-input
                         id="passwordInput"
+                        type="password"
                         v-model="resetPasswordForm.password"
                         placeholder="Enter Password"
                         required
@@ -118,6 +119,7 @@
                 <b-form-group label="Confirm Password" label-for="confPasswordInput">
                     <b-form-input
                         id="confPasswordInput"
+                        type="password"
                         v-model="resetPasswordForm.confPassword"
                         placeholder="Confirm Password"
                         required

@@ -53,6 +53,12 @@
                         </div>
                     </b-card-body>
                 </b-card>
+
+                <b-card class="navCard" no-body>
+                    <b-card-body>
+                        <b-card-title>Sort By</b-card-title>
+                    </b-card-body>
+                </b-card>
             </b-col>
             <b-col sm="6">
                 <b-container>
@@ -91,7 +97,6 @@
 </template>
 
 <script>
-import { templatesCollection } from "@/firebase";
 import { API } from "aws-amplify";
 
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
@@ -197,28 +202,28 @@ export default {
 
         loadMoreTemplates: function() {
             if (!this.isLoadingMore) {
-                templatesCollection()
-                    .orderBy("createdAt", "desc")
-                    .startAfter(this.lastLoadedTemplate)
-                    .limit(5)
-                    .get()
-                    .then(templateSnapshot => {
-                        templateSnapshot.forEach(template => {
-                            this.templates.push(template.id);
-                        });
+                // templatesCollection()
+                //     .orderBy("createdAt", "desc")
+                //     .startAfter(this.lastLoadedTemplate)
+                //     .limit(5)
+                //     .get()
+                //     .then(templateSnapshot => {
+                //         templateSnapshot.forEach(template => {
+                //             this.templates.push(template.id);
+                //         });
 
-                        if (templateSnapshot.size < 5) {
-                            this.moreToLoad = false;
-                        }
+                //         if (templateSnapshot.size < 5) {
+                //             this.moreToLoad = false;
+                //         }
 
-                        setTimeout(() => {
-                            this.isLoadingMore = false;
-                        }, 500);
-                        this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-                    })
-                    .catch(e => {
-                        console.error("Error downloading more templates:", e);
-                    });
+                //         setTimeout(() => {
+                //             this.isLoadingMore = false;
+                //         }, 500);
+                //         this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
+                //     })
+                //     .catch(e => {
+                //         console.error("Error downloading more templates:", e);
+                //     });
             }
         },
 

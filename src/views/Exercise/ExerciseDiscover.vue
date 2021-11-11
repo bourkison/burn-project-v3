@@ -106,7 +106,6 @@
 </template>
 
 <script>
-import { db } from "@/firebase";
 import { API } from "aws-amplify";
 import ExerciseFeed from "@/components/Exercise/ExerciseFeed";
 
@@ -203,28 +202,28 @@ export default {
 
         loadMoreExercises: function() {
             if (!this.isLoadingMore && !this.moreToLoad) {
-                db.collection("exercises")
-                    .orderBy("createdAt", "desc")
-                    .startAfter(this.lastLoadedExercise)
-                    .limit(5)
-                    .get()
-                    .then(exerciseSnapshot => {
-                        exerciseSnapshot.forEach(exercise => {
-                            this.exercises.push(exercise.id);
-                        });
+                // db.collection("exercises")
+                //     .orderBy("createdAt", "desc")
+                //     .startAfter(this.lastLoadedExercise)
+                //     .limit(5)
+                //     .get()
+                //     .then(exerciseSnapshot => {
+                //         exerciseSnapshot.forEach(exercise => {
+                //             this.exercises.push(exercise.id);
+                //         });
 
-                        if (exerciseSnapshot.size < 5) {
-                            this.moreToLoad = false;
-                        }
+                //         if (exerciseSnapshot.size < 5) {
+                //             this.moreToLoad = false;
+                //         }
 
-                        setTimeout(() => {
-                            this.isLoadingMore = false;
-                        }, 500);
-                        this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
-                    })
-                    .catch(e => {
-                        console.error("Error downloading more exercises:", e);
-                    });
+                //         setTimeout(() => {
+                //             this.isLoadingMore = false;
+                //         }, 500);
+                //         this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
+                //     })
+                //     .catch(e => {
+                //         console.error("Error downloading more exercises:", e);
+                //     });
             }
         },
 

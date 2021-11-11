@@ -198,14 +198,14 @@ export default {
             this.commentCount = response.commentCount;
             this.isLiked = response.isLiked;
 
+            this.createdAtText = dayjs(this.postData.createdAt).fromNow();
+
             try {
                 let urlPromises = [];
 
-                if (
-                    this.postData.filePaths.forEach(path => {
-                        urlPromises.push(Storage.get(path));
-                    })
-                );
+                this.postData.filePaths.forEach(path => {
+                    urlPromises.push(Storage.get(path));
+                })
 
                 const imageUrls = await Promise.all(urlPromises);
 

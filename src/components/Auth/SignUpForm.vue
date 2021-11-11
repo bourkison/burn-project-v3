@@ -303,7 +303,6 @@
 </template>
 
 <script>
-import { db } from "@/firebase";
 import { Auth, Storage, API } from "aws-amplify";
 
 import dayjs from "dayjs";
@@ -778,21 +777,21 @@ export default {
             if (this.signUpForm.username.trim() !== "") {
                 this.checkingUsername = true;
 
-                db.collection("users")
-                    .where("username", "==", this.signUpForm.username)
-                    .get()
-                    .then(userSnapshot => {
-                        if (userSnapshot.size > 0) {
-                            this.usernameUnique = false;
-                        } else {
-                            this.usernameUnique = true;
-                        }
+                // db.collection("users")
+                //     .where("username", "==", this.signUpForm.username)
+                //     .get()
+                //     .then(userSnapshot => {
+                //         if (userSnapshot.size > 0) {
+                //             this.usernameUnique = false;
+                //         } else {
+                //             this.usernameUnique = true;
+                //         }
 
-                        this.checkingUsername = false;
-                    })
-                    .catch(e => {
-                        console.error("Error checking username uniqueness", e);
-                    });
+                //         this.checkingUsername = false;
+                //     })
+                //     .catch(e => {
+                //         console.error("Error checking username uniqueness", e);
+                //     });
             } else {
                 this.usernameUnique = false;
             }

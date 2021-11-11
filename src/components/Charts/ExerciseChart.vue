@@ -7,7 +7,6 @@
 </template>
 
 <script>
-// import { userWorkoutsCollection } from '@/firebase'
 import dayjs from "dayjs";
 import { Chart, registerables } from "chart.js";
 

@@ -34,7 +34,6 @@
 </template>
 
 <script>
-import { db } from "@/firebase";
 import { API } from "aws-amplify";
 
 import PostNew from "@/components/Post/PostNew.vue";
@@ -85,30 +84,30 @@ export default {
                 console.log("LOADING MORE!");
                 this.isLoadingMore = true;
 
-                db.collection("users")
-                    .doc(this.$store.state.userProfile.data.uid)
-                    .collection("feed")
-                    .orderBy("createdAt", "desc")
-                    .startAfter(this.lastLoadedPost)
-                    .limit(5)
-                    .get()
-                    .then(postSnapshot => {
-                        postSnapshot.forEach(post => {
-                            this.posts.push(post.id);
-                        });
+                // db.collection("users")
+                //     .doc(this.$store.state.userProfile.data.uid)
+                //     .collection("feed")
+                //     .orderBy("createdAt", "desc")
+                //     .startAfter(this.lastLoadedPost)
+                //     .limit(5)
+                //     .get()
+                //     .then(postSnapshot => {
+                //         postSnapshot.forEach(post => {
+                //             this.posts.push(post.id);
+                //         });
 
-                        if (postSnapshot.size < 5) {
-                            this.moreToLoad = false;
-                        }
+                //         if (postSnapshot.size < 5) {
+                //             this.moreToLoad = false;
+                //         }
 
-                        setTimeout(() => {
-                            this.isLoadingMore = false;
-                        }, 500);
-                        this.lastLoadedPost = postSnapshot.docs[postSnapshot.size - 1];
-                    })
-                    .catch(e => {
-                        console.error("Error loading more posts", e);
-                    });
+                //         setTimeout(() => {
+                //             this.isLoadingMore = false;
+                //         }, 500);
+                //         this.lastLoadedPost = postSnapshot.docs[postSnapshot.size - 1];
+                //     })
+                //     .catch(e => {
+                //         console.error("Error loading more posts", e);
+                //     });
             }
         }
     }

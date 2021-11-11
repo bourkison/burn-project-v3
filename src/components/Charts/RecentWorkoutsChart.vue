@@ -79,7 +79,7 @@ export default {
                 labels: this.chartLabels,
                 datasets: [
                     {
-                        label: "Number of Workouts",
+                        label: "Workouts",
                         data: this.chartData,
                         backgroundColor: "#007bff",
                         borderColor: "#007bff",
