@@ -206,9 +206,14 @@ const exerciseStats = async function(event) {
         responseData.totalReps = {};
     }
 
+    if (dataToPull.includes("totalVolume")) {
+        responseData.totalVolume = {};
+    }
+
     workoutResult.forEach(workout => {
         let maxOrm = 0;
         let totalReps = 0;
+        let totalVolume = 0;
 
         workout.exercises.forEach(exercise => {
             exercise.sets.forEach(set => {
@@ -218,6 +223,8 @@ const exerciseStats = async function(event) {
                     if (orm > maxOrm) {
                         maxOrm = orm;
                     }
+
+                    totalVolume += set.measureAmount * set.kg;
                 }
 
                 totalReps += set.measureAmount;
@@ -245,7 +252,17 @@ const exerciseStats = async function(event) {
                 responseData.totalReps[s] = totalReps;
             }
         }
+        
+        if (dataToPull.includes("totalVolume")) {
+            if (responseData.totalVolume[s]) {
+                responseData.totalVolume[s] += totalVolume;
+            } else {
+                responseData.totalVolume[s] = totalVolume;
+            }
+        }
     });
+
+    responseData.exerciseName = workoutResult[0].exercises[0].exerciseReference.name;
 
     response.statusCode = 200;
     response.body = JSON.stringify({
