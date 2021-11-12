@@ -32,7 +32,8 @@ const getUser = async function(event) {
             height: 1,
             weight: 1,
             country: 1,
-            metric: 1
+            metric: 1,
+            options: 1
         }
     }
 
@@ -78,7 +79,8 @@ const getUser = async function(event) {
             height: result.height,
             weight: result.weight,
             country: result.country,
-            metric: result.metric
+            metric: result.metric,
+            options: result.options
         }
     }
 

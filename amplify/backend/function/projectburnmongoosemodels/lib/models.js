@@ -349,6 +349,10 @@ const userSchema = new mongoose.Schema(
         postFeed: {
             type: [postReferenceSchema],
             default: []
+        },
+        options: {
+            type: Map,
+            required: true
         }
     },
     { timestamps: true }

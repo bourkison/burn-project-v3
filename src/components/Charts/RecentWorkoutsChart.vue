@@ -75,6 +75,7 @@ export default {
     mounted: function() {
         this.chartLabels = this.buildDayLabels();
         this.getData();
+        console.log(this.$store.state.userProfile.docData);
     },
 
     methods: {

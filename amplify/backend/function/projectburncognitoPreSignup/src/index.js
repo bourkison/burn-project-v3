@@ -43,7 +43,57 @@ exports.handler = async (event, context, callback) => {
         likes: [],
         comments: [],
         postFeed: [],
-        postReferences: []
+        postReferences: [],
+        options: {
+            charts: {
+                homepage: {
+                    leftRail: [
+                        {
+                            category: "workout",
+                            type: "recent",
+                            startDate: {
+                                unit: "week",
+                                amount: 6,
+                                date: null
+                            },
+                            endDate: {
+                                unit: "",
+                                amount: 0,
+                                date: null
+                            },
+                            data: {
+    
+                            },
+                            interval: "weekly",
+                            backgroundColor: "#007bff",
+                            borderColor: "#007bff"
+                        },
+                        {
+                            category: "exercise",
+                            type: "favourite",
+                            startDate: {
+                                unit: "month",
+                                amount: 6,
+                                date: null
+                            },
+                            endDate: {
+                                unit: "",
+                                amount: 0,
+                                date: null
+                            },
+                            data: {
+                                exerciseId: null,
+                                preferenceIndex: 0
+                            },
+                            interval: "daily",
+                            backgroundColor: "#007bff",
+                            borderColor: "#007bff"
+                        }
+                    ],
+                    rightRail: []
+                }
+            }
+        }
     });
 
     await user.save().catch(err => {
