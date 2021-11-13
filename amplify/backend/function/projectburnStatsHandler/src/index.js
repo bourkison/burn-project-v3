@@ -13,7 +13,7 @@ const getStats = async function(event) {
         case "recentworkouts":
             response = await amountWorkouts(event);
             break;
-        case "onerepmax":
+        case "exercise":
             response = await exerciseStats(event);
             break;
         default:
@@ -137,41 +137,43 @@ const exerciseStats = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     if (!exerciseId) {
-        exerciseId = (await orderExercises(event))[exerciseIndex];
+        exerciseId = (await orderExercises(event, User, username))[exerciseIndex]._id;
     }
 
-    // First filters down the input to where uniqueExercises includes exerciseId, 
+    // First filters down the input to where uniqueExercises includes exerciseId,
     // then maps the exerciseReference array to only include exerciseId,
     // then maps the entire array to only include createdAt and recordedExercises
-    let workoutResult = (await User.aggregate([
-        {
-            $match: { username: username }
-        },
-        {
-            $project: {
-                workouts: {
-                    $map: {
-                        input: {
-                            $filter: {
-                                input: "$workouts",
-                                as: "w",
-                                cond: {
-                                    $in: [exerciseId, "$$w.uniqueExercises"]
-                                }
-                            }
-                        },
-                        as: "w",
-                        in: {
-                            createdAt: "$$w.createdAt",
-                            exercises: {
+    let workoutResult = (
+        await User.aggregate([
+            {
+                $match: { username: username }
+            },
+            {
+                $project: {
+                    workouts: {
+                        $map: {
+                            input: {
                                 $filter: {
-                                    input: "$$w.recordedExercises",
-                                    as: "r",
+                                    input: "$workouts",
+                                    as: "w",
                                     cond: {
-                                        $eq: [
-                                            "$$r.exerciseReference.exerciseId",
-                                            ObjectId(exerciseId)
-                                        ]
+                                        $in: [exerciseId, "$$w.uniqueExercises"]
+                                    }
+                                }
+                            },
+                            as: "w",
+                            in: {
+                                createdAt: "$$w.createdAt",
+                                exercises: {
+                                    $filter: {
+                                        input: "$$w.recordedExercises",
+                                        as: "r",
+                                        cond: {
+                                            $eq: [
+                                                "$$r.exerciseReference.exerciseId",
+                                                ObjectId(exerciseId)
+                                            ]
+                                        }
                                     }
                                 }
                             }
@@ -179,8 +181,8 @@ const exerciseStats = async function(event) {
                     }
                 }
             }
-        }
-    ]))[0];
+        ])
+    )[0];
 
     if (!workoutResult) {
         const errorResponse = "Exercises not found for username: " + username;
@@ -194,7 +196,6 @@ const exerciseStats = async function(event) {
 
     workoutResult = workoutResult.workouts;
 
-    
     // Data is object with date as key and highest one rep max for that date as value.
     let responseData = {};
 
@@ -228,9 +229,8 @@ const exerciseStats = async function(event) {
                 }
 
                 totalReps += set.measureAmount;
-            })
-
-        })
+            });
+        });
 
         // Convert to yyyy-mm-dd
         let d = new Date(workout.createdAt);
@@ -252,7 +252,7 @@ const exerciseStats = async function(event) {
                 responseData.totalReps[s] = totalReps;
             }
         }
-        
+
         if (dataToPull.includes("totalVolume")) {
             if (responseData.totalVolume[s]) {
                 responseData.totalVolume[s] += totalVolume;
@@ -262,20 +262,59 @@ const exerciseStats = async function(event) {
         }
     });
 
-    responseData.exerciseName = workoutResult[0].exercises[0].exerciseReference.name;
+    if (workoutResult.length && workoutResult[0].exercises.length) {
+        responseData.exerciseName = workoutResult[0].exercises[0].exerciseReference.name;
+    }
 
     response.statusCode = 200;
     response.body = JSON.stringify({
         success: true,
         data: responseData
-    })
+    });
 
     return response;
 };
 
-const orderExercises = async function() {
-    return ["6106652690f6f5000859c924"];
-}
+const orderExercises = async function(event, User, username) {
+    const orderedExercises = await User.aggregate([
+        {
+            $match: {
+                username: username
+            }
+        },
+        {
+            $project: {
+                exercises: {
+                    $reduce: {
+                        input: "$workouts",
+                        initialValue: [],
+                        in: {
+                            $concatArrays: ["$$value", "$$this.uniqueExercises"]
+                        }
+                    }
+                }
+            }
+        },
+        {
+            $unwind: "$exercises"
+        },
+        {
+            $group: {
+                _id: "$exercises",
+                count: {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $sort: {
+                count: -1
+            }
+        }
+    ]);
+
+    return orderedExercises;
+};
 
 const calcORM = function(amount, reps) {
     if (reps >= 30) {
@@ -344,7 +383,7 @@ const calcORM = function(amount, reps) {
         case 29:
             return Math.round((amount / 0.51) * 2) / 2;
     }
-}
+};
 
 exports.handler = async (event, context) => {
     /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */

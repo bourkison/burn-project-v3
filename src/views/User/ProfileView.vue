@@ -77,6 +77,18 @@
 
                     <div v-if="!isLoading">
                         <PostFeed :posts="posts" :newPost="false" :isLoading="isLoading" />
+
+                        <div class="text-center" v-if="moreToLoad">
+                            <b-button
+                                @click="loadMorePosts"
+                                variant="outline-dark"
+                                size="sm"
+                                v-b-visible.200="loadMorePosts"
+                            >
+                                <span v-if="!isLoadingMore">More</span>
+                                <span v-else><b-spinner small/></span>
+                            </b-button>
+                        </div>
                     </div>
 
                     <div v-else></div>
@@ -111,7 +123,11 @@ export default {
             posts: [],
             isFollowing: false,
             isFollowed: false,
-            isLoggedInUser: false
+            isLoggedInUser: false,
+
+            // Lazy loading:
+            isLoadingMore: true,
+            moreToLoad: true
         };
     },
 
@@ -127,6 +143,8 @@ export default {
     methods: {
         downloadPosts: async function() {
             this.isLoading = true;
+            this.moreToLoad = true;
+            this.isLoadingMore = true;
             this.posts = [];
             this.isFollowing = false;
             this.isFollowed = JSON.parse(JSON.stringify(this.$props.profile.isFollowed));
@@ -149,8 +167,10 @@ export default {
                 console.log("POSTS:", this.posts);
             } catch (err) {
                 console.error(err);
+                this.moreToLoad = false;
             } finally {
                 this.isLoading = false;
+                this.isLoadingMore = false;
             }
         },
 
@@ -203,6 +223,39 @@ export default {
                         this.isFollowing = false;
                     }
                 }
+            }
+        },
+
+        loadMorePosts: async function() {
+            if (!this.isLoadingMore) {
+                console.log("LOADING MORE!");
+                this.isLoadingMore = true;
+
+                const path = "/post";
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        loadAmount: 5,
+                        startAt: this.posts[this.posts.length - 1]._id,
+                        userId: this.$props.profile._id
+                    }
+                }
+
+                const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
+
+                postResult.forEach(post => {
+                    this.posts.push(post)
+                });
+
+                if (postResult.length < 5) {
+                    this.moreToLoad = false;
+                }
+
+                this.isLoadingMore = false;
+
+                console.log("POST RESULT:", postResult);
             }
         }
     }

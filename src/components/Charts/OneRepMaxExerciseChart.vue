@@ -5,16 +5,26 @@
             <div class="front" ref="frontCard">
                 <b-card no-body>
                     <b-card-body>
-                        <div v-if="!isLoading">
+                        <div v-if="!isLoading && hasData">
                             <b-card-title>
                                 <div class="d-flex align-items">
-                                    <div><h6 class="d-inline-block vertical-align">One Rep Max</h6></div>
+                                    <div><h6 class="d-inline-block vertical-align">{{ exerciseName }}</h6></div>
                                     <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" scale="0.5" /></div>
                                 </div>
                             </b-card-title>
                             <canvas id="oneRepMaxChart"></canvas>
                         </div>
-                        <div v-else class="align-items text-center">
+                        <div v-else-if="!isLoading && !hasData">
+                            <div class="align-items text-center text-muted small-font mt-1">
+                                <div v-if="exerciseId">
+                                    <em>You have not done this exercise before.</em>
+                                </div>
+                                <div v-else>
+                                    <em>No recent exercises.</em>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else-if="isLoading" class="align-items text-center">
                             <b-spinner small />
                         </div>
                     </b-card-body>
@@ -45,10 +55,14 @@ import { API } from "aws-amplify"
 export default {
     name: "OneRepMaxExerciseChart",
     props: {
-        // exercisePosition: {
-        //     type: Number,
-        //     required: true
-        // },
+        exercisePosition: {
+            type: Number,
+            default: 0
+        },
+        exerciseId: {
+            type: String,
+            default: ""
+        },
         username: {
             type: String,
             required: true
@@ -59,8 +73,10 @@ export default {
             amountInChart: 8,
             isLoading: true,
             selectedExercise: null,
+            hasData: false,
 
             cardHeight: "300px",
+            exerciseName: '',
 
             // Chart.js
             delayed: false,
@@ -70,34 +86,51 @@ export default {
         };
     },
 
-    mounted: async function() {
+    mounted: function() {
         this.getData();
-        console.log("FRONT:", this.$refs.frontCard.offsetHeight);
     },
 
     methods: {
         getData: async function() {
-            const path = "/stats/onerepmax";
-            const myInit = {
-                headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
-                },
-                queryStringParameters: {
-                    exerciseId: "6106652690f6f5000859c8fc",
-                    username: this.$props.username,
-                    dataToPull: "orm,totalReps"
+            try {
+                const path = "/stats/exercise";
+                let myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        username: this.$props.username,
+                        dataToPull: "orm,totalReps"
+                    }
+                };
+    
+                if (this.$props.exerciseId) {
+                    myInit.queryStringParameters.exerciseId = this.$props.exerciseId;
+                } else {
+                    myInit.queryStringParameters.exerciseIndex = this.$props.exercisePosition;
                 }
-            };
-
-            const response = await API.get(this.$store.state.apiName, path, myInit);
-
-            this.chartDataORM = response.data.orm;
-            this.chartDataReps = response.data.totalReps;
-            this.chartLabels = Object.keys(response.data.orm);
-
-            this.isLoading = false;
-
-            this.$nextTick(() => { this.buildChart() });
+    
+                const response = await API.get(this.$store.state.apiName, path, myInit);
+    
+                this.chartDataORM = response.data.orm;
+                this.chartDataReps = response.data.totalReps;
+                this.chartLabels = Object.keys(response.data.orm);
+    
+                this.exerciseName = response.data.exerciseName;
+    
+                this.isLoading = false;
+    
+                if (Object.keys(response.data.orm).length || Object.keys(response.data.totalReps).length || Object.keys(response.data.totalVolume).length) {
+                    this.hasData = true;
+                    this.$nextTick(() => { this.buildChart() });
+                } else {
+                    this.hasData = false;
+                }
+            }
+            catch (err) {
+                this.hasData = false;
+                this.isLoading = false;
+            }
         },
         
         buildChart: function() {
@@ -199,12 +232,6 @@ export default {
 
         flipCard: function() {
             this.$refs.cardFlip.classList.toggle("flipped");
-
-            if (this.$refs.cardFlip.classList.contains("flipped")) {
-                this.cardHeight = this.$refs.backCard.offsetHeight + "px";
-            } else {
-                this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
-            }
         }
     }
 };
@@ -217,6 +244,10 @@ export default {
 
     .align-items {
         align-items: center !important;
+    }
+
+    .small-font {
+        font-size: 12px !important;
     }
 
     .vertical-align {

@@ -26,7 +26,7 @@
                 size="sm"
                 v-b-visible.200="loadMorePosts"
             >
-                <span v-if="!isLoadingMore">Load More</span>
+                <span v-if="!isLoadingMore">More</span>
                 <span v-else><b-spinner small/></span>
             </b-button>
         </div>
@@ -49,65 +49,89 @@ export default {
 
             // Lazy loading:
             isLoadingMore: true,
-            lastLoadedPost: null,
             moreToLoad: true
         };
     },
 
     created: async function() {
-        const path = "/post";
-        const myInit = {
-            headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
-            },
-            queryStringParameters: {
-                loadAmount: 5
+        try {
+            this.isLoading = true;
+            this.isLoadingMore = true;
+    
+            const path = "/post";
+            const myInit = {
+                headers: {
+                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                },
+                queryStringParameters: {
+                    loadAmount: 5
+                }
+            };
+    
+            const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
+    
+            postResult.forEach(post => {
+                this.posts.push(post);
+            });
+    
+            if (postResult.length < 5) {
+                this.moreToLoad = false;
             }
-        };
-
-        const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
-
-        postResult.forEach(post => {
-            this.posts.push(post);
-        });
-
-        this.isLoading = false;
+    
+            this.isLoading = false;
+            this.isLoadingMore = false;
+        }
+        catch (err) {
+            console.error(err)
+            this.moreToLoad = false;
+        }
+        finally {
+            this.isLoading = false;
+        }
     },
 
     methods: {
         addPost: function(id) {
-            this.posts.unshift(id);
+            this.posts.unshift({
+                _id: id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                createdBy: {
+                    userId: this.$store.state.userProfile.docData._id,
+                    username: this.$store.state.userProfile.docData.username
+                }
+            });
         },
 
-        loadMorePosts: function() {
-            if (!this.isLoadingMore) {
+        loadMorePosts: async function() {
+            if (!this.isLoadingMore && this.moreToLoad) {
                 console.log("LOADING MORE!");
                 this.isLoadingMore = true;
 
-                // db.collection("users")
-                //     .doc(this.$store.state.userProfile.data.uid)
-                //     .collection("feed")
-                //     .orderBy("createdAt", "desc")
-                //     .startAfter(this.lastLoadedPost)
-                //     .limit(5)
-                //     .get()
-                //     .then(postSnapshot => {
-                //         postSnapshot.forEach(post => {
-                //             this.posts.push(post.id);
-                //         });
+                const path = "/post";
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    },
+                    queryStringParameters: {
+                        loadAmount: 5,
+                        startAt: this.posts[this.posts.length - 1]._id
+                    }
+                }
 
-                //         if (postSnapshot.size < 5) {
-                //             this.moreToLoad = false;
-                //         }
+                const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-                //         setTimeout(() => {
-                //             this.isLoadingMore = false;
-                //         }, 500);
-                //         this.lastLoadedPost = postSnapshot.docs[postSnapshot.size - 1];
-                //     })
-                //     .catch(e => {
-                //         console.error("Error loading more posts", e);
-                //     });
+                postResult.forEach(post => {
+                    this.posts.push(post)
+                });
+
+                if (postResult.length < 5) {
+                    this.moreToLoad = false;
+                }
+
+                this.isLoadingMore = false;
+
+                console.log("POST RESULT:", postResult);
             }
         }
     }

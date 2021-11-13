@@ -28,6 +28,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### General
 * VideoJS support
 * Mobile CSS
+* Deal with error "The incoming token has expired"
 
 ### Homepage
 * Statistics on left side.

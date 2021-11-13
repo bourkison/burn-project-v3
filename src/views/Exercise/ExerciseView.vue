@@ -123,13 +123,9 @@
                         </b-card-body>
                     </b-card>
 
-                    <b-card no-body class="performanceChart">
-                        <b-card-body>
-                            <b-card-title>Your Performance</b-card-title>
+                    
 
-                            <ExerciseChart :exerciseId="exerciseData._id" />
-                        </b-card-body>
-                    </b-card>
+                    <OneRepMaxExerciseChart :exerciseId="exerciseData._id" :username="this.$store.state.userProfile.docData.username" class="performanceChart" />
                 </b-container>
             </b-col>
         </b-row>
@@ -175,12 +171,12 @@ import { Viewer } from "@toast-ui/vue-editor";
 import { API, Storage } from "aws-amplify";
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
-import ExerciseChart from "@/components/Charts/ExerciseChart.vue";
+import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 
 export default {
     name: "ExerciseView",
-    components: { CommentSection, MuscleGroup, Viewer, ExerciseChart },
+    components: { CommentSection, MuscleGroup, Viewer, OneRepMaxExerciseChart },
     data() {
         return {
             isLoading: true,

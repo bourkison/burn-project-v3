@@ -78,7 +78,11 @@ const queryPost = async function(event) {
     const loadAmount = event.queryStringParameters.loadAmount
         ? Number(event.queryStringParameters.loadAmount)
         : 5;
-    const userId = event.queryStringParameters ? event.queryStringParameters.userId : null;
+    const userId =
+        event.queryStringParameters && event.queryStringParameters.userId
+            ? ObjectId(event.queryStringParameters.userId)
+            : null;
+    const startAt = event.queryStringParameters.startAt;
 
     let response = {
         statusCode: 500,
@@ -93,19 +97,78 @@ const queryPost = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     if (userId) {
-        console.log("IN FIRST BLOCK", userId);
-        result = await User.findOne(
-            {
-                _id: userId
-            },
-            {
-                postReferences: {
-                    $slice: ["$postReferences", 0 - loadAmount]
+        if (!startAt) {
+            result = await User.findOne(
+                {
+                    _id: userId
+                },
+                {
+                    postReferences: {
+                        $slice: ["$postReferences", 0 - loadAmount]
+                    }
                 }
-            }
-        );
+            );
+        } else {
+            result = (
+                await User.aggregate([
+                    {
+                        $match: {
+                            _id: userId
+                        }
+                    },
+                    {
+                        $project: {
+                            postReferences: 1,
+                            startAtIndex: {
+                                $indexOfArray: ["$postReferences._id", ObjectId(startAt)]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            postReferences: 1,
+                            actualLoadAmount: {
+                                $cond: [
+                                    { $lt: ["$startAtIndex", loadAmount] },
+                                    "$startAtIndex",
+                                    loadAmount
+                                ]
+                            },
+                            startAtIndex: {
+                                $cond: [
+                                    {
+                                        $lte: [{ $subtract: ["$startAtIndex", loadAmount] }, 0]
+                                    },
+                                    0,
+                                    { $subtract: ["$startAtIndex", loadAmount] }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            startAtIndex: 1,
+                            actualLoadAmount: 1,
+                            postReferences: {
+                                $cond: [
+                                    { $eq: ["$actualLoadAmount", 0] },
+                                    [],
+                                    {
+                                        $slice: [
+                                            "$postReferences",
+                                            "$startAtIndex",
+                                            "$actualLoadAmount"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ])
+            )[0];
+        }
 
-        if (!result.postReferences) {
+        if (!result || !result.postReferences) {
             const errorResponse = "Posts not found for user: " + userId;
             response.statusCode = 404;
             response.body = JSON.stringify({
@@ -114,24 +177,78 @@ const queryPost = async function(event) {
             });
 
             return response;
-        } else {
-            result = result.postReferences.reverse();
         }
+
+        result = result.postReferences.reverse();
     } else {
         const username = event.requestContext.authorizer.claims["cognito:username"];
 
-        result = await User.findOne(
-            {
-                username: username
-            },
-            {
-                postFeed: {
-                    $slice: ["$postFeed", 0 - loadAmount]
+        if (!startAt) {
+            result = await User.findOne(
+                {
+                    username: username
+                },
+                {
+                    postFeed: {
+                        $slice: ["$postFeed", 0 - loadAmount]
+                    }
                 }
-            }
-        );
+            );
+        } else {
+            result = (
+                await User.aggregate([
+                    {
+                        $match: {
+                            username: username
+                        }
+                    },
+                    {
+                        $project: {
+                            postFeed: 1,
+                            startAtIndex: {
+                                $indexOfArray: ["$postFeed._id", ObjectId(startAt)]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            postFeed: 1,
+                            actualLoadAmount: {
+                                $cond: [
+                                    { $lt: ["$startAtIndex", loadAmount] },
+                                    "$startAtIndex",
+                                    loadAmount
+                                ]
+                            },
+                            startAtIndex: {
+                                $cond: [
+                                    {
+                                        $lte: [{ $subtract: ["$startAtIndex", loadAmount] }, 0]
+                                    },
+                                    0,
+                                    { $subtract: ["$startAtIndex", loadAmount] }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            startAtIndex: 1,
+                            actualLoadAmount: 1,
+                            postFeed: {
+                                $cond: [
+                                    { $eq: ["$actualLoadAmount", 0] },
+                                    [],
+                                    { $slice: ["$postFeed", "$startAtIndex", "$actualLoadAmount"] }
+                                ]
+                            }
+                        }
+                    }
+                ])
+            )[0];
+        }
 
-        if (!result.postFeed) {
+        if (!result || !result.postFeed) {
             const errorResponse = "Feed not found for user: " + username;
             response.statusCode = 404;
             response.body = JSON.stringify({
@@ -140,9 +257,9 @@ const queryPost = async function(event) {
             });
 
             return response;
-        } else {
-            result = result.postFeed.reverse();
         }
+
+        result = result.postFeed.reverse();
     }
 
     response.statusCode = 200;
@@ -168,6 +285,18 @@ const createPost = async function(event) {
         },
         body: JSON.stringify({ success: false })
     };
+
+    if (
+        !postForm.content &&
+        Object.keys(postForm.share).length === 0 &&
+        postForm.filePaths.length === 0
+    ) {
+        const errorResponse = "No content provided!";
+        response.body = JSON.stringify({
+            success: false,
+            errorMessage: errorResponse
+        });
+    }
 
     // First get user.
     let fields = "username followers";

@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!isLoading">
+    <div v-if="!isLoading && loadedSuccessfully">
         <b-card no-body header-bg-variant="transparent">
             <!-- Header -->
             <template #header>
@@ -105,7 +105,7 @@
             />
         </b-card>
     </div>
-    <div v-else>
+    <div v-else-if="isLoading && !loadedSuccessfully">
         <b-card no-body>
             <b-card-body>
                 <b-skeleton
@@ -117,6 +117,7 @@
             </b-card-body>
         </b-card>
     </div>
+    <div v-else style="display: none;"></div>
 </template>
 
 <script>
@@ -159,6 +160,7 @@ export default {
             likeCount: 0,
             commentCount: 0,
             isLiked: false,
+            loadedSuccessfully: false,
 
             // Bootstrap:
             carouselModel: 0
@@ -215,8 +217,9 @@ export default {
             } catch (err) {
                 console.error("Error getting image URLs:", err);
             } finally {
+                this.isLoading = false;
                 if (this.postData) {
-                    this.isLoading = false;
+                    this.loadedSuccessfully = true;
                 }
             }
         } catch (err) {

@@ -40,12 +40,17 @@ export default {
     data() {
         return {
             skeleton: [],
-            loadAmount: 5
         };
     },
 
+    computed: {
+        postLength: function() {
+            return this.$props.posts.length;
+        }
+    },
+
     created: function() {
-        for (let i = 0; i < this.loadAmount; i++) {
+        for (let i = 0; i < this.$props.posts.length; i++) {
             let amount = Math.floor(Math.random() * 4) + 3;
             let widths = [];
 
@@ -59,6 +64,22 @@ export default {
     methods: {
         addPost: function(p) {
             this.$emit("addPost", p.id);
+        }
+    },
+
+    watch: {
+        postLength: function(n, o) {
+            console.log("NEW:", n, "OLD:", o)
+
+            for (let i = 0; i < n - o; i ++) {
+                let amount = Math.floor(Math.random() * 4) + 3;
+                let widths = [];
+
+                for (let j = 0; j < amount; j++) {
+                    widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
+                }
+                this.skeleton.push([amount, widths]);
+            }
         }
     }
 };
