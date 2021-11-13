@@ -163,7 +163,7 @@ export default {
                 const path = "/template";
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         loadAmount: 5,
@@ -179,15 +179,7 @@ export default {
                     myInit.queryStringParameters.tags = this.selectedTags.join(",");
                 }
 
-                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
-                    err => {
-                        if (err.response.status === 404) {
-                            this.templates = [];
-                        } else {
-                            throw err;
-                        }
-                    }
-                );
+                const response = await API.get(this.$store.state.apiName, path, myInit);
 
                 if (!response) {
                     throw new Error("No response");
@@ -197,42 +189,66 @@ export default {
                     throw new Error("Unsuccessful: " + response.errorMessage);
                 }
 
-                this.templates = response.data;
+                response.data.forEach(template => {
+                    let temp = template;
+                    temp.loaded = false;
+                    this.templates.push(temp);
+                })
+
                 this.isLoadingMore = false;
-                this.moreToLoad = false;
             } catch (err) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
+
+                this.moreToLoad = false;
             } finally {
                 this.isLoading = false;
             }
         },
 
-        loadMoreTemplates: function() {
-            if (!this.isLoadingMore) {
-                // userTemplatesCollection(this.$store.state.userProfile.data.uid)
-                //     .orderBy("createdAt", "desc")
-                //     .startAfter(this.lastLoadedTemplate)
-                //     .limit(5)
-                //     .get()
-                //     .then(templateSnapshot => {
-                //         templateSnapshot.forEach(template => {
-                //             this.templates.push(template.id);
-                //         });
+        loadMoreTemplates: async function() {
+            if (!this.isLoadingMore && this.moreToLoad) {
+                try {
+                    const path = "/template";
+                    let myInit = {
+                        headers: {
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                        },
+                        queryStringParameters: {
+                            loadAmount: 5,
+                            user: true,
+                            startAt: this.templates[this.templates.length - 1].templateId
+                        }
+                    };
+    
+                    if (this.selectedMgs.length > 0) {
+                        myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+                    }
+    
+                    if (this.selectedTags.length > 0) {
+                        myInit.queryStringParameters.tags = this.selectedTags.join(",");
+                    }
+    
+                    const response = await API.get(this.$store.state.apiName, path, myInit);
+    
+                    response.data.forEach(template => {
+                        let temp = template;
+                        temp.loaded = false;
+                        this.templates.push(temp);
+                    })
+    
+                    if (response.data.length < 5) {
+                        this.moreToLoad = false;
+                    }
+                }
+                catch (err) {
+                    if (err.response && err.response.status !== 404) {
+                        this.displayError(err);
+                    }
 
-                //         if (templateSnapshot.size < 5) {
-                //             this.moreToLoad = false;
-                //         }
-
-                //         setTimeout(() => {
-                //             this.isLoadingMore = false;
-                //         }, 500);
-                //         this.lastLoadedTemplate = templateSnapshot.docs[templateSnapshot.size - 1];
-                //     })
-                //     .catch(e => {
-                //         console.error("Error downloading more templates:", e);
-                //     });
+                    this.moreToLoad = false;
+                }
             }
         },
 

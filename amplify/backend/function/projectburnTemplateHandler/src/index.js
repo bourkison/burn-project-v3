@@ -101,6 +101,7 @@ const queryTemplate = async function(event) {
     const tags = event.queryStringParameters.tags
         ? event.queryStringParameters.tags.split(",")
         : null;
+    const startAt = event.queryStringParameters.startAt;
 
     let response = {
         statusCode: 500,
@@ -198,13 +199,61 @@ const queryTemplate = async function(event) {
             });
         }
 
-        templateQuery.push({
-            $project: {
-                templateReferences: {
-                    $slice: ["$templateReferences", 0 - loadAmount]
+        if (!startAt) {
+            templateQuery.push({
+                $project: {
+                    templateReferences: {
+                        $slice: ["$templateReferences", 0 - loadAmount]
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            templateQuery.push({
+                $project: {
+                    templateReferences: 1,
+                    startAtIndex: {
+                        $indexOfArray: [ "$templateReferences.templateId", ObjectId(startAt) ]
+                    }
+                }
+            })
+
+            templateQuery.push({
+                $project: {
+                    templateReferences: 1,
+                    actualLoadAmount: {
+                        $cond: [
+                            { $lt: ["$startAtIndex", loadAmount] },
+                            "$startAtIndex",
+                            loadAmount
+                        ]
+                    },
+                    startAtIndex: {
+                        $cond: [
+                            {
+                                $lte: [{ $subtract: ["$startAtIndex", loadAmount] }, 0]
+                            },
+                            0,
+                            { $subtract: ["$startAtIndex", loadAmount] }
+                        ]
+                    }
+                }
+            })
+
+            templateQuery.push({
+                $project: {
+                    startAtIndex: 1,
+                    actualLoadAmount: 1,
+                    templateReferences: {
+                        $cond: [
+                            { $eq: ["$actualLoadAmount", 0] },
+                            [],
+                            { $slice: ["$templateReferences", "$startAtIndex", "$actualLoadAmount"] }
+                        ]
+                    }
+                }
+            })
+        }
+
 
         result = await User.aggregate(templateQuery);
 
@@ -230,9 +279,26 @@ const queryTemplate = async function(event) {
             };
         }
 
+        if (startAt) {
+            // As we order by createdAt, we need to find the createdAt field of startAt element,
+            // then filter for when greater than that value.
+            const startAtCreatedAt = (await Template.findOne({ _id: ObjectId(startAt) }, { createdAt: 1 })).createdAt;
+
+            // Then add query for where exercise is greater than createdAt OR its equal and ID is bigger.
+            templateQuery.$or = [
+                {
+                    createdAt: { $gt: startAtCreatedAt }
+                },
+                {
+                    createdAt: startAtCreatedAt,
+                    _id: { $gt: ObjectId(startAt) }
+                }
+            ]
+        }
+
         let fields = "createdBy createdAt name tags muscleGroups updatedAt";
         result = await Template.find(templateQuery, fields)
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: 1, _id: 1 })
             .limit(loadAmount);
     }
 

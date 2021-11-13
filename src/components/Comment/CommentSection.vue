@@ -200,7 +200,7 @@ export default {
 
         let myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                Authorization: await this.$store.dispatch("fetchJwtToken")
             },
             queryStringParameters: {
                 coll: this.$props.coll,
@@ -221,7 +221,7 @@ export default {
                 const path = "/like";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -271,7 +271,7 @@ export default {
                 const path = "/follow";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -329,7 +329,7 @@ export default {
                     const path = "/like/" + this.$props.docId;
                     const myInit = {
                         headers: {
-                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
                         },
                         queryStringParameters: {
                             loadAmount: 15,
@@ -362,7 +362,7 @@ export default {
                     const path = "/follow/" + this.$props.docId;
                     const myInit = {
                         headers: {
-                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
                         },
                         queryStringParameters: {
                             coll: this.$props.coll,
@@ -405,15 +405,6 @@ export default {
             //         this.isLoadingMoreComments = false;
             //         this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
             //     });
-        },
-
-        generateId: function(n) {
-            let randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            let id = "";
-            for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
-            }
-            return id;
         }
     }
 };
