@@ -164,7 +164,9 @@ export default {
 
                 this.posts = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-                console.log("POSTS:", this.posts);
+                if (this.posts.length < 5) {
+                    this.moreToLoad = false;
+                }
             } catch (err) {
                 console.error(err);
                 this.moreToLoad = false;

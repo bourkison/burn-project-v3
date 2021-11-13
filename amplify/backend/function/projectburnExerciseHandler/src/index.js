@@ -106,6 +106,7 @@ const queryExercise = async function(event) {
     const tags = event.queryStringParameters.tags
         ? event.queryStringParameters.tags.split(",")
         : null;
+    const startAt = event.queryStringParameters.startAt;
 
     let response = {
         statusCode: 500,
@@ -202,13 +203,61 @@ const queryExercise = async function(event) {
             });
         }
 
-        exerciseQuery.push({
-            $project: {
-                exerciseReferences: {
-                    $slice: ["$exerciseReferences", 0 - loadAmount]
+        if (!startAt) {
+            exerciseQuery.push({
+                $project: {
+                    exerciseReferences: {
+                        $slice: ["$exerciseReferences", 0 - loadAmount]
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            exerciseQuery.push({
+                $project: {
+                    exerciseReferences: 1,
+                    startAtIndex: {
+                        $indexOfArray: [ "$exerciseReferences.exerciseId", ObjectId(startAt) ]
+                    }
+                }
+            })
+
+            exerciseQuery.push({
+                $project: {
+                    exerciseReferences: 1,
+                    actualLoadAmount: {
+                        $cond: [
+                            { $lt: ["$startAtIndex", loadAmount] },
+                            "$startAtIndex",
+                            loadAmount
+                        ]
+                    },
+                    startAtIndex: {
+                        $cond: [
+                            {
+                                $lte: [{ $subtract: ["$startAtIndex", loadAmount] }, 0]
+                            },
+                            0,
+                            { $subtract: ["$startAtIndex", loadAmount] }
+                        ]
+                    }
+                }
+            })
+
+            exerciseQuery.push({
+                $project: {
+                    startAtIndex: 1,
+                    actualLoadAmount: 1,
+                    exerciseReferences: {
+                        $cond: [
+                            { $eq: ["$actualLoadAmount", 0] },
+                            [],
+                            { $slice: ["$exerciseReferences", "$startAtIndex", "$actualLoadAmount"] }
+                        ]
+                    }
+                }
+            })
+        }
+
 
         result = await User.aggregate(exerciseQuery);
 

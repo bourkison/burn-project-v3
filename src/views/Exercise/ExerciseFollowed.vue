@@ -160,32 +160,37 @@ export default {
     },
 
     methods: {
-        loadMoreExercises: function() {
-            if (!this.isLoadingMore) {
-                // db.collection("users")
-                //     .doc(this.$store.state.userProfile.data.uid)
-                //     .collection("exercises")
-                //     .orderBy("createdAt", "desc")
-                //     .startAfter(this.lastLoadedExercise)
-                //     .limit(5)
-                //     .get()
-                //     .then(exerciseSnapshot => {
-                //         exerciseSnapshot.forEach(exercise => {
-                //             this.exercises.push(exercise.id);
-                //         });
-
-                //         if (exerciseSnapshot.size < 5) {
-                //             this.moreToLoad = false;
-                //         }
-
-                //         setTimeout(() => {
-                //             this.isLoadingMore = false;
-                //         }, 500);
-                //         this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
-                //     })
-                //     .catch(e => {
-                //         console.error("Error downloading more exercises:", e);
-                //     });
+        loadMoreExercises: async function() {
+            if (!this.isLoadingMore && this.moreToLoad) {
+                try {
+                    this.isLoadingMore = true;
+                    const path = "/exercise";
+                    let myInit = {
+                        headers: {
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                        },
+                        queryStringParameters: {
+                            loadAmount: 5,
+                            user: true,
+                            startAt: this.exercises[this.exercises.length - 1].exerciseId
+                        }
+                    };
+    
+                    const response = await API.get(this.$store.state.apiName, path, myInit);
+    
+                    response.data.forEach(exercise => {
+                        let temp = exercise;
+                        temp.loaded = false;
+                        this.exercises.push(temp);
+                    })
+    
+                    if (response.data.length < 5) {
+                        this.moreToLoad = false;
+                    }
+                }
+                catch (err) {
+                    this.moreToLoad = false;
+                }
             }
         },
 
@@ -197,7 +202,7 @@ export default {
                 const path = "/exercise";
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         loadAmount: 5,
@@ -232,8 +237,16 @@ export default {
                     throw new Error("Unsuccessful: " + response.errorMessage);
                 }
 
-                this.exercises = response.data;
-                this.moreToLoad = false;
+                response.data.forEach(exercise => {
+                    let temp = exercise;
+                    temp.loaded = false;
+                    this.exercises.push(temp)
+                });
+
+                if (response.data.length < 5) {
+                    this.moreToLoad = false;
+                }
+
                 this.isLoadingMore = false;
             } catch (err) {
                 if (err.response && err.response.status !== 404) {

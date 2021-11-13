@@ -43,7 +43,7 @@ Hub.listen("auth", async ({ payload: { event, data } }) => {
             });
             break;
         default:
-            console.log("Unhandled Auth Hub use case:", event);
+            console.log("Unhandled Auth Hub use case:", event, data);
             break;
     }
 });

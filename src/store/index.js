@@ -1,4 +1,4 @@
-import { API } from "aws-amplify";
+import { API, Auth } from "aws-amplify";
 import Vue from "vue";
 import Vuex from "vuex";
 
@@ -277,6 +277,10 @@ export default new Vuex.Store({
 
             return;
         },
+
+        fetchJwtToken: async function() {
+            return (await Auth.currentSession()).getIdToken().getJwtToken();
+        }
     },
     modules: {
         activeWorkout: activeWorkoutModule
