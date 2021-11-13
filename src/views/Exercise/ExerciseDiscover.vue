@@ -163,7 +163,7 @@ export default {
                 const path = "/exercise";
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         loadAmount: 5,
@@ -179,51 +179,76 @@ export default {
                     myInit.queryStringParameters.tags = this.selectedTags.join(",");
                 }
 
-                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
-                    err => {
-                        throw err;
-                    }
-                );
+                const response = await API.get(this.$store.state.apiName, path, myInit);
 
-                this.exercises = response.data;
+                response.data.forEach(exercise => {
+                    let temp = exercise;
+                    temp.loaded = false;
+                    this.exercises.push(temp);
+                });
 
-                if (this.exercises.length > 0) {
-                    this.isLoading = false;
+                if (response.data.length < 5) {
+                    this.moreToLoad = false;
                 }
             } catch (err) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
-            } finally {
+
                 this.moreToLoad = false;
+            } finally {
                 this.isLoading = false;
+                this.isLoadingMore = false;
             }
         },
 
-        loadMoreExercises: function() {
-            if (!this.isLoadingMore && !this.moreToLoad) {
-                // db.collection("exercises")
-                //     .orderBy("createdAt", "desc")
-                //     .startAfter(this.lastLoadedExercise)
-                //     .limit(5)
-                //     .get()
-                //     .then(exerciseSnapshot => {
-                //         exerciseSnapshot.forEach(exercise => {
-                //             this.exercises.push(exercise.id);
-                //         });
+        loadMoreExercises: async function() {
+            if (!this.isLoadingMore && this.moreToLoad) {
+                try {
+                    this.isLoadingMore = true;
+    
+                    const path = "/exercise";
+                    let myInit = {
+                        headers: {
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                        },
+                        queryStringParameters: {
+                            loadAmount: 5,
+                            user: false,
+                            startAt: this.exercises[this.exercises.length - 1]._id
+                        }
+                    };
+    
+                    if (this.selectedMgs.length > 0) {
+                        myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+                    }
+    
+                    if (this.selectedTags.length > 0) {
+                        myInit.queryStringParameters.tags = this.selectedTags.join(",");
+                    }
+    
+                    const response = await API.get(this.$store.state.apiName, path, myInit);
+    
+                    response.data.forEach(exercise => {
+                        let temp = exercise;
+                        temp.loaded = false;
+                        this.exercises.push(temp);
+                    })
+    
+                    if (response.data.length < 5) {
+                        this.moreToLoad = false;
+                    }
+                }
+                catch (err) {
+                    if (err.response && err.response.status !== 404) {
+                        this.displayError(err);
+                    }
 
-                //         if (exerciseSnapshot.size < 5) {
-                //             this.moreToLoad = false;
-                //         }
-
-                //         setTimeout(() => {
-                //             this.isLoadingMore = false;
-                //         }, 500);
-                //         this.lastLoadedExercise = exerciseSnapshot.docs[exerciseSnapshot.size - 1];
-                //     })
-                //     .catch(e => {
-                //         console.error("Error downloading more exercises:", e);
-                //     });
+                    this.moreToLoad = false;
+                }
+                finally {
+                    this.isLoadingMore = false;
+                }
             }
         },
 

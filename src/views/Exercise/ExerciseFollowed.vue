@@ -189,6 +189,7 @@ export default {
                     }
                 }
                 catch (err) {
+                    // console.error(err.response.status);
                     this.moreToLoad = false;
                 }
             }

@@ -154,7 +154,7 @@ export default {
                 const path = "/post";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         userId: this.$props.profile._id,
@@ -236,7 +236,7 @@ export default {
                 const path = "/post";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         loadAmount: 5,

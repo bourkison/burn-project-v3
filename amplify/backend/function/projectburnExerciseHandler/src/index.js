@@ -283,9 +283,26 @@ const queryExercise = async function(event) {
             };
         }
 
+        if (startAt) {
+            // As we order by createdAt, we need to find the createdAt field of startAt element,
+            // then filter for when greater than that value.
+            const startAtCreatedAt = (await Exercise.findOne({ _id: ObjectId(startAt) }, { createdAt: 1 })).createdAt;
+            
+            // Then add query for where exercise is greater than createdAt OR its equal and ID is bigger.
+            exerciseQuery.$or = [
+                { 
+                    createdAt: { $gt: startAtCreatedAt }
+                },
+                {
+                    createdAt: startAtCreatedAt,
+                    _id: { $gt: ObjectId(startAt) }
+                }
+            ];
+        }
+
         let fields = "createdBy createdAt name tags muscleGroups updatedAt";
         result = await Exercise.find(exerciseQuery, fields)
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: 1, _id: 1 })
             .limit(loadAmount);
     }
 

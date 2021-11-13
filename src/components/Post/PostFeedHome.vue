@@ -61,7 +61,7 @@ export default {
             const path = "/post";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 },
                 queryStringParameters: {
                     loadAmount: 5
@@ -117,7 +117,7 @@ export default {
                 const path = "/post";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         loadAmount: 5,
@@ -138,8 +138,6 @@ export default {
                 }
 
                 this.isLoadingMore = false;
-
-                console.log("POST RESULT:", postResult);
             }
         }
     }
