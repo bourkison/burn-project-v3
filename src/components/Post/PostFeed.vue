@@ -7,6 +7,7 @@
             class="post"
             :skeletonAmount="skeleton[index][0]"
             :skeletonWidth="skeleton[index][1]"
+            @postLoaded="postLoaded(index)"
         />
     </div>
     <div v-else>
@@ -64,6 +65,10 @@ export default {
     methods: {
         addPost: function(p) {
             this.$emit("addPost", p.id);
+        },
+
+        postLoaded: function(index) {
+            this.$emit("postLoaded", index);
         }
     },
 

@@ -17,7 +17,7 @@
                 </div>
             </b-card-body>
         </b-card>
-        <PostFeed @addPost="addPost" :posts="posts" :isLoading="isLoading" />
+        <PostFeed @addPost="addPost" :posts="posts" :isLoading="isLoading" @postLoaded="postLoaded" />
 
         <div class="text-center" v-if="moreToLoad">
             <b-button
@@ -71,7 +71,9 @@ export default {
             const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
     
             postResult.forEach(post => {
-                this.posts.push(post);
+                let temp = post;
+                temp.loaded = false;
+                this.posts.push(temp);
             });
     
             if (postResult.length < 5) {
@@ -103,6 +105,10 @@ export default {
             });
         },
 
+        postLoaded: function(index) {
+            this.posts[index].loaded = true;
+        },
+
         loadMorePosts: async function() {
             if (!this.isLoadingMore && this.moreToLoad) {
                 console.log("LOADING MORE!");
@@ -122,7 +128,9 @@ export default {
                 const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
                 postResult.forEach(post => {
-                    this.posts.push(post)
+                    let temp = post;
+                    temp.loaded = false;
+                    this.posts.push(temp);
                 });
 
                 if (postResult.length < 5) {

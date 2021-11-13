@@ -221,6 +221,7 @@ export default {
                 if (this.postData) {
                     this.loadedSuccessfully = true;
                 }
+                this.$emit("postLoaded");
             }
         } catch (err) {
             console.error("Error downloading post", err);
