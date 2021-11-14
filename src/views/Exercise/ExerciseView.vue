@@ -222,7 +222,7 @@ export default {
                 const myInit = {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         counters: true

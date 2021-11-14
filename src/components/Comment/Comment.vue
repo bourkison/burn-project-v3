@@ -155,7 +155,7 @@ export default {
                 const path = "/like";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         docId: this.$props.docId,
@@ -242,7 +242,7 @@ export default {
             const path = "/comment";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 },
                 queryStringParameters: {
                     docId: this.$props.docId,

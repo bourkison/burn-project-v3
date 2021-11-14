@@ -162,7 +162,7 @@ const activeWorkoutModule = {
     },
 
     actions: {
-        async uploadWorkout({ state, commit, rootState }) {
+        async uploadWorkout({ state, commit, rootState, dispatch }) {
             let payload = JSON.parse(JSON.stringify(state.workout));
 
             payload.duration = state.finishTime - state.startTime;
@@ -199,7 +199,7 @@ const activeWorkoutModule = {
             const path = "/workout";
             const myInit = {
                 headers: {
-                    Authorization: rootState.userProfile.data.idToken.jwtToken
+                    Authorization: await dispatch("fetchJwtToken", null, { root: true })
                 },
                 body: {
                     workoutForm: payload
@@ -247,19 +247,25 @@ export default new Vuex.Store({
             } else {
                 state.userWorkouts.unshift(workout);
             }
+        },
+
+        updateChart: function(state, data) {
+            switch (data.position) {
+                case "homepageLeftRail":
+                    state.userProfile.docData.options.charts.homepage.leftRail[data.index] = data.options
+                    break;
+            }            
         }
+
     },
     actions: {
-        fetchUser: async function({ state, commit }, data) {
+        fetchUser: async function({ state, commit, dispatch }, data) {
             const path = "/user/" + data.idToken.payload["cognito:username"];
             const myInit = {
                 headers: {
-                    Authorization: data.idToken.jwtToken
+                    Authorization: await dispatch("fetchJwtToken")
                 }
             };
-
-            console.log("PATH:", path);
-            console.log("INIT:", myInit);
 
             const docData = (
                 await API.get(state.apiName, path, myInit).catch(err => {

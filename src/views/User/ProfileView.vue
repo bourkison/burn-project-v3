@@ -182,7 +182,7 @@ export default {
                 const path = "/follow";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         docId: this.profile._id,

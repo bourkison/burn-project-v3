@@ -623,10 +623,6 @@ export default {
         }
     },
 
-    created: function() {
-        console.log(this.$store.state.apiName);
-    },
-
     methods: {
         handleFileUpload: function(e) {
             this.fileInput = e.target.files[0];
@@ -695,7 +691,7 @@ export default {
                 const path = "/user/" + this.$store.state.userProfile.docData.username;
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     body: {
                         userForm: this.finalSignUpForm

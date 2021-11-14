@@ -99,7 +99,7 @@ export default {
         let path = "/exercise";
         let myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                Authorization: await this.$store.dispatch("fetchJwtToken")
             },
             queryStringParameters: {
                 loadAmount: 99

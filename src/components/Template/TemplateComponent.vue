@@ -119,7 +119,7 @@ export default {
             const path = "/template/" + this.$props.templateId;
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 },
                 queryStringParameters: {
                     counters: true

@@ -63,8 +63,10 @@ export default {
     },
 
     watch: {
-        exerciseLength: function(n, o) {
-            for (let i = 0; i < n - o; i++) {
+        exerciseLength: function(n) {
+            let len = this.skeleton.length;
+
+            for (let i = 0; i < n - len; i++) {
                 let amount = Math.floor(Math.random() * 4) + 3;
                 let widths = [];
 

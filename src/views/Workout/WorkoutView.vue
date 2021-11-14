@@ -88,7 +88,7 @@ export default {
         let path = "/template";
         let myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                Authorization: await this.$store.dispatch("fetchJwtToken")
             },
             queryStringParameters: {
                 loadAmount: 15,
@@ -112,7 +112,7 @@ export default {
         path = "/workout";
         myInit = {
             headers: {
-                Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                Authorization: await this.$store.dispatch("fetchJwtToken")
             },
             queryStringParameters: {
                 loadAmount: 15

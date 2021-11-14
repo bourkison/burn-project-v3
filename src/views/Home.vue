@@ -3,15 +3,24 @@
         <b-row>
             <b-col sm="3">
                 <QuickStart class="quickStart" />
-                <RecentWorkoutsChart
-                    class="recentWorkoutsChart"
-                    :username="$store.state.userProfile.docData.username"
-                />
-                <OneRepMaxExerciseChart
-                    class="oneRepMaxExerciseChart"
-                    :exercisePosition="0"
-                    :username="$store.state.userProfile.docData.username"
-                />
+                <div v-for="(chart, index) in $store.state.userProfile.docData.options.charts.homepage.leftRail" :key="index">
+                    <div v-if="chart.category === 'workout' && chart.type === 'recent'">
+                        <RecentWorkoutsChart
+                            class="recentWorkoutsChart"
+                            :username="$store.state.userProfile.docData.username"
+                            :chartOptions="chart"
+                        />
+                    </div>
+                    <div v-else-if="chart.category === 'exercise' && chart.type === 'favorite'">
+                        <OneRepMaxExerciseChart
+                            class="oneRepMaxExerciseChart"
+                            :username="$store.state.userProfile.docData.username"
+                            position="homepageLeftRail"
+                            :index="index"
+                            :chartOptions="chart"
+                        />
+                    </div>
+                </div>
             </b-col>
             <b-col sm="6">
                 <b-container v-if="$store.state.userProfile.loggedIn">

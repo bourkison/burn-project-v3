@@ -75,7 +75,7 @@ export default {
             const path = "/exercise";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 },
                 queryStringParameters: {
                     loadAmount: 25,

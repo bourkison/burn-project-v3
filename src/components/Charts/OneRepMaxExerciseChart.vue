@@ -16,7 +16,7 @@
                         </div>
                         <div v-else-if="!isLoading && !hasData">
                             <div class="align-items text-center text-muted small-font mt-1">
-                                <div v-if="exerciseId">
+                                <div v-if="newChartOptions.data.exerciseId">
                                     <em>You have not done this exercise before.</em>
                                 </div>
                                 <div v-else>
@@ -39,6 +39,22 @@
                                 <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" scale="0.5" /></div>
                             </div>
                         </b-card-title>
+
+                        <div class="mt-2">
+                            <b-form @submit.prevent="updateChart">
+                                <b-form-group label="Background Color" class="small-font">
+                                    <b-form-input type="color" v-model="newChartOptions.backgroundColor" size="sm" />
+                                </b-form-group>
+
+                                <b-form-group label="Border Color" class="small-font">
+                                    <b-form-input type="color" v-model="newChartOptions.borderColor" size="sm" />
+                                </b-form-group>
+
+                                <div class="text-center">
+                                    <b-button type="submit" size="sm" variant="outline-success">Update</b-button>
+                                </div>
+                            </b-form>
+                        </div>
                     </b-card-body>
                 </b-card>
             </div>
@@ -55,17 +71,23 @@ import { API } from "aws-amplify"
 export default {
     name: "OneRepMaxExerciseChart",
     props: {
-        exercisePosition: {
-            type: Number,
-            default: 0
-        },
-        exerciseId: {
-            type: String,
-            default: ""
-        },
         username: {
             type: String,
             required: true
+        },
+        position: {
+            type: String,
+            required: true
+        },
+        index: {
+            type: Number,
+            required: true
+        },
+        chartOptions: {
+            type: Object,
+            default() {
+                return {}
+            }
         }
     },
     data() {
@@ -78,6 +100,29 @@ export default {
             cardHeight: "300px",
             exerciseName: '',
 
+            // Default chart options:
+            newChartOptions: {
+                category: "exercise",
+                type: "favorite",
+                backgroundColor: "#007bff",
+                borderColor: "#007bff",
+                startDate: {
+                    unit: "week",
+                    amount: 6,
+                    date: null
+                },
+                endDate: {
+                    unit: "",
+                    amount: 0,
+                    date: null
+                },
+                interval: "weekly",
+                data: {
+                    exerciseId: "",
+                    preferenceIndex: 0
+                }
+            },
+
             // Chart.js
             delayed: false,
             chartLabels: [],
@@ -87,16 +132,20 @@ export default {
     },
 
     mounted: function() {
+        Object.assign(this.newChartOptions, this.$props.chartOptions)
         this.getData();
     },
 
     methods: {
         getData: async function() {
             try {
+                this.isLoading = true;
+                this.hasData = false;
+
                 const path = "/stats/exercise";
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         username: this.$props.username,
@@ -104,10 +153,10 @@ export default {
                     }
                 };
     
-                if (this.$props.exerciseId) {
-                    myInit.queryStringParameters.exerciseId = this.$props.exerciseId;
+                if (this.newChartOptions.exerciseId) {
+                    myInit.queryStringParameters.exerciseId = this.newChartOptions.exerciseId;
                 } else {
-                    myInit.queryStringParameters.exerciseIndex = this.$props.exercisePosition;
+                    myInit.queryStringParameters.exerciseIndex = this.newChartOptions.preferenceIndex;
                 }
     
                 const response = await API.get(this.$store.state.apiName, path, myInit);
@@ -145,19 +194,19 @@ export default {
                     {
                         label: "One Rep Maximum",
                         data: this.chartDataORM,
-                        backgroundColor: "#007bff",
-                        borderColor: "#007bff",
+                        backgroundColor: this.newChartOptions.backgroundColor,
+                        borderColor: this.newChartOptions.borderColor,
                         lineTension: 0.25,
-                        pointBackgroundColor: "#007bff",
+                        pointBackgroundColor: this.newChartOptions.backgroundColor,
                         yAxisID: "y"
                     },
                     {
                         label: "Total Reps",
                         type: "bar",
                         data: this.chartDataReps,
-                        backgroundColor: "rgba(0, 123, 255, 0.5)",
-                        borderColor: "#007bff",
-                        pointBackgroundColor: "#007bff",
+                        backgroundColor: this.newChartOptions.backgroundColor,
+                        borderColor: this.newChartOptions.borderColor,
+                        pointBackgroundColor: this.newChartOptions.backgroundColor,
                         yAxisID: "y1"
                     }
                 ]
@@ -232,6 +281,16 @@ export default {
 
         flipCard: function() {
             this.$refs.cardFlip.classList.toggle("flipped");
+        },
+
+        updateChart: function() {
+            this.$refs.cardFlip.classList.toggle("flipped");
+            this.$store.commit("updateChart", {
+                options: this.newChartOptions,
+                position: this.$props.position,
+                index: this.$props.index
+            })
+            this.getData();
         }
     }
 };
@@ -313,6 +372,7 @@ export default {
         -moz-transform: rotateY(180deg);
         -o-transform: rotateY(180deg);
         transform: rotateY(180deg);
+        overflow-y: scroll;
     }
 
     .clickableIcon:hover {

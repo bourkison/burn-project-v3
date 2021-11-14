@@ -153,7 +153,7 @@ export default {
                     const path = "/post";
                     const myInit = {
                         headers: {
-                            Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
                         },
                         body: {
                             postForm: JSON.parse(JSON.stringify(this.post))

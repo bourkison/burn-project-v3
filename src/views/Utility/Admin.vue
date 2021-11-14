@@ -401,7 +401,7 @@ export default {
             const path = "/admin";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 },
                 body: {
                     databaseForm: {

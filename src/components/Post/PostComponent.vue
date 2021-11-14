@@ -169,7 +169,6 @@ export default {
 
     created: function() {
         dayjs.extend(relativeTime);
-        console.log(this.$store.state.userProfile.docData._id);
     },
 
     mounted: async function() {
@@ -177,7 +176,7 @@ export default {
             const path = "/post/" + this.$props.postId;
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 }
             };
 

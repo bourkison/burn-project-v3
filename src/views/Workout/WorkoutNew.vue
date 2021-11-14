@@ -248,7 +248,7 @@ export default {
                 let path = "/template/" + this.$route.query.w;
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     }
                 };
 
@@ -363,7 +363,7 @@ export default {
                 let path = "/workout/" + this.$route.query.b;
                 let myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     }
                 };
 

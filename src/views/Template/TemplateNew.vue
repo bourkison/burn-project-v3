@@ -154,7 +154,7 @@ export default {
                 const path = "/template";
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     body: {
                         templateForm: this.templateForm

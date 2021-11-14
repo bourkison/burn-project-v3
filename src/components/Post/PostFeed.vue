@@ -41,6 +41,7 @@ export default {
     data() {
         return {
             skeleton: [],
+            loadAmount: 5
         };
     },
 
@@ -51,7 +52,7 @@ export default {
     },
 
     created: function() {
-        for (let i = 0; i < this.$props.posts.length; i++) {
+        for (let i = 0; i < this.loadAmount; i++) {
             let amount = Math.floor(Math.random() * 4) + 3;
             let widths = [];
 
@@ -73,10 +74,10 @@ export default {
     },
 
     watch: {
-        postLength: function(n, o) {
-            console.log("NEW:", n, "OLD:", o)
+        postLength: function(n) {
+            let len = this.skeleton.length;
 
-            for (let i = 0; i < n - o; i ++) {
+            for (let i = 0; i < n - len; i ++) {
                 let amount = Math.floor(Math.random() * 4) + 3;
                 let widths = [];
 

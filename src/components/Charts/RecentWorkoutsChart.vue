@@ -55,6 +55,12 @@ export default {
         username: {
             type: String,
             required: true
+        },
+        chartOptions: {
+            type: Object,
+            default()  {
+                return {}
+            }
         }
     },
     data() {
@@ -65,6 +71,26 @@ export default {
 
             cardHeight: "370px",
 
+            // Default chart options:
+            newChartOptions: {
+                category: "workout",
+                type: "recent",
+                backgroundColor: "#007bff",
+                borderColor: "#007bff",
+                startDate: {
+                    unit: "week",
+                    amount: 6,
+                    date: null
+                },
+                endDate: {
+                    unit: "",
+                    amount: 0,
+                    date: null
+                },
+                interval: "weekly",
+                data: {}
+            },
+
             // Chart.js
             delayed: false,
             chartLabels: [],
@@ -73,6 +99,7 @@ export default {
     },
 
     mounted: function() {
+        Object.assign(this.newChartOptions, this.$props.chartOptions);
         this.chartLabels = this.buildDayLabels();
         this.getData();
         console.log(this.$store.state.userProfile.docData);
@@ -80,10 +107,12 @@ export default {
 
     methods: {
         getData: async function() {
+            this.isLoading = true;
+
             const path = "/stats/recentworkouts";
             const myInit = {
                 headers: {
-                    Authorization: this.$store.state.userProfile.data.idToken.jwtToken
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
                 },
                 queryStringParameters: {
                     startDate: this.chartLabels[0].getTime(),
@@ -109,10 +138,10 @@ export default {
                     {
                         label: "Workouts",
                         data: this.chartData,
-                        backgroundColor: "#007bff",
-                        borderColor: "#007bff",
+                        backgroundColor: this.newChartOptions.backgroundColor,
+                        borderColor: this.newChartOptions.borderColor,
                         lineTension: 0,
-                        pointBackgroundColor: "#007bff"
+                        pointBackgroundColor: this.newChartOptions.backgroundColor
                     }
                 ]
             };
