@@ -49,8 +49,7 @@ exports.handler = async (event, context, callback) => {
                 homepage: {
                     leftRail: [
                         {
-                            category: "workout",
-                            type: "recent",
+                            type: "recentWorkouts",
                             startDate: {
                                 unit: "week",
                                 amount: 6,
@@ -64,13 +63,13 @@ exports.handler = async (event, context, callback) => {
                             data: {
     
                             },
-                            interval: "weekly",
+                            interval: "week",
                             backgroundColor: "#007bff",
-                            borderColor: "#007bff"
+                            borderColor: "#007bff",
+                            pointBackgroundColor: "#007bff"
                         },
                         {
-                            category: "exercise",
-                            type: "favourite",
+                            type: "exercise",
                             startDate: {
                                 unit: "month",
                                 amount: 6,
@@ -85,9 +84,10 @@ exports.handler = async (event, context, callback) => {
                                 exerciseId: null,
                                 preferenceIndex: 0
                             },
-                            interval: "daily",
+                            interval: "day",
                             backgroundColor: "#007bff",
-                            borderColor: "#007bff"
+                            borderColor: "#007bff",
+                            pointBackgroundColor: "#007bff"
                         }
                     ],
                     rightRail: []

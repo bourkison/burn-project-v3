@@ -4,22 +4,10 @@
             <b-col sm="3">
                 <QuickStart class="quickStart" />
                 <div v-for="(chart, index) in $store.state.userProfile.docData.options.charts.homepage.leftRail" :key="index">
-                    <div v-if="chart.category === 'workout' && chart.type === 'recent'">
-                        <RecentWorkoutsChart
-                            class="recentWorkoutsChart"
-                            :username="$store.state.userProfile.docData.username"
-                            :chartOptions="chart"
-                        />
-                    </div>
-                    <div v-else-if="chart.category === 'exercise' && chart.type === 'favorite'">
-                        <OneRepMaxExerciseChart
-                            class="oneRepMaxExerciseChart"
-                            :username="$store.state.userProfile.docData.username"
-                            position="homepageLeftRail"
-                            :index="index"
-                            :chartOptions="chart"
-                        />
-                    </div>
+                    <Chart class="chart" :username="$store.state.userProfile.docData.username" :options="chart" :editable="true" position="homepageLeftRail" :index="index" />
+                </div>
+                <div class="mt-5 text-center text-muted">
+                    <b-icon-plus-circle class="clickableIcon" font-scale="2" />
                 </div>
             </b-col>
             <b-col sm="6">
@@ -47,12 +35,11 @@
 <script>
 import QuickStart from "@/components/Utility/QuickStart.vue";
 import PostFeedHome from "@/components/Post/PostFeedHome.vue";
-import RecentWorkoutsChart from "@/components/Charts/RecentWorkoutsChart.vue";
-import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
+import Chart from "@/components/Charts/Chart.vue"
 
 export default {
     name: "Home",
-    components: { OneRepMaxExerciseChart, PostFeedHome, RecentWorkoutsChart, QuickStart }
+    components: { PostFeedHome, Chart, QuickStart }
 };
 </script>
 
@@ -72,8 +59,11 @@ export default {
 }
 
 .quickStart,
-.recentWorkoutsChart,
-.oneRepMaxExerciseChart {
+.chart {
     margin-top: 25px;
+}
+
+.clickableIcon:hover {
+    cursor: pointer;
 }
 </style>

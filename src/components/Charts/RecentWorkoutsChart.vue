@@ -117,7 +117,8 @@ export default {
                 queryStringParameters: {
                     startDate: this.chartLabels[0].getTime(),
                     endDate: new Date().getTime(),
-                    username: this.$props.username
+                    username: this.$props.username,
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 }
             };
 

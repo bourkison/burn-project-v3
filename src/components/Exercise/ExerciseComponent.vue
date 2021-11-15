@@ -4,7 +4,7 @@
             <div v-if="imageUrls.length > 1">
                 <b-carousel v-model="carouselModel" controls indicators :interval="0">
                     <b-aspect
-                        ><b-carousel-slide v-for="img in imageUrls" :key="img" :img-src="img"
+                        ><b-carousel-slide v-for="(img, index) in imageUrls" :key="index" :img-src="img"
                     /></b-aspect>
                 </b-carousel>
             </div>

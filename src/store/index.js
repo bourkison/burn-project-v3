@@ -249,10 +249,10 @@ export default new Vuex.Store({
             }
         },
 
-        updateChart: function(state, data) {
+        updateChart: async function(state, data) {
             switch (data.position) {
                 case "homepageLeftRail":
-                    state.userProfile.docData.options.charts.homepage.leftRail[data.index] = data.options
+                    Vue.set(state.userProfile.docData.options.charts.homepage.leftRail, data.index, data.options);
                     break;
             }            
         }
@@ -286,6 +286,27 @@ export default new Vuex.Store({
 
         fetchJwtToken: async function() {
             return (await Auth.currentSession()).getIdToken().getJwtToken();
+        },
+
+        updateChart: async function({ state, commit, dispatch }, data) {
+            if (data.save) {
+                const path = "/stats/" + data.position;
+                const myInit = {
+                    headers: {
+                        Authorization: await dispatch("fetchJwtToken")
+                    },
+                    body: {
+                        options: data.options,
+                        index: data.index
+                    }
+                }
+
+                const response = await API.put(state.apiName, path, myInit);
+                console.log(response);
+            }
+
+            commit("updateChart", data);
+            return;     
         }
     },
     modules: {

@@ -50,6 +50,10 @@
                                     <b-form-input type="color" v-model="newChartOptions.borderColor" size="sm" />
                                 </b-form-group>
 
+                                <b-form-group label="Point Color" class="small-font">
+                                    <b-form-input type="color" v-model="newChartOptions.pointColor" size="sm" />
+                                </b-form-group>
+
                                 <div class="text-center">
                                     <b-button type="submit" size="sm" variant="outline-success">Update</b-button>
                                 </div>
@@ -106,6 +110,7 @@ export default {
                 type: "favorite",
                 backgroundColor: "#007bff",
                 borderColor: "#007bff",
+                pointColor: "#007bff",
                 startDate: {
                     unit: "week",
                     amount: 6,
@@ -149,7 +154,8 @@ export default {
                     },
                     queryStringParameters: {
                         username: this.$props.username,
-                        dataToPull: "orm,totalReps"
+                        dataToPull: "orm,totalReps",
+                        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
                     }
                 };
     
@@ -197,7 +203,7 @@ export default {
                         backgroundColor: this.newChartOptions.backgroundColor,
                         borderColor: this.newChartOptions.borderColor,
                         lineTension: 0.25,
-                        pointBackgroundColor: this.newChartOptions.backgroundColor,
+                        pointBackgroundColor: this.newChartOptions.pointColor,
                         yAxisID: "y"
                     },
                     {
@@ -206,7 +212,7 @@ export default {
                         data: this.chartDataReps,
                         backgroundColor: this.newChartOptions.backgroundColor,
                         borderColor: this.newChartOptions.borderColor,
-                        pointBackgroundColor: this.newChartOptions.backgroundColor,
+                        pointBackgroundColor: this.newChartOptions.pointColor,
                         yAxisID: "y1"
                     }
                 ]
@@ -372,7 +378,6 @@ export default {
         -moz-transform: rotateY(180deg);
         -o-transform: rotateY(180deg);
         transform: rotateY(180deg);
-        overflow-y: scroll;
     }
 
     .clickableIcon:hover {
