@@ -67,28 +67,6 @@ exports.handler = async (event, context, callback) => {
                             backgroundColor: "#007bff",
                             borderColor: "#007bff",
                             pointBackgroundColor: "#007bff"
-                        },
-                        {
-                            type: "exercise",
-                            startDate: {
-                                unit: "month",
-                                amount: 6,
-                                date: null
-                            },
-                            endDate: {
-                                unit: "",
-                                amount: 0,
-                                date: null
-                            },
-                            data: {
-                                exerciseId: "",
-                                preferenceIndex: 0,
-                                dataToPull: "orm"
-                            },
-                            interval: "day",
-                            backgroundColor: "#007bff",
-                            borderColor: "#007bff",
-                            pointBackgroundColor: "#007bff"
                         }
                     ],
                     rightRail: []

@@ -6,7 +6,9 @@
         404
     </div>
     <div v-else>
-        <b-spinner />
+        <div class="text-center mt-5">
+            <b-spinner />
+        </div>
     </div>
 </template>
 

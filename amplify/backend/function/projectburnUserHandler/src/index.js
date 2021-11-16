@@ -23,6 +23,19 @@ const getUser = async function(event) {
             "options.charts.profile": 1
         }
     } else {
+        if (username !== event.requestContext.authorizer.claims["cognito:username"]) {
+            const response = {
+                statusCode: 403,
+                headers: {
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Origin": "*"
+                },
+                body: JSON.stringify({ success: false, message: "Not authorized" })
+            }
+
+            return response;
+        }
+
         fields = {
             username: 1,
             email: 1,

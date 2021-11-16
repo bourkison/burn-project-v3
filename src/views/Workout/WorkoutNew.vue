@@ -3,9 +3,13 @@
         <div v-if="!isLoading">
             <b-card no-body>
                 <b-card-body>
-                    <div class="d-flex">
+                    <div class="d-flex align-items">
                         <h4>{{ workout.name }}</h4>
-                        <div class="ml-auto">{{ timeString }}</div>
+                        <div class="d-flex ml-auto">
+                            <div class="text-muted">{{ timeString }}</div>
+                            <div class="ml-1"><b-icon-stopwatch @click="countdownModal = true" class="clickableIcon" /></div>
+                            <div class="ml-1" v-if="countdownActive">{{ countdownTimeString }}</div>
+                        </div>
                     </div>
 
                     <b-card-text>
@@ -14,8 +18,8 @@
                             @input="setWorkoutValue('notes', $event)"
                             rows="3"
                             no-resize
-                            placeholder="Add notes..."
-                            class="p2 mt-2"
+                            placeholder="Add workout notes..."
+                            class="p2 mt-2 border-white"
                         ></b-form-textarea>
                     </b-card-text>
                 </b-card-body>
@@ -52,7 +56,7 @@
                             >
                             <b-button
                                 class="ml-1"
-                                variant="outline-success"
+                                variant="success"
                                 size="sm"
                                 @click="finishWorkout"
                                 >Finish</b-button
@@ -129,6 +133,60 @@
                 ></b-form-input>
             </div>
         </b-modal>
+
+        <b-modal
+            id="countdownModal"
+            centered
+            hide-footer
+            size="sm"
+            v-model="countdownModal"
+            title="Timer"
+        >
+
+            <div>
+                <b-list-group>
+                    <b-list-group-item @click="beginTimer(30)" href="#">
+                        <div class="d-flex align-items">
+                            <div>30 seconds</div>
+                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                        </div>
+                    </b-list-group-item>
+                    <b-list-group-item @click="beginTimer(45)" href="#">
+                        <div class="d-flex align-items">
+                            <div>45 seconds</div>
+                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                        </div>
+                    </b-list-group-item>
+                    <b-list-group-item @click="beginTimer(60)" href="#">
+                        <div class="d-flex align-items">
+                            <div>60 seconds</div>
+                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                        </div>
+                    </b-list-group-item>
+                    <b-list-group-item @click="beginTimer(90)" href="#">
+                        <div class="d-flex align-items">
+                            <div>90 seconds</div>
+                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                        </div>
+                    </b-list-group-item>
+                </b-list-group>
+
+                <div class="mt-3">
+                    <b-input-group size="sm">
+                        <b-input type="number" v-model.number="countdownInput.amount" size="sm" />
+                        
+                        <b-input-group-addon>
+                            <b-form-select v-model="countdownInput.unit" size="sm" :options="countdownInputOptions" />
+                        </b-input-group-addon>
+
+                        <b-input-group-addon>
+                            <b-button variant="success" size="sm" @click="beginTimer()"><b-icon-stopwatch /></b-button>
+                        </b-input-group-addon>
+                    </b-input-group>
+                </div>
+            </div>
+
+        </b-modal>
     </b-container>
 </template>
 
@@ -145,6 +203,11 @@ export default {
     data() {
         return {
             isLoading: true,
+            countdownModal: false,
+            countdownInput: {
+                amount: 0,
+                unit: "second"
+            },
 
             // SortableJS
             sortable: null,
@@ -155,7 +218,13 @@ export default {
             },
 
             // Store
-            workoutStore: this.$store.state.activeWorkout
+            workoutStore: this.$store.state.activeWorkout,
+
+            // Bootstrap
+            countdownInputOptions: [
+                { value: "second", text: "seconds" },
+                { value: "minute", text: "minutes" }
+            ]
         };
     },
 
@@ -206,6 +275,18 @@ export default {
         timeString: {
             get() {
                 return this.workoutStore.timeString;
+            }
+        },
+
+        countdownTimeString: {
+            get() {
+                return this.workoutStore.countdownTimeString;
+            }
+        },
+
+        countdownActive: {
+            get() {
+                return this.workoutStore.countdownActive;
             }
         }
     },
@@ -561,9 +642,6 @@ export default {
                         this.$router.push("/workout");
                     }
                 })
-                .catch(e => {
-                    console.error(e);
-                });
         },
 
         finishWorkout: function() {
@@ -624,7 +702,7 @@ export default {
             }
         },
 
-        generateId(n) {
+        generateId: function(n) {
             let randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             let id = "";
             // 7 random characters
@@ -632,7 +710,34 @@ export default {
                 id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
             }
             return id;
+        },
+
+        beginTimer: function(n) {
+            let seconds = n;
+            console.log(seconds);
+
+            if (!seconds) {
+                seconds = this.countdownInput.amount;
+                console.log(seconds);
+
+                if (this.countdownInput.unit === "minute") {
+                    seconds = seconds * 60;
+                }
+            }
+
+            this.$store.commit("activeWorkout/setTimer", seconds);
+            this.countdownModal = false;
         }
     }
 };
 </script>
+
+<style scoped>
+    .align-items {
+        align-items: center !important;
+    }
+
+    .clickableIcon {
+        cursor: pointer;
+    }
+</style>
