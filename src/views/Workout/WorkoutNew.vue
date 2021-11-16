@@ -31,18 +31,24 @@
                             to="/workout/new"
                             active-class="active"
                             exact-active-class="active"
+                            v-if="!$store.state.activeWorkout.workoutCommenced || $router.currentRoute.name === 'New Workout'"
                         >
                             <div
                                 class="d-flex align-items-center"
-                                v-if="
-                                    !$store.state.activeWorkout.workoutCommenced ||
-                                        $router.currentRoute.name === 'New Workout'
-                                "
+                                
                             >
                                 New Workout
                                 <b-icon-plus class="ml-auto" />
                             </div>
-                            <div class="d-flex align-items-center" v-else>
+                        </b-list-group-item>
+                        <b-list-group-item
+                            v-else
+                            class="navItem"
+                            :to="$store.state.activeWorkout.initialUrl"
+                            active-class="active"
+                            exact-active-class="active"
+                        >
+                            <div class="d-flex align-items-center">
                                 Resume Workout
                                 <b-icon-play class="ml-auto" />
                             </div>
@@ -87,6 +93,8 @@
                                 @setSetValue="setSetValue"
                                 :exercise="exercise"
                                 :previousExercise="relevantPreviousExercise(exercise.uid)"
+                                @pushChart="pushChart"
+                                @updateExerciseOptions="updateExerciseOptions"
                             />
                         </div>
                         <b-card no-body class="mb-4">
@@ -104,7 +112,7 @@
                                             variant="outline-dark"
                                             class="ml-1 mr-1"
                                             size="sm"
-                                            v-b-modal.searchExerciseModal
+                                            @click="searchExerciseModal = true;"
                                             >Add Exercise</b-button
                                         >
                                         <b-button
@@ -123,7 +131,7 @@
                         <b-spinner />
                     </div>
 
-                    <b-modal id="searchExerciseModal" centered title="Exercises" hide-footer button-size="sm">
+                    <b-modal centered title="Exercises" hide-footer button-size="sm" v-model="searchExerciseModal">
                         <ExerciseSearch @selectExercise="addExercise" />
                     </b-modal>
 
@@ -132,7 +140,7 @@
                         ref="startworkoutmodal"
                         centered
                         @hide="preventModal"
-                        @cancel="$router.push('/workout')"
+                        @cancel="$router.push('/workout'); $store.commit('activeWorkout/resetVariables')"
                         @ok="startWorkout"
                         hide-header-close
                         ok-title="Start"
@@ -244,7 +252,11 @@
             </b-col>
 
             <b-col sm="3">
-
+                <div class="chartsCont">
+                    <div v-for="(chart, index) in workoutStore.workoutCharts" :key="index" class="chart">
+                        <Chart :username="$store.state.userProfile.docData.username"  :options="chart" :index="index" position="newWorkoutRightRail" :editable="true" :saveable="false" />
+                    </div>
+                </div>
             </b-col>
         </b-row>
     </b-container>
@@ -256,14 +268,16 @@ import Sortable from "sortablejs";
 
 import ExerciseRecorder from "@/components/Exercise/ExerciseRecorder.vue";
 import ExerciseSearch from "@/components/Exercise/ExerciseSearch.vue";
+import Chart from "@/components/Charts/Chart.vue";
+
+import randomColor from "random-color"
 
 export default {
     name: "WorkoutNew",
-    components: { ExerciseRecorder, ExerciseSearch },
+    components: { ExerciseRecorder, ExerciseSearch, Chart },
     data() {
         return {
             isLoading: true,
-            countdownModal: false,
             countdownInput: {
                 amount: 0,
                 unit: "second"
@@ -284,7 +298,9 @@ export default {
             countdownInputOptions: [
                 { value: "second", text: "seconds" },
                 { value: "minute", text: "minutes" }
-            ]
+            ],
+            searchExerciseModal: false,
+            countdownModal: false,
         };
     },
 
@@ -407,9 +423,8 @@ export default {
                         notes: "",
                         sets: [
                             {
-                                kg: 0,
+                                weightAmount: 0,
                                 measureAmount: 0,
-                                measureBy: "kg"
                             }
                         ],
                         exerciseReference: {
@@ -417,6 +432,9 @@ export default {
                             name: exerciseReference.name,
                             muscleGroups: exerciseReference.muscleGroups,
                             tags: exerciseReference.tags
+                        },
+                        options: {
+                            weightUnit: "kg"
                         }
                     });
                 });
@@ -431,7 +449,8 @@ export default {
                     },
                     name: templateDocument.name,
                     notes: "",
-                    duration: 0
+                    duration: 0,
+                    options: {}
                 });
 
                 // Check if user has done this before.
@@ -475,9 +494,7 @@ export default {
                              * VERY confusing stuff and could probably be cleaner but it works.
                              */
 
-                            const arrayOfIndicesIndex = prevWorkoutMatchingExercisesIndices.indexOf(
-                                i
-                            );
+                            const arrayOfIndicesIndex = prevWorkoutMatchingExercisesIndices.indexOf(i);
 
                             if (workoutMatchingExercises[arrayOfIndicesIndex]) {
                                 this.workoutStore.previousWorkout.recordedExercises[i].uid =
@@ -521,7 +538,8 @@ export default {
                     templateReference: workoutDocument.templateReference,
                     name: workoutDocument.name,
                     notes: workoutDocument.notes,
-                    duration: 0
+                    duration: 0,
+                    options: workoutDocument.options || {}
                 });
 
                 // Generate a unique ID for each exercise (for the keys).
@@ -548,7 +566,8 @@ export default {
                     duration: 0,
                     name: "Empty Workout",
                     notes: "",
-                    recordedExercises: []
+                    recordedExercises: [],
+                    options: {}
                 };
 
                 this.$store.commit("activeWorkout/setWorkout", JSON.parse(JSON.stringify(workout)));
@@ -560,6 +579,7 @@ export default {
 
             this.isLoading = false;
             this.$nextTick(() => {
+                this.buildCharts();
                 this.$refs["startworkoutmodal"].show();
             });
         },
@@ -586,12 +606,14 @@ export default {
                 notes: "",
                 sets: [
                     {
-                        kg: 0,
-                        measureAmount: 0,
-                        measureBy: "kg"
+                        weightAmount: 0,
+                        measureAmount: 0
                     }
                 ],
-                exerciseReference: exercise
+                exerciseReference: exercise,
+                options: {
+                    weightUnit: "kg"
+                }
             });
 
             // Match up with previousWorkout UID (if applicable, else generate new one).
@@ -634,14 +656,7 @@ export default {
                 });
             }
 
-            console.log(
-                "WORKOUT MATCH:",
-                workoutMatchingExercises,
-                "PREV UIDs:",
-                prevWorkoutMatchingExerciseUIDs
-            );
-
-            this.$bvModal.hide("searchExerciseModal");
+            this.searchExerciseModal = false;
         },
 
         removeExercise: function(uid) {
@@ -667,10 +682,6 @@ export default {
             const now = new Date().getTime();
             this.$store.commit("activeWorkout/setStartTime", now);
 
-            // this.interval = setInterval(() => {
-            //     this.timerCount();
-            // }, 1000)
-
             this.$store.commit("activeWorkout/setInterval", 1000);
             this.$store.commit("activeWorkout/setWorkoutCommenced", true);
 
@@ -680,6 +691,8 @@ export default {
                     this.sortableOptions
                 );
             });
+
+            this.$store.commit("activeWorkout/setInitialUrl", this.$route.fullPath);
         },
 
         cancelWorkout: function() {
@@ -736,12 +749,11 @@ export default {
 
         setSetValue: function(uid, setIndex, key, value) {
             const exerciseIndex = this.workout.recordedExercises.findIndex(x => x.uid == uid);
-            console.log("WORK NEW", uid, setIndex, key, value);
             this.$store.commit("activeWorkout/setSetValue", {
                 exerciseIndex: exerciseIndex,
                 setIndex: setIndex,
                 key: key,
-                value: value
+                value: Number(value) || 0
             });
         },
 
@@ -787,6 +799,47 @@ export default {
 
             this.$store.commit("activeWorkout/setTimer", seconds);
             this.countdownModal = false;
+        },
+
+        buildCharts: function() {
+            for (let i = 0; (i < 2 && i < this.workout.recordedExercises.length); i ++) {
+                this.pushChart(this.workout.recordedExercises[i].exerciseReference)
+            }
+        },
+
+        pushChart: function(exerciseReference) {
+            let chartOptions = {
+                type: "exercise",
+                interval: "day",
+                data: {
+                    exercise: exerciseReference,
+                    dataToPull: "orm"
+                },
+                startDate: {
+                    unit: "week",
+                    amount: 5,
+                    date: null
+                },
+                endDate: {
+                    unit: "day",
+                    amount: 0,
+                    date: null
+                },
+                backgroundColor: randomColor().hexString(),
+                borderColor: randomColor().hexString(),
+                pointBackgroundColor: randomColor().hexString()
+            }
+
+            this.$store.commit("activeWorkout/pushToWorkoutCharts", chartOptions);
+        },
+
+        updateExerciseOptions: function(uid, data) {
+            const exerciseIndex = this.workout.recordedExercises.findIndex(x => x.uid == uid);
+
+            this.$store.commit("activeWorkout/updateExerciseOptions", {
+                exerciseIndex: exerciseIndex,
+                options: data
+            })
         }
     }
 };
@@ -802,7 +855,12 @@ export default {
     }
 
     .centerCol,
-    .navCard {
+    .navCard,
+    .chartsCont {
         margin-top: 40px;
+    }
+
+    .chart {
+        margin-bottom: 25px;
     }
 </style>

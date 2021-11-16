@@ -4,145 +4,153 @@
             <div class="flipper">
                 <div class="front" ref="frontCard">
                     <b-card no-body>
-                        <b-card-body class="pb-2">
-                            <div class="d-flex align-items">
-                                <h6>{{ exercise.exerciseReference.name }}</h6>
-                                <div class="ml-auto">
-                                    <b-icon-chevron-expand
-                                        v-if="!setsExpanded"
-                                        @click="setsExpanded = !setsExpanded"
-                                        class="mr-1 clickableIcon"
-                                    />
-                                    <b-icon-chevron-contract
-                                        v-else
-                                        @click="setsExpanded = !setsExpanded"
-                                        class="mr-1 clickableIcon"
-                                    />
-                                    <b-icon-grip-horizontal class="sortableIcon mr-1" />
-                                    <b-dropdown variant="outline" size="sm" class="small-font small-dropdown">
-                                        <b-dropdown-item class="small-dropdown-item" @click="commentExpanded = !commentExpanded"><b-icon-chat-left class="mr-1" /> Notes</b-dropdown-item>
-                                        <b-dropdown-item class="small-dropdown-item" @click="flipCard" ><b-icon-gear class="mr-1" /> Exercise Settings</b-dropdown-item>
-                                        <b-dropdown-item class="small-dropdown-item" @click="addChart"><b-icon-bar-chart class="mr-1"/> Show Chart</b-dropdown-item>
-                                        <b-dropdown-item class="small-dropdown-item" variant="danger" @click="removeExercise"><b-icon-trash class="mr-1" />Delete</b-dropdown-item>
-                                    </b-dropdown>
+                        <div ref="frontCardBody" class="frontCardBody">
+                            <b-card-body class="pb-2">
+                                <div class="d-flex align-items">
+                                    <h6>{{ exercise.exerciseReference.name }}</h6>
+                                    <div class="ml-auto">
+                                        <b-icon-chevron-expand
+                                            v-if="!setsExpanded"
+                                            @click="setsExpanded = !setsExpanded"
+                                            class="mr-1 clickableIcon"
+                                        />
+                                        <b-icon-chevron-contract
+                                            v-else
+                                            @click="setsExpanded = !setsExpanded"
+                                            class="mr-1 clickableIcon"
+                                        />
+                                        <b-icon-grip-horizontal class="sortableIcon mr-1" />
+                                        <b-dropdown variant="outline" size="sm" class="small-font small-dropdown">
+                                            <b-dropdown-item class="small-dropdown-item" @click="commentExpanded = !commentExpanded"><b-icon-chat-left class="mr-1" /> Notes</b-dropdown-item>
+                                            <b-dropdown-item class="small-dropdown-item" @click="flipCard" ><b-icon-gear class="mr-1" /> Exercise Settings</b-dropdown-item>
+                                            <b-dropdown-item class="small-dropdown-item" @click="addChart"><b-icon-bar-chart class="mr-1"/> Show Chart</b-dropdown-item>
+                                            <b-dropdown-item class="small-dropdown-item" variant="danger" @click="removeExercise"><b-icon-trash class="mr-1" />Delete</b-dropdown-item>
+                                        </b-dropdown>
+                                    </div>
                                 </div>
-                            </div>
-                        </b-card-body>
+                            </b-card-body>
 
-                        <b-collapse v-model="setsExpanded" @show="startExpanding" @hide="startExpanding" @hidden="stopExpanding" @shown="stopExpanding">
-                            <b-collapse v-model="commentExpanded" @show="startExpanding" @hide="startExpanding" @hidden="stopExpanding" @shown="stopExpanding">
-                                <div class="pl-4 pr-4">
-                                    <b-form-textarea
-                                        v-model="exercise.notes"
-                                        rows="2"
-                                        no-resize
-                                        :placeholder="notesPlaceholder"
-                                        class="border-white"
-                                    ></b-form-textarea>
-                                </div>
-                            </b-collapse>
+                            <b-collapse v-model="setsExpanded" @show="startExpanding" @hide="startExpanding" @hidden="stopExpanding" @shown="stopExpanding">
+                                <b-collapse v-model="commentExpanded" @show="startExpanding" @hide="startExpanding" @hidden="stopExpanding" @shown="stopExpanding">
+                                    <div class="pl-4 pr-4">
+                                        <b-form-textarea
+                                            v-model="exercise.notes"
+                                            rows="2"
+                                            no-resize
+                                            :placeholder="notesPlaceholder"
+                                            class="border-white"
+                                        ></b-form-textarea>
+                                    </div>
+                                </b-collapse>
 
-                            <b-list-group flush class="sortableContainer mt-2">
-                                <b-list-group-item>
-                                    <b-row class="d-flex text-center" align-v="center">
-                                        <b-col sm="5" style="font-weight:600;"><span>Previous</span></b-col>
-                                        <b-col sm="3" style="font-weight:600;"><span>Kg</span></b-col>
-                                        <b-col sm="3" style="font-weight:600;"><span>Reps</span></b-col>
-                                        <b-col sm="1"><span style="visibility:hidden;">x</span></b-col>
-                                    </b-row>
-                                </b-list-group-item>
-
-                                <b-list-group-item v-for="(set, index) in exercise.sets" :key="index">
-                                    <b-form inline>
-                                        <b-row class="d-flex" align-v="center">
-                                            <b-col sm="5">
-                                                <div
-                                                    v-if="
-                                                        previousExerciseStored &&
-                                                            previousExercise &&
-                                                            previousExerciseStored.sets[index]
-                                                    "
-                                                    class="text-muted text-center"
-                                                >
-                                                    {{ previousExerciseStored.sets[index].kg }}kg x
-                                                    {{ previousExerciseStored.sets[index].measureAmount }}
-                                                </div>
-                                                <div v-else class="text-muted text-center">
-                                                    -
-                                                </div>
-                                            </b-col>
-                                            <b-col sm="3" class="p-0">
-                                                <b-form-input
-                                                    type="text"
-                                                    :value="set.kg"
-                                                    @input="setSetValue(index, 'kg', $event)"
-                                                    size="sm"
-                                                    placeholder="Kgs"
-                                                    style="width:100%;"
-                                                    class="text-center"
-                                                ></b-form-input>
-                                            </b-col>
-                                            <b-col sm="3" class="p-0">
-                                                <b-form-input
-                                                    type="text"
-                                                    :value="set.measureAmount"
-                                                    @input="setSetValue(index, 'measureAmount', $event)"
-                                                    size="sm"
-                                                    placeholder="Reps"
-                                                    style="width:100%;"
-                                                    class="text-center"
-                                                ></b-form-input>
-                                            </b-col>
-                                            <b-col sm="1" class="pl-2">
-                                                <b-form-checkbox class="setCheck" button-variant="success"></b-form-checkbox>
-                                            </b-col>
+                                <b-list-group flush class="sortableContainer mt-2">
+                                    <b-list-group-item>
+                                        <b-row class="d-flex text-center" align-v="center">
+                                            <b-col sm="5" style="font-weight:600;"><span>Previous</span></b-col>
+                                            <b-col sm="3" style="font-weight:600;"><span>{{ exercise.options && exercise.options.weightUnit === "lb" ? 'lb' : 'kg' }}</span></b-col>
+                                            <b-col sm="3" style="font-weight:600;"><span>Reps</span></b-col>
+                                            <b-col sm="1"><span style="visibility:hidden;">x</span></b-col>
                                         </b-row>
-                                    </b-form>
-                                </b-list-group-item>
+                                    </b-list-group-item>
 
-                                <b-list-group-item>
-                                    <b-row>
-                                        <div class="m-auto">
-                                            <b-button
-                                                class="mr-1"
-                                                @click="removeSet"
-                                                variant="outline-dark"
-                                                size="sm"
-                                                >Remove Set</b-button
-                                            >
-                                            <b-button
-                                                class="ml-1"
-                                                @click="addSet"
-                                                variant="outline-success"
-                                                size="sm"
-                                                >Add Set</b-button
-                                            >
-                                        </div>
-                                    </b-row>
-                                </b-list-group-item>
-                            </b-list-group>
-                        </b-collapse>
+                                    <b-list-group-item v-for="(set, index) in exercise.sets" :key="index">
+                                        <b-form inline>
+                                            <b-row class="d-flex" align-v="center">
+                                                <b-col sm="5">
+                                                    <div
+                                                        v-if="
+                                                            previousExerciseStored &&
+                                                                previousExercise &&
+                                                                previousExerciseStored.sets[index]
+                                                        "
+                                                        class="text-muted text-center"
+                                                    >
+                                                        {{ previousExerciseStored.sets[index].weightAmount }}kg x
+                                                        {{ previousExerciseStored.sets[index].measureAmount }}
+                                                    </div>
+                                                    <div v-else class="text-muted text-center">
+                                                        -
+                                                    </div>
+                                                </b-col>
+                                                <b-col sm="3" class="p-0">
+                                                    <b-form-input
+                                                        type="text"
+                                                        :value="set.weightAmount"
+                                                        @input="setSetValue(index, 'weightAmount', $event)"
+                                                        size="sm"
+                                                        placeholder="Kgs"
+                                                        style="width:100%;"
+                                                        class="text-center"
+                                                    ></b-form-input>
+                                                </b-col>
+                                                <b-col sm="3" class="p-0">
+                                                    <b-form-input
+                                                        type="text"
+                                                        :value="set.measureAmount"
+                                                        @input="setSetValue(index, 'measureAmount', $event)"
+                                                        size="sm"
+                                                        placeholder="Reps"
+                                                        style="width:100%;"
+                                                        class="text-center"
+                                                    ></b-form-input>
+                                                </b-col>
+                                                <b-col sm="1" class="pl-2">
+                                                    <b-form-checkbox class="setCheck" button-variant="success"></b-form-checkbox>
+                                                </b-col>
+                                            </b-row>
+                                        </b-form>
+                                    </b-list-group-item>
+
+                                    <b-list-group-item>
+                                        <b-row>
+                                            <div class="m-auto">
+                                                <b-button
+                                                    class="mr-1"
+                                                    @click="removeSet"
+                                                    variant="outline-dark"
+                                                    size="sm"
+                                                    >Remove Set</b-button
+                                                >
+                                                <b-button
+                                                    class="ml-1"
+                                                    @click="addSet"
+                                                    variant="outline-success"
+                                                    size="sm"
+                                                    >Add Set</b-button
+                                                >
+                                            </div>
+                                        </b-row>
+                                    </b-list-group-item>
+                                </b-list-group>
+                            </b-collapse>
+                        </div>
                     </b-card>
                 </div>
 
                 <div class="back" ref="backCard">
                     <b-card no-body>
-                        <b-card-body>
-                            <b-card-title><h6>Edit Exercise</h6></b-card-title>
+                        <div ref="backCardBody" class="back-body" :style="'height:' + cardBodyHeight">
+                            <b-card-body>
+                                <b-card-title><h6>Edit Exercise</h6></b-card-title>
 
-                            <div class="mt-3">
-                                <b-form @submit.prevent="updateExerciseSettings">
-                                    <b-form-group label="Measure By">
-                                        <b-form-select :options="measureByOptions" v-model="newExerciseSettings.measureBy" />
-                                    </b-form-group>
+                                <div class="mt-3">
+                                    <b-form @submit.prevent="updateExerciseSettings">
+                                        <b-form-group label="Measure By">
+                                            <b-form-select :options="measureByOptions" v-model="newExerciseOptions.measureBy" />
+                                        </b-form-group>
 
-                                    <div class="text-center">
-                                        <b-button variant="danger" size="sm" @click="flipCard">Cancel</b-button>
-                                        <b-button class="ml-1" variant="outline-dark" size="sm" type="submit">Update</b-button>
-                                    </div>
-                                </b-form>
-                            </div>
-                        </b-card-body>
+                                        <b-form-group label="Weight Unit">
+                                            <b-form-select :options="weightUnitOptions" v-model="newExerciseOptions.weightUnit" />
+                                        </b-form-group>
+
+                                        <div class="text-center">
+                                            <b-button variant="danger" size="sm" @click="flipCard">Cancel</b-button>
+                                            <b-button class="ml-1" variant="outline-dark" size="sm" type="submit">Update</b-button>
+                                        </div>
+                                    </b-form>
+                                </div>
+                            </b-card-body>
+                        </div>
                     </b-card>
                 </div>
             </div>
@@ -169,18 +177,23 @@ export default {
             commentExpanded: false,
             previousExerciseStored: {},
 
-            newExerciseSettings: {
-                measureBy: ""
-            },
+            newExerciseOptions: {},
 
             // Bootstrap
             measureByOptions: [
-                { value: "kg", text: "KGs (metric)" },
+                { value: "repsWeight", text: "Reps and Weights" },
+                { value: "repsOnly", text: "Reps Only" },
+                { value: "time", text: "Time" },
+                { value: "timeWeight", text: "Time and Weight" },
+            ],
+            weightUnitOptions: [
+                { value: "kg", text: "Kilograms (metric)" },
                 { value: "lb", text: "Pounds (imperial)" }
             ],
 
             // Card Flip
             cardHeight: "229px",
+            cardBodyHeight: "200px",
             expandingInterval: null,
         };
     },
@@ -190,15 +203,28 @@ export default {
         if (this.$props.previousExercise) {
             this.previousExerciseStored = JSON.parse(JSON.stringify(this.$props.previousExercise));
         }
+
+        if (!this.$props.exercise.options) {
+            this.$emit("updateExerciseOptions", this.$props.exercise.uid, { weightUnit: "kg", measureBy: "repsWeight" })
+        } else if (!this.$props.exercise.options.weightUnit) {
+            this.$emit("updateExerciseOptions", this.$props.exercise.uid, { weightUnit: "kg" })
+        } else if (!this.$props.exercise.options.measureBy) {
+            this.$emit("updateExerciseOptions", this.$props.exercise.uid, { measureBy: "repsWeight" })
+        }
+
+        this.newExerciseOptions = this.$props.exercise.options;
     },
 
     mounted: function() {
         // Set height of card.
         this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
+        this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
 
-        this.newExerciseSettings = {
-            measureBy: this.$props.exercise.sets[0].measureBy
-        }
+        this.$refs.cardFlip.addEventListener("transitionend", () => {
+            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".frontCardBody")) {
+                this.$el.querySelector(".frontCardBody").style.display = "none";
+            }
+        })
     },
 
     beforeRouteLeave: function(to, from, next) {
@@ -228,20 +254,25 @@ export default {
             if (this.exercise.sets.length > 0) {
                 d = JSON.parse(JSON.stringify(this.exercise.sets[this.exercise.sets.length - 1]));
             } else {
-                d = { kg: 0, measureAmount: 0, measureBy: "Reps" };
+                d = { weightAmount: 0, measureAmount: 0 };
             }
 
             this.$emit("addSet", this.$props.exercise.uid, d);
-            this.$nextTick(() => { this.cardHeight = this.$refs.frontCard.offsetHeight + "px"; })
+            this.$nextTick(() => { 
+                this.cardHeight = this.$refs.frontCard.offsetHeight + "px"; 
+                this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+            })
         },
 
         removeSet: function() {
             this.$emit("removeSet", this.$props.exercise.uid);
-            this.$nextTick(() => { this.cardHeight = this.$refs.frontCard.offsetHeight + "px"; })
+            this.$nextTick(() => { 
+                this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
+                this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+            })
         },
 
         setSetValue: function(index, key, e) {
-            console.log("EX REC", index, key, e);
             this.$emit("setSetValue", this.$props.exercise.uid, index, key, e);
         },
 
@@ -264,12 +295,17 @@ export default {
         },
 
         flipCard: function() {
+            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".frontCardBody")) {
+                this.$el.querySelector(".frontCardBody").style.display = "block";
+            }
+
             this.$refs.cardFlip.classList.toggle("flipped");
         },
 
         startExpanding: function() {
             this.expandingInterval = window.setInterval(() => {
                 this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
+                this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
             }, 10)
         },
 
@@ -278,11 +314,12 @@ export default {
         },
 
         updateExerciseSettings: function() {
-            console.log("UPDATE");
+            this.$emit("updateExerciseOptions", this.$props.exercise.uid, this.newExerciseOptions)
+            this.flipCard();
         },
 
         addChart: function() {
-            console.log("CHART ADDED");
+            this.$emit("pushChart", this.$props.exercise.exerciseReference)
         }
     }
 };
@@ -317,6 +354,10 @@ export default {
         -moz-transform: rotateY(180deg);
         -o-transform: rotateY(180deg);
         transform: rotateY(180deg);
+    }
+
+    .back-body {
+        overflow-y: auto !important;
     }
 
     .flipper {

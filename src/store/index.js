@@ -18,12 +18,16 @@ const activeWorkoutModule = {
         finishTime: 0,
         interval: null,
         timeString: "00:00",
+        initialUrl: "",
 
         // Countdown/timer
         countdownActive: false,
         countdownInterval: null,
         countdownEndTime: 0,
-        countdownTimeString: "00:00"
+        countdownTimeString: "00:00",
+
+        // Charts
+        workoutCharts: []
     }),
 
     mutations: {
@@ -73,6 +77,7 @@ const activeWorkoutModule = {
                 data.key,
                 data.value
             );
+
         },
 
         setEmptyWorkout: function(state, value) {
@@ -164,6 +169,12 @@ const activeWorkoutModule = {
             state.interval = null;
             state.timeString = "00:00";
             state.displayToast = false;
+            state.countdownActive = false;
+            state.countdownEndTime = 0;
+            state.countdownTimeString = "00:00";
+            state.workoutCharts = []
+            window.clearInterval(state.countdownInterval);
+
         },
 
         setTimer: function(state, seconds) {
@@ -201,6 +212,20 @@ const activeWorkoutModule = {
                 }
 
             })
+        },
+
+        pushToWorkoutCharts: function(state, options) {
+            state.workoutCharts.push(options);
+            console.log("PUSHED TO WORKOUT CHARTS", state.workoutCharts);
+        },
+
+        updateExerciseOptions: function(state, data) {
+            console.log("UPDATE EXERCISE OPTIONS:", data);
+            state.workout.recordedExercises[data.exerciseIndex].options = Object.assign({}, state.workout.recordedExercises[data.exerciseIndex].options, data.options)
+        },
+
+        setInitialUrl: function(state, url) {
+            state.initialUrl = url;
         }
     },
 
@@ -217,16 +242,16 @@ const activeWorkoutModule = {
                 delete exercise.exerciseReference.isFollow;
 
                 exercise.sets.forEach(set => {
-                    if (!set.kg) {
-                        set.kg = 0;
+                    if (!set.weightAmount) {
+                        set.weightAmount = 0;
                     } else {
-                        set.kg = Number(set.kg);
+                        set.weightAmount = Number(set.weightAmount) || 0;
                     }
 
                     if (!set.measureAmount) {
                         set.measureAmount = 0;
                     } else {
-                        set.measureAmount = Number(set.measureAmount);
+                        set.measureAmount = Number(set.measureAmount) || 0;
                     }
                 });
 
@@ -249,7 +274,7 @@ const activeWorkoutModule = {
                 }
             };
 
-            console.log(JSON.stringify({ workoutForm: payload }));
+            console.log("WORKOUT PAYLOAD", payload);
 
             const result = (
                 await API.post(rootState.apiName, path, myInit).catch(err => {
@@ -300,6 +325,10 @@ export default new Vuex.Store({
                 case "profileLeftRail":
                     Vue.set(state.userProfile.docData.options.charts.profile.leftRail, data.index, data.options)
                     break;
+                case "newWorkoutRightRail":
+                    Vue.set(state.activeWorkout.workoutCharts, data.index, data.options);
+                    break;
+
             }            
         }
 

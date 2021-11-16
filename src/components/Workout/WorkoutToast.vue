@@ -11,7 +11,7 @@
         <template #toast-title>
             <div class="d-flex w-100 align-items pt-1 pb-1">
                 <div>
-                    <router-link to="/workout/new">{{
+                    <router-link :to="$store.state.activeWorkout.initialUrl">{{
                         $store.state.activeWorkout.workout.name
                     }}</router-link>
                 </div>

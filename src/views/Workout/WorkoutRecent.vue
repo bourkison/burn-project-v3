@@ -31,18 +31,24 @@
                             to="/workout/new"
                             active-class="active"
                             exact-active-class="active"
+                            v-if="!$store.state.activeWorkout.workoutCommenced || $router.currentRoute.name === 'New Workout'"
                         >
                             <div
                                 class="d-flex align-items-center"
-                                v-if="
-                                    !$store.state.activeWorkout.workoutCommenced ||
-                                        $router.currentRoute.name === 'New Workout'
-                                "
+                                
                             >
                                 New Workout
                                 <b-icon-plus class="ml-auto" />
                             </div>
-                            <div class="d-flex align-items-center" v-else>
+                        </b-list-group-item>
+                        <b-list-group-item
+                            v-else
+                            class="navItem"
+                            :to="$store.state.activeWorkout.initialUrl"
+                            active-class="active"
+                            exact-active-class="active"
+                        >
+                            <div class="d-flex align-items-center">
                                 Resume Workout
                                 <b-icon-play class="ml-auto" />
                             </div>

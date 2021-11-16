@@ -1,6 +1,5 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-// import store from '@/store'
 
 import { Auth } from "aws-amplify";
 
@@ -21,7 +20,6 @@ import Profile from "@/views/User/Profile.vue";
 import Admin from "@/views/Utility/Admin.vue";
 import Search from "@/views/Utility/Search.vue";
 
-// import Template from '@/views/Template/Template.vue'
 import TemplateDiscover from "@/views/Template/TemplateDiscover.vue";
 import TemplateEdit from "@/views/Template/TemplateEdit.vue";
 import TemplateFollowed from "@/views/Template/TemplateFollowed.vue";

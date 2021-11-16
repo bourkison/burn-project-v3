@@ -7,15 +7,16 @@
         </b-card>
         <div>
             <b-list-group>
-                <b-list-group-item to="/workout/new" class="s-font btr-0">
+                <b-list-group-item to="/workout/new" class="s-font btr-0" v-if="!$store.state.activeWorkout.workoutCommenced">
                     <div
-                        v-if="!$store.state.activeWorkout.workoutCommenced"
                         class="d-flex align-items"
                     >
                         <div>New Workout</div>
                         <div class="ml-auto"><b-icon-plus /></div>
                     </div>
-                    <div v-else class="d-flex align-items">
+                </b-list-group-item>
+                <b-list-group-item :to="$store.state.activeWorkout.initialUrl" class="s-font btr-0" v-else>
+                    <div class="d-flex align-items">
                         <div>Resume Workout</div>
                         <div class="ml-auto"><b-icon-play /></div>
                     </div>

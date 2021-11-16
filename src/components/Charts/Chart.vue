@@ -122,7 +122,7 @@
                                         <b-form-group class="small-font">
                                             <template #label>
                                                 <div class="d-flex">
-                                                    <div>Favourite Exercise</div>
+                                                    <div>Selected Exercise</div>
                                                     <div class="ml-auto"><b-icon-star class="clickableIcon" @click="newPreferredExercise = !newPreferredExercise" /></div>
                                                 </div>
                                             </template>
@@ -138,9 +138,9 @@
                                             <div v-else>
                                                 <div v-if="selectedExercise.exerciseId" class="text-center small-font text-muted mb-1">Selected: {{ selectedExercise.name }}</div>
 
-                                                <b-button block v-b-modal.searchExerciseModal variant="primary"  size="sm">Select Exercise</b-button>
+                                                <b-button block @click="searchExerciseModal = !searchExerciseModal" variant="primary"  size="sm">Select Exercise</b-button>
 
-                                                <b-modal id="searchExerciseModal" centered title="Select Exercise" hide-footer button-size="sm">
+                                                <b-modal v-model="searchExerciseModal" centered title="Select Exercise" hide-footer button-size="sm">
                                                     <ExerciseSearch @selectExercise="selectExercise" />
                                                 </b-modal>
                                             </div>
@@ -288,7 +288,8 @@ export default {
                 { value: "orm", text: "ORM" },
                 { value: "totalVolume", text: "Total Volume" },
                 { value: "totalReps", text: "Total Reps" }
-            ]
+            ],
+            searchExerciseModal: false,
         }
     },
 
@@ -360,7 +361,6 @@ export default {
 
                 Object.assign(this.chartOptions, this.$props.options);
                 Object.assign(this.newChartData, this.chartOptions.data);
-                console.log("PROPS OPTIONS", this.$props.options);
 
                 this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
 
@@ -773,7 +773,7 @@ export default {
         selectExercise: function(exercise) {
             this.selectedExercise = exercise;
             delete this.selectedExercise._id;
-            this.$bvModal.hide("searchExerciseModal");
+            this.searchExerciseModal = false;
         }
     }
     
