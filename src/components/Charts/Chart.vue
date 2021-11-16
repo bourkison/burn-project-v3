@@ -9,7 +9,7 @@
                                 <b-card-title>
                                     <div class="d-flex align-items">
                                         <div><h6 class="d-inline-block vertical-align">{{ cardTitle }}</h6></div>
-                                        <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard(1)" scale="0.5" /></div>
+                                        <div class="ml-auto" v-if="editable"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard(1)" scale="0.5" /></div>
                                     </div>
                                 </b-card-title>
                                 <canvas class="chart"></canvas>
@@ -19,7 +19,7 @@
                                 <div class="align-items text-center text-muted small-font mt-1">
                                     <div><em>No Data</em></div>
                                     <div class="d-flex align-items">
-                                        <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" /></div>
+                                        <div class="ml-auto" v-if="editable"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" /></div>
                                     </div>
                                 </div>
                             </div>
@@ -31,7 +31,7 @@
                     </b-card>
                 </div>
 
-                <div class="back" ref="backCard">
+                <div class="back" ref="backCard" v-if="editable">
                     <b-card no-body>
                         <b-card-body ref="backCardBody" class="back-card-body" :style="'height:' + cardBodyHeight">
                             <b-card-title>
@@ -159,7 +159,7 @@
                                             <div v-else><b-spinner small /></div>
                                         </b-button>
 
-                                        <b-button size="sm" v-if="editable" variant="outline-success" class="ml-1" :disabled="isLoading" @click="updateChart(true)">
+                                        <b-button size="sm" v-if="saveable" variant="outline-success" class="ml-1" :disabled="isLoading" @click="updateChart(true)">
                                             <div v-if="!isSaving">Save</div>
                                             <div v-else><b-spinner small /></div>
                                         </b-button>
@@ -199,6 +199,10 @@ export default {
             }
         },
         editable: {
+            type: Boolean,
+            default: false
+        },
+        saveable: {
             type: Boolean,
             default: false
         },
@@ -249,7 +253,7 @@ export default {
             // All possible data input.
             newChartData: {
                 preferenceIndex: 0,
-                exerciseId: "",
+                exercise: {},
                 dataToPull: "",
             },
             
@@ -339,7 +343,7 @@ export default {
     mounted: function() {
         // Add transition end event that hides chart when flipped.
         this.$refs.cardFlip.addEventListener("transitionend", () => {
-            if (this.$refs.cardFlip.classList.contains("flipped")) {
+            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
                 this.$el.querySelector(".chart").style.display = "none";
             }
         })
@@ -687,10 +691,10 @@ export default {
         },
 
         flipCard: function() {
-            if (this.$refs.cardFlip.classList.contains("flipped")) {
+            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
                 this.$el.querySelector(".chart").style.display = "block";
             }
-            
+
             this.$refs.cardFlip.classList.toggle("flipped");
         },
 

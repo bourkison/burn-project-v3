@@ -125,7 +125,7 @@
 
                     
 
-                    <Chart  class="performanceChart" :editable="false" :username="$store.state.userProfile.docData.username" :options="chartOptions" :index="0" position="exerciseView" @updateChart="updateChart" />
+                    <Chart  class="performanceChart" :editable="true" :saveable="false" :username="$store.state.userProfile.docData.username" :options="chartOptions" :index="0" position="exerciseView" @updateChart="updateChart" />
                 </b-container>
             </b-col>
         </b-row>

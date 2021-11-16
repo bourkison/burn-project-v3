@@ -4,7 +4,7 @@
             <b-col sm="3">
                 <QuickStart class="quickStart" />
                 <div v-for="(chart, index) in $store.state.userProfile.docData.options.charts.homepage.leftRail" :key="index">
-                    <Chart class="chart" :username="$store.state.userProfile.docData.username" :options="chart" :editable="true" position="homepageLeftRail" :index="index" />
+                    <Chart class="chart" :username="$store.state.userProfile.docData.username" :options="chart" :editable="true" :saveable="true" position="homepageLeftRail" :index="index" />
                 </div>
                 <div class="mt-5 text-center text-muted">
                     <b-icon-plus-circle class="clickableIcon" font-scale="2" />

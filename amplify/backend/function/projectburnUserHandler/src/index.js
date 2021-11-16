@@ -19,7 +19,8 @@ const getUser = async function(event) {
                 $elemMatch: {
                     "username": event.requestContext.authorizer.claims["cognito:username"]
                 }
-            }
+            },
+            "options.charts.profile": 1
         }
     } else {
         fields = {
@@ -65,7 +66,8 @@ const getUser = async function(event) {
             followerCount: result.followerCount,
             followingCount: result.followingCount,
             isFollowed: result.followers && result.followers.length > 0 ? true : false,
-            isLoggedInUser: (username === event.requestContext.authorizer.claims["cognito:username"]) ? true : false
+            isLoggedInUser: (username === event.requestContext.authorizer.claims["cognito:username"]) ? true : false,
+            charts: JSON.parse(JSON.stringify(result.options)).charts.profile
         }
     } else {
         responseData = {

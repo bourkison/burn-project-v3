@@ -2,7 +2,16 @@
     <b-container class="profileCont">
         <b-row>
             <b-col cols="3">
-                <RecentWorkoutsChart :username="profile.username" />
+                <div v-if="!isLoggedInUser">
+                    <div v-for="(chart, index) in profile.charts.leftRail" :key="index">
+                        <Chart :username="profile.username" :options="chart" :index="index" position="profileLeftRail" :editable="false" :saveable="false" />
+                    </div>
+                </div>
+                <div v-else>
+                    <div v-for="(chart, index) in $store.state.userProfile.docData.options.charts.profile.leftRail" :key="index">
+                        <Chart :username="$store.state.userProfile.docData.username" :options="chart" :index="index" position="profileLeftRail" :editable="true" :saveable="true" />
+                    </div>
+                </div>
             </b-col>
 
             <b-col cols="6">
@@ -106,11 +115,11 @@ import { API } from "aws-amplify";
 import PostNew from "@/components/Post/PostNew.vue";
 import PostFeed from "@/components/Post/PostFeed.vue";
 
-import RecentWorkoutsChart from "@/components/Charts/RecentWorkoutsChart.vue";
+import Chart from "@/components/Charts/Chart.vue";
 
 export default {
     name: "ProfileView",
-    components: { PostFeed, PostNew, RecentWorkoutsChart },
+    components: { PostFeed, PostNew, Chart },
     props: {
         profile: {
             type: Object,

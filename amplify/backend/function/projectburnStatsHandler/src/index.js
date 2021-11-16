@@ -412,6 +412,9 @@ const updateChart = async function(event) {
         case "homepageLeftRail":
             key = "options.charts.homepage.leftRail." + index
             break;
+        case "profileLeftRail":
+            key = "options.charts.profile.leftRail." + index
+            break;
     }
 
     setObj[key] = options

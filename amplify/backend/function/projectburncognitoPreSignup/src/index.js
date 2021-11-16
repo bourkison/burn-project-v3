@@ -92,6 +92,31 @@ exports.handler = async (event, context, callback) => {
                         }
                     ],
                     rightRail: []
+                },
+                profile: {
+                    leftRail: [
+                        {
+                            type: "recentWorkouts",
+                            startDate: {
+                                unit: "week",
+                                amount: 6,
+                                date: null
+                            },
+                            endDate: {
+                                unit: "",
+                                amount: 0,
+                                date: null
+                            },
+                            data: {
+    
+                            },
+                            interval: "week",
+                            backgroundColor: "#007bff",
+                            borderColor: "#007bff",
+                            pointBackgroundColor: "#007bff"
+                        }
+                    ],
+                    rightRail: []
                 }
             }
         }

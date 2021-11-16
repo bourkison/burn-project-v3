@@ -254,6 +254,9 @@ export default new Vuex.Store({
                 case "homepageLeftRail":
                     Vue.set(state.userProfile.docData.options.charts.homepage.leftRail, data.index, data.options);
                     break;
+                case "profileLeftRail":
+                    Vue.set(state.userProfile.docData.options.charts.profile.leftRail, data.index, data.options)
+                    break;
             }            
         }
 
