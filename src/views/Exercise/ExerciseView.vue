@@ -125,7 +125,7 @@
 
                     
 
-                    <OneRepMaxExerciseChart :exerciseId="exerciseData._id" :username="this.$store.state.userProfile.docData.username" class="performanceChart" />
+                    <Chart  class="performanceChart" :editable="false" :username="$store.state.userProfile.docData.username" :options="chartOptions" :index="0" position="exerciseView" @updateChart="updateChart" />
                 </b-container>
             </b-col>
         </b-row>
@@ -171,12 +171,12 @@ import { Viewer } from "@toast-ui/vue-editor";
 import { API, Storage } from "aws-amplify";
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
-import OneRepMaxExerciseChart from "@/components/Charts/OneRepMaxExerciseChart.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
+import Chart from "@/components/Charts/Chart.vue";
 
 export default {
     name: "ExerciseView",
-    components: { CommentSection, MuscleGroup, Viewer, OneRepMaxExerciseChart },
+    components: { CommentSection, MuscleGroup, Viewer, Chart },
     data() {
         return {
             isLoading: true,
@@ -193,6 +193,30 @@ export default {
             isLiked: false,
             isFollowed: false,
             isFollowable: false,
+
+            // Chart
+            chartOptions: {
+                type: "exercise",
+                startDate: {
+                    unit: "month",
+                    amount: 3,
+                    date: null
+                },
+                endDate: {
+                    unit: "day",
+                    amount: 0,
+                    date: null
+                },
+                data: {
+                    exerciseId: "",
+                    preferenceIndex: 0,
+                    dataToPull: "orm"
+                },
+                interval: "day",
+                backgroundColor: "#007bff",
+                borderColor: "#007bff",
+                pointBackgroundColor: "#007bff"
+            },
 
             // Bootstrap:
             carouselModel: 0,
@@ -230,6 +254,17 @@ export default {
                 };
 
                 const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
+
+                this.chartOptions.data.exercise = {
+                    exerciseId: response._id,
+                    createdBy: response.createdBy,
+                    name: response.name,
+                    filePaths: response.filePaths,
+                    tags: response.tags,
+                    muscleGroups: response.muscleGroups
+                }
+
+                console.log("EX ID:", this.chartOptions.data.exerciseId);
 
                 this.exerciseData = {
                     _id: response._id,
@@ -323,6 +358,10 @@ export default {
                 this.followCount--;
                 this.isFollowed = false;
             }
+        },
+
+        updateChart: function(options) {
+            this.chartOptions = options;
         }
     }
 };

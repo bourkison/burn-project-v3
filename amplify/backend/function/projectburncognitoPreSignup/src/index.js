@@ -81,8 +81,9 @@ exports.handler = async (event, context, callback) => {
                                 date: null
                             },
                             data: {
-                                exerciseId: null,
-                                preferenceIndex: 0
+                                exerciseId: "",
+                                preferenceIndex: 0,
+                                dataToPull: "orm"
                             },
                             interval: "day",
                             backgroundColor: "#007bff",

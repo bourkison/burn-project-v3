@@ -9,7 +9,7 @@
                                 <b-card-title>
                                     <div class="d-flex align-items">
                                         <div><h6 class="d-inline-block vertical-align">{{ cardTitle }}</h6></div>
-                                        <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" scale="0.5" /></div>
+                                        <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard(1)" scale="0.5" /></div>
                                     </div>
                                 </b-card-title>
                                 <canvas class="chart"></canvas>
@@ -37,7 +37,7 @@
                             <b-card-title>
                                 <div class="d-flex align-items">
                                     <div><h6 class="d-inline-block vertical-align">Edit Card</h6></div>
-                                    <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" scale="0.5" /></div>
+                                    <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard(-1)" scale="0.5" /></div>
                                 </div>
                             </b-card-title>
 
@@ -159,7 +159,7 @@
                                             <div v-else><b-spinner small /></div>
                                         </b-button>
 
-                                        <b-button size="sm" variant="outline-success" class="ml-1" :disabled="isLoading" @click="updateChart(true)">
+                                        <b-button size="sm" v-if="editable" variant="outline-success" class="ml-1" :disabled="isLoading" @click="updateChart(true)">
                                             <div v-if="!isSaving">Save</div>
                                             <div v-else><b-spinner small /></div>
                                         </b-button>
@@ -177,6 +177,7 @@
 <script>
 import { API } from 'aws-amplify';
 import { Chart, registerables } from "chart.js";
+import 'chartjs-adapter-date-fns';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -252,10 +253,7 @@ export default {
                 dataToPull: "",
             },
             
-            selectedExercise: {
-                exerciseId: "",
-                name: ""
-            },
+            selectedExercise: {},
 
             newStartDateDynamic: true,
             newEndDateDynamic: true,
@@ -338,6 +336,15 @@ export default {
         this.getData();
     },
 
+    mounted: function() {
+        // Add transition end event that hides chart when flipped.
+        this.$refs.cardFlip.addEventListener("transitionend", () => {
+            if (this.$refs.cardFlip.classList.contains("flipped")) {
+                this.$el.querySelector(".chart").style.display = "none";
+            }
+        })
+    },
+
     methods: {
         getData: async function() {
             try {
@@ -353,8 +360,22 @@ export default {
 
                 this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
 
+                // Format edit values:
+                if (this.chartOptions.startDate.date) {
+                    this.newStartDateDynamic = true
+                }
+
+                if (this.chartOptions.endDate.date) {
+                    this.newEndDateDynamic = true
+                }
+
                 if (this.chartOptions.type === "exercise") {
                     this.trimLabels = true;
+
+                    if (this.chartOptions.data.exercise && this.chartOptions.data.exercise.exerciseId) {
+                        this.newPreferredExercise = false;
+                        this.selectedExercise = this.chartOptions.data.exercise;
+                    }
                 }
 
                 this.startDate = this.buildDate(this.chartOptions.startDate, this.chartOptions.interval, true);
@@ -375,8 +396,8 @@ export default {
                     case "exercise":
                         path = "/stats/exercise";
 
-                        if (this.chartOptions.data && this.chartOptions.data.exerciseId) {
-                            queryStringParameters.exerciseId = this.chartOptions.data.exerciseId
+                        if (this.chartOptions.data && this.chartOptions.data.exercise && this.chartOptions.data.exercise.exerciseId) {
+                            queryStringParameters.exerciseId = this.chartOptions.data.exercise.exerciseId
                         } else {
                             queryStringParameters.preferenceIndex = this.chartOptions.data.preferenceIndex
                         }
@@ -483,6 +504,7 @@ export default {
             }
             catch (err) {
                 this.hasData = false;
+                console.error(err);
             }
         },
 
@@ -665,6 +687,10 @@ export default {
         },
 
         flipCard: function() {
+            if (this.$refs.cardFlip.classList.contains("flipped")) {
+                this.$el.querySelector(".chart").style.display = "block";
+            }
+            
             this.$refs.cardFlip.classList.toggle("flipped");
         },
 
@@ -692,10 +718,10 @@ export default {
             }
 
             if (!this.newPreferredExercise && this.selectedExercise.exerciseId) {
-                this.newChartData.exerciseId = this.selectedExercise.exerciseId;
+                this.newChartData.exercise = this.selectedExercise;
                 this.newChartData.preferenceIndex = 0;
             } else {
-                this.newChartData.exerciseId = "";
+                this.newChartData.exercise = {};
             }
 
             // Set data object.
@@ -705,12 +731,16 @@ export default {
                 this.newChartOptions.data = {};
             }
 
-            await this.$store.dispatch("updateChart", {
-                options: this.newChartOptions,
-                position: this.$props.position,
-                index: this.$props.index,
-                save: save
-            })
+            if (this.$props.editable) {
+                await this.$store.dispatch("updateChart", {
+                    options: this.newChartOptions,
+                    position: this.$props.position,
+                    index: this.$props.index,
+                    save: save
+                })
+            } else {
+                this.$emit("updateChart", this.newChartOptions);
+            }
 
             if (this.chart) {
                 this.chart.destroy();
@@ -737,11 +767,8 @@ export default {
         },
 
         selectExercise: function(exercise) {
-            this.selectedExercise = {
-                exerciseId: exercise.exerciseId,
-                name: exercise.name
-            }
-
+            this.selectedExercise = exercise;
+            delete this.selectedExercise._id;
             this.$bvModal.hide("searchExerciseModal");
         }
     }
