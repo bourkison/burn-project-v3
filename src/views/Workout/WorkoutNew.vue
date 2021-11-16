@@ -1,192 +1,252 @@
 <template>
     <b-container>
-        <div v-if="!isLoading">
-            <b-card no-body>
-                <b-card-body>
-                    <div class="d-flex align-items">
-                        <h4>{{ workout.name }}</h4>
-                        <div class="d-flex ml-auto">
-                            <div class="text-muted">{{ timeString }}</div>
-                            <div class="ml-1"><b-icon-stopwatch @click="countdownModal = true" class="clickableIcon" /></div>
-                            <div class="ml-1" v-if="countdownActive">{{ countdownTimeString }}</div>
+        <b-row>
+            <b-col sm="3">
+                <b-card class="navCard" no-body>
+                    <b-list-group>
+                        <b-list-group-item
+                            class="navItem"
+                            to="/workout"
+                            active-class="unset"
+                            exact-active-class="active"
+                        >
+                            <div class="d-flex align-items-center">
+                                Workout
+                                <b-icon-house class="ml-auto" />
+                            </div>
+                        </b-list-group-item>
+                        <b-list-group-item
+                            class="navItem"
+                            to="/workout/recent"
+                            active-class="unset"
+                            exact-active-class="active"
+                        >
+                            <div class="d-flex align-items-center">
+                                Recent
+                                <b-icon-search class="ml-auto" />
+                            </div>
+                        </b-list-group-item>
+                        <b-list-group-item
+                            class="navItem"
+                            to="/workout/new"
+                            active-class="active"
+                            exact-active-class="active"
+                        >
+                            <div
+                                class="d-flex align-items-center"
+                                v-if="
+                                    !$store.state.activeWorkout.workoutCommenced ||
+                                        $router.currentRoute.name === 'New Workout'
+                                "
+                            >
+                                New Workout
+                                <b-icon-plus class="ml-auto" />
+                            </div>
+                            <div class="d-flex align-items-center" v-else>
+                                Resume Workout
+                                <b-icon-play class="ml-auto" />
+                            </div>
+                        </b-list-group-item>
+                    </b-list-group>
+                </b-card>
+            </b-col>
+
+            <b-col sm="6">
+                <b-container class="centerCol">
+                    <div v-if="!isLoading">
+                        <b-card no-body>
+                            <b-card-body>
+                                <div class="d-flex align-items">
+                                    <h4>{{ workout.name }}</h4>
+                                    <div class="d-flex ml-auto">
+                                        <div class="text-muted">{{ timeString }}</div>
+                                        <div class="ml-1"><b-icon-stopwatch @click="countdownModal = true" class="clickableIcon" /></div>
+                                        <div class="ml-1" v-if="countdownActive">{{ countdownTimeString }}</div>
+                                    </div>
+                                </div>
+
+                                <b-card-text>
+                                    <b-form-textarea
+                                        :value="workout.notes"
+                                        @input="setWorkoutValue('notes', $event)"
+                                        rows="3"
+                                        no-resize
+                                        placeholder="Add workout notes..."
+                                        class="p2 mt-2 border-white"
+                                    ></b-form-textarea>
+                                </b-card-text>
+                            </b-card-body>
+                        </b-card>
+                        <div class="exercisesCont sortableContainer mb-2">
+                            <ExerciseRecorder
+                                v-for="exercise in workout.recordedExercises"
+                                :key="exercise.uid"
+                                @addSet="addSet"
+                                @removeSet="removeSet"
+                                @removeExercise="removeExercise"
+                                @setSetValue="setSetValue"
+                                :exercise="exercise"
+                                :previousExercise="relevantPreviousExercise(exercise.uid)"
+                            />
                         </div>
+                        <b-card no-body class="mb-4">
+                            <b-card-body>
+                                <b-card-text>
+                                    <div class="text-center">
+                                        <b-button
+                                            variant="outline-danger"
+                                            class="mr-1"
+                                            size="sm"
+                                            @click="cancelWorkout"
+                                            >Cancel</b-button
+                                        >
+                                        <b-button
+                                            variant="outline-dark"
+                                            class="ml-1 mr-1"
+                                            size="sm"
+                                            v-b-modal.searchExerciseModal
+                                            >Add Exercise</b-button
+                                        >
+                                        <b-button
+                                            class="ml-1"
+                                            variant="success"
+                                            size="sm"
+                                            @click="finishWorkout"
+                                            >Finish</b-button
+                                        >
+                                    </div>
+                                </b-card-text>
+                            </b-card-body>
+                        </b-card>
+                    </div>
+                    <div class="text-center" v-else>
+                        <b-spinner />
                     </div>
 
-                    <b-card-text>
-                        <b-form-textarea
-                            :value="workout.notes"
-                            @input="setWorkoutValue('notes', $event)"
-                            rows="3"
-                            no-resize
-                            placeholder="Add workout notes..."
-                            class="p2 mt-2 border-white"
-                        ></b-form-textarea>
-                    </b-card-text>
-                </b-card-body>
-            </b-card>
-            <div class="exercisesCont sortableContainer mb-2">
-                <ExerciseRecorder
-                    v-for="exercise in workout.recordedExercises"
-                    :key="exercise.uid"
-                    @addSet="addSet"
-                    @removeSet="removeSet"
-                    @removeExercise="removeExercise"
-                    @setSetValue="setSetValue"
-                    :exercise="exercise"
-                    :previousExercise="relevantPreviousExercise(exercise.uid)"
-                />
-            </div>
-            <b-card no-body class="mb-4">
-                <b-card-body>
-                    <b-card-text>
-                        <div class="text-center">
-                            <b-button
-                                variant="outline-danger"
-                                class="mr-1"
-                                size="sm"
-                                @click="cancelWorkout"
-                                >Cancel</b-button
-                            >
-                            <b-button
-                                variant="outline-dark"
-                                class="ml-1 mr-1"
-                                size="sm"
-                                v-b-modal.searchExerciseModal
-                                >Add Exercise</b-button
-                            >
-                            <b-button
-                                class="ml-1"
-                                variant="success"
-                                size="sm"
-                                @click="finishWorkout"
-                                >Finish</b-button
-                            >
-                        </div>
-                    </b-card-text>
-                </b-card-body>
-            </b-card>
-        </div>
-        <div class="text-center" v-else>
-            <b-spinner />
-        </div>
+                    <b-modal id="searchExerciseModal" centered title="Exercises" hide-footer button-size="sm">
+                        <ExerciseSearch @selectExercise="addExercise" />
+                    </b-modal>
 
-        <b-modal id="searchExerciseModal" centered title="Exercises" hide-footer button-size="sm">
-            <ExerciseSearch @selectExercise="addExercise" />
-        </b-modal>
-
-        <b-modal
-            id="startWorkoutModal"
-            ref="startworkoutmodal"
-            centered
-            @hide="preventModal"
-            @cancel="$router.push('/workout')"
-            @ok="startWorkout"
-            hide-header-close
-            ok-title="Start"
-            ok-variant="success"
-            cancel-title="Go Back"
-            cancel-variant="outline-dark"
-            button-size="sm"
-        >
-            <template #modal-header>
-                <h4 v-if="!emptyWorkout">{{ workout.name }}</h4>
-                <h4 v-else>Empty Workout</h4>
-            </template>
-            <div v-if="!emptyWorkout">
-                <b-list-group>
-                    <b-list-group-item
-                        v-for="(recordedExercise, index) in workout.recordedExercises"
-                        :key="index"
+                    <b-modal
+                        id="startWorkoutModal"
+                        ref="startworkoutmodal"
+                        centered
+                        @hide="preventModal"
+                        @cancel="$router.push('/workout')"
+                        @ok="startWorkout"
+                        hide-header-close
+                        ok-title="Start"
+                        ok-variant="success"
+                        cancel-title="Go Back"
+                        cancel-variant="outline-dark"
+                        button-size="sm"
                     >
-                        {{ recordedExercise.exerciseReference.name }}
-                    </b-list-group-item>
-                </b-list-group>
-            </div>
-            <div v-else>
-                <p><em>Start an empty workout</em></p>
-            </div>
-        </b-modal>
-
-        <b-modal
-            id="endWorkoutModal"
-            centered
-            @ok="uploadWorkout"
-            @hide="cancelFinish"
-            ok-title="Finish"
-            ok-variant="success"
-            cancel-title="Go Back"
-            cancel-variant="outline-dark"
-            button-size="sm"
-        >
-            <template #modal-header>
-                <h4>End Workout</h4>
-            </template>
-
-            <div>
-                <p>Would you like to save this workout under a new name?</p>
-                <p>
-                    <em>(Names must be unique to appear seperately in Workout Home).</em>
-                </p>
-                <b-form-input
-                    :value="workout.name"
-                    @input="setWorkoutValue('name', $event)"
-                ></b-form-input>
-            </div>
-        </b-modal>
-
-        <b-modal
-            id="countdownModal"
-            centered
-            hide-footer
-            size="sm"
-            v-model="countdownModal"
-            title="Timer"
-        >
-
-            <div>
-                <b-list-group>
-                    <b-list-group-item @click="beginTimer(30)" href="#">
-                        <div class="d-flex align-items">
-                            <div>30 seconds</div>
-                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                        <template #modal-header>
+                            <h4 v-if="!emptyWorkout">{{ workout.name }}</h4>
+                            <h4 v-else>Empty Workout</h4>
+                        </template>
+                        <div v-if="!emptyWorkout">
+                            <b-list-group>
+                                <b-list-group-item
+                                    v-for="(recordedExercise, index) in workout.recordedExercises"
+                                    :key="index"
+                                >
+                                    {{ recordedExercise.exerciseReference.name }}
+                                </b-list-group-item>
+                            </b-list-group>
                         </div>
-                    </b-list-group-item>
-                    <b-list-group-item @click="beginTimer(45)" href="#">
-                        <div class="d-flex align-items">
-                            <div>45 seconds</div>
-                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                        <div v-else>
+                            <p><em>Start an empty workout</em></p>
                         </div>
-                    </b-list-group-item>
-                    <b-list-group-item @click="beginTimer(60)" href="#">
-                        <div class="d-flex align-items">
-                            <div>60 seconds</div>
-                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                    </b-modal>
+
+                    <b-modal
+                        id="endWorkoutModal"
+                        centered
+                        @ok="uploadWorkout"
+                        @hide="cancelFinish"
+                        ok-title="Finish"
+                        ok-variant="success"
+                        cancel-title="Go Back"
+                        cancel-variant="outline-dark"
+                        button-size="sm"
+                    >
+                        <template #modal-header>
+                            <h4>End Workout</h4>
+                        </template>
+
+                        <div>
+                            <p>Would you like to save this workout under a new name?</p>
+                            <p>
+                                <em>(Names must be unique to appear seperately in Workout Home).</em>
+                            </p>
+                            <b-form-input
+                                :value="workout.name"
+                                @input="setWorkoutValue('name', $event)"
+                            ></b-form-input>
                         </div>
-                    </b-list-group-item>
-                    <b-list-group-item @click="beginTimer(90)" href="#">
-                        <div class="d-flex align-items">
-                            <div>90 seconds</div>
-                            <div class="ml-auto"><b-icon-chevron-right /></div>
+                    </b-modal>
+
+                    <b-modal
+                        id="countdownModal"
+                        centered
+                        hide-footer
+                        size="sm"
+                        v-model="countdownModal"
+                        title="Timer"
+                    >
+
+                        <div>
+                            <b-list-group>
+                                <b-list-group-item @click="beginTimer(30)" href="#">
+                                    <div class="d-flex align-items">
+                                        <div>30 seconds</div>
+                                        <div class="ml-auto"><b-icon-chevron-right /></div>
+                                    </div>
+                                </b-list-group-item>
+                                <b-list-group-item @click="beginTimer(45)" href="#">
+                                    <div class="d-flex align-items">
+                                        <div>45 seconds</div>
+                                        <div class="ml-auto"><b-icon-chevron-right /></div>
+                                    </div>
+                                </b-list-group-item>
+                                <b-list-group-item @click="beginTimer(60)" href="#">
+                                    <div class="d-flex align-items">
+                                        <div>60 seconds</div>
+                                        <div class="ml-auto"><b-icon-chevron-right /></div>
+                                    </div>
+                                </b-list-group-item>
+                                <b-list-group-item @click="beginTimer(90)" href="#">
+                                    <div class="d-flex align-items">
+                                        <div>90 seconds</div>
+                                        <div class="ml-auto"><b-icon-chevron-right /></div>
+                                    </div>
+                                </b-list-group-item>
+                            </b-list-group>
+
+                            <div class="mt-3">
+                                <b-input-group size="sm">
+                                    <b-input type="number" v-model.number="countdownInput.amount" size="sm" />
+                                    
+                                    <b-input-group-addon>
+                                        <b-form-select v-model="countdownInput.unit" size="sm" :options="countdownInputOptions" />
+                                    </b-input-group-addon>
+
+                                    <b-input-group-addon>
+                                        <b-button variant="success" size="sm" @click="beginTimer()"><b-icon-stopwatch /></b-button>
+                                    </b-input-group-addon>
+                                </b-input-group>
+                            </div>
                         </div>
-                    </b-list-group-item>
-                </b-list-group>
 
-                <div class="mt-3">
-                    <b-input-group size="sm">
-                        <b-input type="number" v-model.number="countdownInput.amount" size="sm" />
-                        
-                        <b-input-group-addon>
-                            <b-form-select v-model="countdownInput.unit" size="sm" :options="countdownInputOptions" />
-                        </b-input-group-addon>
+                    </b-modal>
+                </b-container>
+            </b-col>
 
-                        <b-input-group-addon>
-                            <b-button variant="success" size="sm" @click="beginTimer()"><b-icon-stopwatch /></b-button>
-                        </b-input-group-addon>
-                    </b-input-group>
-                </div>
-            </div>
+            <b-col sm="3">
 
-        </b-modal>
+            </b-col>
+        </b-row>
     </b-container>
 </template>
 
@@ -739,5 +799,10 @@ export default {
 
     .clickableIcon {
         cursor: pointer;
+    }
+
+    .centerCol,
+    .navCard {
+        margin-top: 40px;
     }
 </style>

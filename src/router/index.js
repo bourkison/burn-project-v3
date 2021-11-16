@@ -6,7 +6,6 @@ import { Auth } from "aws-amplify";
 
 import Home from "@/views/Home.vue";
 
-import Workout from "@/views/Workout/Workout.vue";
 import WorkoutNew from "@/views/Workout/WorkoutNew.vue";
 import WorkoutRecent from "@/views/Workout/WorkoutRecent.vue";
 import WorkoutView from "@/views/Workout/WorkoutView.vue";
@@ -122,29 +121,28 @@ const routes = [
     },
     // WORKOUT
     {
-        path: "/workout",
-        name: "Workout",
-        component: Workout,
+        path: "/workout/new",
+        name: "New Workout",
+        component: WorkoutNew,
         meta: {
             requiresAuth: true
-        },
-        children: [
-            {
-                path: "/workout/new",
-                name: "New Workout",
-                component: WorkoutNew
-            },
-            {
-                path: "/workout/recent",
-                name: "WorkoutRecent",
-                component: WorkoutRecent
-            },
-            {
-                path: "/workout",
-                name: "Workout View",
-                component: WorkoutView
-            }
-        ]
+        }
+    },
+    {
+        path: "/workout/recent",
+        name: "WorkoutRrecent",
+        component: WorkoutRecent,
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: "/workout",
+        name: "Workout View",
+        component: WorkoutView,
+        meta: {
+            requiresAuth: true
+        }
     },
     // SEARCH
     {
