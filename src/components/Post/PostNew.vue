@@ -160,47 +160,41 @@ export default {
                         });
                     } else if (this.videoToUpload) {
                         const uuid = uuidv4();
+                        const fileNameSplit = this.videoToUpload.name.split(".")
+                        const fileExtension = fileNameSplit[fileNameSplit.length - 1];
+                        const fileName = `${uuid}.${fileExtension}`
                         const videoObject = {
                             input: {
                                 id: uuid
                             }
                         }
                         
-
-                        console.log("Uploading:", uuid);
-
                         // Call API and upload video.
-                        await API.graphql(graphqlOperation(createVideoObject, videoObject)).then(async (response, error) => {
-                            if (error === undefined) {
-                                const videoAsset = {
-                                    input: {
-                                        vodAssetVideoId: uuid,
-                                        title: uuid,
-                                        description: uuid
-                                    }
-                                }
+                        await API.graphql(graphqlOperation(createVideoObject, videoObject));
 
-                                const fileNameSplit = this.videoToUpload.name.split(".")
-                                const fileName = `${uuid}.${fileNameSplit[fileNameSplit.length - 1]}`
+                        const videoAsset = {
+                            input: {
+                                vodAssetVideoId: uuid,
+                                title: uuid,
+                                description: uuid
+                            }
+                        }
 
-                                let promises = [];
-
-                                promises.push(API.graphql(graphqlOperation(createVodAsset, videoAsset)));
-                                promises.push(Storage.put(fileName, this.videoToUpload, {
-                                    bucket: awsvideoconfig.awsInputVideo,
-                                    contentType: "video/*",
-                                    progressCallback(progress) {
-                                        console.log("Uploaded:", progress.loaded / progress.total);
-                                    }
-                                })
-                                .catch(err => { console.error("ERROR UPLOADED:", err) }));
-
-                                await Promise.all(promises);
-
-                                this.post.filePaths.push({ key: uuid, type: "video" });
+                        API.graphql(graphqlOperation(createVodAsset, videoAsset));
+                        await Storage.put(fileName, this.videoToUpload, {
+                            bucket: awsvideoconfig.awsInputVideo,
+                            contentType: "video/*",
+                            customPrefix: {
+                                public: ''
+                            },
+                            progressCallback(progress) {
+                                console.log("Uploaded:", progress.loaded / progress.total);
                             }
                         })
+                        .catch(err => { console.error("ERROR UPLOADED:", err) });
 
+                        this.post.filePaths.push({ key: uuid, type: "video" });
+                        console.log("UUID:", uuid);
                     }
 
                     const path = "/post";

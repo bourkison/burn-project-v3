@@ -12,6 +12,7 @@ export const createVodAsset = /* GraphQL */ `
       description
       video {
         id
+        token
         createdAt
         updatedAt
         owner
@@ -33,6 +34,7 @@ export const updateVodAsset = /* GraphQL */ `
       description
       video {
         id
+        token
         createdAt
         updatedAt
         owner
@@ -54,6 +56,7 @@ export const deleteVodAsset = /* GraphQL */ `
       description
       video {
         id
+        token
         createdAt
         updatedAt
         owner
@@ -71,6 +74,7 @@ export const createVideoObject = /* GraphQL */ `
   ) {
     createVideoObject(input: $input, condition: $condition) {
       id
+      token
       createdAt
       updatedAt
       owner
@@ -84,6 +88,7 @@ export const updateVideoObject = /* GraphQL */ `
   ) {
     updateVideoObject(input: $input, condition: $condition) {
       id
+      token
       createdAt
       updatedAt
       owner
@@ -97,6 +102,7 @@ export const deleteVideoObject = /* GraphQL */ `
   ) {
     deleteVideoObject(input: $input, condition: $condition) {
       id
+      token
       createdAt
       updatedAt
       owner

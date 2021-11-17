@@ -42,6 +42,12 @@ Hub.listen("auth", async ({ payload: { event, data } }) => {
                 docData: null
             });
             break;
+        case "tokenRefresh":
+            console.log("TOKEN REFRESH", event, data);
+            break;
+        case "tokenRefresh_failure":
+            console.log("TOKEN REFRESH FAILURE", event, data);
+            break;
         default:
             console.log("Unhandled Auth Hub use case:", event, data);
             break;

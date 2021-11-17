@@ -87,7 +87,8 @@
 <script>
 import WorkoutComponent from "@/components/Workout/WorkoutComponent";
 
-import { API } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
+import { getVideoObject } from "@/graphql/queries";
 
 export default {
     name: "WorkoutRecent",
@@ -116,6 +117,15 @@ export default {
 
         this.workouts = workouts;
         this.isLoading = false;
+    },
+
+    mounted: async function() {
+        const videoObject = {
+            id: "5c1f54f6-7e50-4704-9471-15f6e1c29422"
+        }
+
+        const response = await API.graphql(graphqlOperation(getVideoObject, videoObject));
+        console.log("RESPONSE:", response)
     }
 };
 </script>

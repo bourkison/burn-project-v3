@@ -71,6 +71,9 @@
             <div v-else-if="imgUrls.length > 0">
                 <img class="w-100" :src="imgUrls[0]" />
             </div>
+            <div v-else-if="videoUrl">
+                <VideoPlayer class="video-player" :options="videoOptions" :token="videoToken" />
+            </div>
 
             <b-card-body>
                 <b-card-text>
@@ -130,12 +133,15 @@ import WorkoutShare from "@/components/Workout/WorkoutShare.vue";
 import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
 import TemplateShare from "@/components/Template/TemplateShare.vue";
 
-import { API, Storage } from "aws-amplify";
+import { API, graphqlOperation, Storage } from "aws-amplify";
+import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
+
+import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 
 export default {
     name: "PostComponent",
-    components: { CommentSection, WorkoutShare, ExerciseShare, TemplateShare },
+    components: { CommentSection, WorkoutShare, ExerciseShare, TemplateShare, VideoPlayer },
     props: {
         postId: {
             required: true,
@@ -156,6 +162,9 @@ export default {
             isLoading: true,
             postData: {},
             imgUrls: [],
+            videoUrl: "",
+            videoToken: "",
+            videoOptions: {},
             createdAtText: "",
 
             likeCount: 0,
@@ -205,11 +214,28 @@ export default {
             try {
                 let urlPromises = [];
 
-                this.postData.filePaths.forEach(path => {
-                    if (path.type === "video") {
-                        urlPromises.push(Storage.get(path.key), {
-                            bucket: awsvideoconfig.awsOutputVideo
-                        })
+                this.postData.filePaths.forEach(async path => {
+                    if (this.postData.filePaths.length === 1 && path.length === 36) {
+                        const videoObject = {
+                            id: path
+                        }
+
+                        const response = await API.graphql(graphqlOperation(getVideoObject, videoObject));
+
+                        this.videoToken = response.data.getVideoObject.token;
+                        this.videoUrl = "https://" + awsvideoconfig.awsOutputVideo + "/" + path + "/" + path + ".m3u8";
+
+                        console.log("PULLING VID", path, response, this.videoUrl);
+
+                        this.videoOptions = {
+                            autoplay: true,
+                            controls: true,
+                            sources: [
+                                {
+                                    src: this.videoUrl
+                                }
+                            ]
+                        }
                     } else if (path.type === "image") {
                         urlPromises.push(Storage.get(path.key));
                     } else {
@@ -218,7 +244,6 @@ export default {
                 })
 
                 const imageUrls = await Promise.all(urlPromises);
-                console.log("imageUrls:", imageUrls)
 
                 imageUrls.forEach(url => {
                     this.imgUrls.push(url);

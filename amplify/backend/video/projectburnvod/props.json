@@ -12,7 +12,9 @@
         "createTopic": false
     },
     "contentDeliveryNetwork": {
-        "enableDistribution": false
+        "signedKey": true,
+        "functionNameSchema": "projectburnvod-${env}-tokenGen",
+        "enableDistribution": true
     },
     "parameters": {
         "authRoleName": {
@@ -37,7 +39,7 @@
         ]
     },
     "cms": {
-        "overrideSchema": true,
+        "overrideSchema": false,
         "editAPI": false
     }
 }

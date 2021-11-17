@@ -10,7 +10,7 @@
                 :resetVariablesIncrementor="resetVariablesIncrementor"
             />
         </div>
-        <div v-if="displayVideo">
+        <div v-if="displayVideo" class="p-2">
             <VideoPlayer :options="videoOptions" class="video-player" />
         </div>
         <div>

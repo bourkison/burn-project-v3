@@ -9,6 +9,7 @@ export const getVodAsset = /* GraphQL */ `
       description
       video {
         id
+        token
         createdAt
         updatedAt
         owner
@@ -32,6 +33,7 @@ export const listVodAssets = /* GraphQL */ `
         description
         video {
           id
+          token
           createdAt
           updatedAt
           owner
@@ -48,6 +50,7 @@ export const getVideoObject = /* GraphQL */ `
   query GetVideoObject($id: ID!) {
     getVideoObject(id: $id) {
       id
+      token
       createdAt
       updatedAt
       owner
@@ -63,6 +66,7 @@ export const listVideoObjects = /* GraphQL */ `
     listVideoObjects(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        token
         createdAt
         updatedAt
         owner

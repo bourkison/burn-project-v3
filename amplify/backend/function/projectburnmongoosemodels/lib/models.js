@@ -126,7 +126,7 @@ const likeReferenceSchema = new mongoose.Schema(
 
 const recordedSetSchema = new mongoose.Schema(
     {
-        weightAmount: {
+        kg: {
             type: Number,
             default: 0
         },
@@ -134,6 +134,10 @@ const recordedSetSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
+        measureBy: {
+            type: String,
+            required: true
+        }
     },
     { timestamps: false }
 );
@@ -237,7 +241,7 @@ const postSchema = new mongoose.Schema(
             required: true
         },
         filePaths: {
-            type: [Map],
+            type: [String],
             required: true
         },
         share: {
@@ -385,7 +389,7 @@ const exerciseSchema = new mongoose.Schema(
             required: true
         },
         filePaths: {
-            type: [Map],
+            type: [String],
             required: []
         },
         muscleGroups: {

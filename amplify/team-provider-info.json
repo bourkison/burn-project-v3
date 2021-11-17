@@ -73,7 +73,12 @@
       },
       "video": {
         "projectburnvod": {
-          "s3UUID": "ltkot95f"
+          "publicKey": "-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA088tmkEbQj6FzETXRX3Z\\n8H/6t5vrUw0JVjy/ROpHmtuaTi4CpSxIV9YeWyW9IQqeJWGMO4NOohBPDMWX8j50\\npox2pKrPc9VOt66qqgSQYM7YvMkTttd9robFz9G3ptBvrckaKNzrGePxaHiZV4jq\\n1su58wSc0/57UONlnWlq4yzYY9XsQiKR7ogW3I7LdFL0vcwrFwQr4N6oqZmrS4Jr\\n3W7jEIvGD1kxjll95qQFneIdaD1cdDb0V1FigD2V9X64GucgsUyucVUi6blR6RBI\\nmdcs4fi2i9Y/KUl3ZpILXUjlv5+5K1uVj1CYw36+3kihqJ55tGazTcEpA2BMMzkB\\nnwIDAQAB\\n-----END PUBLIC KEY-----\\n",
+          "rPublicName": "rCloudFrontPublicKeydevn90wuj42",
+          "publicKeyName": "projectburnvod-dev-publickey-n90wuj42",
+          "secretPem": "projectburnvod-dev-pem-n90wuj42",
+          "secretPemArn": "arn:aws:secretsmanager:ap-southeast-2:586865842618:secret:projectburnvod-dev-pem-n90wuj42-kiASTn",
+          "s3UUID": "tnxigpft"
         }
       }
     }
