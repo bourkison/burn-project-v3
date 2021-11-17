@@ -1,5 +1,5 @@
 <template>
-    <b-container v-if="!isLoading">
+    <b-container v-if="!isLoading && isAuthorized">
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container>
@@ -104,6 +104,11 @@
             </b-col>
         </b-row>
     </b-container>
+    <b-container v-else-if="!isLoading && !isAuthorized">
+        <div class="text-center mt-5">
+            Not authorized.
+        </div>
+    </b-container>
     <b-container v-else>
         <b-spinner />
     </b-container>
@@ -136,6 +141,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            isAuthorized: false,
             exerciseExists: false,
 
             oldExerciseData: null,
@@ -183,6 +189,7 @@ export default {
         downloadExercise: async function() {
             try {
                 this.isLoading = true;
+                this.isAuthorized = false;
                 this.exerciseExists = false;
                 this.oldExerciseData = null;
                 this.newExerciseData = null;
@@ -215,6 +222,10 @@ export default {
                             path: this.oldExerciseData.filePaths[i]
                         });
                     });
+
+                    if (this.oldExerciseData.createdBy.username === this.$store.state.userProfile.docData.username) {
+                        this.isAuthorized = true;
+                    }
 
                     this.exerciseExists = true;
                     this.isLoading = false;

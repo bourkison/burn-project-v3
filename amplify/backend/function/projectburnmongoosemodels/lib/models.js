@@ -237,7 +237,7 @@ const postSchema = new mongoose.Schema(
             required: true
         },
         filePaths: {
-            type: [String],
+            type: [Map],
             required: true
         },
         share: {
@@ -385,7 +385,7 @@ const exerciseSchema = new mongoose.Schema(
             required: true
         },
         filePaths: {
-            type: [String],
+            type: [Map],
             required: []
         },
         muscleGroups: {

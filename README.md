@@ -28,12 +28,18 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### General
 * VideoJS support
 * Mobile CSS
-* Deal with error "The incoming token has expired"
+* Sort by: Like Count, Date, Followed, Used Amount
+* On workout finish, increment counter on Exercise and Template
 
-### Homepage
-* Statistics on left side.
-    * Weekly workouts
+### Messages
+* Everything
 
+### Notifications
+* Everything
+
+### Charts
+* Timezone support
+* Add new cards
 
 ### Post
 * Post Edit, Delete

@@ -131,6 +131,7 @@ import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
 import TemplateShare from "@/components/Template/TemplateShare.vue";
 
 import { API, Storage } from "aws-amplify";
+import awsvideoconfig from "@/aws-video-exports";
 
 export default {
     name: "PostComponent",
@@ -205,10 +206,19 @@ export default {
                 let urlPromises = [];
 
                 this.postData.filePaths.forEach(path => {
-                    urlPromises.push(Storage.get(path));
+                    if (path.type === "video") {
+                        urlPromises.push(Storage.get(path.key), {
+                            bucket: awsvideoconfig.awsOutputVideo
+                        })
+                    } else if (path.type === "image") {
+                        urlPromises.push(Storage.get(path.key));
+                    } else {
+                        urlPromises.push(Storage.get(path));
+                    }
                 })
 
                 const imageUrls = await Promise.all(urlPromises);
+                console.log("imageUrls:", imageUrls)
 
                 imageUrls.forEach(url => {
                     this.imgUrls.push(url);

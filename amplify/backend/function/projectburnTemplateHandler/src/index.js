@@ -287,18 +287,18 @@ const queryTemplate = async function(event) {
             // Then add query for where exercise is greater than createdAt OR its equal and ID is bigger.
             templateQuery.$or = [
                 {
-                    createdAt: { $gt: startAtCreatedAt }
+                    createdAt: { $lt: startAtCreatedAt }
                 },
                 {
                     createdAt: startAtCreatedAt,
-                    _id: { $gt: ObjectId(startAt) }
+                    _id: { $lt: ObjectId(startAt) }
                 }
             ]
         }
 
         let fields = "createdBy createdAt name tags muscleGroups updatedAt";
         result = await Template.find(templateQuery, fields)
-            .sort({ createdAt: 1, _id: 1 })
+            .sort({ createdAt: -1, _id: -1 })
             .limit(loadAmount);
     }
 

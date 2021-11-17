@@ -1,0 +1,29 @@
+
+
+type VodAsset @model (subscriptions: {level: public})
+@auth(
+  rules: [
+    {allow: owner, ownerField: "owner", operations: [create, update, delete, read] },
+    {allow: private, operations: [read]}
+  ]
+)
+{
+  id:ID!
+  title:String!
+  description:String!
+
+  #DO NOT EDIT
+  video:VideoObject @connection
+}
+
+#DO NOT EDIT
+type VideoObject @model
+@auth(
+  rules: [
+    {allow: owner, ownerField: "owner", operations: [create, update, delete, read] },
+    {allow: private, operations: [read]}
+  ]
+)
+{
+  id:ID!
+}

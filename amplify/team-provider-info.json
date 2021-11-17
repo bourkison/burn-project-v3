@@ -9,13 +9,15 @@
       "UnauthRoleName": "amplify-projectburn-dev-203659-unauthRole",
       "StackName": "amplify-projectburn-dev-203659",
       "StackId": "arn:aws:cloudformation:ap-southeast-2:586865842618:stack/amplify-projectburn-dev-203659/ebb9b390-eba1-11eb-ba83-021c8a17b68a",
-      "AmplifyAppId": "d3tp6kskh7ft9m"
+      "AmplifyAppId": "d3tp6kskh7ft9m",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-projectburn-dev-203659-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-projectburn-dev-203659-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
     },
     "categories": {
       "function": {
         "projectburnExerciseHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnExerciseHandler-4134576a7a7966715357-build.zip"
+          "s3Key": "amplify-builds/projectburnExerciseHandler-3862544b56734d6a6c65-build.zip"
         },
         "projectburnLikeHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -27,7 +29,7 @@
         },
         "projectburnTemplateHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnTemplateHandler-6d4c746b76596b467738-build.zip"
+          "s3Key": "amplify-builds/projectburnTemplateHandler-4c617275764a43422f72-build.zip"
         },
         "projectburnCommentHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -68,6 +70,11 @@
       },
       "auth": {
         "projectburncognito": {}
+      },
+      "video": {
+        "projectburnvod": {
+          "s3UUID": "ltkot95f"
+        }
       }
     }
   }

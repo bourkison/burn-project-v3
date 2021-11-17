@@ -2,8 +2,10 @@
     <div>
         <ImageUploader
             @updateImages="updateImages"
+            @updateVideo="updateVideo"
             :inlineDisplay="true"
             :resetVariablesIncrementor="resetVariablesIncrementor"
+            @resetVariables="resetVariablesIncrementor++"
         />
 
         <div v-if="post.share.type" class="mt-1 mb-3">
@@ -70,10 +72,8 @@
 </template>
 
 <script>
-import { API, Storage } from "aws-amplify";
-
-import crypto from "crypto";
-import util from "util";
+import { API, Storage, graphqlOperation } from "aws-amplify";
+import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
 import ImageUploader from "@/components/Utility/ImageUploader.vue";
 
@@ -83,6 +83,9 @@ import ExerciseSearch from "@/components/Exercise/ExerciseSearch.vue";
 import ExerciseShare from "@/components/Exercise/ExerciseShare.vue";
 import TemplateSearch from "@/components/Template/TemplateSearch.vue";
 import TemplateShare from "@/components/Template/TemplateShare.vue";
+
+import { v4 as uuidv4 } from "uuid"
+import awsvideoconfig from "@/aws-video-exports.js";
 
 export default {
     name: "PostNew",
@@ -104,11 +107,16 @@ export default {
                 share: {}
             },
             imagesToUpload: [],
+            videoToUpload: null,
 
             // Below iterator is watched by ImageUploader.
             // On change, the ImageUploader resets variables.
             resetVariablesIncrementor: 0
         };
+    },
+
+    created: function() {
+        console.log(uuidv4());
     },
 
     methods: {
@@ -118,37 +126,82 @@ export default {
                     console.log(JSON.stringify(JSON.stringify(this.post)));
                     this.isPosting = true;
 
-                    // First upload all images using .map (see ExerciseNew.vue for further explanation)
-                    const imageResults = await Promise.all(
-                        this.imagesToUpload.map(async (image, i) => {
-                            const imageId = await this.generateId(16);
-                            const imageName =
-                                "username/" +
-                                this.$store.state.userProfile.docData.username +
-                                "/posts/" +
-                                imageId;
+                    if (this.imagesToUpload.length) {
 
-                            const imageData = await fetch(image.url);
-                            const blob = await imageData.blob();
+                        // First upload all images using .map (see ExerciseNew.vue for further explanation)
+                        const uploadResults = await Promise.all(
+                            this.imagesToUpload.map(async (image, i) => {
+                                const imageName =
+                                    "username/" +
+                                    this.$store.state.userProfile.docData.username +
+                                    "/posts/" +
+                                    uuidv4();
+    
+                                const imageData = await fetch(image.url);
+                                const blob = await imageData.blob();
+    
+                                console.log("UPLOADING:", imageName, blob);
+    
+                                const imageResponse = await Storage.put(imageName, blob, {
+                                    contentType: blob.type,
+                                    progressCallback: function(progress) {
+                                        console.log("Image:", i, progress.loaded / progress.total);
+                                    }
+                                }).catch(err => {
+                                    console.error("Error uploading image:", i, err);
+                                });
+    
+                                return imageResponse;
+                            })
+                        );
 
-                            console.log("UPLOADING:", imageName, blob);
+                        uploadResults.forEach(result => {
+                            this.post.filePaths.push({ key: result.key, type: "image" });
+                        });
+                    } else if (this.videoToUpload) {
+                        const uuid = uuidv4();
+                        const videoObject = {
+                            input: {
+                                id: uuid
+                            }
+                        }
+                        
 
-                            const imageResponse = await Storage.put(imageName, blob, {
-                                contentType: blob.type,
-                                progressCallback: function(progress) {
-                                    console.log("Image:", i, progress.loaded / progress.total);
+                        console.log("Uploading:", uuid);
+
+                        // Call API and upload video.
+                        await API.graphql(graphqlOperation(createVideoObject, videoObject)).then(async (response, error) => {
+                            if (error === undefined) {
+                                const videoAsset = {
+                                    input: {
+                                        vodAssetVideoId: uuid,
+                                        title: uuid,
+                                        description: uuid
+                                    }
                                 }
-                            }).catch(err => {
-                                console.error("Error uploading image:", i, err);
-                            });
 
-                            return imageResponse;
+                                const fileNameSplit = this.videoToUpload.name.split(".")
+                                const fileName = `${uuid}.${fileNameSplit[fileNameSplit.length - 1]}`
+
+                                let promises = [];
+
+                                promises.push(API.graphql(graphqlOperation(createVodAsset, videoAsset)));
+                                promises.push(Storage.put(fileName, this.videoToUpload, {
+                                    bucket: awsvideoconfig.awsInputVideo,
+                                    contentType: "video/*",
+                                    progressCallback(progress) {
+                                        console.log("Uploaded:", progress.loaded / progress.total);
+                                    }
+                                })
+                                .catch(err => { console.error("ERROR UPLOADED:", err) }));
+
+                                await Promise.all(promises);
+
+                                this.post.filePaths.push({ key: uuid, type: "video" });
+                            }
                         })
-                    );
 
-                    imageResults.forEach(result => {
-                        this.post.filePaths.push(result.key);
-                    });
+                    }
 
                     const path = "/post";
                     const myInit = {
@@ -204,6 +257,10 @@ export default {
             this.imagesToUpload = images;
         },
 
+        updateVideo: function(video) {
+            this.videoToUpload = video;
+        },
+
         resetVariables: function() {
             (this.isPosting = false),
                 (this.post = {
@@ -213,14 +270,6 @@ export default {
                 }),
                 (this.imagesToUpload = []);
         },
-
-        generateId: async function(n) {
-            const randomBytes = util.promisify(crypto.randomBytes);
-            const rawBytes = await randomBytes(n);
-
-            const hex = await rawBytes.toString("hex");
-            return hex;
-        }
     }
 };
 </script>

@@ -87,7 +87,6 @@
 </template>
 
 <script>
-// import { auth } from '@/firebase'
 import { Auth } from "aws-amplify";
 
 import SignInForm from "@/components/Auth/SignInForm.vue";

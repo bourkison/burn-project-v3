@@ -10,6 +10,9 @@
                 :resetVariablesIncrementor="resetVariablesIncrementor"
             />
         </div>
+        <div v-if="displayVideo">
+            <VideoPlayer :options="videoOptions" class="video-player" />
+        </div>
         <div>
             <ImageSorter
                 v-if="editedFiles.length > 0"
@@ -43,10 +46,11 @@
 <script>
 import ImageEditor from "@/components/Utility/ImageEditor.vue";
 import ImageSorter from "@/components/Utility/ImageSorter.vue";
+import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 
 export default {
     name: "ImageUploader",
-    components: { ImageEditor, ImageSorter },
+    components: { ImageEditor, ImageSorter, VideoPlayer },
     props: {
         initImages: {
             type: Array,
@@ -67,7 +71,7 @@ export default {
             addedFiles: [],
             // editedFiles is whats returned from Image Editor and gets passed to Sorter.
             editedFiles: [],
-            // sortedFiles is whats returned from Sorter and is pushed to firebase.
+            // sortedFiles is whats returned from Sorter and is uploaded.
             sortedFiles: [],
             // imagesToEdit is an array of IDs thats passed to image editor that have already been passed through before.
             imagesToEdit: [],
@@ -76,7 +80,11 @@ export default {
             // Used for determining new image IDs.
             initId: 0,
 
-            filesInEdit: 0
+            filesInEdit: 0,
+
+            displayVideo: false,
+            videoFile: null,
+            videoOptions: {}
         };
     },
 
@@ -98,15 +106,62 @@ export default {
                 : `${this.filesInEdit} files selected`;
         },
 
-        handleFileUpload: function(e) {
-            this.filesInEdit += e.target.files.length;
+        handleFileUpload: async function(e) {
+            // FIRST ENSURE EITHER ALL INPUTS ARE IMAGE, OR THERE IS ONLY 1 VIDEO.
+            e.target.files.forEach((file) => {
+                if (!file.type.includes("image/") && !file.type.includes("video/")) {
+                    throw new Error("Unrecognised file type.");
+                }
 
-            if (this.$props.inlineDisplay) {
-                this.addedFiles = [];
+                if (file.type.includes("video/") && e.target.files.length > 1) {
+                    throw new Error("Can only upload 1 video");
+                }
+            });
 
-                e.target.files.forEach(file => {
-                    this.addedFiles.push(file);
-                });
+            if (e.target.files[0].type.includes("image/")) {
+                if (this.videoFile) {
+                    this.videoFile = null;
+                    this.displayVideo = false;
+                }
+
+                this.filesInEdit += e.target.files.length;
+    
+                if (this.$props.inlineDisplay) {
+                    this.addedFiles = [];
+    
+                    e.target.files.forEach(file => {
+                        this.addedFiles.push(file);
+                    });
+                }
+            } else {
+                // Video upload logic:
+                if (this.videoFile) {
+                    this.videoFile = null;
+                    this.displayVideo = false;
+
+                    await this.$nextTick();
+                }
+
+                if (this.addedFiles.length) {
+                    this.$emit("resetVariables");
+                    await this.$nextTick();
+                }
+
+                this.videoFile = e.target.files[0];
+
+                this.videoOptions = {
+                    autoplay: true,
+                    controls: true,
+                    sources: [
+                        {
+                            src: URL.createObjectURL(e.target.files[0]),
+                            type: e.target.files[0].type
+                        }
+                    ]
+                }
+    
+                this.displayVideo = true;
+                this.$emit("updateVideo", this.videoFile);
             }
         },
 
@@ -189,6 +244,8 @@ export default {
             this.imagesToEdit = [];
             this.initId = 0;
             this.filesInEdit = 0;
+            this.displayVideo = false;
+            this.videoFile = null;
 
             console.log("Uploader reset");
         }
@@ -203,5 +260,10 @@ export default {
 
 .imageEditor {
     margin-bottom: 15px;
+}
+
+.videoPlayer {
+    width: 100%;
+    height: auto;
 }
 </style>

@@ -128,7 +128,7 @@ const routes = [
     },
     {
         path: "/workout/recent",
-        name: "WorkoutRrecent",
+        name: "WorkoutRecent",
         component: WorkoutRecent,
         meta: {
             requiresAuth: true

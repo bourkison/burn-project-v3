@@ -291,18 +291,18 @@ const queryExercise = async function(event) {
             // Then add query for where exercise is greater than createdAt OR its equal and ID is bigger.
             exerciseQuery.$or = [
                 { 
-                    createdAt: { $gt: startAtCreatedAt }
+                    createdAt: { $lt: startAtCreatedAt }
                 },
                 {
                     createdAt: startAtCreatedAt,
-                    _id: { $gt: ObjectId(startAt) }
+                    _id: { $lt: ObjectId(startAt) }
                 }
             ];
         }
 
         let fields = "createdBy createdAt name tags muscleGroups updatedAt";
         result = await Exercise.find(exerciseQuery, fields)
-            .sort({ createdAt: 1, _id: 1 })
+            .sort({ createdAt: -1, _id: -1 })
             .limit(loadAmount);
     }
 
@@ -489,8 +489,8 @@ const updateExercise = async function(event) {
     console.log("Found:", userResult);
 
     if (!userResult) {
-        const errorResponse = "Exercise not found for user: " + username + ".";
-        response.statusCode = 404;
+        const errorResponse = "Not authorized";
+        response.statusCode = 403;
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
