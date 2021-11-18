@@ -89,13 +89,21 @@ export type AmplifyDependentResourcesAttributes = {
             "UserPoolArn": "string",
             "UserPoolName": "string",
             "AppClientIDWeb": "string",
-            "AppClientID": "string"
+            "AppClientID": "string",
+            "CreatedSNSRole": "string"
         }
     },
     "storage": {
         "projectburnstorage": {
             "BucketName": "string",
             "Region": "string"
+        }
+    },
+    "video": {
+        "projectburnvod": {
+            "oVODInputS3": "string",
+            "oVODOutputS3": "string",
+            "oVodOutputUrl": "string"
         }
     }
 }

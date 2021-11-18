@@ -42,7 +42,7 @@
                             :title="Date(postData.createdAt).toLocaleString()"
                             ><em>{{ createdAtText }}</em></span
                         >
-                        <b-dropdown left variant="outline" size="sm" style="padding-top:1px;">
+                        <b-dropdown left variant="outline" size="sm" class="post-dropdown" style="padding-top:1px;">
                             <span
                                 v-if="
                                     postData.createdBy.userId ===
@@ -215,6 +215,8 @@ export default {
             this.createdAtText = dayjs(this.postData.createdAt).fromNow();
 
             try {
+                let urlPromises = [];
+
                 this.postData.filePaths.forEach(async path => {
                     if (path.type === "video") {
                         const videoObject = {
@@ -237,15 +239,15 @@ export default {
                             ]
                         }
                     } else if (path.type === "image") {
-                        let urlPromises = [];
                         urlPromises.push(Storage.get(path.key));
-                        const imageUrls = await Promise.all(urlPromises);
-
-                        imageUrls.forEach(url => {
-                            this.imgUrls.push(url);
-                        });
                     }
                 })
+
+                const imageUrls = await Promise.all(urlPromises);
+
+                imageUrls.forEach(url => {
+                    this.imgUrls.push(url);
+                });
             } catch (err) {
                 console.error("Error getting image URLs:", err);
             } finally {
@@ -298,5 +300,9 @@ export default {
 <style>
 .disableAvatarHover img {
     transform: none !important;
+}
+
+.post-dropdown button {
+    box-shadow: none !important;
 }
 </style>

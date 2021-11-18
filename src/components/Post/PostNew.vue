@@ -14,10 +14,10 @@
             </div>
 
             <div v-if="post.share.type == 'exercise'">
-                <ExerciseShare :exerciseId="post.share.id" />
+                <ExerciseShare :exerciseId="post.share._id" />
             </div>
             <div v-else-if="post.share.type == 'template'">
-                <TemplateShare :templateId="post.share.id" />
+                <TemplateShare :templateId="post.share._id" />
             </div>
             <div v-else-if="post.share.type == 'workout'">
                 <WorkoutShare
@@ -127,7 +127,6 @@ export default {
                     this.isPosting = true;
 
                     if (this.imagesToUpload.length) {
-
                         // First upload all images using .map (see ExerciseNew.vue for further explanation)
                         const uploadResults = await Promise.all(
                             this.imagesToUpload.map(async (image, i) => {
@@ -142,7 +141,7 @@ export default {
     
                                 console.log("UPLOADING:", imageName, blob);
     
-                                const imageResponse = await Storage.put(imageName, blob, {
+                                const imageResponse = Storage.put(imageName, blob, {
                                     contentType: blob.type,
                                     progressCallback: function(progress) {
                                         console.log("Image:", i, progress.loaded / progress.total);
@@ -222,7 +221,7 @@ export default {
 
         addWorkout: function(workout) {
             this.post.share = {
-                id: workout.id,
+                _id: workout._id,
                 type: "workout"
             };
 
@@ -231,7 +230,7 @@ export default {
 
         addExercise: function(exercise) {
             this.post.share = {
-                id: exercise.id,
+                _id: exercise.exerciseId,
                 type: "exercise"
             };
 
@@ -240,7 +239,7 @@ export default {
 
         addTemplate: function(template) {
             this.post.share = {
-                id: template.id,
+                _id: template.templateId,
                 type: "template"
             };
 

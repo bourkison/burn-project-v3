@@ -1,0 +1,12 @@
+{
+  "resourceName": "projectburnstorage",
+  "bucketName": "projectburns3bucket",
+  "policyUUID": "720661d4",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ]
+}

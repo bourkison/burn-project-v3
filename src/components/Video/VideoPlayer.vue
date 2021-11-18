@@ -1,6 +1,11 @@
 <template>
     <div>
-        <video v-observe-visibility="{ callback: playWhenViewable, intersection: { threshold: 0.5 }}" ref="videoPlayer" class="video-js vjs-fluid" width></video>
+        <video 
+            v-observe-visibility="{ callback: playWhenViewable, intersection: { threshold: 0.5 }}" 
+            ref="videoPlayer" 
+            class="video-js vjs-fluid vjs-theme-forest" 
+            width
+        ></video>
     </div>
 </template>
 

@@ -135,3 +135,9 @@ export default {
     margin-bottom: 0 !important;
 }
 </style>
+
+<style>
+    .exerciseExpandableItem button:focus {
+        box-shadow: none !important;
+    }
+</style>
