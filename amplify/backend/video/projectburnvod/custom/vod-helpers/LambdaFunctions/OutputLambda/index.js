@@ -1,7 +1,7 @@
 /* eslint-disable */
 const AWS = require('aws-sdk');
-/* eslint-enable */
 const s3 = new AWS.S3({});
+/* eslint-enable */
 
 /* eslint-disable */
 exports.handler = function (event, context) {

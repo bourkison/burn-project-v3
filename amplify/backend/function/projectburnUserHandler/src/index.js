@@ -40,8 +40,11 @@ const getUser = async function(event) {
 
             return response;
         }
-
-        const uniqueWorkoutAmount = Number(event.queryStringParameters.uniqueWorkoutAmount) || 3;
+        
+        let uniqueWorkoutAmount = 3
+        if (event.queryStringParameters) {
+            uniqueWorkoutAmount = Number(event.queryStringParameters.uniqueWorkoutAmount) || 3;
+        }
 
         fields = {
             username: 1,

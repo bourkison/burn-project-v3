@@ -66,7 +66,10 @@
                                     <h4>{{ workout.name }}</h4>
                                     <div class="d-flex ml-auto">
                                         <div class="text-muted">{{ timeString }}</div>
-                                        <div class="ml-1"><b-icon-stopwatch @click="countdownModal = true" class="clickableIcon" /></div>
+                                        <div class="ml-1">
+                                            <span v-if="!countdownActive"><b-icon-stopwatch @click="countdownModal = true" class="clickableIcon" /></span>
+                                            <span v-else><b-icon-stop @click="stopTimer" class="clickableIcon" /></span>
+                                        </div>
                                         <div class="ml-1" v-if="countdownActive">{{ countdownTimeString }}</div>
                                     </div>
                                 </div>
@@ -799,6 +802,10 @@ export default {
 
             this.$store.commit("activeWorkout/setTimer", seconds);
             this.countdownModal = false;
+        },
+
+        stopTimer: function() {
+            this.$store.commit("activeWorkout/setTimer", 0);
         },
 
         buildCharts: function() {

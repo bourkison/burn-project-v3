@@ -178,40 +178,48 @@ const activeWorkoutModule = {
         },
 
         setTimer: function(state, seconds) {
-            state.countdownEndTime = new Date().getTime() + (seconds * 1000);
-            state.countdownActive = true;
+            if (seconds !== 0) {
 
-            state.countdownInterval = window.setInterval(() => {
-                const now = new Date().getTime();
-                let timeLeft = state.countdownEndTime - now;
-
-                if (timeLeft > 0) {
-                    let hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
-                    let minutes = Math.floor(
-                        (timeLeft % (1000 * 60 * 60)) / (1000 * 60)
-                    ).toLocaleString("en-US", {
-                        minimumIntegerDigits: 2,
-                        useGrouping: false
-                    });
-                    let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000).toLocaleString("en-US", {
-                        minimumIntegerDigits: 2,
-                        useGrouping: false
-                    });
+                state.countdownEndTime = new Date().getTime() + (seconds * 1000);
+                state.countdownActive = true;
     
-                    if (!hours) {
-                        state.countdownTimeString = minutes + ":" + seconds;
+                state.countdownInterval = window.setInterval(() => {
+                    const now = new Date().getTime();
+                    let timeLeft = state.countdownEndTime - now;
+    
+                    if (timeLeft > 0) {
+                        let hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
+                        let minutes = Math.floor(
+                            (timeLeft % (1000 * 60 * 60)) / (1000 * 60)
+                        ).toLocaleString("en-US", {
+                            minimumIntegerDigits: 2,
+                            useGrouping: false
+                        });
+                        let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000).toLocaleString("en-US", {
+                            minimumIntegerDigits: 2,
+                            useGrouping: false
+                        });
+        
+                        if (!hours) {
+                            state.countdownTimeString = minutes + ":" + seconds;
+                        } else {
+                            state.countdownTimeString = hours + ":" + minutes + ":" + seconds;
+                        }
                     } else {
-                        state.countdownTimeString = hours + ":" + minutes + ":" + seconds;
+                        // PLAY SOUND AND END TIMER.
+                        state.countdownActive = false;
+                        state.countdownTimeString = "00:00";
+                        state.countdownEndTime = 0;
+                        window.clearInterval(state.countdownInterval);
                     }
-                } else {
-                    // PLAY SOUND AND END TIMER.
-                    state.countdownActive = false;
-                    state.countdownTimeString = "00:00";
-                    state.countdownEndTime = 0;
-                    window.clearInterval(state.countdownInterval);
-                }
-
-            })
+    
+                })
+            } else {
+                state.countdownActive = false;
+                state.countdownTimeString = "00:00";
+                state.countdownEndTime = 0;
+                window.clearInterval(state.countdownInterval);
+            }
         },
 
         pushToWorkoutCharts: function(state, options) {
@@ -311,7 +319,6 @@ export default new Vuex.Store({
             state.videoTokens[key].amount--;
             if (state.videoTokens[key].amount <= 0) {
                 delete state.videoTokens[key];
-                console.log("DESTROY TOKENS:", state.videoTokens);
             }
         },
 

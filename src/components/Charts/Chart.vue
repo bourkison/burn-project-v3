@@ -7,7 +7,7 @@
                         <b-card-body ref="frontCardBody">
                             <div v-if="!isLoading && hasData">
                                 <b-card-title>
-                                    <div class="d-flex align-items">
+                                    <div class="d-flex align-items-center">
                                         <div><h6 class="d-inline-block vertical-align">{{ cardTitle }}</h6></div>
                                         <div class="ml-auto" v-if="editable"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard(1)" scale="0.5" /></div>
                                     </div>
@@ -16,15 +16,18 @@
                             </div>
 
                             <div v-else-if="!isLoading && !hasData">
-                                <div class="align-items text-center text-muted small-font mt-1">
-                                    <div><em>No Data</em></div>
-                                    <div class="d-flex align-items">
+                                <div class="align-items-center text-muted small-font">
+                                    <div class="d-flex align-items-center p-2">
+                                        <div>
+                                            <span v-if="chartOptions.type ==='exercise'"><em>You have not recently done this exercise!</em></span>
+                                            <span v-else><em>No Data</em></span>
+                                        </div>
                                         <div class="ml-auto" v-if="editable"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" /></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div v-else class="align-items text-center">
+                            <div v-else class="align-items-center text-center">
                                 <b-spinner small />
                             </div>
                         </b-card-body>
@@ -35,7 +38,7 @@
                     <b-card no-body>
                         <b-card-body ref="backCardBody" class="back-card-body" :style="'height:' + cardBodyHeight">
                             <b-card-title>
-                                <div class="d-flex align-items">
+                                <div class="d-flex align-items-center">
                                     <div><h6 class="d-inline-block vertical-align">Edit Card</h6></div>
                                     <div class="ml-auto"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard(-1)" scale="0.5" /></div>
                                 </div>
@@ -63,7 +66,7 @@
 
                                     <b-form-group label-for="startDateNumInput" class="small-font">
                                         <template #label>
-                                            <div class="d-flex align-items">
+                                            <div class="d-flex align-items-center">
                                                 <div>Start Date</div>
                                                 <div class="ml-auto"><b-icon-calendar @click="newStartDateDynamic = !newStartDateDynamic" class="clickableIcon" /></div>    
                                             </div>
@@ -88,7 +91,7 @@
 
                                     <b-form-group label-for="endDateNumInput" class="small-font">
                                         <template #label>
-                                            <div class="d-flex align-items">
+                                            <div class="d-flex align-items-center">
                                                 <div>End Date</div>
                                                 <div class="ml-auto"><b-icon-calendar @click="newEndDateDynamic = !newEndDateDynamic" class="clickableIcon" /></div>    
                                             </div>
@@ -508,6 +511,11 @@ export default {
             }
             catch (err) {
                 this.hasData = false;
+                this.$nextTick(() => { 
+                    this.cardHeight = this.$refs.frontCard.offsetHeight + "px" 
+                    this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+                });
+
                 console.error(err);
             }
         },
@@ -693,6 +701,10 @@ export default {
         flipCard: function() {
             if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
                 this.$el.querySelector(".chart").style.display = "block";
+            } else if (!this.$refs.cardFlip.classList.contains("flipped") && !this.hasData) {
+                this.cardHeight = "366px" 
+                this.cardBodyHeight = "326px"; // Defaults
+                console.log("SETTING HEIGHT", this.$refs.backCard.offsetHeight);
             }
 
             this.$refs.cardFlip.classList.toggle("flipped");
@@ -781,10 +793,6 @@ export default {
 </script>
 
 <style scoped>
-    .align-items {
-        align-items: center !important;
-    }
-
     .small-font {
         font-size: 12px !important;
     }

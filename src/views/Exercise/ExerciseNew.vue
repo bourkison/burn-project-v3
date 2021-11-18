@@ -20,6 +20,7 @@
                             <b-form-group label="Image/Video" label-for="imageInput">
                                 <ImageUploader
                                     @updateImages="updateImages"
+                                    @updateVideo="updateVideo"
                                     :inlineDisplay="false"
                                 />
                             </b-form-group>
@@ -93,15 +94,16 @@ import "codemirror/lib/codemirror.css";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor } from "@toast-ui/vue-editor";
 
-import { API, Storage } from "aws-amplify";
-
-import crypto from "crypto";
-import util from "util";
+import { API, graphqlOperation, Storage } from "aws-amplify";
+import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
 import ImageUploader from "@/components/Utility/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
+
+import { v4 as uuidv4 } from "uuid";
+import awsvideoconfig from "@/aws-video-exports.js";
 
 export default {
     name: "ExerciseNew",
@@ -125,6 +127,7 @@ export default {
             },
 
             imagesToUpload: [],
+            videoToUpload: null,
             isCreating: false,
 
             // Editor:
@@ -155,40 +158,76 @@ export default {
         createExercise: async function() {
             this.isCreating = true;
 
-            // First upload all images.
-            // Cannot use forEach so instead use .map : https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
-            // As await does not work in forEach.
-            const imageResults = await Promise.all(
-                this.imagesToUpload.map(async (image, i) => {
-                    const imageId = await this.generateId(16);
-                    const imageName =
-                        "username/" +
-                        this.$store.state.userProfile.docData.username +
-                        "/exercises/" +
-                        imageId;
+            if (this.imagesToUpload.length) {
+                // First upload all images.
+                // Cannot use forEach so instead use .map : https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
+                // As await does not work in forEach.
+                const imageResults = await Promise.all(
+                    this.imagesToUpload.map(async (image, i) => {
+                        const imageId = uuidv4();
+                        const imageName =
+                            "username/" +
+                            this.$store.state.userProfile.docData.username +
+                            "/exercises/" +
+                            imageId;
+    
+                        const imageData = await fetch(image.url);
+                        const blob = await imageData.blob();
+    
+                        const imageResponse = Storage.put(imageName, blob, {
+                            contentType: blob.type,
+                            progressCallback: function(progress) {
+                                console.log("Image:", i, progress.loaded / progress.total);
+                            }
+                        }).catch(err => {
+                            console.error("Error uploading image:", i, err);
+                        });
+    
+                        return imageResponse;
+                    })
+                );
+    
+                console.log("Image Results:", imageResults);
+                imageResults.forEach(result => {
+                    this.exerciseForm.filePaths.push({ key: result.key, type: "image" });
+                });
+            } else if (this.videoToUpload) {
+                const uuid = uuidv4();
+                const fileNameSplit = this.videoToUpload.name.split(".")
+                const fileExtension = fileNameSplit[fileNameSplit.length - 1];
+                const fileName = `${uuid}.${fileExtension}`
+                const videoObject = {
+                    input: {
+                        id: uuid
+                    }
+                }
 
-                    const imageData = await fetch(image.url);
-                    const blob = await imageData.blob();
+                // Call API and upload video.
+                await API.graphql(graphqlOperation(createVideoObject, videoObject));
 
-                    console.log("UPLOADING:", imageName, blob);
+                const videoAsset = {
+                    input: {
+                        vodAssetVideoId: uuid,
+                        title: uuid,
+                        description: uuid
+                    }
+                }
 
-                    const imageResponse = await Storage.put(imageName, blob, {
-                        contentType: blob.type,
-                        progressCallback: function(progress) {
-                            console.log("Image:", i, progress.loaded / progress.total);
-                        }
-                    }).catch(err => {
-                        console.error("Error uploading image:", i, err);
-                    });
-
-                    return imageResponse;
+                API.graphql(graphqlOperation(createVodAsset, videoAsset));
+                await Storage.put(fileName, this.videoToUpload, {
+                    bucket: awsvideoconfig.awsInputVideo,
+                    contentType: "video/*",
+                    customPrefix: {
+                        public: ''
+                    },
+                    progressCallback(progress) {
+                        console.log("Uploaded:", progress.loaded / progress.total);
+                    }
                 })
-            );
+                .catch(err => { console.error("ERROR UPLOADED:", err) });
 
-            console.log("Image Results:", imageResults);
-            imageResults.forEach(result => {
-                this.exerciseForm.filePaths.push(result.key);
-            });
+                this.exerciseForm.filePaths.push({ key: uuid, type: "video" });
+            }
 
             const path = "/exercise";
             const myInit = {
@@ -218,6 +257,10 @@ export default {
             this.imagesToUpload = images;
         },
 
+        updateVideo: function(video) {
+            this.videoToUpload = video;
+        },
+
         updateTags: function(tags) {
             this.exerciseForm.tags = tags;
         },
@@ -228,14 +271,6 @@ export default {
 
         updateDifficulty: function(difficulty) {
             this.exerciseForm.difficulty = difficulty;
-        },
-
-        generateId: async function(n) {
-            const randomBytes = util.promisify(crypto.randomBytes);
-            const rawBytes = await randomBytes(n);
-
-            const hex = await rawBytes.toString("hex");
-            return hex;
         }
     }
 };

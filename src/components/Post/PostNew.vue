@@ -139,8 +139,6 @@ export default {
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
     
-                                console.log("UPLOADING:", imageName, blob);
-    
                                 const imageResponse = Storage.put(imageName, blob, {
                                     contentType: blob.type,
                                     progressCallback: function(progress) {

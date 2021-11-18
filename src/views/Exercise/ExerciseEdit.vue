@@ -120,9 +120,7 @@ import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor } from "@toast-ui/vue-editor";
 
 import { API, Storage } from "aws-amplify";
-
-import crypto from "crypto";
-import util from "util";
+import { v4 as uuidv4 } from "uuid"
 
 import ImageUploader from "@/components/Utility/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
@@ -130,7 +128,7 @@ import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 
 export default {
-    name: "ExerciseNew",
+    name: "ExerciseEdit",
     components: {
         DifficultySelector,
         Editor,
@@ -148,6 +146,7 @@ export default {
             newExerciseData: null,
 
             initImages: [],
+            // Images to upload includes init images (but we skip over when uploading as we already have path)
             imagesToUpload: [],
             imagesToDelete: [],
             isUpdating: false,
@@ -205,11 +204,21 @@ export default {
                 this.newExerciseData = response.data;
                 this.oldExerciseData = response.data;
 
+                if (this.oldExerciseData.createdBy.username === this.$store.state.userProfile.docData.username) {
+                    this.isAuthorized = true;
+                } else {
+                    throw new Error("Unauthorized");
+                }
+
                 if (this.newExerciseData) {
                     let urlPromises = [];
 
                     this.newExerciseData.filePaths.forEach(path => {
-                        urlPromises.push(Storage.get(path));
+                        if (path.type === "video") {
+                            console.log("EDITING VIDEO");
+                        } else if (path.type === "image") {
+                            urlPromises.push(Storage.get(path.key));
+                        }
                     });
 
                     const imageUrls = await Promise.all(urlPromises);
@@ -219,13 +228,9 @@ export default {
                             id: i,
                             url: url,
                             editable: false,
-                            path: this.oldExerciseData.filePaths[i]
+                            path: this.oldExerciseData.filePaths[i],
                         });
                     });
-
-                    if (this.oldExerciseData.createdBy.username === this.$store.state.userProfile.docData.username) {
-                        this.isAuthorized = true;
-                    }
 
                     this.exerciseExists = true;
                     this.isLoading = false;
@@ -234,6 +239,7 @@ export default {
                 }
             } catch (err) {
                 console.error(err);
+                this.isLoading = false;
             }
         },
 
@@ -244,12 +250,9 @@ export default {
             this.isUpdating = true;
 
             // First delete images. This does not need to be waited for.
-            if (this.imagesToDelete.length > 0) {
-                this.imagesToDelete.forEach(path => {
-                    // TODO: DELETE IMAGES.
-                    console.log("Should delete image here", path);
-                });
-            }
+            this.imagesToDelete.forEach(path => {
+                Storage.remove(path.key);
+            });
 
             try {
                 try {
@@ -259,7 +262,7 @@ export default {
                     const imagePaths = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             if (!image.path) {
-                                const imageId = await this.generateId(16);
+                                const imageId = uuidv4();
                                 const imageName =
                                     "username/" +
                                     this.$store.state.userProfile.docData.username +
@@ -291,7 +294,7 @@ export default {
                     );
 
                     imagePaths.forEach(path => {
-                        this.newExerciseData.filePaths.push(path);
+                        this.newExerciseData.filePaths.push({ key: path.key, type: "image" });
                     });
                 } catch (err) {
                     console.error("Error uploading image(s):", err);
@@ -340,14 +343,6 @@ export default {
 
         deleteInitImage: function(path) {
             this.imagesToDelete.push(path);
-        },
-
-        generateId: async function(n) {
-            const randomBytes = util.promisify(crypto.randomBytes);
-            const rawBytes = await randomBytes(n);
-
-            const hex = await rawBytes.toString("hex");
-            return hex;
         },
 
         dataURLtoBlob: function(dataurl) {
