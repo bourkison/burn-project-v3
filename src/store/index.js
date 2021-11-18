@@ -294,9 +294,27 @@ export default new Vuex.Store({
         apiName: "projectburnapi",
         workoutPromises: [],
         userProfile: null,
-        userWorkouts: null
+        userWorkouts: null,
+        videoTokens: {}
     },
     mutations: {
+        setVideoToken: function(state, data) {
+            if (!state.videoTokens[data.key]) {
+                Vue.set(state.videoTokens, data.key, { token: data.token, amount: 1 });
+            } else {
+                state.videoTokens[data.key].token = data.token;
+                state.videoTokens[data.key].amount++;
+            }
+        },
+
+        deleteVideoToken: function(state, key) {
+            state.videoTokens[key].amount--;
+            if (state.videoTokens[key].amount <= 0) {
+                delete state.videoTokens[key];
+                console.log("DESTROY TOKENS:", state.videoTokens);
+            }
+        },
+
         setLoggedInUser: function(state, user) {
             state.userProfile = user;
         },

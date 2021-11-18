@@ -71,8 +71,8 @@
             <div v-else-if="imgUrls.length > 0">
                 <img class="w-100" :src="imgUrls[0]" />
             </div>
-            <div v-else-if="videoUrl">
-                <VideoPlayer class="video-player" :options="videoOptions" :token="videoToken" />
+            <div v-else-if="video.url">
+                <VideoPlayer class="video-player" :options="video.options" :token="video.token" :id="video.id" />
             </div>
 
             <b-card-body>
@@ -162,9 +162,12 @@ export default {
             isLoading: true,
             postData: {},
             imgUrls: [],
-            videoUrl: "",
-            videoToken: "",
-            videoOptions: {},
+            video: {
+                id: "",
+                url: "",
+                token: "",
+                options: {}
+            },
             createdAtText: "",
 
             likeCount: 0,
@@ -212,42 +215,37 @@ export default {
             this.createdAtText = dayjs(this.postData.createdAt).fromNow();
 
             try {
-                let urlPromises = [];
-
                 this.postData.filePaths.forEach(async path => {
-                    if (this.postData.filePaths.length === 1 && path.length === 36) {
+                    if (path.type === "video") {
                         const videoObject = {
-                            id: path
+                            id: path.key
                         }
 
                         const response = await API.graphql(graphqlOperation(getVideoObject, videoObject));
 
-                        this.videoToken = response.data.getVideoObject.token;
-                        this.videoUrl = "https://" + awsvideoconfig.awsOutputVideo + "/" + path + "/" + path + ".m3u8";
+                        this.video.token = response.data.getVideoObject.token;
+                        this.video.id = path.key;
+                        this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + this.video.id + ".m3u8";
 
-                        console.log("PULLING VID", path, response, this.videoUrl);
-
-                        this.videoOptions = {
-                            autoplay: true,
+                        this.video.options = {
+                            autoplay: false,
                             controls: true,
                             sources: [
                                 {
-                                    src: this.videoUrl
+                                    src: this.video.url
                                 }
                             ]
                         }
                     } else if (path.type === "image") {
+                        let urlPromises = [];
                         urlPromises.push(Storage.get(path.key));
-                    } else {
-                        urlPromises.push(Storage.get(path));
+                        const imageUrls = await Promise.all(urlPromises);
+
+                        imageUrls.forEach(url => {
+                            this.imgUrls.push(url);
+                        });
                     }
                 })
-
-                const imageUrls = await Promise.all(urlPromises);
-
-                imageUrls.forEach(url => {
-                    this.imgUrls.push(url);
-                });
             } catch (err) {
                 console.error("Error getting image URLs:", err);
             } finally {

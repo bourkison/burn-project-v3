@@ -26,10 +26,15 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ## TODO
 
 ### General
-* VideoJS support
 * Mobile CSS
 * Sort by: Like Count, Date, Followed, Used Amount
 * On workout finish, increment counter on Exercise and Template
+
+### Video
+* Autopause video when out of view
+* Add a "Media Loaded" Variable
+* Video signature use cookies (as current method doesnt work on iOS)
+* Cleaner Video Style
 
 ### Messages
 * Everything

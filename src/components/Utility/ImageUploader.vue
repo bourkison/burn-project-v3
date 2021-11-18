@@ -26,6 +26,7 @@
             <b-form-file
                 class="imageInput"
                 v-model="addedFiles"
+                accept="image/*,video/*"
                 multiple
                 @change="handleFileUpload"
                 :file-name-formatter="formatNames"
@@ -36,6 +37,7 @@
                 type="file"
                 id="file-input"
                 style="display: none;"
+                accept="image/*,video/*"
                 multiple
                 @change="handleFileUpload"
             />

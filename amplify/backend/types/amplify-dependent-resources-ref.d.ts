@@ -97,12 +97,5 @@ export type AmplifyDependentResourcesAttributes = {
             "BucketName": "string",
             "Region": "string"
         }
-    },
-    "video": {
-        "projectburnvod": {
-            "oVODInputS3": "string",
-            "oVODOutputS3": "string",
-            "oVodOutputUrl": "string"
-        }
     }
 }

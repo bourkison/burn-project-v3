@@ -3,6 +3,8 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 
+import VueObserveVisibility from "vue-observe-visibility";
+
 import Amplify from "aws-amplify";
 import aws_exports from "./aws-exports";
 import { Auth, Hub } from "aws-amplify";
@@ -11,6 +13,8 @@ import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
+
+Vue.use(VueObserveVisibility);
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);

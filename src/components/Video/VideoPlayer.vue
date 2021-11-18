@@ -1,6 +1,6 @@
 <template>
     <div>
-        <video ref="videoPlayer" class="video-js vjs-fluid" width></video>
+        <video v-observe-visibility="{ callback: playWhenViewable, intersection: { threshold: 0.5 }}" ref="videoPlayer" class="video-js vjs-fluid" width></video>
     </div>
 </template>
 
@@ -18,14 +18,18 @@ export default {
         },
         token: {
             type: String,
-            required: true
+            default: ""
+        },
+        id: {
+            type: String,
+            default: ""
         }
     },
     data() {
         return {
             player: null,
             defaultOptions: {
-                autoplay: true,
+                autoplay: false,
                 controls: false,
                 muted: true
             }
@@ -33,23 +37,46 @@ export default {
     },
 
     mounted: function() {
-        const options = Object.assign({}, this.defaultOptions, this.$props.options)
-        const token = this.$props.token;
+        const options = Object.assign({}, this.defaultOptions, this.$props.options);
 
-        videojs.Hls.xhr.beforeRequest = (options) => {
-            console.log("OPTIONS URI:", options);
+        if (this.$props.id && this.$props.token) {
+            this.$store.commit("setVideoToken", {
+                key: this.$props.id,
+                token: this.$props.token
+            });
+        }
+
+
+        videojs.Vhs.xhr.beforeRequest = (options) => {
+            const splitUrl = options.uri.split(".");
+            const splitId = splitUrl[splitUrl.length - 2].split("/");
+            const id = splitId[splitId.length - 2];
+            const token = this.$store.state.videoTokens[id] && this.$store.state.videoTokens[id].token ? this.$store.state.videoTokens[id].token : "";
+
             options.uri = `${options.uri}${token}`;
             return options;
         }
 
-        this.player = videojs(this.$refs.videoPlayer, options, function onPlayerReady() {
-            console.log("On player ready", this);
-        })
+        this.player = videojs(this.$refs.videoPlayer, options);
     },
 
     beforeDestroy: function() {
         if (this.player) {
             this.player.dispose();
+        }
+
+        if (this.$props.id && this.$props.token) {
+            this.$store.commit("deleteVideoToken", this.$props.id);
+        }
+    },
+
+    methods: {
+        playWhenViewable: function(isVisible) {
+            if (isVisible && this.player.paused()) {
+                this.player.play();
+            } else if (!isVisible && !this.player.paused()) {
+                this.player.pause();
+            }
         }
     }
 }
