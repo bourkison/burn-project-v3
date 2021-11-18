@@ -90,17 +90,6 @@ const createLike = async function(event) {
         : null;
     const _id = new ObjectId();
 
-    console.log(
-        "ID:",
-        docId,
-        "COLL:",
-        coll,
-        "USERNAME:",
-        username,
-        "COMMENTID:",
-        commentId
-    );
-
     let response = {
         statusCode: 500,
         headers: {

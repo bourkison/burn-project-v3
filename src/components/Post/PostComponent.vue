@@ -169,6 +169,8 @@ export default {
                 options: {}
             },
             createdAtText: "",
+            createdAtTextInterval: null,
+            createdAtTextIntervalLength: 0,
 
             likeCount: 0,
             commentCount: 0,
@@ -176,7 +178,7 @@ export default {
             loadedSuccessfully: false,
 
             // Bootstrap:
-            carouselModel: 0
+            carouselModel: 0,
         };
     },
 
@@ -213,6 +215,26 @@ export default {
             this.isLiked = response.isLiked;
 
             this.createdAtText = dayjs(this.postData.createdAt).fromNow();
+            const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt)).unix();
+
+            if (secondsAgo < 2700) { // 2700 = 45 minutes, when createdAtText = an hour ago
+                if (secondsAgo < 90) {
+                    this.createdAtTextIntervalLength = 30000;
+                } else {
+                    this.createdAtTextIntervalLength = 60000;
+                }
+
+                this.createdAtTextInterval = window.setInterval(() => {
+                    this.createdAtText = dayjs(this.postData.createdAt).fromNow();
+                    const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt)).unix();
+                    
+                    if (secondsAgo  > 2700) {
+                        window.clearInterval(this.createdAtTextInterval);
+                    } else if (secondsAgo > 90) {
+                        this.createdAtTextIntervalLength = 60000;
+                    }
+                }, this.createdAtTextIntervalLength);
+            }
 
             try {
                 let urlPromises = [];
@@ -262,6 +284,12 @@ export default {
         }
 
         this.isLoading = false;
+    },
+
+    beforeDestroy: function() {
+        if (this.createdAtTextInterval) {
+            window.clearInterval(this.createdAtTextInterval);
+        }
     },
 
     methods: {

@@ -1,5 +1,6 @@
 const aws = require("aws-sdk");
 const MongooseModels = require("/opt/models");
+const projections = require("./projections");
 let MONGODB_URI;
 
 // GET request.
@@ -7,6 +8,15 @@ const getUser = async function(event) {
     let username = event.pathParameters.proxy;
     const view = event.queryStringParameters ? event.queryStringParameters.view : null;
     const User = (await MongooseModels(MONGODB_URI)).User;
+
+    let response = {
+        statusCode: 500,
+        headers: {
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ success: false })
+    };
 
     let fields;
 
@@ -24,17 +34,14 @@ const getUser = async function(event) {
         }
     } else {
         if (username !== event.requestContext.authorizer.claims["cognito:username"]) {
-            const response = {
-                statusCode: 403,
-                headers: {
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Allow-Origin": "*"
-                },
-                body: JSON.stringify({ success: false, message: "Not authorized" })
-            }
+            response.statusCode = 403;
+            const errorResponse = "Not authorized"
+            response.body = JSON.stringify({ success: false, errorMessage: errorResponse })
 
             return response;
         }
+
+        const uniqueWorkoutAmount = Number(event.queryStringParameters.uniqueWorkoutAmount) || 3;
 
         fields = {
             username: 1,
@@ -47,7 +54,8 @@ const getUser = async function(event) {
             weight: 1,
             country: 1,
             metric: 1,
-            options: 1
+            options: 1,
+            workouts: projections.recentUniqueWorkouts(uniqueWorkoutAmount)
         }
     }
 
@@ -68,45 +76,10 @@ const getUser = async function(event) {
         return response;
     }
 
-    let responseData;
+    let responseData = result;
 
-    if (view === "profile") {
-        console.log("PROFILE RESULT:", result);
-
-        responseData = {
-            _id: result._id,
-            username: result.username,
-            followerCount: result.followerCount,
-            followingCount: result.followingCount,
-            isFollowed: result.followers && result.followers.length > 0 ? true : false,
-            isLoggedInUser: (username === event.requestContext.authorizer.claims["cognito:username"]) ? true : false,
-            charts: JSON.parse(JSON.stringify(result.options)).charts.profile
-        }
-    } else {
-        responseData = {
-            _id: result._id,
-            username: result.username,
-            email: result.email,
-            firstName: result.firstName,
-            surname: result.surname,
-            gender: result.gender,
-            dob: result.dob,
-            height: result.height,
-            weight: result.weight,
-            country: result.country,
-            metric: result.metric,
-            options: result.options
-        }
-    }
-
-    const response = {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ success: true, data: responseData })
-    };
+    response.statusCode = 200;
+    response.body = JSON.stringify({ success: true, data: responseData });
 
     return response;
 };

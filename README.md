@@ -32,7 +32,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Video
 * Autopause video when out of view
-* Add a "Media Loaded" Variable
+* Add a "Media Loaded" Variable to see if video still processing
 * Video signature use cookies (as current method doesnt work on iOS)
 * Cleaner Video Style
 
@@ -45,7 +45,14 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### Charts
 * Timezone support
 * Add new cards
+* ORM is adding all when interval is not day
 
 ### Post
 * Post Edit, Delete
-* Post New Icons
+* Redesign Post New (icons, etc)
+
+### Comments/Likes
+* Move the awaits into an array of promises to speed up process.
+
+### Workouts
+* Add alarm sound on timer end

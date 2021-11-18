@@ -22,15 +22,15 @@
                     </div>
                 </b-list-group-item>
                 <b-list-group-item
-                    v-for="workout in recentWorkouts"
-                    :key="workout.id"
-                    :to="'/workout/new?b=' + workout.id"
+                    v-for="workout in $store.state.userProfile.docData.workouts"
+                    :key="workout._id"
+                    :to="'/workout/new?b=' + workout._id"
                     class="s-font d-flex align-items"
                     :disabled="$store.state.activeWorkout.workoutCommenced"
                 >
                     <div>{{ workout.name }}</div>
                     <div class="ml-auto text-muted xs-font">
-                        {{ workout.createdAtText }}
+                        {{ createdAtText(workout.createdAt) }}
                     </div>
                 </b-list-group-item>
             </b-list-group>
@@ -44,38 +44,14 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 export default {
     name: "QuickStart",
-    data() {
-        return {
-            workoutsLoadedIn: 3,
-            recentWorkouts: []
-        };
-    },
-
     created: async function() {
         dayjs.extend(relativeTime);
+    },
 
-        // if (this.$store.state.userWorkouts === null) {
-        //     await this.$store
-        //         .dispatch("fetchWorkouts", this.$store.state.userProfile.data)
-        //         .catch(e => {
-        //             console.error(e);
-        //         });
-        // }
-
-        // let uniqueNames = [];
-        // let i = 0;
-        // let j = 0;
-
-        // while (i < this.workoutsLoadedIn && j < this.$store.state.userWorkouts.length) {
-        //     if (!uniqueNames.includes(this.$store.state.userWorkouts[j].name)) {
-        //         let temp = this.$store.state.userWorkouts[j];
-        //         temp.createdAtText = dayjs(dayjs.unix(temp.createdAt.seconds)).fromNow();
-        //         this.recentWorkouts.push(temp);
-        //         i++;
-        //     }
-
-        //     j++;
-        // }
+    methods: {
+        createdAtText: function(date) {
+            return dayjs(date).fromNow();
+        }
     }
 };
 </script>
