@@ -249,7 +249,7 @@ export default {
 
                         this.video.token = response.data.getVideoObject.token;
                         this.video.id = path.key;
-                        this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + this.video.id + ".m3u8";
+                        this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + this.video.id.split("/")[this.video.id.split("/").length - 1] + ".m3u8";
 
                         this.video.options = {
                             autoplay: false,

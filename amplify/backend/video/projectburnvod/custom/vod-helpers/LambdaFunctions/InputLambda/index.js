@@ -17,6 +17,8 @@ exports.handler = async (event) => {
       body: JSON.stringify(`Transcoding your file: ${event.Records[0].s3.object.key}`),
     };
     return response;
+  } else if (event.Records[0].eventName.includes('ObjectRemoved')) {
+    console.log("Object Removed Notification");
   }
 };
 

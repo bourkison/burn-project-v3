@@ -166,14 +166,7 @@ const createLike = async function(event) {
             likeCheckResult = false;
         }
     } else {
-        console.log("YES COMMENT ID");
         try {
-            // THIS ONE FUCKING WOKRS IN BOTH MONGOSH AND MONGOPLAYGROUND BUT NOT HERE FOR WHATEVER STUPID REASON.
-            // I SWEAR TO GOD I HAVE TRIPLE CHECKED VARIABLES BEING PASSED THROUGH.
-            // db.templates.aggregate([{"$match": { "_id": ObjectId("60fc1e3d7a89130008bf0475") }}, { "$project": { "filteredComments": { "$arrayElemAt": [{ "$filter": {"input": "$comments", "as": "c", "cond": { "$eq": [ "$$c._id", ObjectId("60fd373389d9130008b4fe0c") ] } }}, 0] } }}, { "$project":  { "isLiked": { "$anyElementTrue": [ { "$map": { "input": "$filteredComments.likes", "as": "l", "in": { "$eq": [ "$$l.createdBy.username", "bourkison" ] } } } ] } } } ])
-
-            // Apparently no changes detected.
-            console.log("Trying this shit:", docId, commentId);
             likeCheckResult = await Model.aggregate([
                 {
                     $match: {
@@ -236,8 +229,6 @@ const createLike = async function(event) {
         }
     }
 
-    console.log("LIKE CHECK RESULT:", likeCheckResult);
-
     if (likeCheckResult) {
         const errorResponse =
             "User has already liked this post: " +
@@ -250,8 +241,6 @@ const createLike = async function(event) {
 
         return response;
     }
-
-    console.log("MADE IT PAST LIKE CHECK RESULT:", likeCheckResult);
 
     // Next push the like to the relevant document's likes array and increment likeCount by 1.
     const userReference = {

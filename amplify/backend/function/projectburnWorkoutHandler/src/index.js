@@ -7,7 +7,12 @@ let MONGODB_URI;
 // GET request /workout/{proxy+}
 const getWorkout = async function(event) {
     const workoutId = ObjectId(event.pathParameters.proxy);
-    const username = event.requestContext.authorizer.claims["cognito:username"];
+    let username = event.requestContext.authorizer.claims["cognito:username"];
+
+    if (event.queryStringParameters && event.queryStringParameters.username) {
+        username = event.queryStringParameters.username;
+    }
+
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     let response = {

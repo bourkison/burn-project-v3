@@ -20,7 +20,7 @@
     }
   },
   "Resources": {
-    "LambdaLayerVersion0a1ec74d": {
+    "LambdaLayerVersion43bb4518": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
         "CompatibleRuntimes": [
@@ -30,9 +30,9 @@
           "S3Bucket": {
             "Ref": "deploymentBucketName"
           },
-          "S3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion0a1ec74d-build.zip"
+          "S3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion43bb4518-build.zip"
         },
-        "Description": "Updated layer version 2021-11-18T07:12:36.599Z",
+        "Description": "Updated layer version 2021-11-18T11:14:31.774Z",
         "LayerName": {
           "Fn::Sub": [
             "projectburnmongoosemodels-${env}",
@@ -47,11 +47,11 @@
       "DeletionPolicy": "Delete",
       "UpdateReplacePolicy": "Retain"
     },
-    "LambdaLayerPermissionPrivate0a1ec74d": {
+    "LambdaLayerPermissionPrivate43bb4518": {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "Properties": {
         "Action": "lambda:GetLayerVersion",
-        "LayerVersionArn": "arn:aws:lambda:ap-southeast-2:586865842618:layer:projectburnmongoosemodels-dev:47",
+        "LayerVersionArn": "arn:aws:lambda:ap-southeast-2:586865842618:layer:projectburnmongoosemodels-dev:48",
         "Principal": {
           "Ref": "AWS::AccountId"
         }
@@ -91,7 +91,7 @@
   "Outputs": {
     "Arn": {
       "Value": {
-        "Ref": "LambdaLayerVersion0a1ec74d"
+        "Ref": "LambdaLayerVersion43bb4518"
       }
     }
   }

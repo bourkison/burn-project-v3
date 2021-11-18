@@ -11,7 +11,7 @@
                         class="d-flex"
                         align-v="center"
                         v-for="template in filteredCreatedTemplates"
-                        :key="template.id"
+                        :key="template.templateId"
                         @click="selectTemplate(template)"
                         href="#"
                     >
@@ -27,9 +27,9 @@
                     <b-list-group-item
                         class="d-flex"
                         align-v="center"
-                        v-for="template in filteredFollowedWorkouts"
-                        :key="template.id"
-                        @click="selectWorkout(template)"
+                        v-for="template in filteredFollowedTemplates"
+                        :key="template.templateId"
+                        @click="selectTemplate(template)"
                         href="#"
                     >
                         <div>{{ template.name }}</div>
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { templatesCollection, userTemplatesCollection } from "@/firebase";
+import { API } from "aws-amplify";
 
 export default {
     name: "TemplateSearch",
@@ -58,51 +58,39 @@ export default {
         };
     },
 
-    created: function() {
-        let templateDownloadPromises = [];
+    created: async function() {
+        try {
+            const path = "/template";
+            const myInit = {
+                headers: {
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
+                },
+                queryStringParameters: {
+                    loadAmount: 25,
+                    user: true
+                }
+            };
 
-        userTemplatesCollection(this.$store.state.userProfile.data.uid)
-            .get()
-            .then(templateSnapshot => {
-                templateSnapshot.forEach(templateDoc => {
-                    let userTemplateData = templateDoc.data();
-                    userTemplateData.id = templateDoc.id;
+            const templateResults = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-                    if (userTemplateData.isFollow) {
-                        templateDownloadPromises.push(
-                            templatesCollection()
-                                .doc(userTemplateData.id)
-                                .get()
-                                .then(templateDoc => {
-                                    let templateData = templateDoc.data();
-                                    templateData.id = templateDoc.id;
-
-                                    this.followedTemplates.push(templateData);
-                                })
-                        );
-                    } else {
-                        templateDownloadPromises.push(
-                            templatesCollection()
-                                .doc(userTemplateData.id)
-                                .get()
-                                .then(templateDoc => {
-                                    let templateData = templateDoc.data();
-                                    templateData.id = templateDoc.id;
-
-                                    this.createdTemplates.push(templateData);
-                                })
-                        );
-                    }
-                });
-
-                return Promise.all(templateDownloadPromises);
+            templateResults.forEach(template => {
+                if (template.isFollow) {
+                    this.followedTemplates.push(template);
+                } else {
+                    this.createdTemplates.push(template);
+                }
             })
-            .then(() => {
-                this.isLoading = false;
-            })
-            .catch(e => {
-                console.error("Error downloading templates:", e);
-            });
+        }
+        catch (err) {
+            if (err.response && err.response.status === 404) {
+                console.error("No templates");
+            } else {
+                // ERROR HERE
+            }
+        }
+        finally {
+            this.isLoading = false;
+        }
     },
 
     computed: {

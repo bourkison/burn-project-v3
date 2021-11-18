@@ -45,8 +45,11 @@ export default {
         const options = Object.assign({}, this.defaultOptions, this.$props.options);
 
         if (this.$props.id && this.$props.token) {
+            const idArr = this.$props.id.split("/");
+            const key = idArr[idArr.length - 1];
+
             this.$store.commit("setVideoToken", {
-                key: this.$props.id,
+                key: key,
                 token: this.$props.token
             });
         }
@@ -56,6 +59,7 @@ export default {
             const splitUrl = options.uri.split(".");
             const splitId = splitUrl[splitUrl.length - 2].split("/");
             const id = splitId[splitId.length - 2];
+            
             const token = this.$store.state.videoTokens[id] && this.$store.state.videoTokens[id].token ? this.$store.state.videoTokens[id].token : "";
 
             options.uri = `${options.uri}${token}`;
@@ -71,7 +75,8 @@ export default {
         }
 
         if (this.$props.id && this.$props.token) {
-            this.$store.commit("deleteVideoToken", this.$props.id);
+            const key = this.$props.id.split("/")[this.$props.id.split("/").length - 1];
+            this.$store.commit("deleteVideoToken", key);
         }
     },
 

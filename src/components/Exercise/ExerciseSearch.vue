@@ -83,11 +83,7 @@ export default {
                 }
             };
 
-            const exerciseResults = (
-                await API.get(this.$store.state.apiName, path, myInit).catch(err => {
-                    throw err;
-                })
-            ).data;
+            const exerciseResults = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
             exerciseResults.forEach(exercise => {
                 if (exercise.isFollow) {

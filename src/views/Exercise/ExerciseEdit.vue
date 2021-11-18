@@ -249,11 +249,6 @@ export default {
 
             this.isUpdating = true;
 
-            // First delete images. This does not need to be waited for.
-            this.imagesToDelete.forEach(path => {
-                Storage.remove(path.key);
-            });
-
             try {
                 try {
                     // Next, loop through our images and upload if need be.
@@ -262,12 +257,7 @@ export default {
                     const imagePaths = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             if (!image.path) {
-                                const imageId = uuidv4();
-                                const imageName =
-                                    "username/" +
-                                    this.$store.state.userProfile.docData.username +
-                                    "/exercises/" +
-                                    imageId;
+                                const imageName = this.$store.state.userProfile.docData.username + "/" + uuidv4();
 
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
@@ -306,7 +296,8 @@ export default {
                             Authorization: await this.$store.dispatch("fetchJwtToken")
                         },
                         body: {
-                            exerciseForm: this.newExerciseData
+                            exerciseForm: this.newExerciseData,
+                            imagesToDelete: this.imagesToDelete
                         }
                     };
 

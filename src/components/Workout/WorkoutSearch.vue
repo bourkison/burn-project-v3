@@ -9,7 +9,7 @@
                         class="d-flex"
                         align-v="center"
                         v-for="workout in filteredWorkouts"
-                        :key="workout.id"
+                        :key="workout._id"
                         @click="selectWorkout(workout)"
                         href="#"
                     >
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { userWorkoutsCollection } from "@/firebase";
+import { API } from "aws-amplify"
 
 export default {
     name: "WorkoutSearch",
@@ -38,26 +38,39 @@ export default {
         };
     },
 
-    created: function() {
-        userWorkoutsCollection(this.$store.state.userProfile.data.uid)
-            .get()
-            .then(workoutSnapshot => {
-                // Only push most recent of each workout.
-                let uniqueNames = [];
-                workoutSnapshot.forEach(workout => {
-                    let data = workout.data();
-                    if (!uniqueNames.includes(data.name)) {
-                        data.id = workout.id;
-                        this.workouts.push(data);
-                        uniqueNames.push(data.name);
-                    }
-                });
+    created: async function() {
+        try {
+            const path = "/workout";
+            const myInit = {
+                headers: {
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
+                },
+                queryStringParameters: {
+                    loadAmount: 25
+                }
+            };
 
-                this.isLoading = false;
+            const workoutResults = (await API.get(this.$store.state.apiName, path, myInit)).data;
+
+            let uniqueNames = [];
+            workoutResults.forEach(workout => {
+                if (!uniqueNames.includes(workout.name)) {
+                    this.workouts.push(workout);
+                    uniqueNames.push(workout.name);
+                }
             })
-            .catch(e => {
-                console.error("Error downloading workouts:", e);
-            });
+        }
+        catch (err) {
+            if (err.response && err.response.status === 404) {
+                console.error("No workouts");
+            } else {
+                // ERROR HERE
+                console.error(err)
+            }
+        }
+        finally {
+            this.isLoading = false;
+        }
     },
 
     computed: {

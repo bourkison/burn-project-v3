@@ -273,6 +273,8 @@ import ExerciseRecorder from "@/components/Exercise/ExerciseRecorder.vue";
 import ExerciseSearch from "@/components/Exercise/ExerciseSearch.vue";
 import Chart from "@/components/Charts/Chart.vue";
 
+import { v4 as uuidv4 } from "uuid";
+
 import randomColor from "random-color"
 
 export default {
@@ -422,7 +424,7 @@ export default {
 
                 templateDocument.exerciseReferences.forEach(exerciseReference => {
                     recordedExercises.push({
-                        uid: this.generateId(16),
+                        uid: uuidv4(),
                         notes: "",
                         sets: [
                             {
@@ -505,7 +507,7 @@ export default {
                             } else {
                                 this.workoutStore.previousWorkout.recordedExercises[
                                     i
-                                ].uid = this.generateId(16);
+                                ].uid = uuidv4();
                             }
 
                             i++;
@@ -551,7 +553,7 @@ export default {
                     this.$store.commit("activeWorkout/setExerciseValue", {
                         exerciseIndex: i,
                         key: "uid",
-                        value: this.generateId(16)
+                        value: uuidv4()
                     });
                 });
 
@@ -605,7 +607,7 @@ export default {
 
         addExercise: function(exercise) {
             this.$store.commit("activeWorkout/addExercise", {
-                uid: this.generateId(16),
+                uid: uuidv4(),
                 notes: "",
                 sets: [
                     {
@@ -635,7 +637,7 @@ export default {
                 this.$store.commit("activeWorkout/setExerciseValue", {
                     exerciseIndex: this.workoutStore.workout.recordedExercises.length - 1,
                     key: "uid",
-                    value: this.generateId(16)
+                    value: uuidv4()
                 });
             } else {
                 // Check if this UID is in place.
@@ -756,8 +758,10 @@ export default {
                 exerciseIndex: exerciseIndex,
                 setIndex: setIndex,
                 key: key,
-                value: Number(value) || 0
+                value: Number(value.replace(/[^.\d]/g, '')) || 0
             });
+
+            console.log(Number(value.replace(/[^.\d]/g, '')) || 0);
         },
 
         preventModal: function(e) {
@@ -775,16 +779,6 @@ export default {
             } else {
                 return null;
             }
-        },
-
-        generateId: function(n) {
-            let randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            let id = "";
-            // 7 random characters
-            for (let i = 0; i < n; i++) {
-                id += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
-            }
-            return id;
         },
 
         beginTimer: function(n) {

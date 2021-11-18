@@ -1,7 +1,6 @@
 const aws = require("aws-sdk");
 const MongooseModels = require("/opt/models");
-const mongoose = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
+const projections = require("./projections")
 
 let MONGODB_URI;
 
@@ -60,26 +59,7 @@ const amountWorkouts = async function(event) {
             },
             {
                 $project: {
-                    workouts: {
-                        $map: {
-                            input: {
-                                $filter: {
-                                    input: "$workouts",
-                                    as: "w",
-                                    cond: {
-                                        $and: [
-                                            { $gte: ["$$w.createdAt", startDate] },
-                                            { $lte: ["$$w.createdAt", endDate] }
-                                        ]
-                                    }
-                                }
-                            },
-                            as: "w",
-                            in: {
-                                createdAt: "$$w.createdAt"
-                            }
-                        }
-                    }
+                    workouts: projections.workouts(startDate, endDate)
                 }
             }
         ])
@@ -137,7 +117,7 @@ const exerciseStats = async function(event) {
     const User = (await MongooseModels(MONGODB_URI)).User;
 
     if (!exerciseId) {
-        exerciseId = (await orderExercises(event, User, username))[preferenceIndex]._id;
+        exerciseId = (await User.aggregate(projections.orderedExercisesAggregation(username)))[preferenceIndex]._id;
     }
 
     // First filters down the input to where uniqueExercises includes exerciseId,
@@ -150,35 +130,7 @@ const exerciseStats = async function(event) {
             },
             {
                 $project: {
-                    workouts: {
-                        $map: {
-                            input: {
-                                $filter: {
-                                    input: "$workouts",
-                                    as: "w",
-                                    cond: {
-                                        $in: [exerciseId, "$$w.uniqueExercises"]
-                                    }
-                                }
-                            },
-                            as: "w",
-                            in: {
-                                createdAt: "$$w.createdAt",
-                                exercises: {
-                                    $filter: {
-                                        input: "$$w.recordedExercises",
-                                        as: "r",
-                                        cond: {
-                                            $eq: [
-                                                "$$r.exerciseReference.exerciseId",
-                                                ObjectId(exerciseId)
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    workouts: projections.exercises(exerciseId)
                 }
             }
         ])
@@ -274,47 +226,6 @@ const exerciseStats = async function(event) {
     });
 
     return response;
-};
-
-const orderExercises = async function(event, User, username) {
-    const orderedExercises = await User.aggregate([
-        {
-            $match: {
-                username: username
-            }
-        },
-        {
-            $project: {
-                exercises: {
-                    $reduce: {
-                        input: "$workouts",
-                        initialValue: [],
-                        in: {
-                            $concatArrays: ["$$value", "$$this.uniqueExercises"]
-                        }
-                    }
-                }
-            }
-        },
-        {
-            $unwind: "$exercises"
-        },
-        {
-            $group: {
-                _id: "$exercises",
-                count: {
-                    $sum: 1
-                }
-            }
-        },
-        {
-            $sort: {
-                count: -1
-            }
-        }
-    ]);
-
-    return orderedExercises;
 };
 
 const calcORM = function(amount, reps) {

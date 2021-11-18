@@ -21,8 +21,8 @@
             </div>
             <div v-else-if="post.share.type == 'workout'">
                 <WorkoutShare
-                    :workoutId="post.share.id"
-                    :userId="$store.state.userProfile.data.uid"
+                    :workoutId="post.share._id"
+                    :username="$store.state.userProfile.docData.username"
                 />
             </div>
         </div>
@@ -130,11 +130,7 @@ export default {
                         // First upload all images using .map (see ExerciseNew.vue for further explanation)
                         const uploadResults = await Promise.all(
                             this.imagesToUpload.map(async (image, i) => {
-                                const imageName =
-                                    "username/" +
-                                    this.$store.state.userProfile.docData.username +
-                                    "/posts/" +
-                                    uuidv4();
+                                const imageName = this.$store.state.userProfile.docData.username + "/" + uuidv4();
     
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
@@ -156,7 +152,7 @@ export default {
                             this.post.filePaths.push({ key: result.key, type: "image" });
                         });
                     } else if (this.videoToUpload) {
-                        const uuid = uuidv4();
+                        const uuid = this.$store.state.userProfile.docData.username + "/" + uuidv4();
                         const fileNameSplit = this.videoToUpload.name.split(".")
                         const fileExtension = fileNameSplit[fileNameSplit.length - 1];
                         const fileName = `${uuid}.${fileExtension}`

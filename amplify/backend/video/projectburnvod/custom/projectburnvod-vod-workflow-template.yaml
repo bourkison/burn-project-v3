@@ -1,0 +1,236 @@
+Description: "AmplifyVOD - Amplify Video on Demand template. Do not make changes to the root template. This gets overwritten every push."
+
+Parameters:
+  env:
+    Type: String
+    Description: The environment name. e.g. Dev, Test, or Production.
+    Default: NONE
+  authRoleName:
+    Type: String
+    Description: Arn for authRoleArn
+    Default: NONE
+  unauthRoleName:
+    Type: String
+    Description: Arn for authRoleArn
+    Default: NONE
+  GraphQLAPIId:
+    Type: String
+    Description: API ID
+    Default: NONE
+  GraphQLEndpoint:
+    Type: String
+    Description: API Endpoint URL
+    Default: NONE
+  s3UUID:
+    Type: String
+    Description: NOT USED ALREADY INSERTED W/ AMPLIFY VIDEO
+    Default: xxxxx-xxxxx
+  pS3:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-_]*"
+    Default: "amplify-projectburn-dev-203659-deployment"
+  pS3InputName:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-_]*"
+    Default: "projectburnvod-dev-input-tnxigpft"
+  pS3OutputName:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-_]*"
+    Default: "projectburnvod-dev-output-tnxigpft"
+  pSourceFolder:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-_]*"
+    Default: vod-helpers
+  pProjectName:
+    Type: String
+    Description: ProjectName
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-_]*"
+    Default: projectburnvod
+  publicKey:
+    Type: String
+    Description: NOT USED ALREADY INSERTED W/ AMPLIFY VIDEO
+  rPublicName:
+    Type: String
+    Description: NOT USED ALREADY INSERTED W/ AMPLIFY VIDEO
+  publicKeyName:
+    Type: String
+    Description: NOT USED ALREADY INSERTED W/ AMPLIFY VIDEO
+  secretPemArn:
+    Type: String
+    Description: ARN for SM for Private Signed URL key
+  secretPem:
+    Type: String
+    Description: Name of SM for Private Signed URL
+  
+
+Conditions:
+  HasEnvironmentParameter:
+    !Not [!Equals [!Ref env, NONE]]
+
+Outputs:
+  oVODInputS3:
+    Description: Put source video here for processing and hosting by Amplify Video
+    Value: !GetAtt rS3InputBucket.Outputs.oInputBucketName
+  oVODOutputS3:
+    Description: Amplify Video hosts transcoded video content in this bucket
+    Value: !GetAtt rS3OutputBucket.Outputs.oOutputBucketName
+  oVodOutputUrl:
+    Description: Amplify Video CloudFront Url
+    Value: !GetAtt rCloudfrontDistribution.Outputs.oCFDomain
+
+Resources:
+  
+  rS3InputBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/S3InputBucket.template"
+      Parameters:
+        authRoleName: !Ref authRoleName
+        
+        pPolicyName: !Sub "${AWS::StackName}-s3UploadPermissions"
+        
+        pBucketName: !Ref pS3InputName
+  rS3OutputBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/S3OutputBucket.template"
+      Parameters:
+        authRoleName: !Ref authRoleName
+        pBucketName: !Ref pS3OutputName
+        pCloudfrontEnabled: true
+
+  rCloudfrontDistribution:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/CFDistribution.template"
+      Parameters:
+          pBucketUrl: !GetAtt rS3OutputBucket.Outputs.oOutputUrl
+          pOriginAccessIdentity: !GetAtt rS3OutputBucket.Outputs.oOriginAccessIdentity
+  
+          pProjectName:
+            !If
+            - HasEnvironmentParameter
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - !Ref env
+            - !Ref pProjectName
+  rCloudfrontTokenGenerator:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/CFTokenGen.template"
+      Parameters:
+          pPemID: !GetAtt rCloudfrontDistribution.Outputs.oPemId
+          pSecretPem: !Ref secretPem
+          pSecretPemArn: !Ref secretPemArn
+          pDomainName: !GetAtt rCloudfrontDistribution.Outputs.oCFDomain
+          pFunctionHash: "6b7a5745736568546236"
+          pS3: !Ref pS3
+          pFunctionName: 
+            !If
+            - HasEnvironmentParameter
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - !Ref env
+                - 'tokenGen'
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - 'tokenGen'
+  
+
+  rMediaConvertTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/CreateJobTemplate.template"
+      Parameters:
+        pProjectName: !Ref pProjectName
+        env: !Ref env
+  rInputLambdaTriggerFunction:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/InputTriggerLambda.template"
+      Parameters:
+        pS3: !Ref pS3
+        pSourceFolder: !Ref pSourceFolder
+        pInputS3: !GetAtt rS3InputBucket.Outputs.oInputBucketName
+        pInputS3Arn: !GetAtt rS3InputBucket.Outputs.oInputBucketArn
+        pOutputS3: !GetAtt rS3OutputBucket.Outputs.oOutputBucketName
+        pOutputS3Arn: !GetAtt rS3OutputBucket.Outputs.oOutputBucketArn
+        pMediaConvertTemplate: !GetAtt rMediaConvertTemplate.Outputs.oJobArn
+        pTemplateType:  HLS
+        pFunctionHash: "74613959764a32725853"
+        GraphQLAPIId: !Ref GraphQLAPIId
+        GraphQLEndpoint: !Ref GraphQLEndpoint
+        env: !Ref env
+        pFunctionName: 
+          !If
+            - HasEnvironmentParameter
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - !Ref env
+                - 'inputWatcher'
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - 'inputWatcher'
+  rOutputLambdaTriggerFunction:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/OutputTriggerLambda.template"
+      Parameters:
+        pS3: !Ref pS3
+        pSourceFolder: !Ref pSourceFolder
+        pOutputS3: !GetAtt rS3OutputBucket.Outputs.oOutputBucketName
+        pOutputS3Arn: !GetAtt rS3OutputBucket.Outputs.oOutputBucketArn
+        pFunctionHash: "776c686841724b323645"
+        env: !Ref env
+        GraphQLAPIId: !Ref GraphQLAPIId
+        GraphQLEndpoint: !Ref GraphQLEndpoint
+        pFunctionName: 
+          !If
+            - HasEnvironmentParameter
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - !Ref env
+                - 'outputWatcher'
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - 'outputWatcher'
+
+  rLambdaTriggerSetup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${pS3}/${pSourceFolder}/S3TriggerSetup.template"
+      Parameters:
+        pS3: !Ref pS3
+        pSourceFolder: !Ref pSourceFolder
+        pInputS3: !GetAtt rS3InputBucket.Outputs.oInputBucketName
+        pInputS3Arn: !GetAtt rS3InputBucket.Outputs.oInputBucketArn
+        pOutputS3: !GetAtt rS3OutputBucket.Outputs.oOutputBucketName
+        pOutputS3Arn: !GetAtt rS3OutputBucket.Outputs.oOutputBucketArn
+        pInputTriggerLambda: !GetAtt rInputLambdaTriggerFunction.Outputs.oLambdaFunction
+        pOutputTriggerLambda: !GetAtt rOutputLambdaTriggerFunction.Outputs.oLambdaFunction
+        pFunctionHash: "4534516c48377a594478"
+        pFunctionName:
+          !If
+            - HasEnvironmentParameter
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - !Ref env
+                - 'cfTrigger'
+            - !Join
+              - '-'
+              - - !Ref pProjectName
+                - 'cfTrigger'
+  
+

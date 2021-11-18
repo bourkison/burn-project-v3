@@ -8,18 +8,18 @@
                 <b-col cols="3">Reps</b-col>
             </b-row>
 
-            <div v-for="(exercise, index) in workout.exercises" :key="index">
+            <div v-for="(exercise, index) in workout.recordedExercises" :key="index">
                 <b-row class="text-center mt-1">
                     <b-col
                         cols="1"
                         class="setAmountHoverable"
-                        v-b-toggle="'setsCollapse-' + workout.id + index"
+                        v-b-toggle="'setsCollapse-' + workout._id + index"
                         >{{ exercise.sets.length }}</b-col
                     >
 
                     <b-col cols="5">
-                        <router-link :to="'/exercises/' + exercise.id">{{
-                            exercise.name
+                        <router-link :to="'/exercises/' + exercise.exerciseReference.exerciseId">{{
+                            exercise.exerciseReference.name
                         }}</router-link>
                     </b-col>
 
@@ -32,7 +32,7 @@
                     </b-col>
                 </b-row>
 
-                <b-collapse :id="'setsCollapse-' + workout.id + index">
+                <b-collapse :id="'setsCollapse-' + workout._id + index">
                     <b-row
                         v-for="(set, index) in exercise.sets"
                         :key="index"
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { userWorkoutsCollection } from "@/firebase";
+import { API } from "aws-amplify";
 
 export default {
     name: "WorkoutShare",
@@ -62,7 +62,7 @@ export default {
             type: String,
             required: true
         },
-        userId: {
+        username: {
             type: String,
             required: true
         }
@@ -79,16 +79,32 @@ export default {
     },
 
     methods: {
-        downloadWorkout: function() {
-            userWorkoutsCollection(this.$store.state.userProfile.data.uid)
-                .doc(this.$props.workoutId)
-                .get()
-                .then(workoutDoc => {
-                    this.workout = workoutDoc.data();
-                    this.workout.id = workoutDoc.id;
-
-                    this.isLoading = false;
-                });
+        downloadWorkout: async function() {
+            try {
+                const path = "/workout/" + this.$props.workoutId;
+                const myInit = {
+                    headers: {
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
+                    },
+                    queryStringParameters: {
+                        username: this.$props.username
+                    }
+                }
+    
+                const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
+                this.workout = response;
+            }
+            catch (err) {
+                if (err.response && err.response.status === 404) {
+                    console.error("Workout not found")
+                } else {
+                    // ERROR HERE
+                    console.error(err);
+                }
+            }
+            finally {
+                this.isLoading = false;
+            }
         }
     },
 

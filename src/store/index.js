@@ -309,6 +309,7 @@ export default new Vuex.Store({
         setVideoToken: function(state, data) {
             if (!state.videoTokens[data.key]) {
                 Vue.set(state.videoTokens, data.key, { token: data.token, amount: 1 });
+                console.log("SETTING STATE:", state.videoTokens[data.key]);
             } else {
                 state.videoTokens[data.key].token = data.token;
                 state.videoTokens[data.key].amount++;
@@ -316,6 +317,7 @@ export default new Vuex.Store({
         },
 
         deleteVideoToken: function(state, key) {
+            console.log("DELETING STATE:", state.videoTokens[key], key);
             state.videoTokens[key].amount--;
             if (state.videoTokens[key].amount <= 0) {
                 delete state.videoTokens[key];

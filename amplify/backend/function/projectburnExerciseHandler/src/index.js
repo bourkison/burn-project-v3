@@ -1,6 +1,8 @@
 const aws = require("aws-sdk");
 const MongooseModels = require("/opt/models");
 const mongoose = require("mongoose");
+const projections = require("./projections")
+
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
 
@@ -145,26 +147,7 @@ const queryExercise = async function(event) {
             exerciseQuery.push({
                 $project: {
                     username: 1,
-                    exerciseReferences: {
-                        $reduce: {
-                            input: "$exerciseReferences",
-                            initialValue: [],
-                            in: {
-                                $cond: [
-                                    {
-                                        $setIsSubset: [
-                                            "$inputMuscleGroups",
-                                            "$$this.muscleGroups"
-                                        ]
-                                    },
-                                    {
-                                        $concatArrays: ["$$value", ["$$this"]]
-                                    },
-                                    "$$value"
-                                ]
-                            }
-                        }
-                    }
+                    exerciseReferences: projections.reducedExerciseByMg()
                 }
             });
         }
@@ -179,26 +162,7 @@ const queryExercise = async function(event) {
             exerciseQuery.push({
                 $project: {
                     username: 1,
-                    exerciseReferences: {
-                        $reduce: {
-                            input: "$exerciseReferences",
-                            initialValue: [],
-                            in: {
-                                $cond: [
-                                    {
-                                        $setIsSubset: [
-                                            "$inputTags",
-                                            "$$this.tags"
-                                        ]
-                                    },
-                                    {
-                                        $concatArrays: ["$$value", ["$$this"]]
-                                    },
-                                    "$$value"
-                                ]
-                            }
-                        }
-                    }
+                    exerciseReferences: projections.reducedExerciseByTag()
                 }
             });
         }
@@ -212,50 +176,9 @@ const queryExercise = async function(event) {
                 }
             });
         } else {
-            exerciseQuery.push({
-                $project: {
-                    exerciseReferences: 1,
-                    startAtIndex: {
-                        $indexOfArray: [ "$exerciseReferences.exerciseId", ObjectId(startAt) ]
-                    }
-                }
-            })
-
-            exerciseQuery.push({
-                $project: {
-                    exerciseReferences: 1,
-                    actualLoadAmount: {
-                        $cond: [
-                            { $lt: ["$startAtIndex", loadAmount] },
-                            "$startAtIndex",
-                            loadAmount
-                        ]
-                    },
-                    startAtIndex: {
-                        $cond: [
-                            {
-                                $lte: [{ $subtract: ["$startAtIndex", loadAmount] }, 0]
-                            },
-                            0,
-                            { $subtract: ["$startAtIndex", loadAmount] }
-                        ]
-                    }
-                }
-            })
-
-            exerciseQuery.push({
-                $project: {
-                    startAtIndex: 1,
-                    actualLoadAmount: 1,
-                    exerciseReferences: {
-                        $cond: [
-                            { $eq: ["$actualLoadAmount", 0] },
-                            [],
-                            { $slice: ["$exerciseReferences", "$startAtIndex", "$actualLoadAmount"] }
-                        ]
-                    }
-                }
-            })
+            exerciseQuery.push(projections.paginationCommence(startAt))
+            exerciseQuery.push(projections.paginationCheckIndices(loadAmount))
+            exerciseQuery.push(projections.paginationFinal())
         }
 
 
@@ -388,8 +311,6 @@ const createExercise = async function(event) {
         return response;
     });
 
-    console.log("EXERCISE RESULT:", exerciseResult);
-
     if (!exerciseResult) {
         const errorResponse = "Error creating exercise. No response.";
         response.body = JSON.stringify({
@@ -507,13 +428,7 @@ const updateExercise = async function(event) {
     )
         .exec()
         .catch(err => {
-            const errorResponse =
-                "Error updating exercise : " +
-                exerciseId +
-                " : " +
-                JSON.stringify(exerciseForm) +
-                ". " +
-                (err.message || JSON.stringify(err));
+            const errorResponse = (err.message || JSON.stringify(err));
             response.body = JSON.stringify({
                 success: false,
                 errorMessage: errorResponse
@@ -583,13 +498,7 @@ const deleteExercise = async function(event) {
         )
             .exec()
             .catch(err => {
-                const errorResponse =
-                    "Error getting exercise from user: " +
-                    username +
-                    " : " +
-                    exerciseId +
-                    ". " +
-                    (err.message || JSON.stringify(err));
+                const errorResponse = (err.message || JSON.stringify(err));
                 response.body = JSON.stringify({
                     success: false,
                     errorMessage: errorResponse
@@ -623,7 +532,6 @@ const deleteExercise = async function(event) {
     const follows = exerciseResult.follows;
 
     likes.forEach(like => {
-        console.log("LIKE TO DELETE:", like);
         const userId = ObjectId(like.createdBy.userId);
 
         const query = User.updateOne(
@@ -643,9 +551,7 @@ const deleteExercise = async function(event) {
     });
 
     comments.forEach(comment => {
-        console.log("COMMENT TO DELETE:", comment);
         comment.likes.forEach(commentLike => {
-            console.log("COMMENT LIKE TO DELETE:", commentLike);
             const userId = ObjectId(commentLike.get("createdBy").userId);
 
             const query = User.updateOne(
@@ -684,10 +590,6 @@ const deleteExercise = async function(event) {
 
     follows.forEach(follow => {
         const userId = ObjectId(follow.get("userId"));
-
-        console.log("USER ID:", userId);
-        console.log("EXERCISE ID:", exerciseId);
-
         const query = User.updateOne(
             { _id: userId },
             {
@@ -706,7 +608,7 @@ const deleteExercise = async function(event) {
 
     // TODO: Delete all images/videos associated with this exercise.
 
-    // TODO: Delete all exerciseReferences in workouts associated with this exercise.
+    // TODO: Delete all exerciseReferences in templates associated with this exercise.
 
     // Finally delete the exercise.
     const result = await Exercise.deleteOne({ _id: exerciseId }).exec();
@@ -763,12 +665,5 @@ exports.handler = async (event, context) => {
             break;
     }
 
-    console.log("RESPONSE:", response);
-    console.log("EVENT:", event);
-    console.log(
-        "USER:",
-        event.requestContext.authorizer.claims["cognito:username"]
-    );
-    console.log("REQUEST CONTEXT:", event.requestContext);
     return response;
 };

@@ -24,6 +24,7 @@
                                             <b-dropdown-item class="small-dropdown-item" @click="commentExpanded = !commentExpanded"><b-icon-chat-left class="mr-1" /> Notes</b-dropdown-item>
                                             <b-dropdown-item class="small-dropdown-item" @click="flipCard" ><b-icon-gear class="mr-1" /> Exercise Settings</b-dropdown-item>
                                             <b-dropdown-item class="small-dropdown-item" @click="addChart"><b-icon-bar-chart class="mr-1"/> Show Chart</b-dropdown-item>
+                                            <b-dropdown-item class="small-dropdown-item" :to="'/exercises/' + exercise.exerciseReference.exerciseId">Go To</b-dropdown-item>
                                             <b-dropdown-item class="small-dropdown-item" variant="danger" @click="removeExercise"><b-icon-trash class="mr-1" />Delete</b-dropdown-item>
                                         </b-dropdown>
                                     </div>
@@ -80,7 +81,9 @@
                                                         size="sm"
                                                         placeholder="Kgs"
                                                         style="width:100%;"
-                                                        class="text-center"
+                                                        class="text-center number-input"
+                                                        lazy-formatter
+                                                        :formatter="preventLetters"
                                                     ></b-form-input>
                                                 </b-col>
                                                 <b-col sm="3" class="p-0">
@@ -91,7 +94,9 @@
                                                         size="sm"
                                                         placeholder="Reps"
                                                         style="width:100%;"
-                                                        class="text-center"
+                                                        class="text-center number-input"
+                                                        lazy-formatter
+                                                        :formatter="preventLetters"
                                                     ></b-form-input>
                                                 </b-col>
                                                 <b-col sm="1" class="pl-2">
@@ -320,6 +325,10 @@ export default {
 
         addChart: function() {
             this.$emit("pushChart", this.$props.exercise.exerciseReference)
+        },
+
+        preventLetters: function(value) {
+            return value.replace(/[^.\d]/g, '');
         }
     }
 };
@@ -399,6 +408,18 @@ export default {
         -moz-transform: rotateY(180deg);
         -o-transform: rotateY(180deg);
         transform: rotateY(180deg);
+    }
+
+    /* Chrome, Safari, Edge, Opera */
+    .number-input::-webkit-outer-spin-button,
+    .number-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    .number-input[type=number] {
+        -moz-appearance: textfield;
     }
 </style>
 
