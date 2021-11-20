@@ -1,3 +1,8 @@
+/* Amplify Params - DO NOT EDIT
+	ENV
+	REGION
+	STORAGE_PROJECTBURNSTORAGE_BUCKETNAME
+Amplify Params - DO NOT EDIT */
 const aws = require("aws-sdk");
 const MongooseModels = require("/opt/models");
 const mongoose = require("mongoose");
@@ -471,6 +476,7 @@ const deleteExercise = async function(event) {
 
     const User = (await MongooseModels(MONGODB_URI)).User;
     const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+    const Template = (await MongooseModels(MONGODB_URI)).Template;
 
     let response = {
         statusCode: 500,
@@ -509,8 +515,8 @@ const deleteExercise = async function(event) {
     ).exerciseReferences[0];
 
     if (!userResult) {
-        const errorResponse = "Exercise not found for user: " + username + ".";
-        response.statusCode = 404;
+        const errorResponse = "Not authorized";
+        response.statusCode = 403;
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
@@ -523,7 +529,9 @@ const deleteExercise = async function(event) {
     const exerciseResult = await Exercise.findById(exerciseId, {
         follows: 1,
         likes: 1,
-        comments: 1
+        comments: 1,
+        filePaths: 1,
+        templateReferences: 1
     }).exec();
     let userPullPromises = [];
 
@@ -604,11 +612,42 @@ const deleteExercise = async function(event) {
         userPullPromises.push(query.exec());
     });
 
+    // Delete filePaths. TODO: Delete videos.
+    const s3 = new aws.S3();
+    let s3DeletePromises = [];
+
+    exerciseResult.filePaths.forEach(path => {
+        if (path.type === "image") {
+            s3DeletePromises.push(s3.deleteObject({
+                Bucket: process.env.STORAGE_PROJECTBURNSTORAGE_BUCKETNAME,
+                Key: path.key
+            }).promise())
+        }
+    })
+
+    let templatePullPromises = [];
+    exerciseResult.templateReferences.forEach(template => {
+        const templateId = ObjectId(template.templateId);
+
+        const query = Template.updateOne(
+            { _id: templateId },
+            {
+                $pull: {
+                    exerciseReferences: {
+                        exerciseId: exerciseId
+                    }
+                }
+            }
+        );
+
+        templatePullPromises.push(query.exec());
+
+        // TODO: Notify template createdBy that this exercise has been deleted.
+    })
+
+    await Promise.all(s3DeletePromises);
     await Promise.all(userPullPromises);
-
-    // TODO: Delete all images/videos associated with this exercise.
-
-    // TODO: Delete all exerciseReferences in templates associated with this exercise.
+    await Promise.all(templatePullPromises);
 
     // Finally delete the exercise.
     const result = await Exercise.deleteOne({ _id: exerciseId }).exec();

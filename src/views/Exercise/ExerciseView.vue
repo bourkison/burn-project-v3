@@ -236,6 +236,11 @@ export default {
             modalIsDeleting: false
         };
     },
+    metaInfo() {
+        return {
+            title: this.isLoading ? null : this.exerciseData.name
+        }
+    },
 
     created: async function() {
         this.downloadExercise();
@@ -322,7 +327,8 @@ export default {
 
                             this.video.token = response.data.getVideoObject.token;
                             this.video.id = path.key;
-                            this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + this.video.id + ".m3u8";
+                            const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
+                            this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + uniqueId + ".m3u8";
 
                             this.video.options = {
                                 autoplay: true,

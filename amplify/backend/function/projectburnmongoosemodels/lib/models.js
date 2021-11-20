@@ -207,6 +207,7 @@ const workoutSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+workoutSchema.index({ name: "text" });
 
 const commentSchema = new mongoose.Schema(
     {
@@ -263,6 +264,10 @@ const postSchema = new mongoose.Schema(
         commentCount: {
             type: Number,
             default: 0
+        },
+        feedReferences: {
+            type: [userReferenceSchema],
+            default: []
         }
     },
     { timestamps: true }
@@ -365,6 +370,7 @@ const userSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+userSchema.index({ username: "text" });
 
 const exerciseSchema = new mongoose.Schema(
     {
@@ -431,6 +437,7 @@ const exerciseSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+exerciseSchema.index({ name: "text" });
 
 const templateSchema = new mongoose.Schema(
     {
@@ -489,6 +496,7 @@ const templateSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+templateSchema.index({ name: "text" });
 
 module.exports = async uri => {
     const connection = await mongooseConnect(uri);

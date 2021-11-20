@@ -324,6 +324,7 @@ const createTemplate = async function(event) {
     let templateForm = JSON.parse(event.body).templateForm;
 
     const User = (await MongooseModels(MONGODB_URI)).User;
+    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
     const Template = (await MongooseModels(MONGODB_URI)).Template;
 
     let response = {
@@ -404,6 +405,17 @@ const createTemplate = async function(event) {
         createdBy: userReference
     };
 
+    // Push this template reference to each exercise.
+    let exercisePushPromises = [];
+    templateForm.exercises.forEach(exercise => {
+        exercisePushPromises.push(Exercise.updateOne(
+            { _id: exercise.exerciseId },
+            { $push: { templateReferences: templateReference } }
+        ))
+    });
+
+    await Promise.all(exercisePushPromises);
+    
     await User.updateOne(
         { _id: user._id },
         { $push: { templateReferences: templateReference } }

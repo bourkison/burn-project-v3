@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"Amplify\",\"createdWith\":\"7.3.3\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -20,9 +20,8 @@
       "Type": "String",
       "Default": "functionprojectburnmongoosemodelsArn"
     },
-    "storageprojectburnstorageBucketName": {
-      "Type": "String",
-      "Default": "storageprojectburnstorageBucketName"
+    "secretsPathAmplifyAppId": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -55,12 +54,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "projectburnExerciseHandler",
+            "projectburnSearchHandler",
             {
               "Fn::Join": [
                 "",
                 [
-                  "projectburnExerciseHandler",
+                  "projectburnSearchHandler",
                   "-",
                   {
                     "Ref": "env"
@@ -86,20 +85,19 @@
                     "Fn::Sub": [
                       "/amplify/${appId}/${env}/AMPLIFY_${functionName}_",
                       {
-                        "appId": "d3tp6kskh7ft9m",
+                        "appId": {
+                          "Ref": "secretsPathAmplifyAppId"
+                        },
                         "env": {
                           "Ref": "env"
                         },
-                        "functionName": "projectburnExerciseHandler"
+                        "functionName": "projectburnSearchHandler"
                       }
                     ]
                   },
                   "MONGODB_URI"
                 ]
               ]
-            },
-            "STORAGE_PROJECTBURNSTORAGE_BUCKETNAME": {
-              "Ref": "storageprojectburnstorageBucketName"
             }
           }
         },
@@ -115,7 +113,7 @@
             "Ref": "functionprojectburnmongoosemodelsArn"
           }
         ],
-        "Timeout": "25"
+        "Timeout": 25
       }
     },
     "LambdaExecutionRole": {
@@ -124,12 +122,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "projectburnLambdaRole981b4e8b",
+            "projectburnLambdaRoled9ac4ffb",
             {
               "Fn::Join": [
                 "",
                 [
-                  "projectburnLambdaRole981b4e8b",
+                  "projectburnLambdaRoled9ac4ffb",
                   "-",
                   {
                     "Ref": "env"
@@ -235,11 +233,13 @@
                       "Fn::Sub": [
                         "/amplify/${appId}/${env}/AMPLIFY_${functionName}_",
                         {
-                          "appId": "d3tp6kskh7ft9m",
+                          "appId": {
+                            "Ref": "secretsPathAmplifyAppId"
+                          },
                           "env": {
                             "Ref": "env"
                           },
-                          "functionName": "projectburnExerciseHandler"
+                          "functionName": "projectburnSearchHandler"
                         }
                       ]
                     },
@@ -254,45 +254,6 @@
       "DependsOn": [
         "LambdaExecutionRole"
       ]
-    },
-    "AmplifyResourcesPolicy": {
-      "DependsOn": [
-        "LambdaExecutionRole"
-      ],
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "amplify-lambda-execution-policy",
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ],
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:DeleteObject"
-              ],
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "storageprojectburnstorageBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      }
     }
   },
   "Outputs": {

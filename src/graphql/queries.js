@@ -54,6 +54,7 @@ export const getVideoObject = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      loaded
     }
   }
 `;

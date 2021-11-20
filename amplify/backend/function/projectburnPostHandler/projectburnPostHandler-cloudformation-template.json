@@ -19,6 +19,10 @@
     "functionprojectburnmongoosemodelsArn": {
       "Type": "String",
       "Default": "functionprojectburnmongoosemodelsArn"
+    },
+    "storageprojectburnstorageBucketName": {
+      "Type": "String",
+      "Default": "storageprojectburnstorageBucketName"
     }
   },
   "Conditions": {
@@ -93,6 +97,9 @@
                   "MONGODB_URI"
                 ]
               ]
+            },
+            "STORAGE_PROJECTBURNSTORAGE_BUCKETNAME": {
+              "Ref": "storageprojectburnstorageBucketName"
             }
           }
         },
@@ -247,6 +254,45 @@
       "DependsOn": [
         "LambdaExecutionRole"
       ]
+    },
+    "AmplifyResourcesPolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:DeleteObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "storageprojectburnstorageBucketName"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
     }
   },
   "Outputs": {

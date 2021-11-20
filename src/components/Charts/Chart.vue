@@ -229,6 +229,7 @@ export default {
             cardTitle: "",
             startDate: null,
             endDate: null,
+            endDateToday: false,
 
             // Chart Data Options:
             trimLabels: false,
@@ -384,6 +385,8 @@ export default {
                         this.selectedExercise = this.chartOptions.data.exercise;
                     }
                 }
+
+                this.endDateToday = this.chartOptions.endDate.amount === 0;
 
                 this.startDate = this.buildDate(this.chartOptions.startDate, this.chartOptions.interval, true);
                 this.endDate = this.buildDate(this.chartOptions.endDate, this.chartOptions.interval, false);
@@ -690,6 +693,11 @@ export default {
 
                 if (interval === "week") {
                     date = date.add(1, "day");
+
+                    // Subtract 1 week if end date is today, and today is a Sunday, as dayjs is saying Sunday is first day of week.
+                    if (this.endDateToday && dayjs().day() === 0) {
+                        date = date.subtract(1, "week");
+                    }
                 }
 
                 return date.valueOf();
@@ -704,7 +712,6 @@ export default {
             } else if (!this.$refs.cardFlip.classList.contains("flipped") && !this.hasData) {
                 this.cardHeight = "366px" 
                 this.cardBodyHeight = "326px"; // Defaults
-                console.log("SETTING HEIGHT", this.$refs.backCard.offsetHeight);
             }
 
             this.$refs.cardFlip.classList.toggle("flipped");

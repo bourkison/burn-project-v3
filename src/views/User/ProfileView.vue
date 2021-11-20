@@ -156,8 +156,9 @@ export default {
             this.isLoadingMore = true;
             this.posts = [];
             this.isFollowing = false;
-            this.isFollowed = JSON.parse(JSON.stringify(this.$props.profile.isFollowed));
-            this.isLoggedInUser = JSON.parse(JSON.stringify(this.$props.profile.isLoggedInUser));
+            console.log(this.$props.profile, "FOLLOWEd");
+            this.isFollowed = this.$props.profile.isFollowed;
+            this.isLoggedInUser = this.$props.profile.isLoggedInUser;
 
             try {
                 const path = "/post";

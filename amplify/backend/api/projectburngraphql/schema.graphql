@@ -27,4 +27,5 @@ type VideoObject @model
 {
   id:ID!
   token: String @function(name: "projectburnvod-${env}-tokenGen")
+  loaded: Boolean!
 }

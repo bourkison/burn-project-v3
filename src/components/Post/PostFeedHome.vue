@@ -13,9 +13,14 @@
                 </b-card-title>
 
                 <div class="mt-4">
-                    <PostNew />
+                    <PostNew @uploadProgression="uploadProgression" @newPost="addPost" />
                 </div>
             </b-card-body>
+            <div v-if="amountUploaded">
+                <b-progress :max="amountToUpload" height="0.5rem">
+                    <b-progress-bar :value="amountUploaded" />
+                </b-progress>
+            </div>
         </b-card>
         <PostFeed @addPost="addPost" :posts="posts" :isLoading="isLoading" @postLoaded="postLoaded" />
 
@@ -49,7 +54,11 @@ export default {
 
             // Lazy loading:
             isLoadingMore: true,
-            moreToLoad: true
+            moreToLoad: true,
+
+            // Post upload
+            amountToUpload: 0,
+            amountUploaded: 0,
         };
     },
 
@@ -93,16 +102,10 @@ export default {
     },
 
     methods: {
-        addPost: function(id) {
-            this.posts.unshift({
-                _id: id,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                createdBy: {
-                    userId: this.$store.state.userProfile.docData._id,
-                    username: this.$store.state.userProfile.docData.username
-                }
-            });
+        addPost: function(post) {
+            this.posts.unshift(post);
+            this.amountToUpload = 0;
+            this.amountUploaded = 0;
         },
 
         postLoaded: function(index) {
@@ -139,6 +142,11 @@ export default {
 
                 this.isLoadingMore = false;
             }
+        },
+
+        uploadProgression: function(uploaded, total) {
+            this.amountUploaded = uploaded;
+            this.amountToUpload = total;
         }
     }
 };

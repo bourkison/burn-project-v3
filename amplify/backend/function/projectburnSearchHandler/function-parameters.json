@@ -10,12 +10,5 @@
   ],
   "secretNames": [
     "MONGODB_URI"
-  ],
-  "permissions": {
-    "storage": {
-      "projectburnstorage": [
-        "delete"
-      ]
-    }
-  }
+  ]
 }

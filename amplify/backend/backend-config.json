@@ -20,6 +20,13 @@
       "service": "Lambda",
       "dependsOn": [
         {
+          "category": "storage",
+          "resourceName": "projectburnstorage",
+          "attributes": [
+            "BucketName"
+          ]
+        },
+        {
           "category": "function",
           "resourceName": "projectburnmongoosemodels",
           "attributes": [
@@ -61,6 +68,13 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
+        {
+          "category": "storage",
+          "resourceName": "projectburnstorage",
+          "attributes": [
+            "BucketName"
+          ]
+        },
         {
           "category": "function",
           "resourceName": "projectburnmongoosemodels",
@@ -146,6 +160,20 @@
       ]
     },
     "projectburnStatsHandler": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "projectburnmongoosemodels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "projectburnSearchHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",

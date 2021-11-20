@@ -5,12 +5,13 @@
             ref="videoPlayer" 
             class="video-js vjs-fluid vjs-theme-forest" 
             width
+            @click="interacted"
         ></video>
     </div>
 </template>
 
 <script>
-import videojs from 'video.js'
+import videojs from 'video.js';
 
 export default {
     name: 'VideoPlayer',
@@ -37,7 +38,8 @@ export default {
                 autoplay: false,
                 controls: false,
                 muted: true
-            }
+            },
+            userInteracted: false,
         }
     },
 
@@ -52,21 +54,21 @@ export default {
                 key: key,
                 token: this.$props.token
             });
-        }
 
+            videojs.Vhs.xhr.beforeRequest = (options) => {
+                const splitUrl = options.uri.split(".");
+                const splitId = splitUrl[splitUrl.length - 2].split("/");
+                const id = splitId[splitId.length - 2];
+                
+                const token = this.$store.state.videoTokens[id] && this.$store.state.videoTokens[id].token ? this.$store.state.videoTokens[id].token : "";
 
-        videojs.Vhs.xhr.beforeRequest = (options) => {
-            const splitUrl = options.uri.split(".");
-            const splitId = splitUrl[splitUrl.length - 2].split("/");
-            const id = splitId[splitId.length - 2];
-            
-            const token = this.$store.state.videoTokens[id] && this.$store.state.videoTokens[id].token ? this.$store.state.videoTokens[id].token : "";
-
-            options.uri = `${options.uri}${token}`;
-            return options;
+                options.uri = `${options.uri}${token}`;
+                return options;
+            }
         }
 
         this.player = videojs(this.$refs.videoPlayer, options);
+        this.player.controlBar.playToggle.on('click', this.interacted);
     },
 
     beforeDestroy: function() {
@@ -82,11 +84,17 @@ export default {
 
     methods: {
         playWhenViewable: function(isVisible) {
-            if (isVisible && this.player.paused()) {
-                this.player.play();
-            } else if (!isVisible && !this.player.paused()) {
-                this.player.pause();
+            if (!this.userInteracted) {
+                if (isVisible && this.player.paused()) {
+                    this.player.play();
+                } else if (!isVisible && !this.player.paused()) {
+                    this.player.pause();
+                }
             }
+        },
+
+        interacted: function() {
+            this.userInteracted = true;
         }
     }
 }

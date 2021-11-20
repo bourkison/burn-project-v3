@@ -79,7 +79,16 @@ const getUser = async function(event) {
         return response;
     }
 
-    let responseData = result;
+    let responseData = JSON.parse(JSON.stringify(result));
+
+    if (view === "profile") {
+        responseData.isFollowed = result.followers && result.followers.length > 0 ? true : false;
+        responseData.isLoggedInUser = (username === event.requestContext.authorizer.claims["cognito:username"]) ? true : false;
+        responseData.charts = responseData.options.charts.profile;
+        delete responseData.options;
+    }
+
+    console.log(responseData);
 
     response.statusCode = 200;
     response.body = JSON.stringify({ success: true, data: responseData });

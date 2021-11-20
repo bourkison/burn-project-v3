@@ -27,7 +27,7 @@
                     </b-card-text>
                     <Viewer :initialValue="templateData.description" />
 
-                    <div class="text-center">
+                    <div class="text-center" v-if="!$store.state.activeWorkout.workoutCommenced">
                         <b-button
                             variant="outline-success"
                             size="sm"

@@ -115,10 +115,6 @@ export default {
         };
     },
 
-    created: function() {
-        console.log(uuidv4());
-    },
-
     methods: {
         createPost: async function() {
             if (!this.isPosting) {
@@ -137,8 +133,8 @@ export default {
     
                                 const imageResponse = Storage.put(imageName, blob, {
                                     contentType: blob.type,
-                                    progressCallback: function(progress) {
-                                        console.log("Image:", i, progress.loaded / progress.total);
+                                    progressCallback: (progress) => {
+                                        console.log("Image:", i, progress.loaded / progress.total, this);
                                     }
                                 }).catch(err => {
                                     console.error("Error uploading image:", i, err);
@@ -158,7 +154,8 @@ export default {
                         const fileName = `${uuid}.${fileExtension}`
                         const videoObject = {
                             input: {
-                                id: uuid
+                                id: uuid,
+                                loaded: false
                             }
                         }
                         
@@ -180,8 +177,9 @@ export default {
                             customPrefix: {
                                 public: ''
                             },
-                            progressCallback(progress) {
+                            progressCallback: (progress) => {
                                 console.log("Uploaded:", progress.loaded / progress.total);
+                                this.$emit("uploadProgression", progress.loaded, progress.total);
                             }
                         })
                         .catch(err => { console.error("ERROR UPLOADED:", err) });
@@ -203,7 +201,7 @@ export default {
                     const response = await API.post(this.$store.state.apiName, path, myInit);
 
                     console.log("POST CREATED:", response);
-                    this.$emit("newPost", this.post);
+                    this.$emit("newPost", response.data.postReference);
                     this.isPosting = false;
                     this.resetVariablesIncrementor++;
                     this.resetVariables();

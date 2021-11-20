@@ -29,6 +29,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 * Mobile CSS
 * Sort by: Like Count, Date, Followed, Used Amount
 * On workout finish, increment counter on Exercise and Template
+* Popper broken over canvas element
 
 ### Video
 * Autopause video when out of view
