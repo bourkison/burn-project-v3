@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import algoliasearch from "algoliasearch";
+import { API } from "aws-amplify"
 
 export default {
     name: "MainSearch",
@@ -97,19 +97,7 @@ export default {
 
             // Bootstrap:
             displayPopover: false,
-
-            // Algolia:
-            searchClient: algoliasearch("O9KO1L25CJ", "e6492bc28cfda8670d4981bb26e4bbbd"),
-            userIndex: null,
-            exerciseIndex: null,
-            templateIndex: null
         };
-    },
-
-    created: function() {
-        this.userIndex = this.searchClient.initIndex("users");
-        this.exerciseIndex = this.searchClient.initIndex("exercises");
-        this.templateIndex = this.searchClient.initIndex("templates");
     },
 
     methods: {
@@ -133,51 +121,29 @@ export default {
     },
 
     watch: {
-        searchText: function() {
+        searchText: async function() {
             this.isLoading = true;
-
-            let searchPromises = [];
 
             this.userResponses = [];
             this.exerciseResponses = [];
             this.templateResponses = [];
 
             if (this.searchText.trim()) {
-                searchPromises.push(
-                    this.userIndex.search(this.searchText).then(responses => {
-                        responses.hits.forEach(hit => {
-                            this.userResponses.push(hit);
-                        });
-                    })
-                );
+                const path = "/search"
+                const myInit = {
+                    headers: {
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
+                    },
+                    queryStringParameters: {
+                        q: this.searchText,
+                        collections: "exercise,template,user"
+                    }
+                }
 
-                searchPromises.push(
-                    this.exerciseIndex.search(this.searchText).then(responses => {
-                        responses.hits.forEach(hit => {
-                            this.exerciseResponses.push(hit);
-                        });
-                    })
-                );
+                const response = await API.get(this.$store.state.apiName, path, myInit);
 
-                searchPromises.push(
-                    this.templateIndex.search(this.searchText).then(responses => {
-                        responses.hits.forEach(hit => {
-                            this.templateResponses.push(hit);
-                        });
-                    })
-                );
-
-                Promise.all(searchPromises).then(() => {
-                    console.log(
-                        "USER RESPONSES:",
-                        this.userResponses,
-                        "EXERCISE RESPONSES:",
-                        this.exerciseResponses,
-                        "TEMPLATE RESPONSES:",
-                        this.templateResponses
-                    );
-                    this.isLoading = false;
-                });
+                console.log("SEARCH RESPONSE:", response);
+                this.isLoading = false;
             } else {
                 this.isLoading = false;
             }

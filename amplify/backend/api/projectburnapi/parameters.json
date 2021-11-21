@@ -1,1 +1,5 @@
-{}
+{
+    "AuthCognitoUserPoolId": {
+        "Fn::GetAtt": ["authprojectburncognito", "Outputs.UserPoolId"]
+    }
+}

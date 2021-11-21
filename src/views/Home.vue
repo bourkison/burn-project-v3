@@ -40,11 +40,6 @@ import Chart from "@/components/Charts/Chart.vue"
 export default {
     name: "Home",
     components: { PostFeedHome, Chart, QuickStart },
-    metaInfo() {
-        return {
-            title: "Burn Home"
-        }
-    },
 };
 </script>
 

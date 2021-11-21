@@ -272,6 +272,14 @@
             "Name",
             "Arn"
           ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnSearchHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
         }
       ]
     },

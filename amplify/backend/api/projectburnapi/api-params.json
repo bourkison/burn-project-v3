@@ -147,6 +147,21 @@
                 ]
             },
             "policyResourceName": "/stats"
+        },
+        {
+            "name": "/search",
+            "lambdaFunction": "projectburnSearchHandler",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET",
+                    "/PUT",
+                    "/PATCH",
+                    "/DELETE"
+                ]
+            },
+            "policyResourceName": "/search"
         }
     ],
     "resourceName": "projectburnapi",
@@ -181,10 +196,13 @@
         },
         {
             "lambdaFunction": "projectburnStatsHandler"
+        },
+        {
+            "lambdaFunction": "projectburnSearchHandler"
         }
     ],
     "privacy": {
-        "auth": 10,
+        "auth": 11,
         "unauth": 0,
         "authRoleName": "amplify-projectburn-dev-203659-authRole",
         "unAuthRoleName": "amplify-projectburn-dev-203659-unauthRole"
@@ -269,7 +287,15 @@
                 "Name",
                 "Arn"
             ]
+        },
+        {
+            "category": "function",
+            "resourceName": "projectburnSearchHandler",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
         }
     ],
-    "uuid": "c8803317"
+    "uuid": "c8d86cfd"
 }

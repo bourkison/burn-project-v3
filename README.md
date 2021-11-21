@@ -57,3 +57,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Workouts
 * Add alarm sound on timer end
+
+### API AUTH
+* https://github.com/aws-amplify/amplify-cli/issues/3390#issuecomment-924478950

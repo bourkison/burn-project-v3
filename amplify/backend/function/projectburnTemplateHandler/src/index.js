@@ -9,7 +9,8 @@ const getTemplate = async function(event) {
     const templateId = ObjectId(event.pathParameters.proxy);
     const Template = (await MongooseModels(MONGODB_URI)).Template;
     const username = event.requestContext.authorizer.claims["cognito:username"];
-    const counters = (event.queryStringParameters && event.queryStringParameters.counters === "true") || false;
+    const counters =
+        (event.queryStringParameters && event.queryStringParameters.counters === "true") || false;
 
     let response = {
         statusCode: 500,
@@ -28,20 +29,20 @@ const getTemplate = async function(event) {
         muscleGroups: 1,
         name: 1,
         tags: 1
-    }
+    };
 
     if (counters) {
         findProjection.likeCount = 1;
         findProjection.commentCount = 1;
         findProjection.followCount = 1;
-        findProjection.likes = { 
+        findProjection.likes = {
             $elemMatch: {
                 "createdBy.username": username
-            }  
+            }
         };
         findProjection.follows = {
             $elemMatch: {
-                "username": username
+                username: username
             }
         };
     }
@@ -49,8 +50,7 @@ const getTemplate = async function(event) {
     const result = await Template.findOne({ _id: templateId }, findProjection).exec();
 
     if (!result) {
-        const errorResponse =
-            "Template: " + templateId + " not found." + JSON.stringify(event);
+        const errorResponse = "Template: " + templateId + " not found." + JSON.stringify(event);
         response.statusCode = 404;
         response.body = JSON.stringify({
             success: false,
@@ -69,12 +69,13 @@ const getTemplate = async function(event) {
         muscleGroups: result.muscleGroups,
         name: result.name,
         tags: result.tags
-    }
+    };
 
     if (counters) {
-        const isLiked = (result.likes && result.likes.length) ? true : false;
-        const isFollowed = (result.follows && result.follows.length) ? true : false;
-        const isFollowable = (result.createdBy && result.createdBy.username !== username) ? true : false
+        const isLiked = result.likes && result.likes.length ? true : false;
+        const isFollowed = result.follows && result.follows.length ? true : false;
+        const isFollowable =
+            result.createdBy && result.createdBy.username !== username ? true : false;
 
         responseData.likeCount = result.likeCount;
         responseData.commentCount = result.commentCount;
@@ -93,7 +94,9 @@ const getTemplate = async function(event) {
 // GET request /template
 const queryTemplate = async function(event) {
     const username = event.requestContext.authorizer.claims["cognito:username"];
-    const loadAmount = (event.queryStringParameters.loadAmount) ? Number(event.queryStringParameters.loadAmount) : 5;
+    const loadAmount = event.queryStringParameters.loadAmount
+        ? Number(event.queryStringParameters.loadAmount)
+        : 5;
     const userBool = event.queryStringParameters.user === "true";
     const muscleGroups = event.queryStringParameters.muscleGroups
         ? event.queryStringParameters.muscleGroups.split(",")
@@ -148,10 +151,7 @@ const queryTemplate = async function(event) {
                             in: {
                                 $cond: [
                                     {
-                                        $setIsSubset: [
-                                            "$inputMuscleGroups",
-                                            "$$this.muscleGroups"
-                                        ]
+                                        $setIsSubset: ["$inputMuscleGroups", "$$this.muscleGroups"]
                                     },
                                     {
                                         $concatArrays: ["$$value", ["$$this"]]
@@ -182,10 +182,7 @@ const queryTemplate = async function(event) {
                             in: {
                                 $cond: [
                                     {
-                                        $setIsSubset: [
-                                            "$inputTags",
-                                            "$$this.tags"
-                                        ]
+                                        $setIsSubset: ["$inputTags", "$$this.tags"]
                                     },
                                     {
                                         $concatArrays: ["$$value", ["$$this"]]
@@ -212,20 +209,16 @@ const queryTemplate = async function(event) {
                 $project: {
                     templateReferences: 1,
                     startAtIndex: {
-                        $indexOfArray: [ "$templateReferences.templateId", ObjectId(startAt) ]
+                        $indexOfArray: ["$templateReferences.templateId", ObjectId(startAt)]
                     }
                 }
-            })
+            });
 
             templateQuery.push({
                 $project: {
                     templateReferences: 1,
                     actualLoadAmount: {
-                        $cond: [
-                            { $lt: ["$startAtIndex", loadAmount] },
-                            "$startAtIndex",
-                            loadAmount
-                        ]
+                        $cond: [{ $lt: ["$startAtIndex", loadAmount] }, "$startAtIndex", loadAmount]
                     },
                     startAtIndex: {
                         $cond: [
@@ -237,7 +230,7 @@ const queryTemplate = async function(event) {
                         ]
                     }
                 }
-            })
+            });
 
             templateQuery.push({
                 $project: {
@@ -247,13 +240,18 @@ const queryTemplate = async function(event) {
                         $cond: [
                             { $eq: ["$actualLoadAmount", 0] },
                             [],
-                            { $slice: ["$templateReferences", "$startAtIndex", "$actualLoadAmount"] }
+                            {
+                                $slice: [
+                                    "$templateReferences",
+                                    "$startAtIndex",
+                                    "$actualLoadAmount"
+                                ]
+                            }
                         ]
                     }
                 }
-            })
+            });
         }
-
 
         result = await User.aggregate(templateQuery);
 
@@ -282,7 +280,9 @@ const queryTemplate = async function(event) {
         if (startAt) {
             // As we order by createdAt, we need to find the createdAt field of startAt element,
             // then filter for when greater than that value.
-            const startAtCreatedAt = (await Template.findOne({ _id: ObjectId(startAt) }, { createdAt: 1 })).createdAt;
+            const startAtCreatedAt = (
+                await Template.findOne({ _id: ObjectId(startAt) }, { createdAt: 1 })
+            ).createdAt;
 
             // Then add query for where exercise is greater than createdAt OR its equal and ID is bigger.
             templateQuery.$or = [
@@ -293,7 +293,7 @@ const queryTemplate = async function(event) {
                     createdAt: startAtCreatedAt,
                     _id: { $lt: ObjectId(startAt) }
                 }
-            ]
+            ];
         }
 
         let fields = "createdBy createdAt name tags muscleGroups updatedAt";
@@ -408,21 +408,22 @@ const createTemplate = async function(event) {
     // Push this template reference to each exercise.
     let exercisePushPromises = [];
     templateForm.exercises.forEach(exercise => {
-        exercisePushPromises.push(Exercise.updateOne(
-            { _id: exercise.exerciseId },
-            { $push: { templateReferences: templateReference } }
-        ))
+        exercisePushPromises.push(
+            Exercise.updateOne(
+                { _id: exercise.exerciseId },
+                { $push: { templateReferences: templateReference } }
+            )
+        );
     });
 
     await Promise.all(exercisePushPromises);
-    
+
     await User.updateOne(
         { _id: user._id },
         { $push: { templateReferences: templateReference } }
     ).catch(err => {
         // TODO: Delete previously created template
-        const errorResponse =
-            "Error creating template in user document: " + JSON.stringify(err);
+        const errorResponse = "Error creating template in user document: " + JSON.stringify(err);
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
@@ -493,9 +494,8 @@ const updateTemplate = async function(event) {
     ).templateReferences[0];
 
     if (!userResult) {
-        const errorResponse =
-            "Template " + templateId + " not found for user " + username + ".";
-        response.statusCode = 404;
+        const errorResponse = "Not authorized";
+        response.statusCode = 403;
         response.body = JSON.stringify({
             success: false,
             errorMessage: errorResponse
@@ -642,14 +642,8 @@ const deleteTemplate = async function(event) {
         comment.likes.forEach((commentLike, i) => {
             console.log("COMMENT LIKE TO DELETE:", commentLike);
             console.log("COMMENT LIKE TO DELETE:", i);
-            console.log(
-                "COMMENT LIKE TO DELETE:",
-                commentLike.get("createdBy")
-            );
-            console.log(
-                "COMMENT LIKE TO DELETE:",
-                commentLike.get("createdBy").userId
-            );
+            console.log("COMMENT LIKE TO DELETE:", commentLike.get("createdBy"));
+            console.log("COMMENT LIKE TO DELETE:", commentLike.get("createdBy").userId);
 
             const userId = ObjectId(commentLike.get("createdBy").userId);
 

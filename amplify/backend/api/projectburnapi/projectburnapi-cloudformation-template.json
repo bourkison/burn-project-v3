@@ -7,9 +7,10 @@
             "Type": "String"
         },
 
-        "projectburnUserPool": {
+        "AuthCognitoUserPoolId": {
           "Type": "String",
-          "Default": "EchxupRGJ"
+          "Description": "The id of an existing User Pool to connect. If this is changed, a user pool will not be created for you.",
+          "Default": "NONE"
         },
     
     
@@ -148,6 +149,20 @@
           "functionprojectburnStatsHandlerArn": {
             "Type": "String",
             "Default": "functionprojectburnStatsHandlerArn"
+          },
+
+          
+          
+    
+          "functionprojectburnSearchHandlerName": {
+            "Type": "String",
+            "Default": "functionprojectburnSearchHandlerName"
+          },
+
+          
+          "functionprojectburnSearchHandlerArn": {
+            "Type": "String",
+            "Default": "functionprojectburnSearchHandlerArn"
           }
 
           
@@ -186,6 +201,8 @@
         
         
         
+        
+        
       "projectburnapi": {
         "Type": "AWS::ApiGateway::RestApi",
         "Properties": {
@@ -197,6 +214,7 @@
               "version": "2018-05-24T17:52:00Z",
               "title": "projectburnapi"
             },
+  
             "host": {
                 "Fn::Join": [
                   "",
@@ -294,7 +312,7 @@
                       "in": "header",
                       "required": false,
                       "type": "string"
-                    }
+                    }  
                   ],
                   "responses": {
                     "200": {
@@ -305,11 +323,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -406,6 +425,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -416,11 +436,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -518,6 +539,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -528,11 +550,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -629,6 +652,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -639,11 +663,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -741,6 +766,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -751,11 +777,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -852,6 +879,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -862,11 +890,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -964,6 +993,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -974,11 +1004,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1075,6 +1106,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1085,11 +1117,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1187,6 +1220,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1197,11 +1231,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1298,6 +1333,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1308,11 +1344,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1410,6 +1447,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1420,11 +1458,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1521,6 +1560,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1531,11 +1571,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1633,6 +1674,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1643,11 +1685,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1744,6 +1787,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1754,11 +1798,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1856,6 +1901,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1866,11 +1912,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -1967,6 +2014,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -1977,11 +2025,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -2079,6 +2128,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -2089,11 +2139,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -2190,6 +2241,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -2200,11 +2252,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -2302,6 +2355,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -2312,11 +2366,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -2413,6 +2468,7 @@
                       "required": false,
                       "type": "string"
                     }
+  
                   ],
                   "responses": {
                     "200": {
@@ -2423,11 +2479,12 @@
                     }
                   },
                   
-                    "security": [
-                        {
-                          "Cognito": []
-                        }
-                      ],
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
                   
                   "x-amazon-apigateway-integration": {
                     "responses": {
@@ -2459,6 +2516,233 @@
                     "type": "aws_proxy"
                   }
                 }
+              },
+              
+              "/search": {
+                "options": {
+                  "consumes": [
+                    "application/json"
+                  ],
+                  "produces": [
+                    "application/json"
+                  ],
+                  "responses": {
+                    "200": {
+                      "description": "200 response",
+                      "headers": {
+                        "Access-Control-Allow-Origin": {
+                          "type": "string"
+                        },
+                        "Access-Control-Allow-Methods": {
+                          "type": "string"
+                        },
+                        "Access-Control-Allow-Headers": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "x-amazon-apigateway-integration": {
+                    "responses": {
+                      "default": {
+                        "statusCode": "200",
+                        "responseParameters": {
+                          "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                          "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                          "method.response.header.Access-Control-Allow-Origin": "'*'"
+                        }
+                      }
+                    },
+                    "requestTemplates": {
+                      "application/json": "{\"statusCode\": 200}"
+                    },
+                    "passthroughBehavior": "when_no_match",
+                    "type": "mock"
+                  }
+                },
+                "x-amazon-apigateway-any-method": {
+                  "consumes": [
+                    "application/json"
+                  ],
+                  "produces": [
+                    "application/json"
+                  ],
+                  "parameters": [
+                    {
+                      "in": "body",
+                      "name": "RequestSchema",
+                      "required": false,
+                      "schema": {
+                        "$ref": "#/definitions/RequestSchema"
+                      }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
+                    }
+  
+                  ],
+                  "responses": {
+                    "200": {
+                      "description": "200 response",
+                      "schema": {
+                        "$ref": "#/definitions/ResponseSchema"
+                      }
+                    }
+                  },
+                  
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
+                  
+                  "x-amazon-apigateway-integration": {
+                    "responses": {
+                      "default": {
+                        "statusCode": "200"
+                      }
+                    },
+                    "uri": {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:apigateway:",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            ":lambda:path/2015-03-31/functions/",
+                            
+                            {
+
+                                "Ref": "functionprojectburnSearchHandlerArn"
+                            },
+                            
+                            "/invocations"
+                          ]
+                        ]
+                      },
+                    "passthroughBehavior": "when_no_match",
+                    "httpMethod": "POST",
+                    "type": "aws_proxy"
+                  }
+                }
+              },
+              "/search/{proxy+}": {
+                "options": {
+                  "consumes": [
+                    "application/json"
+                  ],
+                  "produces": [
+                    "application/json"
+                  ],
+                  "responses": {
+                    "200": {
+                      "description": "200 response",
+                      "headers": {
+                        "Access-Control-Allow-Origin": {
+                          "type": "string"
+                        },
+                        "Access-Control-Allow-Methods": {
+                          "type": "string"
+                        },
+                        "Access-Control-Allow-Headers": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "x-amazon-apigateway-integration": {
+                    "responses": {
+                      "default": {
+                        "statusCode": "200",
+                        "responseParameters": {
+                          "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                          "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                          "method.response.header.Access-Control-Allow-Origin": "'*'"
+                        }
+                      }
+                    },
+                    "requestTemplates": {
+                      "application/json": "{\"statusCode\": 200}"
+                    },
+                    "passthroughBehavior": "when_no_match",
+                    "type": "mock"
+                  }
+                },
+                "x-amazon-apigateway-any-method": {
+                  "consumes": [
+                    "application/json"
+                  ],
+                  "produces": [
+                    "application/json"
+                  ],
+                  "parameters": [
+                    {
+                      "in": "body",
+                      "name": "RequestSchema",
+                      "required": false,
+                      "schema": {
+                        "$ref": "#/definitions/RequestSchema"
+                      }
+                    },
+                    {
+                      "name": "Authorization",
+                      "in": "header",
+                      "required": false,
+                      "type": "string"
+                    }
+  
+                  ],
+                  "responses": {
+                    "200": {
+                      "description": "200 response",
+                      "schema": {
+                        "$ref": "#/definitions/ResponseSchema"
+                      }
+                    }
+                  },
+                  
+                  "security": [
+                    {
+                      "Cognito": []
+                    }
+                  ],
+  
+                  
+                  "x-amazon-apigateway-integration": {
+                    "responses": {
+                      "default": {
+                        "statusCode": "200"
+                      }
+                    },
+                    "uri": {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "arn:aws:apigateway:",
+                          {
+                            "Ref": "AWS::Region"
+                          },
+                          ":lambda:path/2015-03-31/functions/",
+                          
+                          {
+
+                            "Ref": "functionprojectburnSearchHandlerArn"
+                          },
+                          
+                          "/invocations"
+                        ]
+                      ]
+                    },
+                    "passthroughBehavior": "when_no_match",
+                    "httpMethod": "POST",
+                    "type": "aws_proxy"
+                  }
+                }
               }
               
             },
@@ -2469,34 +2753,28 @@
                 "in": "header",
                 "x-amazon-apigateway-authtype": "cognito_user_pools",
                 "x-amazon-apigateway-authorizer": {
+                  "type": "cognito_user_pools",
                   "providerARNs": [
-                      {
-                        "Fn::Join": [
-                          "",
-                          [
-                            "arn:aws:cognito-idp:",
-                            {
-                              "Ref": "AWS::Region"
-                            },
-                            ":",
-                            {
-                              "Ref": "AWS::AccountId"
-                            },
-                            ":userpool/",
-                            {
-                                            
-                              "Ref": "AWS::Region"
-                            },
-                            "_",
-                            {
-                              "Ref": "projectburnUserPool"
-                            }
-
-                          ]
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "arn:aws:cognito-idp:",
+                          {
+                            "Ref": "AWS::Region"
+                          },
+                          ":",
+                          {
+                            "Ref": "AWS::AccountId"
+                          },
+                          ":userpool/",
+                          {
+                            "Ref": "AuthCognitoUserPoolId"
+                          }
                         ]
-                      }
-                  ],
-                  "type": "cognito_user_pools"
+                      ]
+                    }
+                  ]
                 }
               }
             },
@@ -2873,9 +3151,43 @@
             }
         },
         
+
+        "functionprojectburnSearchHandlerPermissionprojectburnapi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": 
+                    {
+                        "Ref":  "functionprojectburnSearchHandlerName"
+                    },
+                    
+                    "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:aws:execute-api:",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ":",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":",
+                            {
+                                "Ref": "projectburnapi"
+                            },
+                            "/*/*/*"
+                        ]
+                    ]
+                }
+            }
+        },
+        
         
 
-      "DeploymentAPIGWprojectburnapic8803317": {
+      "DeploymentAPIGWprojectburnapic8d86cfd": {
         "Type": "AWS::ApiGateway::Deployment",
         "Properties": {
           "Description": "The Development stage deployment of your API.",

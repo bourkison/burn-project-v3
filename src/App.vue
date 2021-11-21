@@ -101,6 +101,12 @@ export default {
             signingUp: false
         };
     },
+    metaInfo() {
+        return {
+            title: "Burn Home"
+        }
+    },
+    
     methods: {
         signOut: function() {
             Auth.signOut()

@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import algoliasearch from "algoliasearch";
+import { API } from "aws-amplify";
 
 export default {
     name: "Search",
@@ -106,82 +106,43 @@ export default {
             userResponses: [],
             exerciseResponses: [],
             templateResponses: [],
-
-            tabIndex: 0,
-
-            // Algolia:
-            searchClient: algoliasearch("O9KO1L25CJ", "e6492bc28cfda8670d4981bb26e4bbbd"),
-            userIndex: null,
-            exerciseIndex: null,
-            templateIndex: null
         };
     },
 
     created: function() {
-        this.searchText = this.$route.query.q;
-
-        this.userIndex = this.searchClient.initIndex("users");
-        this.exerciseIndex = this.searchClient.initIndex("exercises");
-        this.templateIndex = this.searchClient.initIndex("templates");
-
-        this.searchAlgolia();
+        this.search();
     },
 
     beforeRouteUpdate: function(to, from, next) {
         next();
-        this.searchText = this.$route.query.q;
-        this.searchAlgolia();
+        this.search();
     },
 
     methods: {
-        searchAlgolia: function() {
+        search: async function() {
             this.isLoading = true;
             this.searchText = this.$route.query.q;
-
-            console.log("SEARCH");
-
-            let searchPromises = [];
 
             this.userResponses = [];
             this.exerciseResponses = [];
             this.templateResponses = [];
 
             if (this.searchText) {
-                searchPromises.push(
-                    this.userIndex.search(this.searchText).then(responses => {
-                        responses.hits.forEach(hit => {
-                            this.userResponses.push(hit);
-                        });
-                    })
-                );
+                const path = "/search"
+                const myInit = {
+                    headers: {
+                        Authorization: this.$store.dispatch("fetchJwtToken")
+                    },
+                    queryStringParameters: {
+                        q: this.searchText,
+                        collections: "exercise,template,user"
+                    }
+                }
 
-                searchPromises.push(
-                    this.exerciseIndex.search(this.searchText).then(responses => {
-                        responses.hits.forEach(hit => {
-                            this.exerciseResponses.push(hit);
-                        });
-                    })
-                );
-
-                searchPromises.push(
-                    this.templateIndex.search(this.searchText).then(responses => {
-                        responses.hits.forEach(hit => {
-                            this.templateResponses.push(hit);
-                        });
-                    })
-                );
-
-                Promise.all(searchPromises).then(() => {
-                    console.log(
-                        "USER RESPONSES:",
-                        this.userResponses,
-                        "EXERCISE RESPONSES:",
-                        this.exerciseResponses,
-                        "TEMPLATE RESPONSES:",
-                        this.templateResponses
-                    );
-                    this.isLoading = false;
-                });
+                const response = await API.get(this.$store.state.apiName, path, myInit);
+                this.isLoading = false;
+                console.log("SEARCH RESPONSE:", response);
+                
             } else {
                 this.isLoading = false;
             }
