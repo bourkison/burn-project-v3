@@ -89,7 +89,7 @@
                 <b-container class="buttonsCont">
                     <b-button
                         variant="outline-danger"
-                        @click="$router.push('/exercises/' + newExerciseData._id)"
+                        @click="$router.go(-1)"
                         >Cancel</b-button
                     >
                     <b-button

@@ -9,7 +9,7 @@
                                 {{ exerciseData.name }}
                                 <b-dropdown
                                     right
-                                    class="float-right exercise-dropdown"
+                                    class="float-right exercise-dropdown exercise-view-dropdown"
                                     variant="outline"
                                 >
                                     <span
@@ -19,18 +19,21 @@
                                         "
                                     >
                                         <b-dropdown-item
+                                            class="exercise-view-dropdown-item"
                                             :to="'/exercises/' + exerciseData._id + '/edit'"
-                                            >Edit</b-dropdown-item
+                                            ><b-icon-pencil class="mr-1" />Edit</b-dropdown-item
                                         >
                                         <b-dropdown-item
+                                            class="exercise-view-dropdown-item"
                                             @click="confirmDeleteExercise"
                                             :disabled="isDeleting"
                                             variant="danger"
                                         >
-                                            <div v-if="!isDeleting">Delete</div>
-                                            <div v-else class="text-center">
+                                            <b-icon-trash class="mr-1" />
+                                            <span v-if="!isDeleting">Delete</span>
+                                            <span v-else class="text-center">
                                                 <b-spinner small />
-                                            </div>
+                                            </span>
                                         </b-dropdown-item>
                                     </span>
                                     <span v-else>
@@ -305,8 +308,7 @@ export default {
                     tags: response.tags,
                     muscleGroups: response.muscleGroups
                 };
-
-                console.log("EX ID:", this.chartOptions.data.exerciseId);
+                this.chartOptions.exerciseId = response._id;
 
                 this.exerciseData = {
                     _id: response._id,
@@ -455,7 +457,13 @@ export default {
 </style>
 
 <style>
-.exercise-dropdown button {
+.exercise-view-dropdown-item a {
+    font-size: 13px !important;
+    padding-left: 0.75rem !important
+}
+
+.exercise-view-dropdown button {
     box-shadow: none !important;
+    padding: 0 !important;
 }
 </style>

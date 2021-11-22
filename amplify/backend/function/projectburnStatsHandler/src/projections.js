@@ -33,7 +33,7 @@ const workouts = (startDate, endDate) => {
 *   Filter down workouts to where uniqueExercises includes exerciseId
 *   Then map those workouts out to just include createdAt and the relevant recordedExercises
 */
-const exercises = (exerciseId) => {
+const exercises = (exerciseId, startDate, endDate) => {
     return {
         $map: {
             input: {
@@ -41,7 +41,11 @@ const exercises = (exerciseId) => {
                     input: "$workouts",
                     as: "w",
                     cond: {
-                        $in: [exerciseId, "$$w.uniqueExercises"]
+                        $and: [
+                            { $gte: ["$$w.createdAt", startDate] },
+                            { $lte: ["$$w.createdAt", endDate] },
+                            { $in: [exerciseId, "$$w.uniqueExercises"] }
+                        ]
                     }
                 }
             },

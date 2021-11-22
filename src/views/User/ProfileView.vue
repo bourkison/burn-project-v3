@@ -4,12 +4,32 @@
             <b-col cols="3">
                 <div v-if="!isLoggedInUser">
                     <div v-for="(chart, index) in profile.charts.leftRail" :key="index">
-                        <Chart :username="profile.username" :options="chart" :index="index" position="profileLeftRail" :editable="false" :saveable="false" />
+                        <Chart
+                            :username="profile.username"
+                            :options="chart"
+                            :index="index"
+                            position="profileLeftRail"
+                            :editable="false"
+                            :saveable="false"
+                            :persistent="false"
+                        />
                     </div>
                 </div>
                 <div v-else>
-                    <div v-for="(chart, index) in $store.state.userProfile.docData.options.charts.profile.leftRail" :key="index">
-                        <Chart :username="$store.state.userProfile.docData.username" :options="chart" :index="index" position="profileLeftRail" :editable="true" :saveable="true" />
+                    <div
+                        v-for="(chart, index) in $store.state.userProfile.docData.options.charts
+                            .profile.leftRail"
+                        :key="index"
+                    >
+                        <Chart
+                            :username="$store.state.userProfile.docData.username"
+                            :options="chart"
+                            :index="index"
+                            position="profileLeftRail"
+                            :editable="true"
+                            :saveable="true"
+                            :persistent="true"
+                        />
                     </div>
                 </div>
             </b-col>
@@ -253,12 +273,12 @@ export default {
                         startAt: this.posts[this.posts.length - 1]._id,
                         userId: this.$props.profile._id
                     }
-                }
+                };
 
                 const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
                 postResult.forEach(post => {
-                    this.posts.push(post)
+                    this.posts.push(post);
                 });
 
                 if (postResult.length < 5) {

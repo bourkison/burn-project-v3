@@ -16,12 +16,24 @@
             </div>
 
             <b-card-body>
-                <b-card-title
-                    ><router-link :to="'/exercises/' + exerciseId">{{
-                        exerciseData.name
-                    }}</router-link></b-card-title
-                >
+                <b-card-title>
+                    <div class="d-flex align-item-center">
+                        <div><router-link :to="'/exercises/' + exerciseId">{{exerciseData.name}}</router-link></div>
+                        <div class="ml-auto font-small">
+                            <b-dropdown class="exercise-component-dropdown" variant="outline">
+                                <b-dropdown-item class="exercise-component-dropdown-item" :to="'/exercises/' + exerciseData._id + '/edit'"><b-icon-pencil class="mr-1" /> Edit</b-dropdown-item>
+                                <b-dropdown-item class="exercise-component-dropdown-item" @click="infoExpanded = !infoExpanded"><b-icon-info class="mr-1" />Expand</b-dropdown-item>
+                            </b-dropdown>
+                        </div>
+                    </div>
+                </b-card-title>
                 <b-card-sub-title>{{ exerciseData.createdBy.username }}</b-card-sub-title>
+                <b-collapse v-model="infoExpanded" class="mt-2">
+                    <div class="text-muted font-small">
+                        <div>Muscle Groups: {{ exerciseData.muscleGroups.join(", ") }}</div>
+                        <div>Tags: <b-badge class="mr-1" variant="dark" v-for="(tag, index) in exerciseData.tags" :key="index">{{ tag }}</b-badge></div>
+                        </div>
+                </b-collapse>
                 <Viewer :initialValue="exerciseData.description" />
             </b-card-body>
             <CommentSection
@@ -101,6 +113,7 @@ export default {
             isLiked: false,
             isFollowed: false,
             isFollowable: false,
+            infoExpanded: false,
 
             // Bootstrap:
             carouselModel: 0
@@ -227,5 +240,19 @@ export default {
 <style>
 .componentLink:hover {
     cursor: pointer;
+}
+
+.font-small {
+    font-size: 12px !important;
+}
+
+.exercise-component-dropdown-item a {
+    font-size: 12px !important;
+    padding-left: 0.75rem !important
+}
+
+.exercise-component-dropdown button {
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 </style>

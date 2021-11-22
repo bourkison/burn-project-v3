@@ -186,10 +186,10 @@ export default {
 
             // Bootstrap
             measureByOptions: [
-                { value: "repsWeight", text: "Reps and Weights" },
-                { value: "repsOnly", text: "Reps Only" },
-                { value: "time", text: "Time" },
+                { value: "repsWeight", text: "Reps and Weight" },
+                { value: "reps", text: "Reps Only" },
                 { value: "timeWeight", text: "Time and Weight" },
+                { value: "time", text: "Time Only" },
             ],
             weightUnitOptions: [
                 { value: "kg", text: "Kilograms (metric)" },

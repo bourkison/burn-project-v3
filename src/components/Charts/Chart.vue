@@ -458,14 +458,22 @@ export default {
                 let nextDate = date.add(1, this.chartOptions.interval);
     
                 let dataArr = Object.values(data.data.stats);
+
                 let dataArrKeys = Object.keys(data.data.stats);
     
                 // First push an empty array into chartData based on how many bits of data are pushed in in stats.
+                // Check if data has been returned.
+                let dataReturned = false;
                 for (let i = 0; i < dataArr.length; i++) {
                     this.chartData[dataArrKeys[i]] = [];
+                    if (!dataReturned && Object.values(dataArr[i]).length) {
+                        dataReturned = true;
+                    }
                 }
 
-                console.log("DATA Arr", JSON.parse(JSON.stringify(data.data.stats)));
+                if (!dataReturned) {
+                    throw new Error("No data returned");
+                }
     
                 while (date.isBefore(dayjs(this.endDate))) {
                     this.chartLabels.push(date.toDate());
@@ -503,9 +511,21 @@ export default {
     
     
                 if (this.trimLabels) {
-                    let startLabels = dayjs(this.chartData[dataArrKeys[0]][0].x);
-                    let endLabels = dayjs(this.chartData[dataArrKeys[0]][this.chartData[dataArrKeys[0]].length - 1].x);
+                    let startLabels;
+                    let endLabels;
+                    
+                    dataArrKeys.forEach(key => {
+                        if (this.chartData[key][0]) {
+                            if (!startLabels || dayjs(this.chartData[key][0].x).isBefore(startLabels)) {
+                                startLabels = dayjs(this.chartData[key][0].x);
+                            }
     
+                            if (!endLabels || dayjs(this.chartData[key][this.chartData[key].length - 1].x).isAfter(endLabels)) {
+                                endLabels = dayjs(this.chartData[key][this.chartData[key].length - 1].x)
+                            }
+                        }
+                    })
+
                     this.chartLabels = this.chartLabels.filter(x => {
                         if (dayjs(x).isSameOrAfter(startLabels) && dayjs(x).isSameOrBefore(endLabels)) {
                             return true;
@@ -555,41 +575,42 @@ export default {
             let chartDataKeys = Object.keys(this.chartData);
 
             chartDataValues.forEach((dataset, index) => {
-                console.log("DATASET:", dataset);
-                let datasetObject = {
-                    label: "",
-                    type: chartType,
-                    data: dataset,
-                    backgroundColor: this.chartOptions.backgroundColor,
-                    borderColor: this.chartOptions.borderColor,
-                    pointBackgroundColor: this.chartOptions.pointBackgroundColor,
-                    yAxisID: "y" + index,
-                };
-
-                switch (chartDataKeys[index]) {
-                    case "orm":
-                        datasetObject.label = "One Rep Maximum";
-                        break;
-                    case "totalReps":
-                        datasetObject.label = "Total Reps";
-                        break;
-                    case "totalVolume":
-                        datasetObject.label = "Total Volume"
-                        break;
-                    case "recentWorkouts": 
-                        datasetObject.label = "Workouts"
-                        break;
+                if (dataset.length) {
+                    let datasetObject = {
+                        label: "",
+                        type: chartType,
+                        data: dataset,
+                        backgroundColor: this.chartOptions.backgroundColor,
+                        borderColor: this.chartOptions.borderColor,
+                        pointBackgroundColor: this.chartOptions.pointBackgroundColor,
+                        yAxisID: "y" + index,
+                    };
+    
+                    switch (chartDataKeys[index]) {
+                        case "orm":
+                            datasetObject.label = "One Rep Maximum";
+                            break;
+                        case "totalReps":
+                            datasetObject.label = "Total Reps";
+                            break;
+                        case "totalVolume":
+                            datasetObject.label = "Total Volume"
+                            break;
+                        case "recentWorkouts": 
+                            datasetObject.label = "Workouts"
+                            break;
+                    }
+    
+                    if (index > 0) {
+                        datasetObject.type = "bar";
+                    }
+    
+                    if (datasetObject.type === "line") {
+                        datasetObject.lineTension = 0.15;
+                    }
+    
+                    chartData.datasets.push(datasetObject);
                 }
-
-                if (index > 0) {
-                    datasetObject.type = "bar";
-                }
-
-                if (datasetObject.type === "line") {
-                    datasetObject.lineTension = 0.15;
-                }
-
-                chartData.datasets.push(datasetObject);
             })
 
             let options = {
@@ -798,7 +819,7 @@ export default {
             this.newChartOptions = {};
             this.delayed = false;
             this.chartLabels = [];
-            this.chartData = [];
+            this.chartData = {};
             this.chart = null;
         },
 

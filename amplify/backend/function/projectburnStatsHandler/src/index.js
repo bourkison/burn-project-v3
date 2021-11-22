@@ -103,10 +103,16 @@ const amountWorkouts = async function(event) {
 
 const exerciseStats = async function(event) {
     let exerciseId = event.queryStringParameters.exerciseId || "";
+    let startDate = event.queryStringParameters.startDate;
+    let endDate = event.queryStringParameters.endDate;
+
     const username = event.queryStringParameters.username;
     const preferenceIndex = event.queryStringParameters.preferenceIndex || 0;
     let dataToPull = event.queryStringParameters.dataToPull ? event.queryStringParameters.dataToPull.split(",") : ["orm"];
     const timeZone = event.queryStringParameters.timeZone || "UTC";
+
+    startDate = isNaN(Number(startDate)) ? new Date(startDate) : new Date(Number(startDate));
+    endDate = isNaN(Number(endDate)) ? new Date(endDate) : new Date(Number(endDate));
 
     let response = {
         statusCode: 500,
@@ -133,7 +139,7 @@ const exerciseStats = async function(event) {
             },
             {
                 $project: {
-                    workouts: projections.exercises(exerciseId)
+                    workouts: projections.exercises(exerciseId, startDate, endDate)
                 }
             }
         ])
