@@ -32,7 +32,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 * Popper broken over canvas element
 
 ### Video
-* Autopause video when out of view
+* ~~Autopause video when out of view~~
 * Add a "Media Loaded" Variable to see if video still processing
 * Video signature use cookies (as current method doesnt work on iOS)
 * Cleaner Video Style
@@ -44,9 +44,9 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 * Everything
 
 ### Charts
-* Timezone support
+* ~~Timezone support~~
+* ~~ORM is adding all when interval is not day~~
 * Add new cards
-* ORM is adding all when interval is not day
 
 ### Post
 * Post Edit, Delete
@@ -58,5 +58,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### Workouts
 * Add alarm sound on timer end
 
-### API AUTH
+## Reference 
+
+### API Auth
 * https://github.com/aws-amplify/amplify-cli/issues/3390#issuecomment-924478950

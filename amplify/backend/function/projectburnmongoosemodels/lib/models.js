@@ -447,6 +447,10 @@ const exerciseSchema = new mongoose.Schema(
         public: {
             type: Boolean,
             default: true
+        },
+        amountUsed: {
+            type: Number,
+            default: 0
         }
     },
     { timestamps: true }
@@ -509,6 +513,10 @@ const templateSchema = new mongoose.Schema(
         public: {
             type: Boolean,
             default: true
+        },
+        amountUsed: {
+            type: Number,
+            default: 0
         }
     },
     { timestamps: true }
