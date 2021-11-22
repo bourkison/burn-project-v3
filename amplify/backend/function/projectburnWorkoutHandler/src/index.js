@@ -119,7 +119,7 @@ const createWorkout = async function(event) {
 
         exercise.sets.forEach(set => {
             recordedSets.push({
-                kg: set.kg,
+                weightAmount: set.weightAmount,
                 measureAmount: set.measureAmount,
                 measureBy: set.measureBy
             });

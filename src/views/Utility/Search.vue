@@ -41,7 +41,7 @@
                                             <b-list-group>
                                                 <b-list-group-item
                                                     v-for="user in userResponses"
-                                                    :key="user.id"
+                                                    :key="user._id"
                                                     :to="'/' + user.username"
                                                 >
                                                     <b-avatar
@@ -57,8 +57,8 @@
                                             <b-list-group>
                                                 <b-list-group-item
                                                     v-for="exercise in exerciseResponses"
-                                                    :key="exercise.objectID"
-                                                    :to="'/exercises/' + exercise.objectID"
+                                                    :key="exercise._id"
+                                                    :to="'/exercises/' + exercise._id"
                                                 >
                                                     {{ exercise.name }}
                                                 </b-list-group-item>
@@ -69,8 +69,8 @@
                                             <b-list-group>
                                                 <b-list-group-item
                                                     v-for="template in templateResponses"
-                                                    :key="template.objectID"
-                                                    :to="'/templates/' + template.objectID"
+                                                    :key="template._id"
+                                                    :to="'/templates/' + template._id"
                                                 >
                                                     {{ template.name }}
                                                 </b-list-group-item>
@@ -102,10 +102,13 @@ export default {
         return {
             isLoading: true,
             searchText: "",
+            hasResults: true,
 
             userResponses: [],
             exerciseResponses: [],
             templateResponses: [],
+
+            tabIndex: 0,
         };
     },
 
@@ -131,7 +134,7 @@ export default {
                 const path = "/search"
                 const myInit = {
                     headers: {
-                        Authorization: this.$store.dispatch("fetchJwtToken")
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         q: this.searchText,
@@ -140,8 +143,35 @@ export default {
                 }
 
                 const response = await API.get(this.$store.state.apiName, path, myInit);
+
+                const keys = Object.keys(response.data);
+                const values = Object.values(response.data);
+
+                values.forEach((responses, index) => {
+                    if (keys[index] === "user") {
+                        responses.forEach(userResponse => {
+                            this.userResponses.push(userResponse);
+                        })
+                    }
+                    else if (keys[index] === "exercise") {
+                        responses.forEach(exerciseResponse => {
+                            this.exerciseResponses.push(exerciseResponse);
+                        })
+                    }
+                    else if (keys[index] === "template") {
+                        responses.forEach(templateResponse => {
+                            this.templateResponses.push(templateResponse);
+                        })
+                    }
+                })
+
+                if (!this.userResponses.length && !this.exerciseResponses.length && !this.templateResponses.length) {
+                    this.hasResults = false;
+                }
+
                 this.isLoading = false;
-                console.log("SEARCH RESPONSE:", response);
+
+                this.isLoading = false;
                 
             } else {
                 this.isLoading = false;

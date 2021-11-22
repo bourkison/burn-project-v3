@@ -31,12 +31,12 @@
                             to="/workout/new"
                             active-class="active"
                             exact-active-class="active"
-                            v-if="!$store.state.activeWorkout.workoutCommenced || $router.currentRoute.name === 'New Workout'"
+                            v-if="
+                                !$store.state.activeWorkout.workoutCommenced ||
+                                    $router.currentRoute.name === 'New Workout'
+                            "
                         >
-                            <div
-                                class="d-flex align-items-center"
-                                
-                            >
+                            <div class="d-flex align-items-center">
                                 New Workout
                                 <b-icon-plus class="ml-auto" />
                             </div>
@@ -67,10 +67,20 @@
                                     <div class="d-flex ml-auto">
                                         <div class="text-muted">{{ timeString }}</div>
                                         <div class="ml-1">
-                                            <span v-if="!countdownActive"><b-icon-stopwatch @click="countdownModal = true" class="clickableIcon" /></span>
-                                            <span v-else><b-icon-stop @click="stopTimer" class="clickableIcon" /></span>
+                                            <span v-if="!countdownActive"
+                                                ><b-icon-stopwatch
+                                                    @click="countdownModal = true"
+                                                    class="clickableIcon"
+                                            /></span>
+                                            <span v-else
+                                                ><b-icon-stop
+                                                    @click="stopTimer"
+                                                    class="clickableIcon"
+                                            /></span>
                                         </div>
-                                        <div class="ml-1" v-if="countdownActive">{{ countdownTimeString }}</div>
+                                        <div class="ml-1" v-if="countdownActive">
+                                            {{ countdownTimeString }}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -115,7 +125,7 @@
                                             variant="outline-dark"
                                             class="ml-1 mr-1"
                                             size="sm"
-                                            @click="searchExerciseModal = true;"
+                                            @click="searchExerciseModal = true"
                                             >Add Exercise</b-button
                                         >
                                         <b-button
@@ -123,8 +133,10 @@
                                             variant="success"
                                             size="sm"
                                             @click="finishWorkout"
-                                            >Finish</b-button
                                         >
+                                            <span v-if="!isUploading">Finish</span>
+                                            <span v-else><b-spinner small /></span>
+                                        </b-button>
                                     </div>
                                 </b-card-text>
                             </b-card-body>
@@ -134,7 +146,13 @@
                         <b-spinner />
                     </div>
 
-                    <b-modal centered title="Exercises" hide-footer button-size="sm" v-model="searchExerciseModal">
+                    <b-modal
+                        centered
+                        title="Exercises"
+                        hide-footer
+                        button-size="sm"
+                        v-model="searchExerciseModal"
+                    >
                         <ExerciseSearch @selectExercise="addExercise" />
                     </b-modal>
 
@@ -143,7 +161,10 @@
                         ref="startworkoutmodal"
                         centered
                         @hide="preventModal"
-                        @cancel="$router.push('/workout'); $store.commit('activeWorkout/resetVariables')"
+                        @cancel="
+                            $router.go(-1);
+                            $store.commit('activeWorkout/resetVariables');
+                        "
                         @ok="startWorkout"
                         hide-header-close
                         ok-title="Start"
@@ -189,7 +210,10 @@
                         <div>
                             <p>Would you like to save this workout under a new name?</p>
                             <p>
-                                <em>(Names must be unique to appear seperately in Workout Home).</em>
+                                <em
+                                    >(Names must be unique to appear seperately in Workout
+                                    Home).</em
+                                >
                             </p>
                             <b-form-input
                                 :value="workout.name"
@@ -206,7 +230,6 @@
                         v-model="countdownModal"
                         title="Timer"
                     >
-
                         <div>
                             <b-list-group>
                                 <b-list-group-item @click="beginTimer(30)" href="#">
@@ -237,27 +260,48 @@
 
                             <div class="mt-3">
                                 <b-input-group size="sm">
-                                    <b-input type="number" v-model.number="countdownInput.amount" size="sm" />
-                                    
+                                    <b-input
+                                        type="number"
+                                        v-model.number="countdownInput.amount"
+                                        size="sm"
+                                    />
+
                                     <b-input-group-addon>
-                                        <b-form-select v-model="countdownInput.unit" size="sm" :options="countdownInputOptions" />
+                                        <b-form-select
+                                            v-model="countdownInput.unit"
+                                            size="sm"
+                                            :options="countdownInputOptions"
+                                        />
                                     </b-input-group-addon>
 
                                     <b-input-group-addon>
-                                        <b-button variant="success" size="sm" @click="beginTimer()"><b-icon-stopwatch /></b-button>
+                                        <b-button variant="success" size="sm" @click="beginTimer()"
+                                            ><b-icon-stopwatch
+                                        /></b-button>
                                     </b-input-group-addon>
                                 </b-input-group>
                             </div>
                         </div>
-
                     </b-modal>
                 </b-container>
             </b-col>
 
             <b-col sm="3">
                 <div class="chartsCont">
-                    <div v-for="(chart, index) in workoutStore.workoutCharts" :key="index" class="chart">
-                        <Chart :username="$store.state.userProfile.docData.username"  :options="chart" :index="index" position="newWorkoutRightRail" :editable="true" :saveable="false" />
+                    <div
+                        v-for="(chart, index) in workoutStore.workoutCharts"
+                        :key="index"
+                        class="chart"
+                    >
+                        <Chart
+                            :username="$store.state.userProfile.docData.username"
+                            :options="chart"
+                            :index="index"
+                            position="newWorkoutRightRail"
+                            :editable="true"
+                            :saveable="false"
+                            :persistent="true"
+                        />
                     </div>
                 </div>
             </b-col>
@@ -275,7 +319,7 @@ import Chart from "@/components/Charts/Chart.vue";
 
 import { v4 as uuidv4 } from "uuid";
 
-import randomColor from "random-color"
+import randomColor from "random-color";
 
 export default {
     name: "WorkoutNew",
@@ -283,6 +327,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            isUploading: false,
             countdownInput: {
                 amount: 0,
                 unit: "second"
@@ -305,7 +350,7 @@ export default {
                 { value: "minute", text: "minutes" }
             ],
             searchExerciseModal: false,
-            countdownModal: false,
+            countdownModal: false
         };
     },
 
@@ -429,7 +474,7 @@ export default {
                         sets: [
                             {
                                 weightAmount: 0,
-                                measureAmount: 0,
+                                measureAmount: 0
                             }
                         ],
                         exerciseReference: {
@@ -499,7 +544,9 @@ export default {
                              * VERY confusing stuff and could probably be cleaner but it works.
                              */
 
-                            const arrayOfIndicesIndex = prevWorkoutMatchingExercisesIndices.indexOf(i);
+                            const arrayOfIndicesIndex = prevWorkoutMatchingExercisesIndices.indexOf(
+                                i
+                            );
 
                             if (workoutMatchingExercises[arrayOfIndicesIndex]) {
                                 this.workoutStore.previousWorkout.recordedExercises[i].uid =
@@ -719,7 +766,7 @@ export default {
                         this.$store.commit("activeWorkout/resetVariables");
                         this.$router.push("/workout");
                     }
-                })
+                });
         },
 
         finishWorkout: function() {
@@ -731,10 +778,12 @@ export default {
             this.$bvModal.show("endWorkoutModal");
         },
 
-        uploadWorkout: function() {
-            this.$store.dispatch("activeWorkout/uploadWorkout").then(() => {
-                this.$router.push("/workout/recent");
-            });
+        uploadWorkout: async function() {
+            this.isUploading = true;
+            await this.$store.dispatch("activeWorkout/uploadWorkout");
+            this.$router.push("/workout/recent");
+
+
         },
 
         cancelFinish: function(e) {
@@ -758,10 +807,10 @@ export default {
                 exerciseIndex: exerciseIndex,
                 setIndex: setIndex,
                 key: key,
-                value: Number(value.replace(/[^.\d]/g, '')) || 0
+                value: Number(value.replace(/[^.\d]/g, "")) || 0
             });
 
-            console.log(Number(value.replace(/[^.\d]/g, '')) || 0);
+            console.log(Number(value.replace(/[^.\d]/g, "")) || 0);
         },
 
         preventModal: function(e) {
@@ -803,8 +852,8 @@ export default {
         },
 
         buildCharts: function() {
-            for (let i = 0; (i < 2 && i < this.workout.recordedExercises.length); i ++) {
-                this.pushChart(this.workout.recordedExercises[i].exerciseReference)
+            for (let i = 0; i < 2 && i < this.workout.recordedExercises.length; i++) {
+                this.pushChart(this.workout.recordedExercises[i].exerciseReference);
             }
         },
 
@@ -829,7 +878,7 @@ export default {
                 backgroundColor: randomColor().hexString(),
                 borderColor: randomColor().hexString(),
                 pointBackgroundColor: randomColor().hexString()
-            }
+            };
 
             this.$store.commit("activeWorkout/pushToWorkoutCharts", chartOptions);
         },
@@ -840,28 +889,28 @@ export default {
             this.$store.commit("activeWorkout/updateExerciseOptions", {
                 exerciseIndex: exerciseIndex,
                 options: data
-            })
+            });
         }
     }
 };
 </script>
 
 <style scoped>
-    .align-items {
-        align-items: center !important;
-    }
+.align-items {
+    align-items: center !important;
+}
 
-    .clickableIcon {
-        cursor: pointer;
-    }
+.clickableIcon {
+    cursor: pointer;
+}
 
-    .centerCol,
-    .navCard,
-    .chartsCont {
-        margin-top: 40px;
-    }
+.centerCol,
+.navCard,
+.chartsCont {
+    margin-top: 40px;
+}
 
-    .chart {
-        margin-bottom: 25px;
-    }
+.chart {
+    margin-bottom: 25px;
+}
 </style>

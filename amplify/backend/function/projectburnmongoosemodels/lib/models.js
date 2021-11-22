@@ -57,9 +57,13 @@ const postReferenceSchema = new mongoose.Schema(
         createdBy: {
             type: userReferenceSchema,
             required: true
+        },
+        createdAt: {
+            type: Date,
+            required: true
         }
     },
-    { timestamps: true }
+    { timestamps: false }
 );
 
 const templateReferenceSchema = new mongoose.Schema(
@@ -126,7 +130,7 @@ const likeReferenceSchema = new mongoose.Schema(
 
 const recordedSetSchema = new mongoose.Schema(
     {
-        kg: {
+        weightAmount: {
             type: Number,
             default: 0
         },
@@ -203,11 +207,14 @@ const workoutSchema = new mongoose.Schema(
         options: {
             type: Map,
             default: {}
+        },
+        public: {
+            type: Boolean,
+            default: true
         }
     },
     { timestamps: true }
 );
-workoutSchema.index({ name: "text" });
 
 const commentSchema = new mongoose.Schema(
     {
@@ -366,11 +373,14 @@ const userSchema = new mongoose.Schema(
         options: {
             type: Map,
             required: true
+        },
+        public: {
+            type: Boolean,
+            default: true
         }
     },
     { timestamps: true }
 );
-userSchema.index({ username: "text" });
 
 const exerciseSchema = new mongoose.Schema(
     {
@@ -433,11 +443,14 @@ const exerciseSchema = new mongoose.Schema(
         templateReferences: {
             type: [templateReferenceSchema],
             default: []
+        },
+        public: {
+            type: Boolean,
+            default: true
         }
     },
     { timestamps: true }
 );
-exerciseSchema.index({ name: "text" });
 
 const templateSchema = new mongoose.Schema(
     {
@@ -492,19 +505,36 @@ const templateSchema = new mongoose.Schema(
         followCount: {
             type: Number,
             default: 0
+        },
+        public: {
+            type: Boolean,
+            default: true
         }
     },
     { timestamps: true }
 );
-templateSchema.index({ name: "text" });
 
 module.exports = async uri => {
     const connection = await mongooseConnect(uri);
 
-    const User = connection.model("User", userSchema);
-    const Exercise = connection.model("Exercise", exerciseSchema);
-    const Template = connection.model("Template", templateSchema);
-    const Post = connection.model("Post", postSchema);
+    const User = () => {
+        userSchema.index({ username: "text" });
+        return connection.model("User", userSchema);   
+    }
+
+    const Exercise = () => {
+        exerciseSchema.index({ name: "text" });
+        return connection.model("Exercise", exerciseSchema);
+    }
+
+    const Template = () => {
+        templateSchema.index({ name: "text" });
+        return connection.model("Template", templateSchema);
+    }
+
+    const Post = () => {
+        return connection.model("Post", postSchema);
+    }
 
     return { User, Exercise, Post, Template };
 };

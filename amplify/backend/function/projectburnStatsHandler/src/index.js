@@ -36,7 +36,8 @@ const getStats = async function(event) {
 const amountWorkouts = async function(event) {
     let startDate = event.queryStringParameters.startDate;
     let endDate = event.queryStringParameters.endDate;
-    let username = event.queryStringParameters.username;
+    const username = event.queryStringParameters.username;
+    const timeZone = event.queryStringParameters.timeZone || "UTC";
 
     startDate = isNaN(Number(startDate)) ? new Date(startDate) : new Date(Number(startDate));
     endDate = isNaN(Number(endDate)) ? new Date(endDate) : new Date(Number(endDate));
@@ -82,6 +83,7 @@ const amountWorkouts = async function(event) {
     workoutResult.forEach(workout => {
         // Convert to yyyy-mm-dd
         let d = new Date(workout.createdAt);
+        d = new Date(d.toLocaleString('en-US', { timeZone: timeZone }));
         let mm = d.getMonth() + 1;
         let dd = d.getDate();
 
@@ -101,9 +103,10 @@ const amountWorkouts = async function(event) {
 
 const exerciseStats = async function(event) {
     let exerciseId = event.queryStringParameters.exerciseId || "";
-    let username = event.queryStringParameters.username;
-    let preferenceIndex = event.queryStringParameters.preferenceIndex || 0;
+    const username = event.queryStringParameters.username;
+    const preferenceIndex = event.queryStringParameters.preferenceIndex || 0;
     let dataToPull = event.queryStringParameters.dataToPull ? event.queryStringParameters.dataToPull.split(",") : ["orm"];
+    const timeZone = event.queryStringParameters.timeZone || "UTC";
 
     let response = {
         statusCode: 500,
@@ -170,15 +173,13 @@ const exerciseStats = async function(event) {
 
         workout.exercises.forEach(exercise => {
             exercise.sets.forEach(set => {
-                if (set.measureBy === "kg") {
-                    let orm = calcORM(set.kg, set.measureAmount);
+                let orm = calcORM(set.weightAmount, set.measureAmount);
 
-                    if (orm > maxOrm) {
-                        maxOrm = orm;
-                    }
-
-                    totalVolume += set.measureAmount * set.kg;
+                if (orm > maxOrm) {
+                    maxOrm = orm;
                 }
+
+                totalVolume += set.measureAmount * set.weightAmount;
 
                 totalReps += set.measureAmount;
             });
@@ -186,6 +187,7 @@ const exerciseStats = async function(event) {
 
         // Convert to yyyy-mm-dd
         let d = new Date(workout.createdAt);
+        d = new Date(d.toLocaleString('en-US', { timeZone: timeZone }))
         let mm = d.getMonth() + 1;
         let dd = d.getDate();
 

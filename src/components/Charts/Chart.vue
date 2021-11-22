@@ -216,6 +216,10 @@ export default {
         index: {
             type: Number,
             required: true
+        },
+        persistent: {
+            type: Boolean,
+            required: true
         }
     },
     data() {
@@ -270,7 +274,7 @@ export default {
             // Chart.js
             delayed: false,
             chartLabels: [],
-            chartData: [],
+            chartData: {},
             chart: null,
 
             // Bootstrap
@@ -454,15 +458,17 @@ export default {
                 let nextDate = date.add(1, this.chartOptions.interval);
     
                 let dataArr = Object.values(data.data.stats);
+                let dataArrKeys = Object.keys(data.data.stats);
     
                 // First push an empty array into chartData based on how many bits of data are pushed in in stats.
                 for (let i = 0; i < dataArr.length; i++) {
-                    this.chartData.push([]);
+                    this.chartData[dataArrKeys[i]] = [];
                 }
+
+                console.log("DATA Arr", JSON.parse(JSON.stringify(data.data.stats)));
     
                 while (date.isBefore(dayjs(this.endDate))) {
                     this.chartLabels.push(date.toDate());
-                    
     
                     dataArr.forEach((dataObj, index) => {
                         let amount = 0;
@@ -473,7 +479,13 @@ export default {
                             let keyDate = dayjs(keys[i]);
     
                             if (keyDate.isSameOrAfter(date) && keyDate.isBefore(nextDate)) {
-                                amount += values[i];
+                                if (dataArrKeys[index] === "orm") {
+                                    if (values[i] > amount) {
+                                        amount = values[i];
+                                    }
+                                } else {
+                                    amount += values[i];
+                                }
     
                                 // Delete key value from the object.
                                 delete dataArr[index][keys[i]]
@@ -481,7 +493,7 @@ export default {
                         }
     
                         if (amount) {
-                            this.chartData[index].push({ x: date.format("YYYY-MM-DD"), y: amount });
+                            this.chartData[dataArrKeys[index]].push({ x: date.format("YYYY-MM-DD"), y: amount });
                         }
                     })
     
@@ -491,8 +503,8 @@ export default {
     
     
                 if (this.trimLabels) {
-                    let startLabels = dayjs(this.chartData[0][0].x);
-                    let endLabels = dayjs(this.chartData[0][this.chartData[0].length - 1].x);
+                    let startLabels = dayjs(this.chartData[dataArrKeys[0]][0].x);
+                    let endLabels = dayjs(this.chartData[dataArrKeys[0]][this.chartData[dataArrKeys[0]].length - 1].x);
     
                     this.chartLabels = this.chartLabels.filter(x => {
                         if (dayjs(x).isSameOrAfter(startLabels) && dayjs(x).isSameOrBefore(endLabels)) {
@@ -539,7 +551,11 @@ export default {
                 datasets: []
             };
 
-            this.chartData.forEach((dataset, index) => {
+            let chartDataValues = Object.values(this.chartData);
+            let chartDataKeys = Object.keys(this.chartData);
+
+            chartDataValues.forEach((dataset, index) => {
+                console.log("DATASET:", dataset);
                 let datasetObject = {
                     label: "",
                     type: chartType,
@@ -550,22 +566,19 @@ export default {
                     yAxisID: "y" + index,
                 };
 
-                if (this.chartOptions.type === "recentWorkouts") {
-                    datasetObject.label = "Workouts"
-                }
-
-                if (this.chartOptions.type === "exercise") {
-                    switch(this.chartOptions.data.dataToPull.split(",")[index]) {
-                        case "orm":
-                            datasetObject.label = "One Rep Maximum";
-                            break;
-                        case "totalReps":
-                            datasetObject.label = "Total Reps";
-                            break;
-                        case "totalVolume":
-                            datasetObject.label = "Total Volume"
-                            break;
-                    }
+                switch (chartDataKeys[index]) {
+                    case "orm":
+                        datasetObject.label = "One Rep Maximum";
+                        break;
+                    case "totalReps":
+                        datasetObject.label = "Total Reps";
+                        break;
+                    case "totalVolume":
+                        datasetObject.label = "Total Volume"
+                        break;
+                    case "recentWorkouts": 
+                        datasetObject.label = "Workouts"
+                        break;
                 }
 
                 if (index > 0) {
@@ -754,7 +767,7 @@ export default {
                 this.newChartOptions.data = {};
             }
 
-            if (this.$props.editable) {
+            if (this.$props.persistent) {
                 await this.$store.dispatch("updateChart", {
                     options: this.newChartOptions,
                     position: this.$props.position,

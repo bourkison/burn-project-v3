@@ -19,7 +19,7 @@
             triggers="manual"
             custom-class="searchPopover"
         >
-            <div v-if="!isLoading && searchText">
+            <div v-if="!isLoading && searchText && hasResults">
                 <div
                     v-if="userResponses.length > 0"
                     :class="
@@ -30,7 +30,7 @@
                     <b-list-group>
                         <b-list-group-item
                             v-for="user in userResponses"
-                            :key="user.id"
+                            :key="user._id"
                             :to="'/' + user.username"
                             class="p-2"
                         >
@@ -48,8 +48,8 @@
                     <b-list-group>
                         <b-list-group-item
                             v-for="exercise in exerciseResponses"
-                            :key="exercise.objectID"
-                            :to="'/exercises/' + exercise.objectID"
+                            :key="exercise._id"
+                            :to="'/exercises/' + exercise._id"
                         >
                             {{ exercise.name }}
                         </b-list-group-item>
@@ -61,8 +61,8 @@
                     <b-list-group>
                         <b-list-group-item
                             v-for="template in templateResponses"
-                            :key="template.objectID"
-                            :to="'/templates/' + template.objectID"
+                            :key="template._id"
+                            :to="'/templates/' + template._id"
                         >
                             {{ template.name }}
                         </b-list-group-item>
@@ -71,6 +71,9 @@
             </div>
             <div v-else-if="!isLoading && !searchText.trim()">
                 <span><em>Search for users, exercises or templates!</em></span>
+            </div>
+            <div v-else-if="!isLoading && searchText && !hasResults">
+                <span><em>No results!</em></span>
             </div>
             <div v-else>
                 <div class="text-center">
@@ -90,6 +93,7 @@ export default {
         return {
             isLoading: false,
             searchText: "",
+            hasResults: true,
 
             userResponses: [],
             exerciseResponses: [],
@@ -123,6 +127,7 @@ export default {
     watch: {
         searchText: async function() {
             this.isLoading = true;
+            this.hasResults = true;
 
             this.userResponses = [];
             this.exerciseResponses = [];
@@ -142,7 +147,31 @@ export default {
 
                 const response = await API.get(this.$store.state.apiName, path, myInit);
 
-                console.log("SEARCH RESPONSE:", response);
+                const keys = Object.keys(response.data);
+                const values = Object.values(response.data);
+
+                values.forEach((responses, index) => {
+                    if (keys[index] === "user") {
+                        responses.forEach(userResponse => {
+                            this.userResponses.push(userResponse);
+                        })
+                    }
+                    else if (keys[index] === "exercise") {
+                        responses.forEach(exerciseResponse => {
+                            this.exerciseResponses.push(exerciseResponse);
+                        })
+                    }
+                    else if (keys[index] === "template") {
+                        responses.forEach(templateResponse => {
+                            this.templateResponses.push(templateResponse);
+                        })
+                    }
+                })
+
+                if (!this.userResponses.length && !this.exerciseResponses.length && !this.templateResponses.length) {
+                    this.hasResults = false;
+                }
+
                 this.isLoading = false;
             } else {
                 this.isLoading = false;

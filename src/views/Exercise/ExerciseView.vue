@@ -7,7 +7,11 @@
                         <b-card-body>
                             <b-card-title>
                                 {{ exerciseData.name }}
-                                <b-dropdown right class="float-right exercise-dropdown" variant="outline">
+                                <b-dropdown
+                                    right
+                                    class="float-right exercise-dropdown"
+                                    variant="outline"
+                                >
                                     <span
                                         v-if="
                                             exerciseData.createdBy.userId ===
@@ -52,7 +56,12 @@
                             <b-img :src="imageUrls[0]" fluid-grow />
                         </div>
                         <div v-else-if="video.url">
-                            <VideoPlayer class="video-player" :options="video.options" :token="video.token" :id="video.id" />
+                            <VideoPlayer
+                                class="video-player"
+                                :options="video.options"
+                                :token="video.token"
+                                :id="video.id"
+                            />
                         </div>
                         <b-card-body>
                             <b-card-text>
@@ -126,9 +135,17 @@
                         </b-card-body>
                     </b-card>
 
-                    
-
-                    <Chart  class="performanceChart" :editable="true" :saveable="false" :username="$store.state.userProfile.docData.username" :options="chartOptions" :index="0" position="exerciseView" @updateChart="updateChart" />
+                    <Chart
+                        class="performanceChart"
+                        :editable="true"
+                        :saveable="false"
+                        :persistent="false"
+                        :username="$store.state.userProfile.docData.username"
+                        :options="chartOptions"
+                        :index="0"
+                        position="exerciseView"
+                        @updateChart="updateChart"
+                    />
                 </b-container>
             </b-col>
         </b-row>
@@ -239,16 +256,19 @@ export default {
     metaInfo() {
         return {
             title: this.isLoading ? null : this.exerciseData.name
-        }
+        };
     },
 
     created: async function() {
         this.downloadExercise();
 
-        const temp = await Storage.get("0c73da6c-4329-483b-b143-9788ca615973/0c73da6c-4329-483b-b143-9788ca615973.m3u8", {
-            bucket: "projectburnvod-dev-output-tnxigpft"
-        });
-        console.log(temp)
+        const temp = await Storage.get(
+            "0c73da6c-4329-483b-b143-9788ca615973/0c73da6c-4329-483b-b143-9788ca615973.m3u8",
+            {
+                bucket: "projectburnvod-dev-output-tnxigpft"
+            }
+        );
+        console.log(temp);
     },
 
     beforeRouteUpdate: function(to, from, next) {
@@ -284,7 +304,7 @@ export default {
                     filePaths: response.filePaths,
                     tags: response.tags,
                     muscleGroups: response.muscleGroups
-                }
+                };
 
                 console.log("EX ID:", this.chartOptions.data.exerciseId);
 
@@ -321,14 +341,23 @@ export default {
                         if (path.type === "video") {
                             const videoObject = {
                                 id: path.key
-                            }
+                            };
 
-                            const response = await API.graphql(graphqlOperation(getVideoObject, videoObject));
+                            const response = await API.graphql(
+                                graphqlOperation(getVideoObject, videoObject)
+                            );
 
                             this.video.token = response.data.getVideoObject.token;
                             this.video.id = path.key;
                             const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
-                            this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + uniqueId + ".m3u8";
+                            this.video.url =
+                                "https://" +
+                                awsvideoconfig.awsOutputVideo +
+                                "/" +
+                                this.video.id +
+                                "/" +
+                                uniqueId +
+                                ".m3u8";
 
                             this.video.options = {
                                 autoplay: true,
@@ -338,7 +367,7 @@ export default {
                                         src: this.video.url
                                     }
                                 ]
-                            }
+                            };
                         } else if (path.type === "image") {
                             urlPromises.push(Storage.get(path.key));
                         }

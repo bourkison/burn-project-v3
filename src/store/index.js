@@ -292,7 +292,6 @@ const activeWorkoutModule = {
 
             commit("pushWorkoutToUserWorkouts", result, { root: true });
             commit("resetVariables");
-            console.log(payload, result);
         }
     }
 };
@@ -302,7 +301,6 @@ export default new Vuex.Store({
         apiName: "projectburnapi",
         workoutPromises: [],
         userProfile: null,
-        userWorkouts: null,
         videoTokens: {}
     },
     mutations: {
@@ -335,14 +333,24 @@ export default new Vuex.Store({
         },
 
         pushWorkoutToUserWorkouts: function(state, workout) {
-            if (!state.workouts) {
-                state.userWorkouts = [workout];
-            } else {
-                state.userWorkouts.unshift(workout);
+            console.log("UNSHIFTING WORKOUTS", workout);
+            state.userProfile.docData.workouts ? state.userProfile.docData.workouts.unshift(workout) : state.userProfile.docData.workouts = [workout];
+
+            let existingWorkoutIndex = -1;
+
+            for (let i = 0; i < state.userProfile.docData.workouts.length; i++) {
+                if (workout.name === state.userProfile.docData.workouts.name) {
+                    existingWorkoutIndex = i;
+                    break;
+                }
+            }
+
+            if (existingWorkoutIndex >= 0) {
+                state.userProfile.docData.workouts.splice(existingWorkoutIndex, 1);
             }
         },
 
-        updateChart: async function(state, data) {
+        updateChart: function(state, data) {
             switch (data.position) {
                 case "homepageLeftRail":
                     Vue.set(state.userProfile.docData.options.charts.homepage.leftRail, data.index, data.options);
