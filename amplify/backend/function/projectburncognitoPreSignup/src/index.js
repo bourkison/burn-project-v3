@@ -16,14 +16,6 @@ exports.handler = async (event, context, callback) => {
 
     const User = await MongooseModels().User(MONGODB_URI);
 
-    // Check user doesn't already exist.
-    const existingUser = await User.findOne({ username: event.request.userName });
-
-    if (existingUser) {
-        let denyError = new Error("Username already exists.");
-        callback(denyError, event);
-    }
-
     // Build new user
     const user = new User({
         username: event.userName,

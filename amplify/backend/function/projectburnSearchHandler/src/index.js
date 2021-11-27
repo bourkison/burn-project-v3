@@ -48,19 +48,51 @@ const getSearch = async function(event) {
 
 const queryCollection = async (query, collection) => {
     let Model;
+    let index;
+    let path;
+    let projection = {
+        $project: {
+            _id: 1,
+            name: 1
+        }
+    };
     switch (collection) {
         case "exercise":
             Model = await MongooseModels().Exercise(MONGODB_URI);
+            index = "exerciseSearchIndex";
+            path = ["searchName"];
             break;
         case "template":
             Model = await MongooseModels().Template(MONGODB_URI);
+            index = "templateSearchIndex";
+            path = ["searchName"];
             break;
         case "user":
             Model = await MongooseModels().User(MONGODB_URI);
+            index = "userSearchIndex";
+            path = ["searchUsername", "searchEmail"];
+            projection = {
+                $project: {
+                    _id: 1,
+                    username: 1,
+                    profilePhoto: 1
+                }
+            }
             break;
     }
 
-    return Model.find({ $text: { $search: query } });
+    return Model.aggregate([
+        {
+            $search: {
+                index: index,
+                text: {
+                    query: query,
+                    path: path
+                }
+            }
+        },
+        projection
+    ])
 }
 
 exports.handler = async (event, context) => {

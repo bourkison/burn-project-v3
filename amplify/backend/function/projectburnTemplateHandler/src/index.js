@@ -360,7 +360,8 @@ const createTemplate = async function(event) {
     // Now build out and send the new Template.
     const userReference = {
         userId: ObjectId(user._id),
-        username: user.username
+        username: user.username,
+        createdAt: new Date()
     };
 
     const template = new Template({
@@ -375,69 +376,61 @@ const createTemplate = async function(event) {
         followCount: 1
     });
 
-    const templateResult = await template.save().catch(err => {
-        const errorResponse = "Error creating template: " + JSON.stringify(err);
+    try {
+        const templateResult = await template.save();
+    
+        if (!templateResult) {
+            throw new Error("No response");
+        }
+    
+        // Now build out template reference
+        const templateReference = {
+            templateId: ObjectId(templateResult._id),
+            name: templateResult.name,
+            muscleGroups: templateResult.muscleGroups,
+            tags: templateResult.tags,
+            isFollow: false,
+            createdBy: userReference
+        };
+    
+        // Push this template reference to each exercise.
+        let exercisePushPromises = [];
+        templateForm.exercises.forEach(exercise => {
+            exercisePushPromises.push(
+                Exercise.updateOne(
+                    { _id: exercise.exerciseId },
+                    { $push: { templateReferences: templateReference } }
+                )
+            );
+        });
+    
+        await Promise.all(exercisePushPromises);
+    
+        await User.updateOne(
+            { _id: user._id },
+            { $push: { templateReferences: templateReference } }
+        ).catch(err => {
+            // TODO: Delete previously created template
+            throw err
+        });
+    
+        response.statusCode = 200;
         response.body = JSON.stringify({
             success: true,
-            errorMessage: errorResponse
+            _id: templateResult._id,
+            data: templateResult
         });
-
-        return response;
-    });
-
-    if (!templateResult) {
-        const errorResponse = "Error creating template. No response";
+    }
+    catch (err) {
+        const errorMessage = "Error creating template";
         response.body = JSON.stringify({
             success: false,
-            errorMessage: errorResponse
+            message: errorMessage,
+            error: err
         });
 
         return response;
     }
-
-    // Now build out template reference
-    const templateReference = {
-        templateId: ObjectId(templateResult._id),
-        name: templateResult.name,
-        muscleGroups: templateResult.muscleGroups,
-        tags: templateResult.tags,
-        isFollow: false,
-        createdBy: userReference
-    };
-
-    // Push this template reference to each exercise.
-    let exercisePushPromises = [];
-    templateForm.exercises.forEach(exercise => {
-        exercisePushPromises.push(
-            Exercise.updateOne(
-                { _id: exercise.exerciseId },
-                { $push: { templateReferences: templateReference } }
-            )
-        );
-    });
-
-    await Promise.all(exercisePushPromises);
-
-    await User.updateOne(
-        { _id: user._id },
-        { $push: { templateReferences: templateReference } }
-    ).catch(err => {
-        // TODO: Delete previously created template
-        const errorResponse = "Error creating template in user document: " + JSON.stringify(err);
-        response.body = JSON.stringify({
-            success: false,
-            errorMessage: errorResponse
-        });
-
-        return response;
-    });
-
-    response.statusCode = 200;
-    response.body = JSON.stringify({
-        success: true,
-        _id: templateResult._id,
-        data: templateResult
-    });
 
     return response;
 };
@@ -503,6 +496,8 @@ const updateTemplate = async function(event) {
 
         return response;
     }
+
+    templateForm.searchName = createEdgeNGrams(templateForm.name, 3);
 
     // Now update Template document.
     const result = await Template.findByIdAndUpdate(templateId, templateForm, {
@@ -708,6 +703,27 @@ const deleteTemplate = async function(event) {
 
     return response;
 };
+
+// Used to allow partial text search
+const createEdgeNGrams = function(str, min) {
+    if (str && str.length > min) {
+        const minGram = min
+        const maxGram = str.length
+        
+        return str.split(" ").reduce((ngrams, token) => {
+            if (token.length > minGram) {   
+                for (let i = minGram; i <= maxGram && i <= token.length; ++i) {
+                    ngrams = [...ngrams, token.substr(0, i)]
+                }
+            } else {
+                ngrams = [...ngrams, token]
+            }
+            return ngrams
+        }, []).join(" ")
+    } 
+    
+    return str;
+}
 
 exports.handler = async (event, context) => {
     /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */

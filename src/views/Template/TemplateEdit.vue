@@ -1,5 +1,5 @@
 <template>
-    <b-container v-if="!isLoading">
+    <b-container v-if="!isLoading && isAuthorized">
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container>
@@ -117,6 +117,11 @@
             {{ errorMessage }}
         </b-alert>
     </b-container>
+    <b-container v-else-if="!isLoading && !isAuthorized">
+        <div class="text-center mt-5">
+            Not authorized.
+        </div>
+    </b-container>
     <b-container v-else>
         <b-spinner />
     </b-container>
@@ -143,6 +148,7 @@ export default {
     data() {
         return {
             isLoading: true,
+            isAuthorized: false,
             templateExists: false,
             isUpdating: false,
 
@@ -191,6 +197,7 @@ export default {
         downloadTemplate: async function() {
             try {
                 this.isLoading = true;
+                this.isAuthorized = false;
                 this.templateExists = false;
                 this.oldTemplateData = null;
                 this.newTemplateData = null;
@@ -214,20 +221,11 @@ export default {
                     }
                 );
 
-                if (!response) {
+                if (!response || !response.success) {
                     throw new Error(
                         "Error downloading template: " +
                             this.$route.params.templateid +
-                            " no response"
-                    );
-                }
-
-                if (!response.success) {
-                    throw new Error(
-                        "Error downloading template: " +
-                            this.$route.params.templateid +
-                            " call unsuccessful: " +
-                            response.message
+                            " response: " + response ? response.message : ""
                     );
                 }
 
@@ -236,8 +234,15 @@ export default {
                 console.log("RESPONSE:", response);
                 this.newTemplateData = response.data;
                 this.oldTemplateData = response.data;
+
+                if (this.oldTemplateData.createdBy.username === this.$store.state.userProfile.docData.username) {
+                    this.isAuthorized = true;
+                } else {
+                    throw new Error("Unauthorized");
+                }
             } catch (err) {
                 console.error(err);
+                this.isLoading = false;
             }
         },
 
@@ -270,11 +275,11 @@ export default {
                     throw new Error("API error: " + response.errorMessage);
                 }
 
-                this.isUpdating = false;
                 this.$router.push("/templates/" + response.data._id);
             } catch (err) {
-                this.isUpdating = false;
                 this.displayError(err);
+            } finally {
+                this.isUpdating = false;
             }
         },
 

@@ -86,6 +86,17 @@
                 </b-container>
             </b-col>
         </b-row>
+
+        <b-alert
+            class="position-fixed fixed-bottom m-0 rounded-0"
+            variant="danger"
+            dismissible
+            fade
+            style="z-index: 2000;"
+            v-model="errorCountdown"
+        >
+            {{ errorMessage }}
+        </b-alert>
     </b-container>
 </template>
 
@@ -150,7 +161,12 @@ export default {
                     "outdent",
                     "hr"
                 ]
-            }
+            },
+
+            // Errror handling:
+            errorCountdown: 0,
+            errorMessage: "",
+            errorInterval: null
         };
     },
 
@@ -234,14 +250,14 @@ export default {
                 }
             };
 
-            const response = await API.post(this.$store.state.apiName, path, myInit).catch(err => {
+            try {
+                const response = await API.post(this.$store.state.apiName, path, myInit);
+                this.$router.push("/exercises/" + response._id);
+            } catch (err) {
+                this.displayError(err);
+            } finally {
                 this.isCreating = false;
-                alert(err.message || JSON.stringify(err));
-                return;
-            });
-
-            console.log("CREATION SUCCESS:", response);
-            this.$router.push("/exercises/" + response._id);
+            }
         },
 
         updateDescription: function() {
@@ -266,6 +282,21 @@ export default {
 
         updateDifficulty: function(difficulty) {
             this.exerciseForm.difficulty = difficulty;
+        },
+
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {
+                    this.errorCountdown -= 1;
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
         }
     }
 };

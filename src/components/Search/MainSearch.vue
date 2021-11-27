@@ -129,10 +129,6 @@ export default {
             this.isLoading = true;
             this.hasResults = true;
 
-            this.userResponses = [];
-            this.exerciseResponses = [];
-            this.templateResponses = [];
-
             if (this.searchText.trim()) {
                 const path = "/search"
                 const myInit = {
@@ -146,6 +142,10 @@ export default {
                 }
 
                 const response = await API.get(this.$store.state.apiName, path, myInit);
+
+                this.userResponses = [];
+                this.exerciseResponses = [];
+                this.templateResponses = [];
 
                 const keys = Object.keys(response.data);
                 const values = Object.values(response.data);
@@ -174,6 +174,9 @@ export default {
 
                 this.isLoading = false;
             } else {
+                this.userResponses = [];
+                this.exerciseResponses = [];
+                this.templateResponses = [];
                 this.isLoading = false;
             }
         }

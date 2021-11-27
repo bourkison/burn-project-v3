@@ -37,7 +37,7 @@ Hub.listen("auth", async ({ payload: { event, data } }) => {
     switch (event) {
         case "signIn":
             console.log("SIGNEDIN");
-            await store.dispatch("fetchUser", data);
+            await store.dispatch("fetchUser", data.signInUserSession);
             break;
         case "signOut":
             console.log("SIGNEDOUT");

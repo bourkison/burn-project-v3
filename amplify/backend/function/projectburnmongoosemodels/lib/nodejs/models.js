@@ -8,6 +8,27 @@ mongoose.set("debug", (collectionName, methodName, ...methodArgs) => {
     console.log("MONGOOSE STRINGIFIED:", collectionName, methodName, JSON.stringify(methodArgs));
 });
 
+// Used to allow partial text search
+const createEdgeNGrams = function(str, min) {
+    if (str && str.length > min) {
+        const minGram = min
+        const maxGram = str.length
+        
+        return str.split(" ").reduce((ngrams, token) => {
+            if (token.length > minGram) {   
+                for (let i = minGram; i <= maxGram && i <= token.length; ++i) {
+                    ngrams = [...ngrams, token.substr(0, i)]
+                }
+            } else {
+                ngrams = [...ngrams, token]
+            }
+            return ngrams
+        }, []).join(" ")
+    } 
+    
+    return str;
+}
+
 const userReferenceSchema = new mongoose.Schema(
     {
         userId: {
@@ -307,6 +328,12 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+        searchUsername: {
+            type: String,
+            default: function() {
+                return createEdgeNGrams(this.username, 3)
+            }
+        },
         email: {
             type: String,
             required: true,
@@ -426,6 +453,12 @@ const exerciseSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        searchName: {
+            type: String,
+            default: function() {
+                return createEdgeNGrams(this.name, 3)
+            }
+        },
         filePaths: {
             type: [Map],
             required: []
@@ -504,6 +537,12 @@ const templateSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        searchName: {
+            type: String,
+            default: function() {
+                return createEdgeNGrams(this.name, 3)
+            }
+        },
         tags: {
             type: [String],
             default: []
@@ -548,21 +587,18 @@ module.exports = () => {
 
     const User = async (uri) => {
         const connection = await mongooseConnect(uri);
-        userSchema.index({ username: "text" });
         const response =  await connection.model("User", userSchema);   
         return response;
     }
 
     const Exercise = async (uri) => {
         const connection = await mongooseConnect(uri);
-        exerciseSchema.index({ name: "text" });
         const response =  await connection.model("Exercise", exerciseSchema);
         return response;
     }
 
     const Template = async (uri) => {
         const connection = await mongooseConnect(uri);
-        templateSchema.index({ name: "text" });
         const response =  await connection.model("Template", templateSchema);
         return response;
     }

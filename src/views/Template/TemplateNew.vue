@@ -86,6 +86,17 @@
                 </b-container>
             </b-col>
         </b-row>
+
+        <b-alert
+            class="position-fixed fixed-bottom m-0 rounded-0"
+            variant="danger"
+            dismissible
+            fade
+            style="z-index: 2000;"
+            v-model="errorCountdown"
+        >
+            {{ errorMessage }}
+        </b-alert>
     </b-container>
 </template>
 
@@ -140,7 +151,12 @@ export default {
                     "outdent",
                     "hr"
                 ]
-            }
+            },
+
+            // Error handling:
+            errorCountdown: 0,
+            errorMessage: "",
+            errorInterval: null
         };
     },
 
@@ -161,21 +177,23 @@ export default {
                     }
                 };
 
-                const response = await API.post(this.$store.state.apiName, path, myInit).catch(
-                    err => {
-                        throw new Error("API Error at promise catch: " + err);
-                    }
-                );
+                const response = await API.post(this.$store.state.apiName, path, myInit);
 
                 if (!response.data) {
-                    if (response.errorMessage) {
+                    if (response.message) {
                         throw new Error("API Error in response: " + response.errorMessage);
+                    } else {
+                        throw new Error("No response");
                     }
                 }
 
+                console.log("RESPONSE:", response);
+
                 this.$router.push("/templates/" + response._id);
             } catch (err) {
-                console.error(err);
+                this.displayError(err);
+            } finally {
+                this.isCreating = false;
             }
         },
 
@@ -203,11 +221,28 @@ export default {
                     name: exercise.name,
                     muscleGroups: exercise.muscleGroups,
                     tags: exercise.tags,
-                    isFollow: exercise.isFollow
+                    isFollow: exercise.isFollow,
+                    createdAt: exercise.createdAt,
+                    createdBy: exercise.createdBy
                 });
             });
 
             this.templateForm.exercises = temp;
+        },
+
+        displayError: function(err) {
+            this.errorCountdown = 30;
+            console.error(err);
+            this.errorMessage = "Oops, an error has occured... Please try again later.";
+
+            this.errorInterval = window.setInterval(() => {
+                if (this.errorCountdown > 0) {
+                    this.errorCountdown -= 1;
+                } else {
+                    window.clearInterval(this.errorInterval);
+                    this.errorInterval = null;
+                }
+            }, 1000);
         }
     }
 };

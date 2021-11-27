@@ -368,6 +368,7 @@ export default new Vuex.Store({
     },
     actions: {
         fetchUser: async function({ state, commit, dispatch }, data) {
+            console.log("DATA:", data);
             const path = "/user/" + data.idToken.payload["cognito:username"];
             const myInit = {
                 headers: {

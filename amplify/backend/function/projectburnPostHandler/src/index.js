@@ -336,57 +336,53 @@ const createPost = async function(event) {
         share: postForm.share
     });
 
-    const postResult = await post.save().catch(err => {
-        const errorResponse = "Error creating post: " + JSON.stringify(err);
+    try {
+        const postResult = await post.save();
+    
+        if (!postResult) {
+            throw new Error("No response");
+        }
+    
+        // Now build out and send the post reference to the createdBy user's postReferences and feed arary.
+        const postReference = {
+            _id: postId,
+            createdBy: userReference
+        };
+    
+        await User.update(
+            { _id: user._id },
+            {
+                $push: { postFeed: postReference, postReferences: postReference }
+            }
+        ).catch(err => {
+            // TODO: Delete previously created post.
+            throw err
+        });
+    
+        // Now push the post reference to the all the followers feed array.
+        let feedPromises = [];
+        user.followers.forEach(follow => {
+            feedPromises.push(User.update({ _id: follow.userId }, { $push: { postFeed: postReference } }));
+        });
+    
+        await Promise.all(feedPromises);
+    
+        response.statusCode = 200;
+        response.body = JSON.stringify({
+            success: true,
+            data: { postReference: postReference }
+        });
+    }
+    catch (err) {
+        const errorResponse = "Error creating post"
         response.body = JSON.stringify({
             success: false,
-            errorMessage: errorResponse
+            message: errorResponse,
+            error: err
         });
 
         return response;
-    });
-
-    if (!postResult) {
-        const errorResponse = "Error creating post. No response.";
-        response.body = JSON.stringify({
-            success: false,
-            errorMessage: errorResponse
-        });
     }
-
-    // Now build out and send the post reference to the createdBy user's postReferences and feed arary.
-    const postReference = {
-        _id: postId,
-        createdBy: userReference
-    };
-
-    await User.update(
-        { _id: user._id },
-        {
-            $push: { postFeed: postReference, postReferences: postReference }
-        }
-    ).catch(err => {
-        // TODO: Delete previously created post.
-        const errorResponse = "Error creating post in user document: " + JSON.stringify(err);
-        response.body = JSON.stringify({
-            success: false,
-            errorMessage: errorResponse
-        });
-    });
-
-    // Now push the post reference to the all the followers feed array.
-    let feedPromises = [];
-    user.followers.forEach(follow => {
-        feedPromises.push(User.update({ _id: follow.userId }, { $push: { feed: postReference } }));
-    });
-
-    await Promise.all(feedPromises);
-
-    response.statusCode = 200;
-    response.body = JSON.stringify({
-        success: true,
-        data: { postReference: postReference }
-    });
 
     return response;
 };

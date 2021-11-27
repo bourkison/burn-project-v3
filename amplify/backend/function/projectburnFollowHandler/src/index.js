@@ -329,7 +329,7 @@ const createFollow = async function(event) {
                     postFeed: {
                         $each: followedUser.postReferences,
                         $sort: {
-                            createdAt: -1
+                            createdAt: 1
                         }
                     }
                 },

@@ -290,7 +290,8 @@ const createExercise = async function(event) {
     // Now build out and send the new Exercise.
     const userReference = {
         userId: user._id,
-        username: user.username
+        username: user.username,
+        createdAt: new Date()
     };
 
     const exercise = new Exercise({
@@ -306,56 +307,47 @@ const createExercise = async function(event) {
         followCount: 1
     });
 
-    const exerciseResult = await exercise.save().catch(err => {
-        const errorResponse = "Error creating exercise: " + JSON.stringify(err);
-        response.body = JSON.stringify({
-            success: false,
-            errorMessage: errorResponse
+    try {
+        const exerciseResult = await exercise.save();
+    
+        if (!exerciseResult) {
+            throw new Error("No response");
+        }
+        // Now build out the exercise reference, and add that to the User's exerciseReferences array.
+        const exerciseReference = {
+            exerciseId: ObjectId(exerciseResult._id),
+            muscleGroups: exerciseResult.muscleGroups,
+            tags: exerciseResult.tags,
+            isFollow: false,
+            name: exerciseResult.name,
+            createdBy: userReference
+        };
+    
+        await User.update(
+            { _id: user._id },
+            { $push: { exerciseReferences: exerciseReference } }
+        ).catch(err => {
+            // TODO: Delete previously created exercise.
+            throw err;
         });
-
-        return response;
-    });
-
-    if (!exerciseResult) {
-        const errorResponse = "Error creating exercise. No response.";
+    
+        response.statusCode = 200;
+        response.body = JSON.stringify({
+            success: true,
+            _id: exerciseResult._id,
+            data: exerciseResult
+        });
+    }
+    catch (err) {
+        const errorResponse = "Error creating exercise";
         response.body = JSON.stringify({
             success: false,
-            errorMessage: errorResponse
+            message: errorResponse,
+            error: err
         });
 
         return response;
     }
-    // Now build out the exercise reference, and add that to the User's exerciseReferences array.
-    const exerciseReference = {
-        exerciseId: ObjectId(exerciseResult._id),
-        muscleGroups: exerciseResult.muscleGroups,
-        tags: exerciseResult.tags,
-        isFollow: false,
-        name: exerciseResult.name,
-        createdBy: userReference
-    };
-
-    await User.update(
-        { _id: user._id },
-        { $push: { exerciseReferences: exerciseReference } }
-    ).catch(err => {
-        // TODO: Delete previously created exercise.
-        const errorResponse =
-            "Error creating exercise in user document: " + JSON.stringify(err);
-        response.body = JSON.stringify({
-            success: false,
-            errorMessage: errorResponse
-        });
-
-        return response;
-    });
-
-    response.statusCode = 200;
-    response.body = JSON.stringify({
-        success: true,
-        _id: exerciseResult._id,
-        data: exerciseResult
-    });
 
     return response;
 };
@@ -424,6 +416,8 @@ const updateExercise = async function(event) {
 
         return response;
     }
+
+    exerciseForm.searchName = createEdgeNGrams(exerciseForm.name, 3);
 
     // Now update the Exercise document.
     const exerciseResult = await Exercise.findByIdAndUpdate(
@@ -657,6 +651,27 @@ const deleteExercise = async function(event) {
 
     return response;
 };
+
+// Used to allow partial text search
+const createEdgeNGrams = function(str, min) {
+    if (str && str.length > min) {
+        const minGram = min
+        const maxGram = str.length
+        
+        return str.split(" ").reduce((ngrams, token) => {
+            if (token.length > minGram) {   
+                for (let i = minGram; i <= maxGram && i <= token.length; ++i) {
+                    ngrams = [...ngrams, token.substr(0, i)]
+                }
+            } else {
+                ngrams = [...ngrams, token]
+            }
+            return ngrams
+        }, []).join(" ")
+    } 
+    
+    return str;
+}
 
 exports.handler = async (event, context) => {
     /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */
