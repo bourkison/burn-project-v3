@@ -4,7 +4,7 @@
 	STORAGE_PROJECTBURNSTORAGE_BUCKETNAME
 Amplify Params - DO NOT EDIT */
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const projections = require("./projections")
 
@@ -14,7 +14,7 @@ let MONGODB_URI;
 // GET request /exercise/{proxy+}
 const getExercise = async function(event) {
     const exerciseId = ObjectId(event.pathParameters.proxy);
-    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+    const Exercise = await MongooseModels().Exercise(MONGODB_URI);
     const username = event.requestContext.authorizer.claims["cognito:username"];
     const counters = (event.queryStringParameters && event.queryStringParameters.counters === "true") || false;
 
@@ -127,7 +127,7 @@ const queryExercise = async function(event) {
     let result;
 
     if (userBool) {
-        const User = (await MongooseModels(MONGODB_URI)).User;
+        const User = await MongooseModels().User(MONGODB_URI);
         let exerciseQuery = [
             {
                 $match: {
@@ -195,7 +195,7 @@ const queryExercise = async function(event) {
             result = [];
         }
     } else {
-        const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+        const Exercise = await MongooseModels().Exercise(MONGODB_URI);
 
         let exerciseQuery = {};
 
@@ -256,8 +256,8 @@ const createExercise = async function(event) {
     let exerciseForm = JSON.parse(event.body).exerciseForm;
     const username = event.requestContext.authorizer.claims["cognito:username"];
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Exercise = await MongooseModels().Exercise(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -366,8 +366,8 @@ const updateExercise = async function(event) {
     const username = event.requestContext.authorizer.claims["cognito:username"];
     let exerciseForm = JSON.parse(event.body).exerciseForm;
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Exercise = await MongooseModels().Exercise(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -474,9 +474,9 @@ const deleteExercise = async function(event) {
     const exerciseId = ObjectId(event.pathParameters.proxy);
     const username = event.requestContext.authorizer.claims["cognito:username"];
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
-    const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Exercise = await MongooseModels().Exercise(MONGODB_URI);
+    const Template = await MongooseModels().Template(MONGODB_URI);
 
     let response = {
         statusCode: 500,

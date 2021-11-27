@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
@@ -23,16 +23,16 @@ const getLike = async function(event) {
 
     switch (coll) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "post":
-            Model = (await MongooseModels(MONGODB_URI)).Post;
+            Model = await MongooseModels().Post(MONGODB_URI);
             break;
         case "user":
-            Model = (await MongooseModels(MONGODB_URI)).User;
+            Model = await MongooseModels().User(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;
@@ -100,17 +100,17 @@ const createLike = async function(event) {
     };
 
     let Model;
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     switch (coll.split("/")[0]) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "post":
-            Model = (await MongooseModels(MONGODB_URI)).Post;
+            Model = await MongooseModels().Post(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;
@@ -122,8 +122,10 @@ const createLike = async function(event) {
     // With a Promise.all() to catch them.
 
     // First get the user for the _id.
+    let promises = [];
+    let user;
     let fields = "username";
-    const user = await User.findOne({ username: username }, fields).exec();
+    promises.push(User.findOne({ username: username }, fields).exec().then(response => { user = response; }));
 
     // Check if user has liked already.
     // TODO: This is all messy and needs to be cleaned.
@@ -132,7 +134,7 @@ const createLike = async function(event) {
 
     if (!commentId) {
         console.log("NO COMMENT ID");
-        likeCheckResult = await Model.aggregate([
+        promises.push(Model.aggregate([
             {
                 $match: {
                     _id: docId
@@ -158,7 +160,10 @@ const createLike = async function(event) {
                     }
                 }
             }
-        ]);
+        ])
+        .then(response => {
+            likeCheckResult = response;
+        }));
 
         if (likeCheckResult.length > 0) {
             likeCheckResult = likeCheckResult[0].isLiked;
@@ -167,7 +172,7 @@ const createLike = async function(event) {
         }
     } else {
         try {
-            likeCheckResult = await Model.aggregate([
+            promises.push(Model.aggregate([
                 {
                     $match: {
                         _id: docId
@@ -211,7 +216,10 @@ const createLike = async function(event) {
                         }
                     }
                 }
-            ]);
+            ])
+            .then(response => {
+                likeCheckResult = response;
+            }));
 
             likeCheckResult = likeCheckResult[0].isLiked;
         } catch (err) {
@@ -228,6 +236,8 @@ const createLike = async function(event) {
             return response;
         }
     }
+
+    await Promise.all(promises);
 
     if (likeCheckResult) {
         const errorResponse =
@@ -354,17 +364,17 @@ const deleteLike = async function(event) {
     };
 
     let Model;
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     switch (coll.split("/")[0]) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "post":
-            Model = (await MongooseModels(MONGODB_URI)).Post;
+            Model = await MongooseModels().Post(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;

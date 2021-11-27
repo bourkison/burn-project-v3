@@ -93,7 +93,7 @@ export default {
             this.isLoadingMore = false;
         }
         catch (err) {
-            console.error(err)
+            console.error(err.message || JSON.stringify(err));
             this.moreToLoad = false;
         }
         finally {

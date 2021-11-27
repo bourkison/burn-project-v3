@@ -34,7 +34,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### Video
 * ~~Autopause video when out of view~~
 * Add a "Media Loaded" Variable to see if video still processing
-* Video signature use cookies (as current method doesnt work on iOS)
+* Video signature use cookies (as current method doesnt work on iOS) | https://github.com/awslabs/amplify-video/issues/323
 * Cleaner Video Style
 
 ### Messages
@@ -57,6 +57,9 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Workouts
 * Add alarm sound on timer end
+
+### Schema
+* References have removed all timestamps. Ensure they are being set on creation.
 
 ## Reference 
 

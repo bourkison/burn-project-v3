@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
@@ -11,6 +11,7 @@ const queryComment = async function(event) {
     const loadAmount = 0 - Number(event.queryStringParameters.loadAmount);
     const username = event.requestContext.authorizer.claims["cognito:username"];
 
+    console.log("MONGODB_URI", MONGODB_URI);
     let Model;
 
     let response = {
@@ -24,16 +25,16 @@ const queryComment = async function(event) {
 
     switch (coll) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "post":
-            Model = (await MongooseModels(MONGODB_URI)).Post;
+            Model = await MongooseModels().Post(MONGODB_URI);
             break;
         case "user":
-            Model = (await MongooseModels(MONGODB_URI)).User;
+            Model = await MongooseModels().User(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;
@@ -157,17 +158,17 @@ const createComment = async function(event) {
     };
 
     let Model;
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     switch (coll) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "post":
-            Model = (await MongooseModels(MONGODB_URI)).Post;
+            Model = await MongooseModels().Post(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;
@@ -255,7 +256,7 @@ const deleteComment = async function(event) {
 
     let Model;
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -268,13 +269,13 @@ const deleteComment = async function(event) {
 
     switch (coll) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "post":
-            Model = (await MongooseModels(MONGODB_URI)).Post;
+            Model = await MongooseModels().Post(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;

@@ -1,4 +1,4 @@
-const mongoose = require("./nodejs/node_modules/mongoose");
+const mongoose = require("mongoose");
 
 const mongooseConnect = require("./mongoose-connection");
 const ObjectId = mongoose.Types.ObjectId;
@@ -17,9 +17,13 @@ const userReferenceSchema = new mongoose.Schema(
         username: {
             type: String,
             required: true
+        },
+        createdAt: {
+            type: Date,
+            required: true
         }
     },
-    { timestamps: true }
+    { timestamps: false }
 );
 
 const exerciseReferenceSchema = new mongoose.Schema(
@@ -47,9 +51,13 @@ const exerciseReferenceSchema = new mongoose.Schema(
         createdBy: {
             type: userReferenceSchema,
             required: true
+        },
+        createdAt: {
+            type: Date,
+            required: true
         }
     },
-    { timestamps: true }
+    { timestamps: false }
 );
 
 const postReferenceSchema = new mongoose.Schema(
@@ -91,9 +99,13 @@ const templateReferenceSchema = new mongoose.Schema(
         createdBy: {
             type: userReferenceSchema,
             required: true
+        },
+        createdAt: {
+            type: Date,
+            required: true
         }
     },
-    { timestamps: true }
+    { timestamps: false }
 );
 
 const commentReferenceSchema = new mongoose.Schema(
@@ -105,9 +117,13 @@ const commentReferenceSchema = new mongoose.Schema(
         docId: {
             type: ObjectId,
             required: true
+        },
+        createdAt: {
+            type: Date,
+            required: true
         }
     },
-    { timestamps: true }
+    { timestamps: false }
 );
 
 const likeReferenceSchema = new mongoose.Schema(
@@ -123,9 +139,13 @@ const likeReferenceSchema = new mongoose.Schema(
         commentId: {
             type: ObjectId,
             default: null
+        },
+        createdAt: {
+            type: Date,
+            required: true
         }
     },
-    { timestamps: true }
+    { timestamps: false }
 );
 
 const recordedSetSchema = new mongoose.Schema(
@@ -284,11 +304,13 @@ const userSchema = new mongoose.Schema(
     {
         username: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         email: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         firstName: {
             type: String,
@@ -448,7 +470,7 @@ const exerciseSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
-        amountUsed: {
+        usedAmount: {
             type: Number,
             default: 0
         }
@@ -514,7 +536,7 @@ const templateSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
-        amountUsed: {
+        usedAmount: {
             type: Number,
             default: 0
         }
@@ -522,26 +544,33 @@ const templateSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = async uri => {
-    const connection = await mongooseConnect(uri);
+module.exports = () => {
 
-    const User = () => {
+    const User = async (uri) => {
+        const connection = await mongooseConnect(uri);
         userSchema.index({ username: "text" });
-        return connection.model("User", userSchema);   
+        const response =  await connection.model("User", userSchema);   
+        return response;
     }
 
-    const Exercise = () => {
+    const Exercise = async (uri) => {
+        const connection = await mongooseConnect(uri);
         exerciseSchema.index({ name: "text" });
-        return connection.model("Exercise", exerciseSchema);
+        const response =  await connection.model("Exercise", exerciseSchema);
+        return response;
     }
 
-    const Template = () => {
+    const Template = async (uri) => {
+        const connection = await mongooseConnect(uri);
         templateSchema.index({ name: "text" });
-        return connection.model("Template", templateSchema);
+        const response =  await connection.model("Template", templateSchema);
+        return response;
     }
 
-    const Post = () => {
-        return connection.model("Post", postSchema);
+    const Post = async (uri) => {
+        const connection = await mongooseConnect(uri);
+        const response =  await connection.model("Post", postSchema);
+        return response;
     }
 
     return { User, Exercise, Post, Template };

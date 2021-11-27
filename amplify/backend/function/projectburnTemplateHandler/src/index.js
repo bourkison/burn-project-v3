@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
@@ -7,7 +7,7 @@ let MONGODB_URI;
 // GET request /template/{proxy+}
 const getTemplate = async function(event) {
     const templateId = ObjectId(event.pathParameters.proxy);
-    const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const Template = await MongooseModels().Template(MONGODB_URI);
     const username = event.requestContext.authorizer.claims["cognito:username"];
     const counters =
         (event.queryStringParameters && event.queryStringParameters.counters === "true") || false;
@@ -118,7 +118,7 @@ const queryTemplate = async function(event) {
     let result;
 
     if (userBool) {
-        const User = (await MongooseModels(MONGODB_URI)).User;
+        const User = await MongooseModels().User(MONGODB_URI);
 
         let templateQuery = [
             {
@@ -261,7 +261,7 @@ const queryTemplate = async function(event) {
             result = [];
         }
     } else {
-        const Template = (await MongooseModels(MONGODB_URI)).Template;
+        const Template = await MongooseModels().Template(MONGODB_URI);
 
         let templateQuery = {};
 
@@ -323,9 +323,9 @@ const queryTemplate = async function(event) {
 const createTemplate = async function(event) {
     let templateForm = JSON.parse(event.body).templateForm;
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
-    const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Exercise = await MongooseModels().Exercise(MONGODB_URI);
+    const Template = await MongooseModels().Template(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -457,8 +457,8 @@ const updateTemplate = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Template = await MongooseModels().Template(MONGODB_URI);
 
     // First pull template data to ensure user created this and has access to edit.
     const userResult = (
@@ -551,8 +551,8 @@ const deleteTemplate = async function(event) {
     const templateId = ObjectId(event.pathParameters.proxy);
     const username = event.requestContext.authorizer.claims["cognito:username"];
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Template = await MongooseModels().Template(MONGODB_URI);
 
     let response = {
         statusCode: 500,

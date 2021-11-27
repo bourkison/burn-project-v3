@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 const faker = require("faker");
@@ -58,10 +58,10 @@ exports.handler = async (event, context) => {
 
     MONGODB_URI = Parameters[0].Value;
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Post = (await MongooseModels(MONGODB_URI)).Post;
-    const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
-    const Template = (await MongooseModels(MONGODB_URI)).Template;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Post = await MongooseModels().Post(MONGODB_URI);
+    const Exercise = await MongooseModels().Exercise(MONGODB_URI);
+    const Template = await MongooseModels().Template(MONGODB_URI);
     
     const databaseForm = JSON.parse(event.body).databaseForm;
     console.log("DATABASE FORM:", databaseForm);

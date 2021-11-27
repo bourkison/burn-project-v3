@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const projections = require("./projections");
 let MONGODB_URI;
 
@@ -7,7 +7,7 @@ let MONGODB_URI;
 const getUser = async function(event) {
     let username = event.pathParameters.proxy;
     const view = event.queryStringParameters ? event.queryStringParameters.view : null;
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -121,7 +121,7 @@ const updateUser = async function(event) {
         return response;
     }
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     console.log("USER FORM:", userForm);
 

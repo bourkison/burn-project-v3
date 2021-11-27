@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const projections = require("./projections")
 
 let MONGODB_URI;
@@ -51,7 +51,7 @@ const amountWorkouts = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     let workoutResult = (
         await User.aggregate([
@@ -123,7 +123,7 @@ const exerciseStats = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     if (!exerciseId) {
         exerciseId = (await User.aggregate(projections.orderedExercisesAggregation(username)))[preferenceIndex]._id;
@@ -338,7 +338,7 @@ const updateChart = async function(event) {
 
     setObj[key] = options
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     await User.updateOne(
         {

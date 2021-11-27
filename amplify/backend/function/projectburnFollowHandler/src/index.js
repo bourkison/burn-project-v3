@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
@@ -23,13 +23,13 @@ const getFollow = async function(event) {
 
     switch (coll) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "user":
-            Model = (await MongooseModels(MONGODB_URI)).User;
+            Model = await MongooseModels().User(MONGODB_URI);
             break;
         default:
             response.statusCode = 400;
@@ -93,7 +93,7 @@ const createFollow = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    let User = (await MongooseModels(MONGODB_URI)).User;
+    let User = await MongooseModels().User(MONGODB_URI);
 
     // First get user's _id.
     let fields = "username";
@@ -107,7 +107,7 @@ const createFollow = async function(event) {
     }
 
     if (coll === "exercise") {
-        const Exercise = (await MongooseModels(MONGODB_URI)).Exercise;
+        const Exercise = await MongooseModels().Exercise(MONGODB_URI);
 
         // First check is user has followed already, while at the same time pulling relevant values
         // for the exerciseReference.
@@ -195,7 +195,7 @@ const createFollow = async function(event) {
             return response;
         }
     } else if (coll === "template") {
-        const Template = (await MongooseModels(MONGODB_URI)).Template;
+        const Template = await MongooseModels().Template(MONGODB_URI);
 
         // First check is user has followed already, while at the same time pulling relevant values
         // for the templateReference.
@@ -397,15 +397,15 @@ const deleteFollow = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     if (coll === "exercise" || coll === "template") {
         let Model;
 
         if (coll === "exercise") {
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
         } else {
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
         }
 
         // First check if user has followed already.

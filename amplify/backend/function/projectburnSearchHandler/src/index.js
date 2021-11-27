@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 let MONGODB_URI;
 
 // GET request.
@@ -50,13 +50,13 @@ const queryCollection = async (query, collection) => {
     let Model;
     switch (collection) {
         case "exercise":
-            Model = (await MongooseModels(MONGODB_URI)).Exercise;
+            Model = await MongooseModels().Exercise(MONGODB_URI);
             break;
         case "template":
-            Model = (await MongooseModels(MONGODB_URI)).Template;
+            Model = await MongooseModels().Template(MONGODB_URI);
             break;
         case "user":
-            Model = (await MongooseModels(MONGODB_URI)).User;
+            Model = await MongooseModels().User(MONGODB_URI);
             break;
     }
 

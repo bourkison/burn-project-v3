@@ -1,5 +1,5 @@
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
@@ -13,7 +13,7 @@ const getWorkout = async function(event) {
         username = event.queryStringParameters.username;
     }
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -68,7 +68,7 @@ const queryWorkout = async function(event) {
         body: JSON.stringify({ success: false })
     };
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     const result = (await User.findOne(
         {
@@ -101,7 +101,7 @@ const createWorkout = async function(event) {
     let workoutForm = JSON.parse(event.body).workoutForm;
     const username = event.requestContext.authorizer.claims["cognito:username"];
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     let response = {
         statusCode: 500,

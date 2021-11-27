@@ -4,7 +4,7 @@
 	STORAGE_PROJECTBURNSTORAGE_BUCKETNAME
 Amplify Params - DO NOT EDIT */
 const aws = require("aws-sdk");
-const MongooseModels = require("/opt/models");
+const MongooseModels = require("/opt/nodejs/models");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let MONGODB_URI;
@@ -13,7 +13,7 @@ let MONGODB_URI;
 const getPost = async function(event) {
     const postId = event.pathParameters.proxy;
     const username = event.requestContext.authorizer.claims["cognito:username"];
-    const Post = (await MongooseModels(MONGODB_URI)).Post;
+    const Post = await MongooseModels().Post(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -99,7 +99,7 @@ const queryPost = async function(event) {
     };
 
     let result;
-    const User = (await MongooseModels(MONGODB_URI)).User;
+    const User = await MongooseModels().User(MONGODB_URI);
 
     if (userId) {
         if (!startAt) {
@@ -279,8 +279,8 @@ const createPost = async function(event) {
     const username = event.requestContext.authorizer.claims["cognito:username"];
     const postId = new ObjectId();
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Post = (await MongooseModels(MONGODB_URI)).Post;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Post = await MongooseModels().Post(MONGODB_URI);
 
     let response = {
         statusCode: 500,
@@ -396,8 +396,8 @@ const deletePost = async function(event) {
     const postId = ObjectId(event.pathParameters.proxy);
     const username = event.requestContext.authorizer.claims["cognito:username"];
 
-    const User = (await MongooseModels(MONGODB_URI)).User;
-    const Post = (await MongooseModels(MONGODB_URI)).Post;
+    const User = await MongooseModels().User(MONGODB_URI);
+    const Post = await MongooseModels().Post(MONGODB_URI);
 
     let response = {
         statusCode: 500,

@@ -196,8 +196,8 @@ export default {
                     await Auth.rememberDevice();
                 }
 
-                await this.$store.dispatch("fetchUser", user.signInUserSession);
-                this.isLoading = false;
+                // await this.$store.dispatch("fetchUser", user.signInUserSession);
+                // this.isLoading = false;
             }
         },
 

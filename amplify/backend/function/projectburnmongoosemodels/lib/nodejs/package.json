@@ -3,6 +3,6 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "mongoose": "^5.13.3"
+    "mongoose": "^5.13.13"
   }
 }
