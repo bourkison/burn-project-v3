@@ -5,7 +5,7 @@ import ClientOnly from 'vue-client-only'
 import NoSsr from 'vue-no-ssr'
 import { createRouter } from './router.js'
 import NuxtChild from './components/nuxt-child.js'
-import NuxtError from './components/nuxt-error.vue'
+import NuxtError from '../layouts/error.vue'
 import Nuxt from './components/nuxt.js'
 import App from './App.js'
 import { setContext, getLocation, getRouteData, normalizeError } from './utils'
@@ -16,7 +16,7 @@ import { createStore } from './store.js'
 import nuxt_plugin_plugin_131d8a84 from 'nuxt_plugin_plugin_131d8a84' // Source: ./components/plugin.js (mode: 'all')
 import nuxt_plugin_bootstrapvue_6c89dd03 from 'nuxt_plugin_bootstrapvue_6c89dd03' // Source: ./bootstrap-vue.js (mode: 'all')
 import nuxt_plugin_editorclient_9801e676 from 'nuxt_plugin_editorclient_9801e676' // Source: ./tui/editor.client.js (mode: 'client')
-import nuxt_plugin_amplify_900d1ace from 'nuxt_plugin_amplify_900d1ace' // Source: ../plugins/amplify.js (mode: 'client')
+import nuxt_plugin_amplify_900d1ace from 'nuxt_plugin_amplify_900d1ace' // Source: ../plugins/amplify.js (mode: 'all')
 
 // Component: <ClientOnly>
 Vue.component(ClientOnly.name, ClientOnly)
@@ -225,7 +225,7 @@ async function createApp(ssrContext, config = {}) {
     await nuxt_plugin_editorclient_9801e676(app.context, inject)
   }
 
-  if (process.client && typeof nuxt_plugin_amplify_900d1ace === 'function') {
+  if (typeof nuxt_plugin_amplify_900d1ace === 'function') {
     await nuxt_plugin_amplify_900d1ace(app.context, inject)
   }
 

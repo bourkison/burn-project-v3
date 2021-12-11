@@ -13,7 +13,7 @@
                                     variant="outline"
                                 >
                                     <span
-                                        v-if="
+                                        v-if="this.$store.state.userProfile && 
                                             exerciseData.createdBy.userId ===
                                                 this.$store.state.userProfile.docData._id
                                         "
@@ -188,7 +188,8 @@
 </template>
 
 <script>
-import { API, graphqlOperation, Storage } from "aws-amplify";
+import { API, graphqlOperation, Storage, withSSRContext } from "aws-amplify";
+import fetch from "node-fetch";
 import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
 
@@ -252,7 +253,7 @@ export default {
     },
     head() {
         return {
-            title: this.$route.params.exerciseId,
+            title: this.exerciseData ? this.exerciseData.name : "Exercise",
             meta: [
                 {
                     hid: "description",
@@ -262,110 +263,151 @@ export default {
             ]
         }
     },
-    async fetch() {
+    async asyncData({ params, error }) {
+        console.log("Async Data", params);
+        let isLoading = true;
+        let exerciseExists = false;
+        let exerciseData = null;
+
         try {
-                this.isLoading = true;
-                this.exerciseExists = false;
-                this.exerciseData = null;
-                this.carouselModel = 0;
+            let response = (await (await fetch("https://83cshfnyp3.execute-api.ap-southeast-2.amazonaws.com/dev/public/exercise/" + params.exerciseId)).json());
 
-                const path = "/public/exercise/" + this.$route.params.exerciseid;
-                const myInit = {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    queryStringParameters: {
-                        counters: true
-                    }
-                };
-
-                const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
-
-                this.chartOptions.data.exercise = {
-                    exerciseId: response._id,
-                    createdBy: response.createdBy,
-                    name: response.name,
-                    filePaths: response.filePaths,
-                    tags: response.tags,
-                    muscleGroups: response.muscleGroups
-                };
-                this.chartOptions.exerciseId = response._id;
-
-                this.exerciseData = {
-                    _id: response._id,
-                    createdBy: response.createdBy,
-                    description: response.description,
-                    difficulty: response.difficulty,
-                    filePaths: response.filePaths,
-                    measureBy: response.measureBy,
-                    muscleGroups: response.muscleGroups,
-                    name: response.name,
-                    tags: response.tags
-                };
-
-                if (this.exerciseData) {
-                    console.log("EXERCISE DOWNLOAD SUCCESS:", this.exerciseData);
-                    this.exerciseExists = true;
-                } else {
-                    throw new Error("Exercise does not exist");
-                }
-
-                try {
-                    let urlPromises = [];
-
-                    this.exerciseData.filePaths.forEach(async path => {
-                        if (path.type === "video") {
-                            const videoObject = {
-                                id: path.key
-                            };
-
-                            const response = await API.graphql(
-                                graphqlOperation(getVideoObject, videoObject)
-                            );
-
-                            this.video.token = response.data.getVideoObject.token;
-                            this.video.id = path.key;
-                            const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
-                            this.video.url =
-                                "https://" +
-                                awsvideoconfig.awsOutputVideo +
-                                "/" +
-                                this.video.id +
-                                "/" +
-                                uniqueId +
-                                ".m3u8";
-
-                            this.video.options = {
-                                autoplay: true,
-                                controls: true,
-                                sources: [
-                                    {
-                                        src: this.video.url
-                                    }
-                                ]
-                            };
-                        } else if (path.type === "image") {
-                            urlPromises.push(Storage.get(path.key));
-                        }
-                    });
-
-                    const imageUrls = await Promise.all(urlPromises);
-
-                    imageUrls.forEach(url => {
-                        this.imageUrls.push(url);
-                    });
-                } catch (err) {
-                    console.error("Error getting image URLs:", err);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                this.isLoading = false;
+            if (response.data && response.data._id) {
+                response = response.data;
+                exerciseExists = true;
+            } else {
+                error({ message: "Page not found", statusCode: 404 });
             }
+
+            isLoading = false;
+
+            exerciseData = {
+                _id: response._id,
+                createdBy: response.createdBy,
+                description: response.description,
+                difficulty: response.difficulty,
+                filePaths: response.filePaths,
+                measureBy: response.measureBy,
+                muscleGroups: response.muscleGroups,
+                name: response.name,
+                tags: response.tags
+            };
+
+            return {
+                isLoading,
+                exerciseExists,
+                exerciseData
+            }
+        }
+        catch (err) {
+            error({ message: "Internal server error", statusCode: 500 });
+        }
+
+        // try {
+        //     const SSR = withSSRContext();
+        //     console.log("SSR:", SSR);
+
+        //     this.isLoading = true;
+        //     this.exerciseExists = false;
+        //     this.exerciseData = null;
+        //     this.carouselModel = 0;
+
+        //     const path = "/public/exercise/" + this.$route.params.exerciseId;
+        //     const myInit = {
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         }
+        //     };
+
+        //     // const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
+        //     const response = (await (await fetch("https://83cshfnyp3.execute-api.ap-southeast-2.amazonaws.com/dev/public/exercise/" + this.$route.params.exerciseId)).json()).data;
+
+        //     console.log("RESPONSE:", response);
+
+        //     this.chartOptions.data.exercise = {
+        //         exerciseId: response._id,
+        //         createdBy: response.createdBy,
+        //         name: response.name,
+        //         filePaths: response.filePaths,
+        //         tags: response.tags,
+        //         muscleGroups: response.muscleGroups
+        //     };
+        //     this.chartOptions.exerciseId = response._id;
+
+        //     this.exerciseData = {
+        //         _id: response._id,
+        //         createdBy: response.createdBy,
+        //         description: response.description,
+        //         difficulty: response.difficulty,
+        //         filePaths: response.filePaths,
+        //         measureBy: response.measureBy,
+        //         muscleGroups: response.muscleGroups,
+        //         name: response.name,
+        //         tags: response.tags
+        //     };
+
+        //     if (this.exerciseData) {
+        //         console.log("EXERCISE DOWNLOAD SUCCESS:", this.exerciseData);
+        //         this.exerciseExists = true;
+        //     } else {
+        //         throw new Error("Exercise does not exist");
+        //     }
+        // } catch (err) {
+        //     console.error(err);
+        //     return;
+        // } finally {
+        //     this.isLoading = false;
+        // }
     },
     fetchOnServer: true,
-    created() {
-        console.log("PARAMS", this.$route.params);
+    async created() {
+        try {
+            let urlPromises = [];
+
+            this.exerciseData.filePaths.forEach(async path => {
+                if (path.type === "video") {
+                    const videoObject = {
+                        id: path.key
+                    };
+
+                    const response = await API.graphql(
+                        graphqlOperation(getVideoObject, videoObject)
+                    );
+
+                    this.video.token = response.data.getVideoObject.token;
+                    this.video.id = path.key;
+                    const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
+                    this.video.url =
+                        "https://" +
+                        awsvideoconfig.awsOutputVideo +
+                        "/" +
+                        this.video.id +
+                        "/" +
+                        uniqueId +
+                        ".m3u8";
+
+                    this.video.options = {
+                        autoplay: true,
+                        controls: true,
+                        sources: [
+                            {
+                                src: this.video.url
+                            }
+                        ]
+                    };
+                } else if (path.type === "image") {
+                    urlPromises.push(Storage.get(path.key));
+                }
+            });
+
+            const imageUrls = await Promise.all(urlPromises);
+
+            imageUrls.forEach(url => {
+                this.imageUrls.push(url);
+            });
+        } catch (err) {
+            console.error("Error getting image URLs:", err);
+        }
     }
 }
 </script>

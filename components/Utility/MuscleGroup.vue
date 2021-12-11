@@ -280,22 +280,24 @@ export default {
         updateFills: function(newVal, oldVal) {
             // Not sure what's happening here. Watcher appears to be broken when clicking on SVG.
             // Do this check to workaround as only happens when pushing to array.
-            if (newVal.length == oldVal.length && newVal.length > 0) {
-                document.getElementById(newVal[newVal.length - 1]).children.forEach(child => {
-                    child.style.fill = "red";
-                });
-            } else if (newVal.length > oldVal.length && newVal.length > 0) {
-                let difference = newVal.filter(x => !oldVal.includes(x));
-                difference.forEach(elementId => {
-                    document.getElementById(elementId).children.forEach(child => {
+            if (document.getElementById(newVal[newVal.length - 1]) && document.getElementById(newVal[newVal.length - 1]).children) {
+                if (newVal.length == oldVal.length && newVal.length > 0) {
+                    document.getElementById(newVal[newVal.length - 1]).children.forEach(child => {
                         child.style.fill = "red";
                     });
-                });
-            } else if (oldVal.length > 0) {
-                let difference = oldVal.filter(x => !newVal.includes(x));
-                document.getElementById(difference[0]).children.forEach(child => {
-                    child.style.fill = "rgb(64,64,64)";
-                });
+                } else if (newVal.length > oldVal.length && newVal.length > 0) {
+                    let difference = newVal.filter(x => !oldVal.includes(x));
+                    difference.forEach(elementId => {
+                        document.getElementById(elementId).children.forEach(child => {
+                            child.style.fill = "red";
+                        });
+                    });
+                } else if (oldVal.length > 0) {
+                    let difference = oldVal.filter(x => !newVal.includes(x));
+                    document.getElementById(difference[0]).children.forEach(child => {
+                        child.style.fill = "rgb(64,64,64)";
+                    });
+                }
             }
         },
 
