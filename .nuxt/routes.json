@@ -1,0 +1,23 @@
+[
+  {
+    "name": "exercises",
+    "path": "/exercises",
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/pages/exercises/index.vue",
+    "chunkName": "pages/exercises/index",
+    "_name": "_f3dc2fd4"
+  },
+  {
+    "name": "exercises-exerciseId",
+    "path": "/exercises/:exerciseId",
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/pages/exercises/_exerciseId.vue",
+    "chunkName": "pages/exercises/_exerciseId",
+    "_name": "_d31dae14"
+  },
+  {
+    "name": "index",
+    "path": "/",
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/pages/index.vue",
+    "chunkName": "pages/index",
+    "_name": "_5589d78a"
+  }
+]

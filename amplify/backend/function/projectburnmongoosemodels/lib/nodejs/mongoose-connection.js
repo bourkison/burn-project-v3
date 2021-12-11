@@ -1,5 +1,6 @@
-// https://stackoverflow.com/questions/16226472/mongoose-autoreconnect-option
 // Unified Topology causing unstable connection
+// https://stackoverflow.com/questions/16226472/mongoose-autoreconnect-option
+// https://arunrajeevan.medium.com/understanding-mongoose-connection-options-2b6e73d96de1
 
 const mongoose = require('mongoose');
 let conn = null;

@@ -49,7 +49,7 @@
         },
         "projectburncognitoPreSignup": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburncognitoPreSignup-4a716e737844744c4e75-build.zip"
+          "s3Key": "amplify-builds/projectburncognitoPreSignup-4a6a787068367256504a-build.zip"
         },
         "projectburnmongoosemodels": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
