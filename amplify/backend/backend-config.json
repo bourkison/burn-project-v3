@@ -186,6 +186,20 @@
           ]
         }
       ]
+    },
+    "projectburnPublicHandler": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "projectburnmongoosemodels",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
     }
   },
   "api": {
@@ -276,6 +290,14 @@
         {
           "category": "function",
           "resourceName": "projectburnSearchHandler",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "projectburnPublicHandler",
           "attributes": [
             "Name",
             "Arn"

@@ -269,11 +269,10 @@ export default {
                 this.exerciseData = null;
                 this.carouselModel = 0;
 
-                const path = "/exercise/" + this.$route.params.exerciseid;
+                const path = "/public/exercise/" + this.$route.params.exerciseid;
                 const myInit = {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
                     },
                     queryStringParameters: {
                         counters: true
@@ -303,13 +302,6 @@ export default {
                     name: response.name,
                     tags: response.tags
                 };
-
-                this.likeCount = response.likeCount;
-                this.commentCount = response.commentCount;
-                this.followCount = response.followCount;
-                this.isLiked = response.isLiked;
-                this.isFollowed = response.isFollowed;
-                this.isFollowable = response.isFollowable;
 
                 if (this.exerciseData) {
                     console.log("EXERCISE DOWNLOAD SUCCESS:", this.exerciseData);
