@@ -188,8 +188,7 @@
 </template>
 
 <script>
-import { API, graphqlOperation, Storage, withSSRContext } from "aws-amplify";
-import fetch from "node-fetch";
+import { API, graphqlOperation, Storage } from "aws-amplify";
 import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
 
@@ -222,28 +221,7 @@ export default {
             isFollowable: false,
 
             // Chart
-            chartOptions: {
-                type: "exercise",
-                startDate: {
-                    unit: "month",
-                    amount: 3,
-                    date: null
-                },
-                endDate: {
-                    unit: "day",
-                    amount: 0,
-                    date: null
-                },
-                data: {
-                    exerciseId: "",
-                    preferenceIndex: 0,
-                    dataToPull: "orm"
-                },
-                interval: "day",
-                backgroundColor: "#007bff",
-                borderColor: "#007bff",
-                pointBackgroundColor: "#007bff"
-            },
+            chartOptions: {},
 
             // Bootstrap:
             carouselModel: 0,
@@ -263,14 +241,36 @@ export default {
             ]
         }
     },
-    async asyncData({ params, error }) {
+    async asyncData({ params, error, store }) {
         console.log("Async Data", params);
         let isLoading = true;
         let exerciseExists = false;
         let exerciseData = null;
+        let chartOptions = {
+            type: "exercise",
+            startDate: {
+                unit: "month",
+                amount: 3,
+                date: null
+            },
+            endDate: {
+                unit: "day",
+                amount: 0,
+                date: null
+            },
+            data: {
+                exerciseId: "",
+                preferenceIndex: 0,
+                dataToPull: "orm"
+            },
+            interval: "day",
+            backgroundColor: "#007bff",
+            borderColor: "#007bff",
+            pointBackgroundColor: "#007bff"
+        };
 
         try {
-            let response = (await (await fetch("https://83cshfnyp3.execute-api.ap-southeast-2.amazonaws.com/dev/public/exercise/" + params.exerciseId)).json());
+            let response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
 
             if (response.data && response.data._id) {
                 response = response.data;
@@ -293,73 +293,27 @@ export default {
                 tags: response.tags
             };
 
+            chartOptions.data.exercise = {
+                exerciseId: response._id,
+                createdBy: response.createdBy,
+                name: response.name,
+                filePaths: response.filePaths,
+                tags: response.tags,
+                muscleGroups: response.muscleGroups
+            };
+            chartOptions.exerciseId = response._id;
+
             return {
                 isLoading,
                 exerciseExists,
-                exerciseData
+                exerciseData,
+                chartOptions
             }
         }
         catch (err) {
             error({ message: "Internal server error", statusCode: 500 });
         }
-
-        // try {
-        //     const SSR = withSSRContext();
-        //     console.log("SSR:", SSR);
-
-        //     this.isLoading = true;
-        //     this.exerciseExists = false;
-        //     this.exerciseData = null;
-        //     this.carouselModel = 0;
-
-        //     const path = "/public/exercise/" + this.$route.params.exerciseId;
-        //     const myInit = {
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //         }
-        //     };
-
-        //     // const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
-        //     const response = (await (await fetch("https://83cshfnyp3.execute-api.ap-southeast-2.amazonaws.com/dev/public/exercise/" + this.$route.params.exerciseId)).json()).data;
-
-        //     console.log("RESPONSE:", response);
-
-        //     this.chartOptions.data.exercise = {
-        //         exerciseId: response._id,
-        //         createdBy: response.createdBy,
-        //         name: response.name,
-        //         filePaths: response.filePaths,
-        //         tags: response.tags,
-        //         muscleGroups: response.muscleGroups
-        //     };
-        //     this.chartOptions.exerciseId = response._id;
-
-        //     this.exerciseData = {
-        //         _id: response._id,
-        //         createdBy: response.createdBy,
-        //         description: response.description,
-        //         difficulty: response.difficulty,
-        //         filePaths: response.filePaths,
-        //         measureBy: response.measureBy,
-        //         muscleGroups: response.muscleGroups,
-        //         name: response.name,
-        //         tags: response.tags
-        //     };
-
-        //     if (this.exerciseData) {
-        //         console.log("EXERCISE DOWNLOAD SUCCESS:", this.exerciseData);
-        //         this.exerciseExists = true;
-        //     } else {
-        //         throw new Error("Exercise does not exist");
-        //     }
-        // } catch (err) {
-        //     console.error(err);
-        //     return;
-        // } finally {
-        //     this.isLoading = false;
-        // }
     },
-    fetchOnServer: true,
     async created() {
         try {
             let urlPromises = [];

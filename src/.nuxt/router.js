@@ -4,9 +4,9 @@ import { normalizeURL, decode } from 'ufo'
 import { interopDefault } from './utils'
 import scrollBehavior from './router.scrollBehavior.js'
 
-const _f3dc2fd4 = () => interopDefault(import('../pages/exercises/index.vue' /* webpackChunkName: "pages/exercises/index" */))
-const _d31dae14 = () => interopDefault(import('../pages/exercises/_exerciseId.vue' /* webpackChunkName: "pages/exercises/_exerciseId" */))
-const _5589d78a = () => interopDefault(import('../pages/index.vue' /* webpackChunkName: "pages/index" */))
+const _6186b3aa = () => interopDefault(import('../pages/exercises/index.vue' /* webpackChunkName: "pages/exercises/index" */))
+const _0ef8434b = () => interopDefault(import('../pages/exercises/_exerciseId.vue' /* webpackChunkName: "pages/exercises/_exerciseId" */))
+const _7af23bdf = () => interopDefault(import('../pages/index.vue' /* webpackChunkName: "pages/index" */))
 
 const emptyFn = () => {}
 
@@ -21,15 +21,15 @@ export const routerOptions = {
 
   routes: [{
     path: "/exercises",
-    component: _f3dc2fd4,
+    component: _6186b3aa,
     name: "exercises"
   }, {
     path: "/exercises/:exerciseId",
-    component: _d31dae14,
+    component: _0ef8434b,
     name: "exercises-exerciseId"
   }, {
     path: "/",
-    component: _5589d78a,
+    component: _7af23bdf,
     name: "index"
   }],
 
