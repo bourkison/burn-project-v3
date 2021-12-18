@@ -1,7 +1,7 @@
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'test-nuxt',
+    title: 'burn-project-v3',
     htmlAttrs: {
       lang: 'en'
     },

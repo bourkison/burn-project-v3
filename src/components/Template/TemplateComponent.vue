@@ -77,7 +77,7 @@ import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 
 export default {
     name: "TemplateComponent",
-    components: { Viewer, CommentSection, ExerciseExpandable },
+    components: { CommentSection, ExerciseExpandable },
     props: {
         templateId: {
             type: String,

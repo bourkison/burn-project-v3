@@ -3,21 +3,18 @@
     "name": "exercises",
     "path": "/exercises",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/index.vue",
-    "chunkName": "pages/exercises/index",
-    "_name": "_6186b3aa"
+    "chunkName": "pages/exercises/index"
   },
   {
     "name": "exercises-exerciseId",
     "path": "/exercises/:exerciseId",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/_exerciseId.vue",
-    "chunkName": "pages/exercises/_exerciseId",
-    "_name": "_0ef8434b"
+    "chunkName": "pages/exercises/_exerciseId"
   },
   {
     "name": "index",
     "path": "/",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/index.vue",
-    "chunkName": "pages/index",
-    "_name": "_7af23bdf"
+    "chunkName": "pages/index"
   }
 ]

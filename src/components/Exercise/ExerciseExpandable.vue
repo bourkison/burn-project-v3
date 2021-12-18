@@ -37,7 +37,6 @@ import { API } from "aws-amplify";
 
 export default {
     name: "ExerciseExpandable",
-    components: { Viewer },
     props: {
         exercise: {
             type: Object,

@@ -75,7 +75,7 @@ import CommentSection from "@/components/Comment/CommentSection.vue";
 
 export default {
     name: "ExerciseComponent",
-    components: { CommentSection, Viewer, VideoPlayer },
+    components: { CommentSection, VideoPlayer },
     props: {
         exerciseId: {
             type: String,
