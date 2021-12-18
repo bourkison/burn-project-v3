@@ -59,19 +59,19 @@
                             <b-img :src="imageUrls[0]" fluid-grow />
                         </div>
                         <div v-else-if="video.url">
-                            <!-- <VideoPlayer
+                            <VideoPlayer
                                 class="video-player"
                                 :options="video.options"
                                 :token="video.token"
                                 :id="video.id"
-                            /> -->
+                            />
                         </div>
                         <b-card-body>
                             <b-card-text>
                                 <TuiEditorViewer :initialValue="exerciseData.description" />
                             </b-card-text>
                         </b-card-body>
-                        <!-- <CommentSection
+                        <CommentSection
                             :docId="exerciseData._id"
                             coll="exercise"
                             :followableComponent="true"
@@ -85,7 +85,7 @@
                             @unlike="handleLike(-1)"
                             @follow="handleFollow(1)"
                             @unfollow="handleFollow(-1)"
-                        /> -->
+                        />
                     </b-card>
                 </b-container>
             </b-col>
@@ -138,7 +138,7 @@
                         </b-card-body>
                     </b-card>
 
-                    <!-- <Chart
+                    <Chart
                         class="performanceChart"
                         :editable="true"
                         :saveable="false"
@@ -148,7 +148,7 @@
                         :index="0"
                         position="exerciseView"
                         @updateChart="updateChart"
-                    /> -->
+                    />
                 </b-container>
             </b-col>
         </b-row>
