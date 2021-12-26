@@ -76,6 +76,16 @@
           "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
           "s3Key": "amplify-builds/projectburnPublicHandler-4a707572744956313837-build.zip"
+        },
+        "projectburnMessageHandler": {
+          "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnMessageHandler-595a7a62587041696d46-build.zip"
+        },
+        "projectburnNotificationHandler": {
+          "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",
+          "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
+          "s3Key": "amplify-builds/projectburnNotificationHandler-43727133496a33553859-build.zip"
         }
       },
       "auth": {

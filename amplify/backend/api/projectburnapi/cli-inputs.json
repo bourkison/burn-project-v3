@@ -137,6 +137,32 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/message": {
+      "name": "/message",
+      "lambdaFunction": "projectburnMessageHandler",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    },
+    "/notification": {
+      "name": "/notification",
+      "lambdaFunction": "projectburnNotificationHandler",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
     }
   }
 }

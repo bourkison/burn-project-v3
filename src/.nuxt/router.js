@@ -5,7 +5,7 @@ import { interopDefault } from './utils'
 import scrollBehavior from './router.scrollBehavior.js'
 
 const _6186b3aa = () => interopDefault(import('../pages/exercises/index.vue' /* webpackChunkName: "pages/exercises/index" */))
-const _0ef8434b = () => interopDefault(import('../pages/exercises/_exerciseId.vue' /* webpackChunkName: "pages/exercises/_exerciseId" */))
+const _6c8c34e4 = () => interopDefault(import('../pages/exercises/_exerciseId/index.vue' /* webpackChunkName: "pages/exercises/_exerciseId/index" */))
 const _7af23bdf = () => interopDefault(import('../pages/index.vue' /* webpackChunkName: "pages/index" */))
 
 const emptyFn = () => {}
@@ -25,7 +25,7 @@ export const routerOptions = {
     name: "exercises"
   }, {
     path: "/exercises/:exerciseId",
-    component: _0ef8434b,
+    component: _6c8c34e4,
     name: "exercises-exerciseId"
   }, {
     path: "/",

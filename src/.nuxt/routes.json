@@ -8,8 +8,8 @@
   {
     "name": "exercises-exerciseId",
     "path": "/exercises/:exerciseId",
-    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/_exerciseId.vue",
-    "chunkName": "pages/exercises/_exerciseId"
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/_exerciseId/index.vue",
+    "chunkName": "pages/exercises/_exerciseId/index"
   },
   {
     "name": "index",

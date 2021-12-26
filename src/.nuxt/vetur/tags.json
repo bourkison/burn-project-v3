@@ -1,25 +1,4 @@
 {
-  "AuthSignInForm": {
-    "description": "Auto imported from components/Auth/SignInForm.vue"
-  },
-  "AuthSignUpForm": {
-    "description": "Auto imported from components/Auth/SignUpForm.vue"
-  },
-  "PostComponent": {
-    "description": "Auto imported from components/Post/PostComponent.vue"
-  },
-  "PostFeed": {
-    "description": "Auto imported from components/Post/PostFeed.vue"
-  },
-  "PostFeedHome": {
-    "description": "Auto imported from components/Post/PostFeedHome.vue"
-  },
-  "PostNew": {
-    "description": "Auto imported from components/Post/PostNew.vue"
-  },
-  "SearchMainSearch": {
-    "description": "Auto imported from components/Search/MainSearch.vue"
-  },
   "ExerciseComponent": {
     "description": "Auto imported from components/Exercise/ExerciseComponent.vue"
   },
@@ -38,14 +17,20 @@
   "ExerciseShare": {
     "description": "Auto imported from components/Exercise/ExerciseShare.vue"
   },
-  "Comment": {
-    "description": "Auto imported from components/Comment/Comment.vue"
+  "PostComponent": {
+    "description": "Auto imported from components/Post/PostComponent.vue"
   },
-  "CommentNew": {
-    "description": "Auto imported from components/Comment/CommentNew.vue"
+  "PostFeed": {
+    "description": "Auto imported from components/Post/PostFeed.vue"
   },
-  "CommentSection": {
-    "description": "Auto imported from components/Comment/CommentSection.vue"
+  "PostFeedHome": {
+    "description": "Auto imported from components/Post/PostFeedHome.vue"
+  },
+  "PostNew": {
+    "description": "Auto imported from components/Post/PostNew.vue"
+  },
+  "SearchMainSearch": {
+    "description": "Auto imported from components/Search/MainSearch.vue"
   },
   "TemplateBuilder": {
     "description": "Auto imported from components/Template/TemplateBuilder.vue"
@@ -62,11 +47,44 @@
   "TemplateShare": {
     "description": "Auto imported from components/Template/TemplateShare.vue"
   },
+  "UserList": {
+    "description": "Auto imported from components/User/UserList.vue"
+  },
+  "Comment": {
+    "description": "Auto imported from components/Comment/Comment.vue"
+  },
+  "CommentNew": {
+    "description": "Auto imported from components/Comment/CommentNew.vue"
+  },
+  "CommentSection": {
+    "description": "Auto imported from components/Comment/CommentSection.vue"
+  },
   "ChartsChart": {
     "description": "Auto imported from components/Charts/Chart.vue"
   },
-  "UserList": {
-    "description": "Auto imported from components/User/UserList.vue"
+  "ChartsRecentWorkoutsChart": {
+    "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
+  },
+  "AuthSignInForm": {
+    "description": "Auto imported from components/Auth/SignInForm.vue"
+  },
+  "AuthSignUpForm": {
+    "description": "Auto imported from components/Auth/SignUpForm.vue"
+  },
+  "VideoPlayer": {
+    "description": "Auto imported from components/Video/VideoPlayer.vue"
+  },
+  "WorkoutComponent": {
+    "description": "Auto imported from components/Workout/WorkoutComponent.vue"
+  },
+  "WorkoutSearch": {
+    "description": "Auto imported from components/Workout/WorkoutSearch.vue"
+  },
+  "WorkoutShare": {
+    "description": "Auto imported from components/Workout/WorkoutShare.vue"
+  },
+  "WorkoutToast": {
+    "description": "Auto imported from components/Workout/WorkoutToast.vue"
   },
   "UtilityAvatarEditor": {
     "description": "Auto imported from components/Utility/AvatarEditor.vue"
@@ -100,20 +118,5 @@
   },
   "UtilityUsernameFilter": {
     "description": "Auto imported from components/Utility/UsernameFilter.vue"
-  },
-  "VideoPlayer": {
-    "description": "Auto imported from components/Video/VideoPlayer.vue"
-  },
-  "WorkoutComponent": {
-    "description": "Auto imported from components/Workout/WorkoutComponent.vue"
-  },
-  "WorkoutSearch": {
-    "description": "Auto imported from components/Workout/WorkoutSearch.vue"
-  },
-  "WorkoutShare": {
-    "description": "Auto imported from components/Workout/WorkoutShare.vue"
-  },
-  "WorkoutToast": {
-    "description": "Auto imported from components/Workout/WorkoutToast.vue"
   }
 }

@@ -1,4 +1,4 @@
-import { Auth } from "aws-amplify";
+import { Auth, API } from "aws-amplify";
 
 export const state = () => {
     return {
@@ -100,11 +100,7 @@ export const actions = {
     },
 
     fetchJwtToken: async function() {
-        console.log("FETCHING JWT TOKEN", Auth);
-        const session = await Auth.currentSession();
-        console.log("SESSION:", session);
-        const token = (await Auth.currentSession()).getIdToken().getJwtToken();
-        console.log("TOKEN:", token);
+        return (await Auth.currentSession()).getIdToken().getJwtToken();
     },
 
     updateChart: async function({ state, commit, dispatch }, data) {
@@ -126,5 +122,9 @@ export const actions = {
 
         commit("updateChart", data);
         return;     
+    },
+
+    nuxtServerInit: async function({ commit }, { req }) {
+        console.log(req);
     }
 }
