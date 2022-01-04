@@ -1,4 +1,5 @@
 import { Auth, API } from "aws-amplify";
+import Vue from 'vue';
 
 export const state = () => {
     return {
@@ -74,33 +75,47 @@ export const mutations = {
 
 export const actions = {
     fetchUser: async function({ state, commit, dispatch }, data) {
-        console.log("DATA:", data);
+        console.log("Fetching User:", data);
         const path = "/user/" + data.idToken.payload["cognito:username"];
-        const myInit = {
-            headers: {
-                Authorization: await dispatch("fetchJwtToken")
-            }
-        };
-
-        const docData = (
-            await API.get(state.apiName, path, myInit).catch(err => {
-                console.error("USER DOC ERR:", err);
-                commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
-                return;
-            })
-        ).data;
-
-        commit("setLoggedInUser", {
-            loggedIn: true,
-            data: data,
-            docData: docData
-        });
+        let myInit;
+        if (!data.ssr) {
+            myInit = {
+                headers: {
+                    Authorization: await dispatch("fetchJwtToken")
+                }
+            };
+        } else {
+            myInit = {
+                headers: {
+                    Authorization: data.idToken.payload.jwtToken
+                }
+            };
+        }
+        
+        try {
+            const docData = (await API.get(state.apiName, path, myInit)).data;
+    
+            commit("setLoggedInUser", {
+                loggedIn: true,
+                data: data,
+                docData: docData
+            });
+        }
+        catch (err) {
+            console.error("USER DOC ERR:", err);
+            commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
+        }
 
         return;
     },
 
-    fetchJwtToken: async function() {
-        return (await Auth.currentSession()).getIdToken().getJwtToken();
+    fetchJwtToken: async function({ state, commit }) {
+        try {
+            return (await Auth.currentSession()).getIdToken().getJwtToken();
+        }
+        catch (err) {
+            return "";
+        }
     },
 
     updateChart: async function({ state, commit, dispatch }, data) {
@@ -124,7 +139,42 @@ export const actions = {
         return;     
     },
 
-    nuxtServerInit: async function({ commit }, { req }) {
-        console.log(req);
+    nuxtServerInit: async function({ commit, dispatch }, { req }) {
+        // console.log("Nuxt server init", req.headers.cookie);
+        // console.log("User:", await Auth.currentSession());
+        if (req.headers.cookie) {
+            let cookieArr = req.headers.cookie.split(";");
+            let jwtToken;
+            let username;
+
+            for (let i = 0; i < cookieArr.length; i ++) {
+                let cookieKey = cookieArr[i].split("=")[0].trim();
+                console.log("Searching cookie:", cookieKey);
+
+                if (cookieKey.split(".").length > 0 && cookieKey.split(".")[0] === "CognitoIdentityServiceProvider" && cookieKey.split(".")[cookieKey.split(".").length - 1] === "LastAuthUser") {
+                    console.log("Cookie found:", cookieArr[i].split("=")[1]);
+                    username = cookieArr[i].split("=")[1];
+                } else if (cookieKey.split(".").length > 0 && cookieKey.split(".")[0] === "CognitoIdentityServiceProvider" && cookieKey.split(".")[cookieKey.split(".").length - 1] === "idToken") {
+                    jwtToken = cookieArr[i].split("=")[1];
+                }
+
+                if (username && jwtToken) { 
+                    await dispatch("fetchUser", 
+                    {
+                        idToken: {
+                            payload: {
+                                "cognito:username": username,
+                                jwtToken: jwtToken
+                            }
+                        },
+                        ssr: true
+                    });
+
+                    break; 
+                }
+            }
+        }
+
+        return;
     }
 }

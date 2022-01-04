@@ -34,7 +34,7 @@
                         <div>Tags: <b-badge class="mr-1" variant="dark" v-for="(tag, index) in exerciseData.tags" :key="index">{{ tag }}</b-badge></div>
                         </div>
                 </b-collapse>
-                <TuiEditorViewer :initialValue="exerciseData.description" />
+                <TuiEditorViewer :value="exerciseData.description" />
             </b-card-body>
             <CommentSection
                 :docId="exerciseData._id"

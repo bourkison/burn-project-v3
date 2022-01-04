@@ -53,9 +53,7 @@ import Chart from "@/components/Charts/Chart.vue";
 export default {
     name: "Home",
     components: { PostFeedHome, Chart, QuickStart },
-    created() {
-        console.log("LOGIN", this.$store.state.userProfile);
-    }
+
 };
 </script>
 

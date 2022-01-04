@@ -1,4 +1,5 @@
 import { API } from "aws-amplify";
+import Vue from 'vue';
 
 export const state = () => {
     return {

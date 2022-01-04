@@ -3,18 +3,35 @@
     "name": "exercises",
     "path": "/exercises",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/index.vue",
-    "chunkName": "pages/exercises/index"
+    "chunkName": "pages/exercises/index",
+    "_name": "_6186b3aa"
+  },
+  {
+    "name": "exercises-followed",
+    "path": "/exercises/followed",
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/followed.vue",
+    "chunkName": "pages/exercises/followed",
+    "_name": "_3d0ab972"
+  },
+  {
+    "name": "exercises-new",
+    "path": "/exercises/new",
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/new.vue",
+    "chunkName": "pages/exercises/new",
+    "_name": "_f98be78e"
   },
   {
     "name": "exercises-exerciseId",
     "path": "/exercises/:exerciseId",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/_exerciseId/index.vue",
-    "chunkName": "pages/exercises/_exerciseId/index"
+    "chunkName": "pages/exercises/_exerciseId/index",
+    "_name": "_6c8c34e4"
   },
   {
     "name": "index",
     "path": "/",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/index.vue",
-    "chunkName": "pages/index"
+    "chunkName": "pages/index",
+    "_name": "_7af23bdf"
   }
 ]

@@ -1,5 +1,7 @@
 <template>
     <div id="app">
+        <link rel="stylesheet" href="https://vjs.zencdn.net/7.17.0/video-js.css" />
+        <link href="https://unpkg.com/@videojs/themes@1/dist/forest/index.css" rel="stylesheet">
         <div v-if="$store.state.userProfile">
             <b-navbar sticky class="mainNav" toggleable="sm" variant="faded" type="light">
                 <b-navbar-brand tag="h1" :to="'/'">Burn</b-navbar-brand>
@@ -42,20 +44,20 @@
                 <!-- Logged Out Nav -->
                 <b-collapse v-else id="nav-collapse" is-nav>
                     <b-navbar-nav class="ml-auto">
-                        <b-nav-item @click="$bvModal.show('login-modal')">Login</b-nav-item>
+                        <b-nav-item @click="signInModal = true;">Login</b-nav-item>
                         <b-nav-item
                             @click="
-                                $bvModal.show('signup-modal');
+                                signUpModal = true;
                                 signingUp = true;
                             "
                             >Sign Up</b-nav-item
                         >
                     </b-navbar-nav>
 
-                    <b-modal hide-footer centered id="login-modal" title="Login">
+                    <b-modal hide-footer centered id="login-modal" title="Login" v-model="signInModal">
                         <SignInForm
                             @closeSignInModal="
-                                $bvModal.hide('login-modal');
+                                signInModal = false;
                                 signingUp = false;
                             "
                         />
@@ -74,8 +76,9 @@
                 no-close-on-backdrop
                 centered
                 title="Sign Up"
+                v-model="signUpModal"
             >
-                <SignUpForm @closeSignUpModal="$bvModal.hide('signup-modal')" />
+                <SignUpForm @closeSignUpModal="signUpModal = false;" />
             </b-modal>
         </div>
         <div v-else>
@@ -98,10 +101,12 @@ export default {
     components: { MainSearch, SignInForm, SignUpForm, WorkoutToast },
     data() {
         return {
+            signInModal: false,
+            signUpModal: false,
             signingUp: false
         };
     },
-    metaInfo() {
+    head() {
         return {
             title: "Burn Home"
         }

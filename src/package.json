@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
+    "dev": "nuxt --mode=development",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.10.2",
+    "@tiptap/starter-kit": "*",
+    "@tiptap/vue-2": "*",
     "@tui-nuxt/editor": "*",
     "aws-amplify": "^4.3.10",
     "bootstrap-vue": "^2.21.2",
@@ -22,8 +25,11 @@
     "node-fetch": "^2.6.6",
     "nuxt": "^2.15.7",
     "sortablejs": "^1.13.0",
+    "tiptap": "^1.32.2",
+    "tiptap-extensions": "^1.35.2",
     "uuid": "^3.4.0",
-    "video.js": "^7.17.0"
+    "video.js": "^7.17.0",
+    "vue-observe-visibility": "^1.0.0"
   },
   "devDependencies": {
     "@nuxt/types": "^2.15.7",

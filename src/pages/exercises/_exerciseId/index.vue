@@ -13,9 +13,9 @@
                                     variant="outline"
                                 >
                                     <span
-                                        v-if="this.$store.state.userProfile && 
+                                        v-if="$store.state.userProfile && $store.state.userProfile.docData && 
                                             exerciseData.createdBy.userId ===
-                                                this.$store.state.userProfile.docData._id
+                                                $store.state.userProfile.docData._id
                                         "
                                     >
                                         <b-dropdown-item
@@ -68,7 +68,7 @@
                         </div>
                         <b-card-body>
                             <b-card-text>
-                                <TuiEditorViewer :initialValue="exerciseData.description" />
+                                <TuiEditorViewer :value="exerciseData.description" />
                             </b-card-text>
                         </b-card-body>
                         <CommentSection
@@ -143,7 +143,7 @@
                         :editable="true"
                         :saveable="false"
                         :persistent="false"
-                        :username="$store.state.userProfile.docData.username"
+                        :username="$store.state.userProfile && $store.state.userProfile.docData ? $store.state.userProfile.docData.username : ''"
                         :options="chartOptions"
                         :index="0"
                         position="exerciseView"
@@ -192,11 +192,14 @@ import { API, graphqlOperation, Storage } from "aws-amplify";
 import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
 
+import CommentSection from "@/components/Comment/CommentSection.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
+import Chart from "@/components/Charts/Chart.vue";
+import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 
 
 export default {
-    components: { MuscleGroup },
+    components: { CommentSection, MuscleGroup, Chart, VideoPlayer },
     data() {
         return {
             isLoading: true,
@@ -270,7 +273,23 @@ export default {
         };
 
         try {
-            let response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
+            let response;
+            if (store.state.userProfile && store.state.userProfile.loggedIn) {
+                const path = "/exercise/" + params.exerciseid;
+                const myInit = {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: await store.dispatch("fetchJwtToken")
+                    },
+                    queryStringParameters: {
+                        counters: true
+                    }
+                };
+
+                response = (await API.get(store.state.apiName, path, myInit));
+            } else {
+                response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
+            }
 
             if (response.data && response.data._id) {
                 response = response.data;
@@ -278,6 +297,8 @@ export default {
             } else {
                 error({ message: "Page not found", statusCode: 404 });
             }
+
+            console.log("RESPONSE:", response);
 
             isLoading = false;
 
@@ -311,7 +332,7 @@ export default {
             }
         }
         catch (err) {
-            error({ message: "Internal server error", statusCode: 500 });
+            error({ message: err.message, statusCode: 500 });
         }
     },
     async created() {
@@ -362,10 +383,82 @@ export default {
         } catch (err) {
             console.error("Error getting image URLs:", err);
         }
+    },
+    methods: {
+        confirmDeleteExercise: function() {
+            this.modalIsDeleting = true;
+        },
+
+        deleteExercise: async function(e) {
+            e.preventDefault();
+
+            this.isDeleting = true;
+
+            const path = "/exercise/" + this.$route.params.exerciseid;
+            const myInit = {
+                headers: {
+                    Authorization: await this.$store.dispatch("fetchJwtToken")
+                }
+            };
+
+            const response = await API.del(this.$store.state.apiName, path, myInit);
+            console.log("Deletion success!", response);
+
+            this.isDeleting = false;
+            this.modalIsDeleting = false;
+            this.$router.push("/exercises");
+        },
+
+        handleLike: function(x) {
+            if (x > 0) {
+                this.likeCount++;
+                this.isLiked = true;
+            } else {
+                this.likeCount--;
+                this.isLiked = false;
+            }
+        },
+
+        handleFollow: function(x) {
+            if (x > 0) {
+                this.followCount++;
+                this.isFollowed = true;
+            } else {
+                this.followCount--;
+                this.isFollowed = false;
+            }
+        },
+
+        updateChart: function(options) {
+            this.chartOptions = options;
+        }
     }
 }
 </script>
 
-<style>
+<style scoped>
+.exerciseCard,
+.performanceChart {
+    margin-top: 20px;
+}
 
+.mainCard {
+    margin-bottom: 20px;
+}
+
+.tags {
+    margin: 2px;
+}
+</style>
+
+<style>
+.exercise-view-dropdown-item a {
+    font-size: 13px !important;
+    padding-left: 0.75rem !important
+}
+
+.exercise-view-dropdown button {
+    box-shadow: none !important;
+    padding: 0 !important;
+}
 </style>

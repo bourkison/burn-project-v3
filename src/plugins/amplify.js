@@ -5,9 +5,11 @@ import awsconfig from "~/aws-exports";
 Amplify.configure({ ...awsconfig, ssr: true });
 
 
-export default ({ store }) => {
+export default async ({ store }, { req }) => {
     // Check if user logs in or out.
     // If log in we also fetch the user document, else we commit user data to equal null.
+    console.log("AMPLIFY:", req);
+
     Hub.listen("auth", async ({ payload: { event, data } }) => {
         switch (event) {
             case "signIn":
@@ -36,8 +38,15 @@ export default ({ store }) => {
     });
 
     // Set logged in on initial load.
-    Auth.currentSession()
-    .then(user => {
+    try {
+        if (store.state.userProfile && !store.state.userProfile.loggedIn) {
+            store.commit("setLoggedInUser", null);
+        }
+
+        const user = await Auth.currentSession();
+
+        console.log("USER:", user);
+
         if (user) {
             store.dispatch("fetchUser", user);
         } else {
@@ -47,12 +56,12 @@ export default ({ store }) => {
                 docData: null
             });
         }
-    })
-    .catch(() => {
+    }
+    catch(err) {
         store.commit("setLoggedInUser", {
             loggedIn: false,
             data: null,
             docData: null
         });
-    });
+    }
 }

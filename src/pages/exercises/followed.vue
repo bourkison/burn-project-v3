@@ -8,7 +8,7 @@
                             class="navItem"
                             ref="homeExerciseLink"
                             to="/exercises"
-                            active
+                            active-class="unset"
                         >
                             <div class="d-flex align-items-center">
                                 Exercises
@@ -19,7 +19,7 @@
                             class="navItem"
                             ref="discoverExerciseLink"
                             to="/exercises/followed"
-                            active-class="unset"
+                            active
                         >
                             <div class="d-flex align-items-center">
                                 Followed
@@ -46,7 +46,10 @@
                             </div>
                             <div class="mt-3">
                                 <h6>Muscle Groups</h6>
-                                <MuscleGroupSelector @updateMuscleGroups="updateMuscleGroups" />
+                                <MuscleGroupSelector
+                                    @updateMuscleGroups="updateMuscleGroups"
+                                    :initMgs="selectedMgs"
+                                />
                             </div>
 
                             <div class="mt-3">
@@ -59,46 +62,48 @@
             </b-col>
 
             <b-col sm="6">
-                <div v-if="exercises.length > 0 || isLoading">
-                    <ExerciseFeed
-                        class="exerciseFeed"
-                        :exercises="exercises"
-                        :isLoading="isLoading"
-                    />
+                <b-container>
+                    <div v-if="exercises.length > 0 || isLoading" class="mb-4">
+                        <ExerciseFeed
+                            class="exerciseFeed"
+                            :exercises="exercises"
+                            :isLoading="isLoading"
+                        />
 
-                    <div class="text-center" v-if="moreToLoad">
-                        <b-button
-                            @click="loadMoreExercises"
-                            variant="outline-dark"
-                            size="sm"
-                            v-b-visible.200="loadMoreExercises"
-                        >
-                            <span v-if="!isLoadingMore">Load More</span>
-                            <span v-else><b-spinner small/></span>
-                        </b-button>
+                        <div class="text-center" v-if="moreToLoad">
+                            <b-button
+                                @click="loadMoreExercises"
+                                variant="outline-dark"
+                                size="sm"
+                                v-b-visible.200="loadMoreExercises"
+                            >
+                                <span v-if="!isLoadingMore">Load More</span>
+                                <span v-else><b-spinner small/></span>
+                            </b-button>
+                        </div>
                     </div>
-                </div>
-                <div v-else class="text-center noexercisesfound">
-                    No exercises found
-                </div>
-                <b-alert
-                    class="position-fixed fixed-bottom m-0 rounded-0"
-                    variant="danger"
-                    dismissible
-                    fade
-                    style="z-index: 2000;"
-                    v-model="errorCountdown"
-                >
-                    {{ errorMessage }}
-                </b-alert>
+                    <div v-else>
+                        <em>Looks like you haven't followed or created any exercises.</em>
+                    </div>
+                    <b-alert
+                        class="position-fixed fixed-bottom m-0 rounded-0"
+                        variant="danger"
+                        dismissible
+                        fade
+                        style="z-index: 2000;"
+                        v-model="errorCountdown"
+                    >
+                        {{ errorMessage }}
+                    </b-alert>
+                </b-container>
             </b-col>
 
             <b-col sm="3">
                 <!-- 
-                    AD HERE.
-                 -->
+                    Ads here. 
+                -->
                 <div class="adTest bg-warning text-center">
-                    Exercise Home Ad Here.
+                    Exercise Followed Ad Here.
                 </div>
             </b-col>
         </b-row>
@@ -107,14 +112,14 @@
 
 <script>
 import { API } from "aws-amplify";
-import ExerciseFeed from "@/components/Exercise/ExerciseFeed";
+import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
 
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
 export default {
-    name: "ExerciseDiscover",
+    name: "ExerciseFollowed",
     components: {
         ExerciseFeed,
         MuscleGroupSelector,
@@ -135,7 +140,7 @@ export default {
             moreToLoad: true,
             lastLoadedExercise: null,
 
-            // Error handling:
+            // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
             errorInterval: null
@@ -155,58 +160,10 @@ export default {
     },
 
     methods: {
-        downloadExercises: async function() {
-            try {
-                this.isLoading = true;
-                this.exercises = [];
-
-                const path = "/exercise";
-                let myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        loadAmount: 5,
-                        user: false
-                    }
-                };
-
-                if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                }
-
-                if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                }
-
-                const response = await API.get(this.$store.state.apiName, path, myInit);
-
-                response.data.forEach(exercise => {
-                    let temp = exercise;
-                    temp.loaded = false;
-                    this.exercises.push(temp);
-                });
-
-                if (response.data.length < 5) {
-                    this.moreToLoad = false;
-                }
-            } catch (err) {
-                if (err.response && err.response.status !== 404) {
-                    this.displayError(err);
-                }
-
-                this.moreToLoad = false;
-            } finally {
-                this.isLoading = false;
-                this.isLoadingMore = false;
-            }
-        },
-
         loadMoreExercises: async function() {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
-    
                     const path = "/exercise";
                     let myInit = {
                         headers: {
@@ -214,18 +171,10 @@ export default {
                         },
                         queryStringParameters: {
                             loadAmount: 5,
-                            user: false,
-                            startAt: this.exercises[this.exercises.length - 1]._id
+                            user: true,
+                            startAt: this.exercises[this.exercises.length - 1].exerciseId
                         }
                     };
-    
-                    if (this.selectedMgs.length > 0) {
-                        myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                    }
-    
-                    if (this.selectedTags.length > 0) {
-                        myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                    }
     
                     const response = await API.get(this.$store.state.apiName, path, myInit);
     
@@ -240,19 +189,77 @@ export default {
                     }
                 }
                 catch (err) {
-                    if (err.response && err.response.status !== 404) {
-                        this.displayError(err);
-                    }
-
+                    // console.error(err.response.status);
                     this.moreToLoad = false;
-                }
-                finally {
-                    this.isLoadingMore = false;
                 }
             }
         },
 
+        downloadExercises: async function() {
+            try {
+                this.isLoading = true;
+                this.exercises = [];
+
+                const path = "/exercise";
+                let myInit = {
+                    headers: {
+                        Authorization: await this.$store.dispatch("fetchJwtToken")
+                    },
+                    queryStringParameters: {
+                        loadAmount: 5,
+                        user: true
+                    }
+                };
+
+                if (this.selectedMgs.length > 0) {
+                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+                }
+
+                if (this.selectedTags.length > 0) {
+                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
+                }
+
+                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
+                    err => {
+                        console.log("ERROR:", err.response);
+                        if (err.response.status === 404) {
+                            this.exercises = [];
+                        } else {
+                            throw err;
+                        }
+                    }
+                );
+
+                if (!response) {
+                    throw new Error("No response");
+                }
+
+                if (!response.success) {
+                    throw new Error("Unsuccessful: " + response.errorMessage);
+                }
+
+                response.data.forEach(exercise => {
+                    let temp = exercise;
+                    temp.loaded = false;
+                    this.exercises.push(temp)
+                });
+
+                if (response.data.length < 5) {
+                    this.moreToLoad = false;
+                }
+
+                this.isLoadingMore = false;
+            } catch (err) {
+                if (err.response && err.response.status !== 404) {
+                    this.displayError(err);
+                }
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
         updateMuscleGroups: function(muscleGroups) {
+            console.log("UPDATING MUSCLE GROUPS");
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
@@ -269,21 +276,17 @@ export default {
             }
 
             if (isFiltered) {
-                this.$router.replace({
-                    path: "/exercises",
-                    query: query
-                });
+                this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({
-                    path: "/exercises",
-                    query: null
-                });
+                this.$router.replace({ path: "/exercises/followed", query: null });
             }
 
             this.downloadExercises();
         },
 
         updateTags: function(tags) {
+            console.log("UPDATING TAGS");
+
             this.selectedTags = tags;
             let isFiltered = false;
 
@@ -300,15 +303,9 @@ export default {
             }
 
             if (isFiltered) {
-                this.$router.replace({
-                    path: "/exercises",
-                    query: query
-                });
+                this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({
-                    path: "/exercises",
-                    query: null
-                });
+                this.$router.replace({ path: "/exercises/followed", query: null });
             }
             this.downloadExercises();
         },
@@ -333,8 +330,7 @@ export default {
 
 <style scoped>
 .navCard,
-.exerciseFeed,
-.noexercisesfound {
+.exerciseFeed {
     margin-top: 40px;
 }
 

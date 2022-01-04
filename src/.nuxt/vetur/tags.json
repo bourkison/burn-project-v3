@@ -47,8 +47,26 @@
   "TemplateShare": {
     "description": "Auto imported from components/Template/TemplateShare.vue"
   },
-  "UserList": {
-    "description": "Auto imported from components/User/UserList.vue"
+  "TextEditorComponent": {
+    "description": "Auto imported from components/TextEditor/EditorComponent.vue"
+  },
+  "TextEditorMenuButton": {
+    "description": "Auto imported from components/TextEditor/EditorMenuButton.vue"
+  },
+  "TextEditor": {
+    "description": "Auto imported from components/TextEditor/TextEditor.vue"
+  },
+  "AuthSignInForm": {
+    "description": "Auto imported from components/Auth/SignInForm.vue"
+  },
+  "AuthSignUpForm": {
+    "description": "Auto imported from components/Auth/SignUpForm.vue"
+  },
+  "ChartsChart": {
+    "description": "Auto imported from components/Charts/Chart.vue"
+  },
+  "ChartsRecentWorkoutsChart": {
+    "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
   },
   "Comment": {
     "description": "Auto imported from components/Comment/Comment.vue"
@@ -59,17 +77,8 @@
   "CommentSection": {
     "description": "Auto imported from components/Comment/CommentSection.vue"
   },
-  "ChartsChart": {
-    "description": "Auto imported from components/Charts/Chart.vue"
-  },
-  "ChartsRecentWorkoutsChart": {
-    "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
-  },
-  "AuthSignInForm": {
-    "description": "Auto imported from components/Auth/SignInForm.vue"
-  },
-  "AuthSignUpForm": {
-    "description": "Auto imported from components/Auth/SignUpForm.vue"
+  "UserList": {
+    "description": "Auto imported from components/User/UserList.vue"
   },
   "VideoPlayer": {
     "description": "Auto imported from components/Video/VideoPlayer.vue"
