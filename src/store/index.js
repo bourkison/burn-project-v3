@@ -1,4 +1,4 @@
-import { Auth, API } from "aws-amplify";
+import { Auth, API, withSSRContext } from "aws-amplify";
 import Vue from 'vue';
 
 export const state = () => {
@@ -78,13 +78,13 @@ export const actions = {
         console.log("Fetching User:", data);
         const path = "/user/" + data.idToken.payload["cognito:username"];
         let myInit;
-        if (!data.ssr) {
+        if (process.client) {
             myInit = {
                 headers: {
                     Authorization: await dispatch("fetchJwtToken")
                 }
             };
-        } else {
+        } else if (process.server) {
             myInit = {
                 headers: {
                     Authorization: data.idToken.payload.jwtToken
@@ -114,6 +114,7 @@ export const actions = {
             return (await Auth.currentSession()).getIdToken().getJwtToken();
         }
         catch (err) {
+            console.error("Error getting jwtToken", err);
             return "";
         }
     },
@@ -140,41 +141,13 @@ export const actions = {
     },
 
     nuxtServerInit: async function({ commit, dispatch }, { req }) {
-        // console.log("Nuxt server init", req.headers.cookie);
-        // console.log("User:", await Auth.currentSession());
-        if (req.headers.cookie) {
-            let cookieArr = req.headers.cookie.split(";");
-            let jwtToken;
-            let username;
-
-            for (let i = 0; i < cookieArr.length; i ++) {
-                let cookieKey = cookieArr[i].split("=")[0].trim();
-                console.log("Searching cookie:", cookieKey);
-
-                if (cookieKey.split(".").length > 0 && cookieKey.split(".")[0] === "CognitoIdentityServiceProvider" && cookieKey.split(".")[cookieKey.split(".").length - 1] === "LastAuthUser") {
-                    console.log("Cookie found:", cookieArr[i].split("=")[1]);
-                    username = cookieArr[i].split("=")[1];
-                } else if (cookieKey.split(".").length > 0 && cookieKey.split(".")[0] === "CognitoIdentityServiceProvider" && cookieKey.split(".")[cookieKey.split(".").length - 1] === "idToken") {
-                    jwtToken = cookieArr[i].split("=")[1];
-                }
-
-                if (username && jwtToken) { 
-                    await dispatch("fetchUser", 
-                    {
-                        idToken: {
-                            payload: {
-                                "cognito:username": username,
-                                jwtToken: jwtToken
-                            }
-                        },
-                        ssr: true
-                    });
-
-                    break; 
-                }
-            }
+        const SSR = withSSRContext(req)
+        try {
+            console.log("NUXT INIT:", (await SSR.Auth.currentAuthenticatedUser()))
         }
-
-        return;
+        catch (err) {
+            console.error("Nuxt init err");
+            console.error(err);
+        }
     }
 }

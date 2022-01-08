@@ -45,7 +45,10 @@
                                 {{ exerciseData.createdBy.username }}
                             </b-card-sub-title>
                         </b-card-body>
-                        <div v-if="imageUrls.length > 1">
+                        <div v-if="!isLoading && (!$store.state.userProfile || !$store.state.userProfile.loggedIn) && exerciseData.filePaths.length">
+                            <div>Login or Sign Up to view images/video.</div>
+                        </div>
+                        <div v-else-if="imageUrls.length > 1">
                             <b-carousel v-model="carouselModel" controls indicators :interval="0">
                                 <b-aspect
                                     ><b-carousel-slide
@@ -72,6 +75,7 @@
                             </b-card-text>
                         </b-card-body>
                         <CommentSection
+                            v-if="$store.state.userProfile && $store.state.userProfile.loggedIn"
                             :docId="exerciseData._id"
                             coll="exercise"
                             :followableComponent="true"
@@ -139,6 +143,7 @@
                     </b-card>
 
                     <Chart
+                        v-if="$store.state.userProfile && $store.state.userProfile.loggedIn"
                         class="performanceChart"
                         :editable="true"
                         :saveable="false"
@@ -245,7 +250,7 @@ export default {
         }
     },
     async asyncData({ params, error, store }) {
-        console.log("Async Data", params);
+        // console.log("Async Data", params);
         let isLoading = true;
         let exerciseExists = false;
         let exerciseData = null;
@@ -275,7 +280,7 @@ export default {
         try {
             let response;
             if (store.state.userProfile && store.state.userProfile.loggedIn) {
-                const path = "/exercise/" + params.exerciseid;
+                const path = "/exercise/" + params.exerciseId;
                 const myInit = {
                     headers: {
                         "Content-Type": "application/json",
@@ -285,6 +290,8 @@ export default {
                         counters: true
                     }
                 };
+
+                console.log("Making request:", myInit);
 
                 response = (await API.get(store.state.apiName, path, myInit));
             } else {
@@ -332,64 +339,21 @@ export default {
             }
         }
         catch (err) {
+            console.error(err);
             error({ message: err.message, statusCode: 500 });
         }
     },
     async created() {
-        try {
-            let urlPromises = [];
-
-            this.exerciseData.filePaths.forEach(async path => {
-                if (path.type === "video") {
-                    const videoObject = {
-                        id: path.key
-                    };
-
-                    const response = await API.graphql(
-                        graphqlOperation(getVideoObject, videoObject)
-                    );
-
-                    this.video.token = response.data.getVideoObject.token;
-                    this.video.id = path.key;
-                    const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
-                    this.video.url =
-                        "https://" +
-                        awsvideoconfig.awsOutputVideo +
-                        "/" +
-                        this.video.id +
-                        "/" +
-                        uniqueId +
-                        ".m3u8";
-
-                    this.video.options = {
-                        autoplay: true,
-                        controls: true,
-                        sources: [
-                            {
-                                src: this.video.url
-                            }
-                        ]
-                    };
-                } else if (path.type === "image") {
-                    urlPromises.push(Storage.get(path.key));
-                }
-            });
-
-            const imageUrls = await Promise.all(urlPromises);
-
-            imageUrls.forEach(url => {
-                this.imageUrls.push(url);
-            });
-        } catch (err) {
-            console.error("Error getting image URLs:", err);
+        if (this.$store.state.userProfile && this.$store.state.userProfile.loggedIn) {
+            this.loadImages();
         }
     },
     methods: {
-        confirmDeleteExercise: function() {
+        confirmDeleteExercise() {
             this.modalIsDeleting = true;
         },
 
-        deleteExercise: async function(e) {
+        async deleteExercise(e) {
             e.preventDefault();
 
             this.isDeleting = true;
@@ -409,7 +373,7 @@ export default {
             this.$router.push("/exercises");
         },
 
-        handleLike: function(x) {
+        handleLike(x) {
             if (x > 0) {
                 this.likeCount++;
                 this.isLiked = true;
@@ -419,7 +383,7 @@ export default {
             }
         },
 
-        handleFollow: function(x) {
+        handleFollow(x) {
             if (x > 0) {
                 this.followCount++;
                 this.isFollowed = true;
@@ -429,7 +393,57 @@ export default {
             }
         },
 
-        updateChart: function(options) {
+        async loadImages() {
+            try {
+                let urlPromises = [];
+
+                this.exerciseData.filePaths.forEach(async path => {
+                    if (path.type === "video") {
+                        const videoObject = {
+                            id: path.key
+                        };
+
+                        const response = await API.graphql(
+                            graphqlOperation(getVideoObject, videoObject)
+                        );
+
+                        this.video.token = response.data.getVideoObject.token;
+                        this.video.id = path.key;
+                        const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
+                        this.video.url =
+                            "https://" +
+                            awsvideoconfig.awsOutputVideo +
+                            "/" +
+                            this.video.id +
+                            "/" +
+                            uniqueId +
+                            ".m3u8";
+
+                        this.video.options = {
+                            autoplay: true,
+                            controls: true,
+                            sources: [
+                                {
+                                    src: this.video.url
+                                }
+                            ]
+                        };
+                    } else if (path.type === "image") {
+                        urlPromises.push(Storage.get(path.key));
+                    }
+                });
+
+                const imageUrls = await Promise.all(urlPromises);
+
+                imageUrls.forEach(url => {
+                    this.imageUrls.push(url);
+                });
+            } catch (err) {
+                console.error("Error getting image URLs:", err);
+            }
+        },
+
+        updateChart(options) {
             this.chartOptions = options;
         }
     }

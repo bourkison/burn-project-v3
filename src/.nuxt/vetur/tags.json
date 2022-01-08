@@ -47,15 +47,6 @@
   "TemplateShare": {
     "description": "Auto imported from components/Template/TemplateShare.vue"
   },
-  "TextEditorComponent": {
-    "description": "Auto imported from components/TextEditor/EditorComponent.vue"
-  },
-  "TextEditorMenuButton": {
-    "description": "Auto imported from components/TextEditor/EditorMenuButton.vue"
-  },
-  "TextEditor": {
-    "description": "Auto imported from components/TextEditor/TextEditor.vue"
-  },
   "AuthSignInForm": {
     "description": "Auto imported from components/Auth/SignInForm.vue"
   },
@@ -76,6 +67,15 @@
   },
   "CommentSection": {
     "description": "Auto imported from components/Comment/CommentSection.vue"
+  },
+  "TextEditorComponent": {
+    "description": "Auto imported from components/TextEditor/EditorComponent.vue"
+  },
+  "TextEditorMenuButton": {
+    "description": "Auto imported from components/TextEditor/EditorMenuButton.vue"
+  },
+  "TextEditor": {
+    "description": "Auto imported from components/TextEditor/TextEditor.vue"
   },
   "UserList": {
     "description": "Auto imported from components/User/UserList.vue"

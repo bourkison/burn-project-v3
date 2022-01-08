@@ -115,6 +115,7 @@ import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
 export default {
     name: "ExerciseDiscover",
+    middleware: ["protectedRoute"],
     components: {
         ExerciseFeed,
         MuscleGroupSelector,
@@ -142,7 +143,7 @@ export default {
         };
     },
 
-    created: function() {
+    mounted() {
         if (this.$route.query.muscleGroups) {
             this.selectedMgs = this.$route.query.muscleGroups.split(",");
         }
@@ -155,7 +156,7 @@ export default {
     },
 
     methods: {
-        downloadExercises: async function() {
+        async downloadExercises() {
             try {
                 this.isLoading = true;
                 this.exercises = [];
@@ -202,7 +203,7 @@ export default {
             }
         },
 
-        loadMoreExercises: async function() {
+        async loadMoreExercises() {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
@@ -252,7 +253,7 @@ export default {
             }
         },
 
-        updateMuscleGroups: function(muscleGroups) {
+        updateMuscleGroups(muscleGroups) {
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
@@ -283,7 +284,7 @@ export default {
             this.downloadExercises();
         },
 
-        updateTags: function(tags) {
+        updateTags(tags) {
             this.selectedTags = tags;
             let isFiltered = false;
 
@@ -313,7 +314,7 @@ export default {
             this.downloadExercises();
         },
 
-        displayError: function(err) {
+        displayError(err) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
