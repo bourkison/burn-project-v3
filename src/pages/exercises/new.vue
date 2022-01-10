@@ -31,7 +31,7 @@
                         <b-card-body>
                             <h5>Description</h5>
                             <client-only>
-                                <TextEditor />
+                                <TextEditor @input="updateDescription" />
                             </client-only>
                         </b-card-body>
                     </b-card>
@@ -94,8 +94,6 @@
 </template>
 
 <script>
-import "codemirror/lib/codemirror.css";
-
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
@@ -257,8 +255,8 @@ export default {
             }
         },
 
-        updateDescription() {
-            this.exerciseForm.description = this.$refs.toastuiEditor.invoke("getMarkdown");
+        updateDescription(md) {
+            this.exerciseForm.description = md.content;
         },
 
         updateImages(images) {

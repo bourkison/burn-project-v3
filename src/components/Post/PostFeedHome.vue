@@ -102,17 +102,17 @@ export default {
     },
 
     methods: {
-        addPost: function(post) {
+        addPost(post) {
             this.posts.unshift(post);
             this.amountToUpload = 0;
             this.amountUploaded = 0;
         },
 
-        postLoaded: function(index) {
+        postLoaded(index) {
             this.posts[index].loaded = true;
         },
 
-        loadMorePosts: async function() {
+        async loadMorePosts() {
             if (!this.isLoadingMore && this.moreToLoad) {
                 console.log("LOADING MORE!");
                 this.isLoadingMore = true;
@@ -144,7 +144,7 @@ export default {
             }
         },
 
-        uploadProgression: function(uploaded, total) {
+        uploadProgression(uploaded, total) {
             this.amountUploaded = uploaded;
             this.amountToUpload = total;
         }

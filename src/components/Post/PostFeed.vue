@@ -46,12 +46,12 @@ export default {
     },
 
     computed: {
-        postLength: function() {
+        postLength() {
             return this.$props.posts.length;
         }
     },
 
-    created: function() {
+    created() {
         for (let i = 0; i < this.loadAmount; i++) {
             let amount = Math.floor(Math.random() * 4) + 3;
             let widths = [];
@@ -64,17 +64,17 @@ export default {
     },
 
     methods: {
-        addPost: function(p) {
+        addPost(p) {
             this.$emit("addPost", p.id);
         },
 
-        postLoaded: function(index) {
+        postLoaded(index) {
             this.$emit("postLoaded", index);
         }
     },
 
     watch: {
-        postLength: function(n) {
+        postLength(n) {
             let len = this.skeleton.length;
 
             for (let i = 0; i < n - len; i ++) {

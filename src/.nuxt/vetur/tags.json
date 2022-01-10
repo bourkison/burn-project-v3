@@ -1,21 +1,9 @@
 {
-  "ExerciseComponent": {
-    "description": "Auto imported from components/Exercise/ExerciseComponent.vue"
+  "AuthSignInForm": {
+    "description": "Auto imported from components/Auth/SignInForm.vue"
   },
-  "ExerciseExpandable": {
-    "description": "Auto imported from components/Exercise/ExerciseExpandable.vue"
-  },
-  "ExerciseFeed": {
-    "description": "Auto imported from components/Exercise/ExerciseFeed.vue"
-  },
-  "ExerciseRecorder": {
-    "description": "Auto imported from components/Exercise/ExerciseRecorder.vue"
-  },
-  "ExerciseSearch": {
-    "description": "Auto imported from components/Exercise/ExerciseSearch.vue"
-  },
-  "ExerciseShare": {
-    "description": "Auto imported from components/Exercise/ExerciseShare.vue"
+  "AuthSignUpForm": {
+    "description": "Auto imported from components/Auth/SignUpForm.vue"
   },
   "PostComponent": {
     "description": "Auto imported from components/Post/PostComponent.vue"
@@ -28,6 +16,15 @@
   },
   "PostNew": {
     "description": "Auto imported from components/Post/PostNew.vue"
+  },
+  "Comment": {
+    "description": "Auto imported from components/Comment/Comment.vue"
+  },
+  "CommentNew": {
+    "description": "Auto imported from components/Comment/CommentNew.vue"
+  },
+  "CommentSection": {
+    "description": "Auto imported from components/Comment/CommentSection.vue"
   },
   "SearchMainSearch": {
     "description": "Auto imported from components/Search/MainSearch.vue"
@@ -47,11 +44,23 @@
   "TemplateShare": {
     "description": "Auto imported from components/Template/TemplateShare.vue"
   },
-  "AuthSignInForm": {
-    "description": "Auto imported from components/Auth/SignInForm.vue"
+  "ExerciseComponent": {
+    "description": "Auto imported from components/Exercise/ExerciseComponent.vue"
   },
-  "AuthSignUpForm": {
-    "description": "Auto imported from components/Auth/SignUpForm.vue"
+  "ExerciseExpandable": {
+    "description": "Auto imported from components/Exercise/ExerciseExpandable.vue"
+  },
+  "ExerciseFeed": {
+    "description": "Auto imported from components/Exercise/ExerciseFeed.vue"
+  },
+  "ExerciseRecorder": {
+    "description": "Auto imported from components/Exercise/ExerciseRecorder.vue"
+  },
+  "ExerciseSearch": {
+    "description": "Auto imported from components/Exercise/ExerciseSearch.vue"
+  },
+  "ExerciseShare": {
+    "description": "Auto imported from components/Exercise/ExerciseShare.vue"
   },
   "ChartsChart": {
     "description": "Auto imported from components/Charts/Chart.vue"
@@ -59,41 +68,14 @@
   "ChartsRecentWorkoutsChart": {
     "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
   },
-  "Comment": {
-    "description": "Auto imported from components/Comment/Comment.vue"
-  },
-  "CommentNew": {
-    "description": "Auto imported from components/Comment/CommentNew.vue"
-  },
-  "CommentSection": {
-    "description": "Auto imported from components/Comment/CommentSection.vue"
-  },
-  "TextEditorComponent": {
-    "description": "Auto imported from components/TextEditor/EditorComponent.vue"
-  },
-  "TextEditorMenuButton": {
-    "description": "Auto imported from components/TextEditor/EditorMenuButton.vue"
-  },
   "TextEditor": {
     "description": "Auto imported from components/TextEditor/TextEditor.vue"
   },
+  "TextViewer": {
+    "description": "Auto imported from components/TextEditor/TextViewer.vue"
+  },
   "UserList": {
     "description": "Auto imported from components/User/UserList.vue"
-  },
-  "VideoPlayer": {
-    "description": "Auto imported from components/Video/VideoPlayer.vue"
-  },
-  "WorkoutComponent": {
-    "description": "Auto imported from components/Workout/WorkoutComponent.vue"
-  },
-  "WorkoutSearch": {
-    "description": "Auto imported from components/Workout/WorkoutSearch.vue"
-  },
-  "WorkoutShare": {
-    "description": "Auto imported from components/Workout/WorkoutShare.vue"
-  },
-  "WorkoutToast": {
-    "description": "Auto imported from components/Workout/WorkoutToast.vue"
   },
   "UtilityAvatarEditor": {
     "description": "Auto imported from components/Utility/AvatarEditor.vue"
@@ -127,5 +109,20 @@
   },
   "UtilityUsernameFilter": {
     "description": "Auto imported from components/Utility/UsernameFilter.vue"
+  },
+  "VideoPlayer": {
+    "description": "Auto imported from components/Video/VideoPlayer.vue"
+  },
+  "WorkoutComponent": {
+    "description": "Auto imported from components/Workout/WorkoutComponent.vue"
+  },
+  "WorkoutSearch": {
+    "description": "Auto imported from components/Workout/WorkoutSearch.vue"
+  },
+  "WorkoutShare": {
+    "description": "Auto imported from components/Workout/WorkoutShare.vue"
+  },
+  "WorkoutToast": {
+    "description": "Auto imported from components/Workout/WorkoutToast.vue"
   }
 }

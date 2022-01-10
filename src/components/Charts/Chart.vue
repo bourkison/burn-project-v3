@@ -344,10 +344,6 @@ export default {
 
     created() {
         this.resetVariables();
-        Object.assign(this.chartOptions, this.$props.options);
-        Object.assign(this.newChartData, this.chartOptions.data);
-
-        this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
     },
 
     mounted() {
@@ -372,11 +368,6 @@ export default {
                 }
 
                 this.resetVariables();
-
-                Object.assign(this.chartOptions, this.$props.options);
-                Object.assign(this.newChartData, this.chartOptions.data);
-
-                this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
 
                 // Format edit values:
                 if (this.chartOptions.startDate.date) {
@@ -827,6 +818,11 @@ export default {
             this.chartLabels = [];
             this.chartData = {};
             this.chart = null;
+
+            Object.assign(this.chartOptions, this.$props.options);
+            Object.assign(this.newChartData, this.chartOptions.data);
+
+            this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
         },
 
         selectExercise: function(exercise) {

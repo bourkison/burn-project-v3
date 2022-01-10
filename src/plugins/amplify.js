@@ -42,7 +42,7 @@ export default async ({ store, req }) => {
                     });
                     break;
                 case "tokenRefresh":
-                    console.log("TOKEN REFRESH", event, { user: data });
+                    console.log("TOKEN REFRESH", event, data);
                     break;
                 case "tokenRefresh_failure":
                     console.log("TOKEN REFRESH FAILURE", event, data);

@@ -264,20 +264,20 @@ export default {
         };
     },
 
-    mounted: function() {
+    mounted() {
         // Force a refresh of selected groups. Super hacky and gross.
         this.updateFills(this.$props.selectedGroups, []);
     },
 
     methods: {
-        bodyPartClickHandler: function(e) {
+        bodyPartClickHandler(e) {
             if (this.$props.editable) {
                 this.mostRecentClick = e.target.parentElement.id;
                 this.$emit("mgClick", this.mostRecentClick);
             }
         },
 
-        updateFills: function(newVal, oldVal) {
+        updateFills(newVal, oldVal) {
             // Not sure what's happening here. Watcher appears to be broken when clicking on SVG.
             // Do this check to workaround as only happens when pushing to array.
             if (newVal.length == oldVal.length && newVal.length > 0) {
@@ -309,7 +309,7 @@ export default {
     },
 
     watch: {
-        selectedGroups: function(n, o) {
+        selectedGroups(n, o) {
             this.updateFills(n, o);
         }
     }

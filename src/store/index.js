@@ -101,9 +101,11 @@ export const actions = {
 
     async fetchJwtToken({}, data) {
         try {
-            if (data && data.req) {
+            if (process.server && data && data.req) {
                 const SSR = withSSRContext({ req: data.req });
                 return (await SSR.Auth.currentSession()).getIdToken().getJwtToken();
+            } else if (process.server) {
+                throw new Error("No req context passed through in server side call");
             } else {
                 return (await Auth.currentSession()).getIdToken().getJwtToken();
             }

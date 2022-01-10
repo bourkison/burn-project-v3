@@ -42,11 +42,17 @@
                             :title="Date(postData.createdAt).toLocaleString()"
                             ><em>{{ createdAtText }}</em></span
                         >
-                        <b-dropdown left variant="outline" size="sm" class="post-dropdown" style="padding-top:1px;">
+                        <b-dropdown
+                            left
+                            variant="outline"
+                            size="sm"
+                            class="post-dropdown"
+                            style="padding-top: 1px"
+                        >
                             <span
                                 v-if="
                                     postData.createdBy.userId ===
-                                        $store.state.userProfile.docData._id
+                                    $store.state.userProfile.docData._id
                                 "
                             >
                                 <b-dropdown-item>Edit</b-dropdown-item>
@@ -72,7 +78,12 @@
                 <img class="w-100" :src="imgUrls[0]" />
             </div>
             <div v-else-if="video.url">
-                <VideoPlayer class="video-player" :options="video.options" :token="video.token" :id="video.id" />
+                <VideoPlayer
+                    class="video-player"
+                    :options="video.options"
+                    :token="video.token"
+                    :id="video.id"
+                />
             </div>
 
             <b-card-body>
@@ -120,7 +131,7 @@
             </b-card-body>
         </b-card>
     </div>
-    <div v-else style="display: none;"></div>
+    <div v-else style="display: none"></div>
 </template>
 
 <script>
@@ -145,16 +156,16 @@ export default {
     props: {
         postId: {
             required: true,
-            type: String
+            type: String,
         },
         skeletonAmount: {
             type: Number,
-            required: true
+            required: true,
         },
         skeletonWidth: {
             type: Array,
-            required: true
-        }
+            required: true,
+        },
     },
 
     data() {
@@ -166,7 +177,7 @@ export default {
                 id: "",
                 url: "",
                 token: "",
-                options: {}
+                options: {},
             },
             createdAtText: "",
             createdAtTextInterval: null,
@@ -182,24 +193,20 @@ export default {
         };
     },
 
-    created: function() {
+    created() {
         dayjs.extend(relativeTime);
     },
 
-    mounted: async function() {
+    async mounted() {
         try {
             const path = "/post/" + this.$props.postId;
             const myInit = {
                 headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                }
+                    Authorization: await this.$store.dispatch("fetchJwtToken"),
+                },
             };
 
-            const response = (
-                await API.get(this.$store.state.apiName, path, myInit).catch(err => {
-                    console.error(err);
-                })
-            ).data;
+            const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
             this.postData = {
                 _id: response._id,
@@ -207,7 +214,7 @@ export default {
                 createdAt: response.createdAt,
                 content: response.content,
                 filePaths: response.filePaths,
-                share: response.share
+                share: response.share,
             };
 
             this.likeCount = response.likeCount;
@@ -217,7 +224,8 @@ export default {
             this.createdAtText = dayjs(this.postData.createdAt).fromNow();
             const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt)).unix();
 
-            if (secondsAgo < 2700) { // 2700 = 45 minutes, when createdAtText = an hour ago
+            if (secondsAgo < 2700) {
+                // 2700 = 45 minutes, when createdAtText = an hour ago
                 if (secondsAgo < 90) {
                     this.createdAtTextIntervalLength = 30000;
                 } else {
@@ -227,8 +235,8 @@ export default {
                 this.createdAtTextInterval = window.setInterval(() => {
                     this.createdAtText = dayjs(this.postData.createdAt).fromNow();
                     const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt)).unix();
-                    
-                    if (secondsAgo  > 2700) {
+
+                    if (secondsAgo > 2700) {
                         window.clearInterval(this.createdAtTextInterval);
                     } else if (secondsAgo > 90) {
                         this.createdAtTextIntervalLength = 60000;
@@ -239,35 +247,44 @@ export default {
             try {
                 let urlPromises = [];
 
-                this.postData.filePaths.forEach(async path => {
+                this.postData.filePaths.forEach(async (path) => {
                     if (path.type === "video") {
                         const videoObject = {
-                            id: path.key
-                        }
+                            id: path.key,
+                        };
 
-                        const response = await API.graphql(graphqlOperation(getVideoObject, videoObject));
+                        const response = await API.graphql(
+                            graphqlOperation(getVideoObject, videoObject)
+                        );
 
                         this.video.token = response.data.getVideoObject.token;
                         this.video.id = path.key;
-                        this.video.url = "https://" + awsvideoconfig.awsOutputVideo + "/" + this.video.id + "/" + this.video.id.split("/")[this.video.id.split("/").length - 1] + ".m3u8";
+                        this.video.url =
+                            "https://" +
+                            awsvideoconfig.awsOutputVideo +
+                            "/" +
+                            this.video.id +
+                            "/" +
+                            this.video.id.split("/")[this.video.id.split("/").length - 1] +
+                            ".m3u8";
 
                         this.video.options = {
                             autoplay: false,
                             controls: true,
                             sources: [
                                 {
-                                    src: this.video.url
-                                }
-                            ]
-                        }
+                                    src: this.video.url,
+                                },
+                            ],
+                        };
                     } else if (path.type === "image") {
                         urlPromises.push(Storage.get(path.key));
                     }
-                })
+                });
 
                 const imageUrls = await Promise.all(urlPromises);
 
-                imageUrls.forEach(url => {
+                imageUrls.forEach((url) => {
                     this.imgUrls.push(url);
                 });
             } catch (err) {
@@ -286,14 +303,14 @@ export default {
         this.isLoading = false;
     },
 
-    beforeDestroy: function() {
+    beforeDestroy() {
         if (this.createdAtTextInterval) {
             window.clearInterval(this.createdAtTextInterval);
         }
     },
 
     methods: {
-        handleLike: function(x) {
+        handleLike(x) {
             if (x > 0) {
                 this.isLiked = true;
                 this.likeCount++;
@@ -301,8 +318,8 @@ export default {
                 this.isLiked = false;
                 this.likeCount--;
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

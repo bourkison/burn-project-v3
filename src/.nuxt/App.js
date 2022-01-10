@@ -10,16 +10,6 @@ import '../node_modules/bootstrap/dist/css/bootstrap.css'
 
 import '../node_modules/bootstrap-vue/dist/bootstrap-vue.css'
 
-import '../node_modules/tui-editor/dist/tui-editor.min.css'
-
-import '../node_modules/tui-editor/dist/tui-editor-contents.min.css'
-
-import '../node_modules/codemirror/lib/codemirror.css'
-
-import '../node_modules/highlight.js/styles/github.css'
-
-import '../node_modules/tui-color-picker/dist/tui-color-picker.min.css'
-
 import _6f6c098b from '../layouts/default.vue'
 
 const layouts = { "_default": sanitizeComponent(_6f6c098b) }

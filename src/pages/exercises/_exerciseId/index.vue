@@ -70,26 +70,27 @@
                             />
                         </div>
                         <b-card-body>
-                            <div>
-                                <TuiEditorViewer :value="exerciseData.description" />
-                            </div>
+                            <TextViewer :value="exerciseData.description" />
                         </b-card-body>
-                        <CommentSection
-                            v-if="$store.state.userProfile && $store.state.userProfile.loggedIn"
-                            :docId="exerciseData._id"
-                            coll="exercise"
-                            :followableComponent="true"
-                            :likeCount="likeCount"
-                            :commentCount="commentCount"
-                            :followCount="followCount"
-                            :isLiked="isLiked"
-                            :isFollowed="isFollowed"
-                            :isFollowable="isFollowable"
-                            @like="handleLike(1)"
-                            @unlike="handleLike(-1)"
-                            @follow="handleFollow(1)"
-                            @unfollow="handleFollow(-1)"
-                        />
+                        <client-only>
+                            <CommentSection
+                                v-if="$store.state.userProfile && $store.state.userProfile.loggedIn"
+                                :docId="exerciseData._id"
+                                coll="exercise"
+                                :followableComponent="true"
+                                :likeCount="likeCount"
+                                :commentCount="commentCount"
+                                :followCount="followCount"
+                                :isLiked="isLiked"
+                                :isFollowed="isFollowed"
+                                :isFollowable="isFollowable"
+                                @like="handleLike(1)"
+                                @unlike="handleLike(-1)"
+                                @follow="handleFollow(1)"
+                                @unfollow="handleFollow(-1)"
+                                @addComment="commentCount++"
+                            />
+                        </client-only>
                     </b-card>
                 </b-container>
             </b-col>
@@ -201,10 +202,10 @@ import CommentSection from "@/components/Comment/CommentSection.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 import Chart from "@/components/Charts/Chart.vue";
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
-
+import TextViewer from "@/components/TextEditor/TextViewer.vue";
 
 export default {
-    components: { CommentSection, MuscleGroup, Chart, VideoPlayer },
+    components: { CommentSection, MuscleGroup, Chart, VideoPlayer, TextViewer },
     data() {
         return {
             isLoading: true,
@@ -249,8 +250,8 @@ export default {
             ]
         }
     },
-    async asyncData({ params, error, store }) {
-        // console.log("Async Data", params);
+
+    async asyncData({ params, error, store, req }) {
         let isLoading = true;
         let exerciseExists = false;
         let exerciseData = null;
@@ -277,21 +278,37 @@ export default {
             pointBackgroundColor: "#007bff"
         };
 
+        let likeCount = 0;
+        let commentCount = 0;
+        let followCount = 0;
+        let isLiked = false;
+        let isFollowed = false;
+        let isFollowable = false;
+
         try {
             let response;
             if (store.state.userProfile && store.state.userProfile.loggedIn) {
                 const path = "/exercise/" + params.exerciseId;
                 const myInit = {
                     headers: {
-                        "Content-Type": "application/json",
-                        Authorization: await store.dispatch("fetchJwtToken")
+                        Authorization: await store.dispatch("fetchJwtToken", { req })
                     },
                     queryStringParameters: {
                         counters: true
                     }
                 };
 
+                console.log("Requesting exercise:", store.state.apiName, path, myInit)
+                console.log("With req:", req);
+
                 response = (await API.get(store.state.apiName, path, myInit));
+
+                likeCount = response.data.likeCount;
+                commentCount = response.data.commentCount;
+                followCount = response.data.followCount;
+                isLiked = response.data.isLiked;
+                isFollowed = response.data.isFollowed;
+                isFollowable = response.data.isFollowable;
             } else {
                 response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
             }
@@ -331,19 +348,27 @@ export default {
                 isLoading,
                 exerciseExists,
                 exerciseData,
-                chartOptions
+                chartOptions,
+                likeCount,
+                commentCount,
+                followCount,
+                isLiked,
+                isFollowed,
+                isFollowable
             }
         }
         catch (err) {
             console.error(err);
-            error({ message: err.message, statusCode: 500 });
+            error({ message: err.message, statusCode: err.statusCode });
         }
     },
-    async created() {
+
+    mounted() {
         if (this.$store.state.userProfile && this.$store.state.userProfile.loggedIn) {
             this.loadImages();
         }
     },
+
     methods: {
         confirmDeleteExercise() {
             this.modalIsDeleting = true;
