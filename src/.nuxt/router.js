@@ -5,9 +5,12 @@ import { interopDefault } from './utils'
 import scrollBehavior from './router.scrollBehavior.js'
 
 const _6186b3aa = () => interopDefault(import('../pages/exercises/index.vue' /* webpackChunkName: "pages/exercises/index" */))
+const _0fdb4249 = () => interopDefault(import('../pages/templates/index.vue' /* webpackChunkName: "pages/templates/index" */))
 const _3d0ab972 = () => interopDefault(import('../pages/exercises/followed.vue' /* webpackChunkName: "pages/exercises/followed" */))
 const _f98be78e = () => interopDefault(import('../pages/exercises/new.vue' /* webpackChunkName: "pages/exercises/new" */))
+const _89d7ab2e = () => interopDefault(import('../pages/templates/followed.vue' /* webpackChunkName: "pages/templates/followed" */))
 const _6c8c34e4 = () => interopDefault(import('../pages/exercises/_exerciseId/index.vue' /* webpackChunkName: "pages/exercises/_exerciseId/index" */))
+const _a843a764 = () => interopDefault(import('../pages/templates/_templateId/index.vue' /* webpackChunkName: "pages/templates/_templateId/index" */))
 const _cdef5804 = () => interopDefault(import('../pages/exercises/_exerciseId/edit.vue' /* webpackChunkName: "pages/exercises/_exerciseId/edit" */))
 const _7af23bdf = () => interopDefault(import('../pages/index.vue' /* webpackChunkName: "pages/index" */))
 
@@ -27,6 +30,10 @@ export const routerOptions = {
     component: _6186b3aa,
     name: "exercises"
   }, {
+    path: "/templates",
+    component: _0fdb4249,
+    name: "templates"
+  }, {
     path: "/exercises/followed",
     component: _3d0ab972,
     name: "exercises-followed"
@@ -35,9 +42,17 @@ export const routerOptions = {
     component: _f98be78e,
     name: "exercises-new"
   }, {
+    path: "/templates/followed",
+    component: _89d7ab2e,
+    name: "templates-followed"
+  }, {
     path: "/exercises/:exerciseId",
     component: _6c8c34e4,
     name: "exercises-exerciseId"
+  }, {
+    path: "/templates/:templateId",
+    component: _a843a764,
+    name: "templates-templateId"
   }, {
     path: "/exercises/:exerciseId/edit",
     component: _cdef5804,

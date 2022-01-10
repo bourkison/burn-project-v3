@@ -46,7 +46,7 @@
                             </b-card-sub-title>
                         </b-card-body>
                         <div v-if="!isLoading && (!$store.state.userProfile || !$store.state.userProfile.loggedIn) && exerciseData.filePaths.length">
-                            <div>Login or Sign Up to view images/video.</div>
+                            <div class="text-small text-muted text-center">Login or Sign Up to view images/video.</div>
                         </div>
                         <div v-else-if="imageUrls.length > 1">
                             <b-carousel v-model="carouselModel" controls indicators :interval="0">

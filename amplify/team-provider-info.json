@@ -75,7 +75,7 @@
         "projectburnPublicHandler": {
           "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnPublicHandler-4a707572744956313837-build.zip"
+          "s3Key": "amplify-builds/projectburnPublicHandler-4f566d6e5934544f6542-build.zip"
         },
         "projectburnMessageHandler": {
           "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",

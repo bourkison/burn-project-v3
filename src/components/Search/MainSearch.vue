@@ -105,17 +105,17 @@ export default {
     },
 
     methods: {
-        showPopover: function() {
+        showPopover() {
             this.displayPopover = true;
         },
 
-        hidePopover: function() {
+        hidePopover() {
             this.$nextTick(() => {
                 this.displayPopover = false;
             });
         },
 
-        searchPage: function() {
+        searchPage() {
             const encodedSearch = encodeURIComponent(this.searchText.trim());
             this.displayPopover = false;
             document.activeElement.blur();
@@ -125,7 +125,7 @@ export default {
     },
 
     watch: {
-        searchText: async function() {
+        async searchText() {
             this.isLoading = true;
             this.hasResults = true;
 

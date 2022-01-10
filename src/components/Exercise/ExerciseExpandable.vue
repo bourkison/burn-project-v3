@@ -67,32 +67,30 @@ export default {
         };
     },
 
-    created: function() {
+    mounted() {
         if (!this.$props.lazy) {
             this.downloadData();
         }
     },
 
     methods: {
-        downloadData: async function() {
+        async downloadData() {
             try {
-                const path = "/exercise/" + this.$props.exercise.exerciseId;
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    }
-                };
+                let response;
+                
+                if (this.$store.state.userProfile && this.$store.state.userProfile.loggedIn) {
+                    const path = "/exercise/" + this.$props.exercise.exerciseId;
+                    const myInit = {
+                        headers: {
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                        }
+                    };
 
-                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
-                    err => {
-                        throw new Error(
-                            "Error downloading exercise: " +
-                                this.$props.exercise.exerciseId +
-                                " at promise catch: " +
-                                err
-                        );
-                    }
-                );
+                    response = await API.get(this.$store.state.apiName, path, myInit);
+                } else {
+                    response = await API.get(this.$store.state.apiName, "/public/exercise/" + this.$props.exercise.exerciseId, {});
+                }
+
 
                 if (!response) {
                     throw new Error(
@@ -120,7 +118,7 @@ export default {
     },
 
     watch: {
-        isVisible: function() {
+        isVisible() {
             // Download data if we havent already and user has expanded.
             if (this.isVisible && this.isLoading) {
                 this.downloadData();

@@ -303,15 +303,15 @@ export default {
 
     computed: {
         preferenceIndex: {
-            get: function() {
+            get() {
                 return (this.newChartData.preferenceIndex + 1).toString();
             },
-            set: function(value) {
+            set(value) {
                 this.newChartData.preferenceIndex = Number(value) - 1;
             }
         },
 
-        preferenceIndexOrdinal: function() {
+        preferenceIndexOrdinal() {
             switch (this.preferenceIndex) {
                 case "1":
                     return "st favourite"
@@ -325,15 +325,15 @@ export default {
         },
 
         newDataToPull: {
-            get: function() {
+            get() {
                 return this.newChartData.dataToPull.split(",")
             },
-            set: function(value) {
+            set(value) {
                 this.newChartData.dataToPull = value.filter(x => { return x }).join(",");
             }
         },
 
-        validDataToPull: function() {
+        validDataToPull() {
             if (this.newDataToPull.length > 2 || !this.newDataToPull[0]) {
                 return false;
             }
@@ -361,7 +361,7 @@ export default {
     },
 
     methods: {
-        getData: async function() {
+        async getData() {
             try {
                 if (!this.$props.options.type) {
                     throw new Error("No chart type given")
@@ -448,7 +448,7 @@ export default {
             }
         },
 
-        formatData: function(data) {
+        formatData(data) {
             try {
 
                 let date = dayjs(this.startDate);
@@ -552,7 +552,7 @@ export default {
             }
         },
 
-        buildChart: function() {
+        buildChart() {
             Chart.register(...registerables);
             let ctx = this.$el.querySelector(".chart");
             ctx.height = 400;
@@ -712,7 +712,7 @@ export default {
             });
         },
 
-        buildDate: function(dateObj, interval, start) {
+        buildDate(dateObj, interval, start) {
             if (!dateObj.date) {
                 let date = dayjs().subtract(dateObj.amount, dateObj.unit);
 
@@ -737,7 +737,7 @@ export default {
             }
         },
 
-        flipCard: function() {
+        flipCard() {
             if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
                 this.$el.querySelector(".chart").style.display = "block";
             } else if (!this.$refs.cardFlip.classList.contains("flipped") && !this.hasData) {
@@ -748,7 +748,7 @@ export default {
             this.$refs.cardFlip.classList.toggle("flipped");
         },
 
-        updateChart: async function(save) {
+        async updateChart(save) {
             this.isLoading = true;
 
             if (save) {
@@ -806,7 +806,7 @@ export default {
             });
         },
 
-        resetVariables: function() {
+        resetVariables() {
             this.isLoading = true;
             this.hasData = false;
             this.cardTitle = "";
@@ -825,7 +825,7 @@ export default {
             this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
         },
 
-        selectExercise: function(exercise) {
+        selectExercise(exercise) {
             this.selectedExercise = exercise;
             delete this.selectedExercise._id;
             this.searchExerciseModal = false;

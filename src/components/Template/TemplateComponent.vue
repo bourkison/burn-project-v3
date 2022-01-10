@@ -1,5 +1,5 @@
 <template>
-    <b-card no-body>
+    <b-card no-body :style="!loadedSuccessfully && !isLoading ? 'display:none;' : ''">
         <div v-if="!isLoading">
             <div v-if="loadedSuccessfully">
                 <b-card-body>
@@ -9,7 +9,7 @@
                         }}</router-link></b-card-title
                     >
                     <b-card-sub-title>{{ templateData.createdBy.username }}</b-card-sub-title>
-                    <b-card-text>
+                    <div>
                         <div
                             :id="templateData._id + 'accordion'"
                             class="accordion exerciseExpandableCont"
@@ -24,8 +24,8 @@
                                 :lazy="true"
                             />
                         </div>
-                    </b-card-text>
-                    <TuiEditorViewer :initialValue="templateData.description" />
+                    </div>
+                    <DescriptionViewer :value="templateData.description" />
 
                     <div class="text-center" v-if="!$store.state.activeWorkout.workoutCommenced">
                         <b-button
@@ -74,10 +74,11 @@ import { API } from "aws-amplify";
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 export default {
     name: "TemplateComponent",
-    components: { CommentSection, ExerciseExpandable },
+    components: { CommentSection, ExerciseExpandable, DescriptionViewer },
     props: {
         templateId: {
             type: String,
@@ -162,11 +163,11 @@ export default {
     },
 
     methods: {
-        displayError: function(err) {
+        displayError(err) {
             console.error(err);
         },
 
-        handleLike: function(x) {
+        handleLike(x) {
             if (x > 0) {
                 this.likeCount++;
                 this.isLiked = true;
@@ -176,7 +177,7 @@ export default {
             }
         },
 
-        handleFollow: function(x) {
+        handleFollow(x) {
             if (x > 0) {
                 this.followCount++;
                 this.isFollowed = true;

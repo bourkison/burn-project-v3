@@ -193,7 +193,7 @@ export default {
         };
     },
 
-    async created() {
+    async mounted() {
         // Get most recent comments and comment count.
         this.isLoadingComments = true;
         const path = "/comment/" + this.$props.docId;
