@@ -28,6 +28,13 @@
     "_name": "_6c8c34e4"
   },
   {
+    "name": "exercises-exerciseId-edit",
+    "path": "/exercises/:exerciseId/edit",
+    "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/exercises/_exerciseId/edit.vue",
+    "chunkName": "pages/exercises/_exerciseId/edit",
+    "_name": "_cdef5804"
+  },
+  {
     "name": "index",
     "path": "/",
     "component": "/Users/harrisonbourke/Documents/Projects/burn-project-v3/src/pages/index.vue",

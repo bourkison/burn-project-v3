@@ -31,7 +31,7 @@
                         <b-card-body>
                             <h5>Description</h5>
                             <client-only>
-                                <TextEditor @input="updateDescription" />
+                                <DescriptionEditor @input="updateDescription" />
                             </client-only>
                         </b-card-body>
                     </b-card>
@@ -101,7 +101,7 @@ import ImageUploader from "@/components/Utility/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
-import TextEditor from "@/components/TextEditor/TextEditor.vue"
+import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue"
 
 import { v4 as uuidv4 } from "uuid";
 import awsvideoconfig from "@/aws-video-exports.js";
@@ -113,7 +113,7 @@ export default {
         ImageUploader,
         MuscleGroupSelector,
         TagSelector,
-        TextEditor
+        DescriptionEditor
     },
     data() {
         return {

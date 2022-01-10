@@ -19,7 +19,7 @@
             <b-collapse v-model="isVisible">
                 <b-card-body>
                     <div v-if="!isLoading">
-                        <TuiEditorViewer :initialValue="exercise.description" />
+                        <DescriptionViewer :value="exercise.description" />
                     </div>
                     <div v-else class="text-center">
                         <b-spinner small />
@@ -32,9 +32,11 @@
 
 <script>
 import { API } from "aws-amplify";
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer";
 
 export default {
     name: "ExerciseShare",
+    components: { DescriptionViewer },
     props: {
         exerciseId: {
             type: String,

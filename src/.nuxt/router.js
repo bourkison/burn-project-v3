@@ -8,6 +8,7 @@ const _6186b3aa = () => interopDefault(import('../pages/exercises/index.vue' /* 
 const _3d0ab972 = () => interopDefault(import('../pages/exercises/followed.vue' /* webpackChunkName: "pages/exercises/followed" */))
 const _f98be78e = () => interopDefault(import('../pages/exercises/new.vue' /* webpackChunkName: "pages/exercises/new" */))
 const _6c8c34e4 = () => interopDefault(import('../pages/exercises/_exerciseId/index.vue' /* webpackChunkName: "pages/exercises/_exerciseId/index" */))
+const _cdef5804 = () => interopDefault(import('../pages/exercises/_exerciseId/edit.vue' /* webpackChunkName: "pages/exercises/_exerciseId/edit" */))
 const _7af23bdf = () => interopDefault(import('../pages/index.vue' /* webpackChunkName: "pages/index" */))
 
 const emptyFn = () => {}
@@ -37,6 +38,10 @@ export const routerOptions = {
     path: "/exercises/:exerciseId",
     component: _6c8c34e4,
     name: "exercises-exerciseId"
+  }, {
+    path: "/exercises/:exerciseId/edit",
+    component: _cdef5804,
+    name: "exercises-exerciseId-edit"
   }, {
     path: "/",
     component: _7af23bdf,

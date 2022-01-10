@@ -87,7 +87,7 @@
             </div>
 
             <b-card-body>
-                <b-card-text>
+                <div>
                     <div v-if="postData.share.type" class="mb-3">
                         <div v-if="postData.share.type == 'exercise'">
                             <ExerciseShare :exerciseId="postData.share._id" />
@@ -105,7 +105,7 @@
                         </div>
                     </div>
                     {{ postData.content }}
-                </b-card-text>
+                </div>
             </b-card-body>
             <CommentSection
                 :docId="postData._id"

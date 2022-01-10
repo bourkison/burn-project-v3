@@ -6,7 +6,7 @@
 
 <script>
 export default {
-    name: "TextViewer",
+    name: "DescriptionViewer",
     props: {
         value: {
             type: String,

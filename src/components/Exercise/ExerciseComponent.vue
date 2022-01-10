@@ -18,7 +18,7 @@
             <b-card-body>
                 <b-card-title>
                     <div class="d-flex align-item-center">
-                        <div><router-link :to="'/exercises/' + exerciseId">{{exerciseData.name}}</router-link></div>
+                        <div><nuxt-link :to="'/exercises/' + exerciseId">{{exerciseData.name}}</nuxt-link></div>
                         <div class="ml-auto font-small">
                             <b-dropdown class="exercise-component-dropdown" variant="outline">
                                 <b-dropdown-item class="exercise-component-dropdown-item" :to="'/exercises/' + exerciseData._id + '/edit'"><b-icon-pencil class="mr-1" /> Edit</b-dropdown-item>
@@ -34,7 +34,7 @@
                         <div>Tags: <b-badge class="mr-1" variant="dark" v-for="(tag, index) in exerciseData.tags" :key="index">{{ tag }}</b-badge></div>
                         </div>
                 </b-collapse>
-                <TextViewer :value="exerciseData.description" />
+                <DescriptionViewer :value="exerciseData.description" />
             </b-card-body>
             <CommentSection
                 :docId="exerciseData._id"
@@ -72,11 +72,11 @@ import awsvideoconfig from "@/aws-video-exports";
 
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 import CommentSection from "@/components/Comment/CommentSection.vue";
-import TextViewer from "@/components/TextEditor/TextViewer.vue";
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 export default {
     name: "ExerciseComponent",
-    components: { CommentSection, VideoPlayer, TextViewer },
+    components: { CommentSection, VideoPlayer, DescriptionViewer },
     props: {
         exerciseId: {
             type: String,

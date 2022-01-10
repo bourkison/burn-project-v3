@@ -26,24 +26,6 @@
   "CommentSection": {
     "description": "Auto imported from components/Comment/CommentSection.vue"
   },
-  "SearchMainSearch": {
-    "description": "Auto imported from components/Search/MainSearch.vue"
-  },
-  "TemplateBuilder": {
-    "description": "Auto imported from components/Template/TemplateBuilder.vue"
-  },
-  "TemplateComponent": {
-    "description": "Auto imported from components/Template/TemplateComponent.vue"
-  },
-  "TemplateFeed": {
-    "description": "Auto imported from components/Template/TemplateFeed.vue"
-  },
-  "TemplateSearch": {
-    "description": "Auto imported from components/Template/TemplateSearch.vue"
-  },
-  "TemplateShare": {
-    "description": "Auto imported from components/Template/TemplateShare.vue"
-  },
   "ExerciseComponent": {
     "description": "Auto imported from components/Exercise/ExerciseComponent.vue"
   },
@@ -62,17 +44,35 @@
   "ExerciseShare": {
     "description": "Auto imported from components/Exercise/ExerciseShare.vue"
   },
+  "SearchMainSearch": {
+    "description": "Auto imported from components/Search/MainSearch.vue"
+  },
+  "TemplateBuilder": {
+    "description": "Auto imported from components/Template/TemplateBuilder.vue"
+  },
+  "TemplateComponent": {
+    "description": "Auto imported from components/Template/TemplateComponent.vue"
+  },
+  "TemplateFeed": {
+    "description": "Auto imported from components/Template/TemplateFeed.vue"
+  },
+  "TemplateSearch": {
+    "description": "Auto imported from components/Template/TemplateSearch.vue"
+  },
+  "TemplateShare": {
+    "description": "Auto imported from components/Template/TemplateShare.vue"
+  },
   "ChartsChart": {
     "description": "Auto imported from components/Charts/Chart.vue"
   },
   "ChartsRecentWorkoutsChart": {
     "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
   },
-  "TextEditor": {
-    "description": "Auto imported from components/TextEditor/TextEditor.vue"
+  "TextEditorDescriptionEditor": {
+    "description": "Auto imported from components/TextEditor/DescriptionEditor.vue"
   },
-  "TextViewer": {
-    "description": "Auto imported from components/TextEditor/TextViewer.vue"
+  "TextEditorDescriptionViewer": {
+    "description": "Auto imported from components/TextEditor/DescriptionViewer.vue"
   },
   "UserList": {
     "description": "Auto imported from components/User/UserList.vue"

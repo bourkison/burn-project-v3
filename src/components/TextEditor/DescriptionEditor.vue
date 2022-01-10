@@ -117,13 +117,13 @@
 <script>
 import { Editor, EditorContent } from "@tiptap/vue-2";
 import StarterKit from "@tiptap/starter-kit";
-import { Underline } from "tiptap-extensions";
+import Underline from "@tiptap/extension-underline";
 
 export default {
-    name: "Editor",
+    name: "DescriptionEditor",
     components: { EditorContent },
     props: {
-        initialContent: {
+        initialValue: {
             type: String,
             default: "",
         },
@@ -178,7 +178,7 @@ export default {
 
     created() {
         this.editor = new Editor({
-            content: this.initialContent,
+            content: this.initialValue,
             extensions: [StarterKit, Underline],
             onUpdate: () => {
                 this.$emit("input", this.editor.getHTML());

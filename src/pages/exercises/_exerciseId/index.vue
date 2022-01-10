@@ -70,7 +70,7 @@
                             />
                         </div>
                         <b-card-body>
-                            <TextViewer :value="exerciseData.description" />
+                            <DescriptionViewer :value="exerciseData.description" />
                         </b-card-body>
                         <client-only>
                             <CommentSection
@@ -202,10 +202,10 @@ import CommentSection from "@/components/Comment/CommentSection.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 import Chart from "@/components/Charts/Chart.vue";
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
-import TextViewer from "@/components/TextEditor/TextViewer.vue";
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 export default {
-    components: { CommentSection, MuscleGroup, Chart, VideoPlayer, TextViewer },
+    components: { CommentSection, MuscleGroup, Chart, VideoPlayer, DescriptionViewer },
     data() {
         return {
             isLoading: true,
@@ -297,9 +297,6 @@ export default {
                         counters: true
                     }
                 };
-
-                console.log("Requesting exercise:", store.state.apiName, path, myInit)
-                console.log("With req:", req);
 
                 response = (await API.get(store.state.apiName, path, myInit));
 

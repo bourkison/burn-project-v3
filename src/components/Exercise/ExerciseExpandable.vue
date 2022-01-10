@@ -22,7 +22,7 @@
         >
             <b-card-body>
                 <div v-if="!isLoading">
-                    <TuiEditorViewer :initialValue="exerciseData.description" />
+                    <DescriptionViewer :value="exerciseData.description" />
                 </div>
                 <div v-else class="text-center">
                     <b-spinner small />
@@ -34,9 +34,11 @@
 
 <script>
 import { API } from "aws-amplify";
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer";
 
 export default {
     name: "ExerciseExpandable",
+    components: { DescriptionViewer },
     props: {
         exercise: {
             type: Object,

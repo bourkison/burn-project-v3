@@ -7,14 +7,14 @@ Amplify.configure({ ...awsconfig, ssr: true });
 export default async ({ store, req }) => {
     // Check if user logs in or out.
     // If log in we also fetch the user document, else we commit user data to equal null.
-    if (process.server) {
+    if (process.server && (!store.state.userProfile || !store.state.userProfile.loggedIn)) {
         // Log in on server init.
         const SSR = withSSRContext({ req });
 
         // Set logged in on initial load.
         try {
             const user = await SSR.Auth.currentSession();
-            console.log("Logged in server side:", user);
+            console.log("Logged in server side");
             await store.dispatch("fetchUser", { user, req });
         }
         catch(err) {
@@ -59,7 +59,7 @@ export default async ({ store, req }) => {
         if (!store.state.userProfile || !store.state.userProfile.loggedIn) {
             try {
                 const user = await Auth.currentSession();
-                console.log("Logged in client side:", user);
+                console.log("Logged in client side");
                 await store.dispatch("fetchUser", { user });
             }
             catch(err) {
