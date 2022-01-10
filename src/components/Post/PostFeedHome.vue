@@ -62,7 +62,7 @@ export default {
         };
     },
 
-    created: async function() {
+    async mounted() {
         try {
             this.isLoading = true;
             this.isLoadingMore = true;

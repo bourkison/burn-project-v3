@@ -1,6 +1,6 @@
 const middleware = {}
 
-middleware['protectedRoute'] = require('../middleware/protectedRoute.js')
-middleware['protectedRoute'] = middleware['protectedRoute'].default || middleware['protectedRoute']
+middleware['requiresAuth'] = require('../middleware/requiresAuth.js')
+middleware['requiresAuth'] = middleware['requiresAuth'].default || middleware['requiresAuth']
 
 export default middleware

@@ -11,7 +11,7 @@ export const state = () => {
 }
 
 export const mutations = {
-    setVideoToken: function(state, data) {
+    setVideoToken(state, data) {
         if (!state.videoTokens[data.key]) {
             Vue.set(state.videoTokens, data.key, { token: data.token, amount: 1 });
         } else {
@@ -20,26 +20,26 @@ export const mutations = {
         }
     },
 
-    deleteVideoToken: function(state, key) {
+    deleteVideoToken(state, key) {
         state.videoTokens[key].amount--;
         if (state.videoTokens[key].amount <= 0) {
             delete state.videoTokens[key];
         }
     },
 
-    setLoggedInUser: function(state, user) {
+    setLoggedInUser(state, user) {
         state.userProfile = user;
     },
 
-    setLoggedInUserWorkouts: function(state, workouts) {
+    setLoggedInUserWorkouts(state, workouts) {
         state.userWorkouts = workouts;
     },
 
-    setLoadingWorkouts: function(state, promises) {
+    setLoadingWorkouts(state, promises) {
         state.workoutPromises = promises;
     },
 
-    pushWorkoutToUserWorkouts: function(state, workout) {
+    pushWorkoutToUserWorkouts(state, workout) {
         console.log("UNSHIFTING WORKOUTS", workout);
         state.userProfile.docData.workouts ? state.userProfile.docData.workouts.unshift(workout) : state.userProfile.docData.workouts = [workout];
 
@@ -57,7 +57,7 @@ export const mutations = {
         }
     },
 
-    updateChart: function(state, data) {
+    updateChart(state, data) {
         switch (data.position) {
             case "homepageLeftRail":
                 Vue.set(state.userProfile.docData.options.charts.homepage.leftRail, data.index, data.options);
@@ -74,30 +74,20 @@ export const mutations = {
 }
 
 export const actions = {
-    fetchUser: async function({ state, commit, dispatch }, data) {
-        console.log("Fetching User:", data);
-        const path = "/user/" + data.idToken.payload["cognito:username"];
-        let myInit;
-        if (process.client) {
-            myInit = {
-                headers: {
-                    Authorization: await dispatch("fetchJwtToken")
-                }
-            };
-        } else if (process.server) {
-            myInit = {
-                headers: {
-                    Authorization: data.idToken.payload.jwtToken
-                }
-            };
-        }
+    async fetchUser({ state, commit, dispatch }, data) {
+        const path = "/user/" + data.user.idToken.payload["cognito:username"];
+        const myInit = {
+            headers: {
+                Authorization: await dispatch("fetchJwtToken", { req: data.req })
+            }
+        };
         
         try {
             const docData = (await API.get(state.apiName, path, myInit)).data;
     
             commit("setLoggedInUser", {
                 loggedIn: true,
-                data: data,
+                data: data.user,
                 docData: docData
             });
         }
@@ -109,17 +99,22 @@ export const actions = {
         return;
     },
 
-    fetchJwtToken: async function({ state, commit }) {
+    async fetchJwtToken({}, data) {
         try {
-            return (await Auth.currentSession()).getIdToken().getJwtToken();
+            if (data && data.req) {
+                const SSR = withSSRContext({ req: data.req });
+                return (await SSR.Auth.currentSession()).getIdToken().getJwtToken();
+            } else {
+                return (await Auth.currentSession()).getIdToken().getJwtToken();
+            }
         }
         catch (err) {
-            console.error("Error getting jwtToken", err);
+            console.error("Error getting jwtToken", err, data);
             return "";
         }
     },
 
-    updateChart: async function({ state, commit, dispatch }, data) {
+    async updateChart({ state, commit, dispatch }, data) {
         if (data.save) {
             const path = "/stats/" + data.position;
             const myInit = {
@@ -138,16 +133,5 @@ export const actions = {
 
         commit("updateChart", data);
         return;     
-    },
-
-    nuxtServerInit: async function({ commit, dispatch }, { req }) {
-        const SSR = withSSRContext(req)
-        try {
-            console.log("NUXT INIT:", (await SSR.Auth.currentAuthenticatedUser()))
-        }
-        catch (err) {
-            console.error("Nuxt init err");
-            console.error(err);
-        }
     }
 }

@@ -163,12 +163,12 @@ export default {
     },
     head() {
         return {
-            title: "New Exercise"
+            title: "Burn · New Exercise"
         }
     },
 
     methods: {
-        createExercise: async function() {
+        async createExercise() {
             this.isCreating = true;
 
             if (this.imagesToUpload.length) {
@@ -257,31 +257,31 @@ export default {
             }
         },
 
-        updateDescription: function() {
+        updateDescription() {
             this.exerciseForm.description = this.$refs.toastuiEditor.invoke("getMarkdown");
         },
 
-        updateImages: function(images) {
+        updateImages(images) {
             this.imagesToUpload = images;
         },
 
-        updateVideo: function(video) {
+        updateVideo(video) {
             this.videoToUpload = video;
         },
 
-        updateTags: function(tags) {
+        updateTags(tags) {
             this.exerciseForm.tags = tags;
         },
 
-        updateMuscleGroups: function(muscleGroups) {
+        updateMuscleGroups(muscleGroups) {
             this.exerciseForm.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty: function(difficulty) {
+        updateDifficulty(difficulty) {
             this.exerciseForm.difficulty = difficulty;
         },
 
-        displayError: function(err) {
+        displayError(err) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";

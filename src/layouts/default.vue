@@ -108,19 +108,14 @@ export default {
     },
     head() {
         return {
-            title: "Burn Home"
+            title: "Burn · Home"
         }
     },
     
     methods: {
-        signOut: function() {
-            Auth.signOut()
-                .then(() => {
-                    this.$router.push("/");
-                })
-                .catch(err => {
-                    alert(err.message || JSON.stringify(err));
-                });
+        async signOut() {
+            await Auth.signOut().catch(err => { console.error(err.message || JSON.stringify(err)); });
+            this.$router.push("/");
         }
     }
 }

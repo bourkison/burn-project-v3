@@ -146,8 +146,13 @@ export default {
             errorInterval: null
         };
     },
+    head() {
+        return {
+            title: "Burn · Followed Exercises"
+        }
+    },
 
-    created: function() {
+    created() {
         if (this.$route.query.muscleGroups) {
             this.selectedMgs = this.$route.query.muscleGroups.split(",");
         }
@@ -160,7 +165,7 @@ export default {
     },
 
     methods: {
-        loadMoreExercises: async function() {
+        async loadMoreExercises() {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
@@ -195,7 +200,7 @@ export default {
             }
         },
 
-        downloadExercises: async function() {
+        async downloadExercises() {
             try {
                 this.isLoading = true;
                 this.exercises = [];
@@ -258,7 +263,7 @@ export default {
             }
         },
 
-        updateMuscleGroups: function(muscleGroups) {
+        updateMuscleGroups(muscleGroups) {
             console.log("UPDATING MUSCLE GROUPS");
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
@@ -284,7 +289,7 @@ export default {
             this.downloadExercises();
         },
 
-        updateTags: function(tags) {
+        updateTags(tags) {
             console.log("UPDATING TAGS");
 
             this.selectedTags = tags;
@@ -310,7 +315,7 @@ export default {
             this.downloadExercises();
         },
 
-        displayError: function(err) {
+        displayError(err) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";

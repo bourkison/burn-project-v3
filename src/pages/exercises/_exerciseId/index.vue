@@ -70,9 +70,9 @@
                             />
                         </div>
                         <b-card-body>
-                            <b-card-text>
+                            <div>
                                 <TuiEditorViewer :value="exerciseData.description" />
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                         <CommentSection
                             v-if="$store.state.userProfile && $store.state.userProfile.loggedIn"
@@ -101,7 +101,7 @@
                             <b-card-title>
                                 Difficulty
                             </b-card-title>
-                            <b-card-text>
+                            <div>
                                 <div class="text-center stars">
                                     <b-icon-star-fill
                                         v-for="star in exerciseData.difficulty"
@@ -110,7 +110,7 @@
                                         variant="warning"
                                     ></b-icon-star-fill>
                                 </div>
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                     </b-card>
 
@@ -128,7 +128,7 @@
                             <b-card-title>
                                 Tags
                             </b-card-title>
-                            <b-card-text>
+                            <div>
                                 <div style="text-center">
                                     <b-badge
                                         class="tags"
@@ -138,7 +138,7 @@
                                         >{{ tag }}</b-badge
                                     >
                                 </div>
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                     </b-card>
 
@@ -239,7 +239,7 @@ export default {
     },
     head() {
         return {
-            title: this.exerciseData ? this.exerciseData.name : "Exercise",
+            title: this.exerciseData ? "Burn · " + this.exerciseData.name : "Burn · Exercise",
             meta: [
                 {
                     hid: "description",
@@ -291,8 +291,6 @@ export default {
                     }
                 };
 
-                console.log("Making request:", myInit);
-
                 response = (await API.get(store.state.apiName, path, myInit));
             } else {
                 response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
@@ -304,8 +302,6 @@ export default {
             } else {
                 error({ message: "Page not found", statusCode: 404 });
             }
-
-            console.log("RESPONSE:", response);
 
             isLoading = false;
 

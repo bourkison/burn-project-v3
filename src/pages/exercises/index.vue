@@ -115,13 +115,19 @@ import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
 export default {
     name: "ExerciseDiscover",
-    middleware: ["protectedRoute"],
+    middleware: ["requiresAuth"],
     components: {
         ExerciseFeed,
         MuscleGroupSelector,
         TagSelector,
         UsernameFilter
     },
+    head() {
+        return {
+            title: "Burn · Exercises"
+        }
+    },
+
     data() {
         return {
             isLoading: true,

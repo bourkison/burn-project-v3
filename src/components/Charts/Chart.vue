@@ -342,14 +342,20 @@ export default {
         }
     },
 
-    created: function() {
+    created() {
+        this.resetVariables();
+        Object.assign(this.chartOptions, this.$props.options);
+        Object.assign(this.newChartData, this.chartOptions.data);
+
+        this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
+    },
+
+    mounted() {
         dayjs.extend(isSameOrAfter);
         dayjs.extend(isSameOrBefore);
 
         this.getData();
-    },
 
-    mounted: function() {
         // Add transition end event that hides chart when flipped.
         this.$refs.cardFlip.addEventListener("transitionend", () => {
             if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
