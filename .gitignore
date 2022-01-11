@@ -3,6 +3,9 @@ node_modules
 /dist
 .prettierrc
 
+# Nuxt
+src/.nuxt
+src/dist
 
 # local env files
 .env.local

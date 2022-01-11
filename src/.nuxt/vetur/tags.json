@@ -17,18 +17,6 @@
   "ExerciseShare": {
     "description": "Auto imported from components/Exercise/ExerciseShare.vue"
   },
-  "AuthSignInForm": {
-    "description": "Auto imported from components/Auth/SignInForm.vue"
-  },
-  "AuthSignUpForm": {
-    "description": "Auto imported from components/Auth/SignUpForm.vue"
-  },
-  "ChartsChart": {
-    "description": "Auto imported from components/Charts/Chart.vue"
-  },
-  "ChartsRecentWorkoutsChart": {
-    "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
-  },
   "PostComponent": {
     "description": "Auto imported from components/Post/PostComponent.vue"
   },
@@ -40,15 +28,6 @@
   },
   "PostNew": {
     "description": "Auto imported from components/Post/PostNew.vue"
-  },
-  "Comment": {
-    "description": "Auto imported from components/Comment/Comment.vue"
-  },
-  "CommentNew": {
-    "description": "Auto imported from components/Comment/CommentNew.vue"
-  },
-  "CommentSection": {
-    "description": "Auto imported from components/Comment/CommentSection.vue"
   },
   "SearchMainSearch": {
     "description": "Auto imported from components/Search/MainSearch.vue"
@@ -68,11 +47,32 @@
   "TemplateShare": {
     "description": "Auto imported from components/Template/TemplateShare.vue"
   },
+  "Comment": {
+    "description": "Auto imported from components/Comment/Comment.vue"
+  },
+  "CommentNew": {
+    "description": "Auto imported from components/Comment/CommentNew.vue"
+  },
+  "CommentSection": {
+    "description": "Auto imported from components/Comment/CommentSection.vue"
+  },
   "TextEditorDescriptionEditor": {
     "description": "Auto imported from components/TextEditor/DescriptionEditor.vue"
   },
   "TextEditorDescriptionViewer": {
     "description": "Auto imported from components/TextEditor/DescriptionViewer.vue"
+  },
+  "AuthSignInForm": {
+    "description": "Auto imported from components/Auth/SignInForm.vue"
+  },
+  "AuthSignUpForm": {
+    "description": "Auto imported from components/Auth/SignUpForm.vue"
+  },
+  "ChartsChart": {
+    "description": "Auto imported from components/Charts/Chart.vue"
+  },
+  "ChartsRecentWorkoutsChart": {
+    "description": "Auto imported from components/Charts/RecentWorkoutsChart.vue"
   },
   "UserList": {
     "description": "Auto imported from components/User/UserList.vue"
