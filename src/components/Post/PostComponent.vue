@@ -119,7 +119,8 @@
             />
         </b-card>
     </div>
-    <div v-else-if="isLoading && !loadedSuccessfully">
+    <div v-else-if="!isLoading" style="display: none"></div>
+    <div v-else>
         <b-card no-body>
             <b-card-body>
                 <b-skeleton
@@ -131,7 +132,7 @@
             </b-card-body>
         </b-card>
     </div>
-    <div v-else style="display: none"></div>
+    
 </template>
 
 <script>

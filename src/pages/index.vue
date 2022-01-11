@@ -22,10 +22,11 @@
                 <div class="mt-5 text-center text-muted">
                     <b-icon-plus-circle class="clickableIcon" font-scale="2" />
                 </div>
+                
             </b-col>
             <b-col sm="6">
                 <b-container v-if="$store.state.userProfile.loggedIn">
-                    <PostFeedHome />
+                        <PostFeedHome />
                 </b-container>
                 <b-container v-else>
                     Log in to get started!

@@ -28,7 +28,7 @@
                 </div>
                 <div class="ml-auto">
                     <span title="Create post">
-                        <b-button class="menubar__button" @click="$emit('postClick')">
+                        <b-button class="menubar__button" @click="$emit('postClick')" :disabled="isLoading">
                             <span v-if="!isLoading" class="my-0 mx-auto">
                                 <note-edit-outline-icon class="menubar__icon" :size="16" />
                             </span>

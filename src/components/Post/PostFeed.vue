@@ -41,25 +41,17 @@ export default {
     data() {
         return {
             skeleton: [],
-            loadAmount: 5
+            loadAmount: 5,
         };
+    },
+
+    created() {
+        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.postFeedSkeleton));
     },
 
     computed: {
         postLength() {
             return this.$props.posts.length;
-        }
-    },
-
-    created() {
-        for (let i = 0; i < this.loadAmount; i++) {
-            let amount = Math.floor(Math.random() * 4) + 3;
-            let widths = [];
-
-            for (let j = 0; j < amount; j++) {
-                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
-            }
-            this.skeleton.push([amount, widths]);
         }
     },
 
@@ -76,14 +68,14 @@ export default {
     watch: {
         postLength(n) {
             let len = this.skeleton.length;
-
-            for (let i = 0; i < n - len; i ++) {
+            for (let i = 0; i < n - len; i++) {
                 let amount = Math.floor(Math.random() * 4) + 3;
                 let widths = [];
 
                 for (let j = 0; j < amount; j++) {
                     widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
                 }
+
                 this.skeleton.push([amount, widths]);
             }
         }

@@ -2,7 +2,7 @@
     <div>
         <b-card no-body class="no-bot-border bbr-0">
             <b-card-body class="pb-1">
-                <b-card-title><h6>Quick Start</h6></b-card-title>
+                <b-card-title title-tag="h6">Quick Start</b-card-title>
             </b-card-body>
         </b-card>
         <div>
