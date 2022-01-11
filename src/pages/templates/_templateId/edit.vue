@@ -84,7 +84,7 @@
                 <b-container class="buttonsCont">
                     <b-button
                         variant="outline-danger"
-                        @click="$router.push('/templates/' + newTemplateData.id)"
+                        @click="$router.go(-1)"
                         >Cancel</b-button
                     >
                     <b-button
@@ -198,7 +198,7 @@ export default {
             }
         } catch (err) {
             console.error(err);
-            error({ message: err.message, statusCode: err.statusCode });
+            error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
 
         return {

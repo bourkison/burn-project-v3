@@ -12,23 +12,23 @@
                             :src="postData.createdBy.profilePhoto"
                         />
                         <span
-                            ><router-link
+                            ><nuxt-link
                                 :to="'/' + postData.createdBy.username"
                                 class="text-dark username"
-                                >{{ postData.createdBy.username }}</router-link
+                                >{{ postData.createdBy.username }}</nuxt-link
                             >
                         </span>
                         <span class="ml-1" v-if="postData.share.type">
                             <span v-if="postData.share.type == 'exercise'"
                                 >&nbsp;shared an
-                                <router-link :to="'/exercises/' + postData.share._id"
-                                    >exercise</router-link
+                                <nuxt-link :to="'/exercises/' + postData.share._id"
+                                    >exercise</nuxt-link
                                 >.</span
                             >
                             <span v-if="postData.share.type == 'template'"
                                 >&nbsp;shared a
-                                <router-link :to="'/templates/' + postData.share._id"
-                                    >template</router-link
+                                <nuxt-link :to="'/templates/' + postData.share._id"
+                                    >template</nuxt-link
                                 >.</span
                             >
                             <span v-if="postData.share.type == 'workout'"

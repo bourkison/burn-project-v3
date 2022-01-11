@@ -14,7 +14,7 @@
                 <b-row class="text-center font-weight-bold">
                     <b-col cols="1">#</b-col>
                     <b-col cols="5">Exercise Name</b-col>
-                    <b-col cols="3">Kg</b-col>
+                    <b-col cols="3">Best Set</b-col>
                     <b-col cols="3">Reps</b-col>
                 </b-row>
 
@@ -35,7 +35,7 @@
                         </b-col>
 
                         <b-col cols="3">
-                            {{ exercise.sets[0].kg }}
+                            {{ exercise.sets[0].weightAmount.toString() + exercise.sets[0].measureBy }}
                         </b-col>
 
                         <b-col cols="3">
@@ -51,7 +51,7 @@
                         >
                             <b-col cols="1"></b-col>
                             <b-col cols="5">{{ index + 1 }}</b-col>
-                            <b-col cols="3">{{ exercise.sets[index].kg }}</b-col>
+                            <b-col cols="3">{{ exercise.sets[index].weightAmount.toString() + exercise.sets[index].measureBy }}</b-col>
                             <b-col cols="3">{{ exercise.sets[index].measureAmount }}</b-col>
                         </b-row>
                     </b-collapse>
@@ -92,7 +92,7 @@ export default {
         };
     },
 
-    created: function() {
+    created() {
         dayjs.extend(relativeTime);
 
         this.createdAtText = dayjs(dayjs(this.$props.workout.createdAt)).fromNow();

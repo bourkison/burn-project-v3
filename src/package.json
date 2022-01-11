@@ -24,6 +24,7 @@
     "dayjs": "^1.10.4",
     "node-fetch": "^2.6.6",
     "nuxt": "^2.15.7",
+    "random-color": "^1.0.1",
     "sortablejs": "^1.13.0",
     "uuid": "^3.4.0",
     "video.js": "^7.17.0",

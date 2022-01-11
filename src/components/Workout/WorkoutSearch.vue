@@ -38,7 +38,7 @@ export default {
         };
     },
 
-    created: async function() {
+    async created() {
         try {
             const path = "/workout";
             const myInit = {
@@ -74,7 +74,7 @@ export default {
     },
 
     computed: {
-        filteredWorkouts: function() {
+        filteredWorkouts() {
             if (this.searchText) {
                 return this.workouts.filter(workout => {
                     return workout.name.toLowerCase().includes(this.searchText.toLowerCase());
@@ -86,7 +86,7 @@ export default {
     },
 
     methods: {
-        selectWorkout: function(workout) {
+        selectWorkout(workout) {
             this.$emit("selectWorkout", workout);
         }
     }

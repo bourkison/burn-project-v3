@@ -180,7 +180,7 @@ export default {
             }
         } catch (err) {
             console.error(err);
-            error({ message: err.message, statusCode: err.statusCode });
+            error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
 
         return {

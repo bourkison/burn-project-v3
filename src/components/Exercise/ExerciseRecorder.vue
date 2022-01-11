@@ -24,7 +24,7 @@
                                             <b-dropdown-item class="small-dropdown-item" @click="commentExpanded = !commentExpanded"><b-icon-chat-left class="mr-1" /> Notes</b-dropdown-item>
                                             <b-dropdown-item class="small-dropdown-item" @click="flipCard" ><b-icon-gear class="mr-1" /> Exercise Settings</b-dropdown-item>
                                             <b-dropdown-item class="small-dropdown-item" @click="addChart"><b-icon-bar-chart class="mr-1"/> Show Chart</b-dropdown-item>
-                                            <b-dropdown-item class="small-dropdown-item" :to="'/exercises/' + exercise.exerciseReference.exerciseId">Go To</b-dropdown-item>
+                                            <b-dropdown-item class="small-dropdown-item" :to="'/exercises/' + exercise.exerciseReference.exerciseId"><b-icon-box-arrow-up-right class="mr-1" /> Go To</b-dropdown-item>
                                             <b-dropdown-item class="small-dropdown-item" variant="danger" @click="removeExercise"><b-icon-trash class="mr-1" />Delete</b-dropdown-item>
                                         </b-dropdown>
                                     </div>

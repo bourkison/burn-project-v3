@@ -235,6 +235,9 @@ export default {
             endDate: null,
             endDateToday: false,
 
+            // Interval for is setting transition fails
+            transitionAttemptTimeout: null,
+
             // Chart Data Options:
             trimLabels: false,
 
@@ -351,13 +354,7 @@ export default {
         dayjs.extend(isSameOrBefore);
 
         this.getData();
-
-        // Add transition end event that hides chart when flipped.
-        this.$refs.cardFlip.addEventListener("transitionend", () => {
-            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
-                this.$el.querySelector(".chart").style.display = "none";
-            }
-        })
+        this.setFlipAnimation();
     },
 
     methods: {
@@ -469,7 +466,7 @@ export default {
                 }
 
                 if (!dataReturned) {
-                    throw new Error("No data returned");
+                    throw new Error("No chart data returned");
                 }
     
                 while (date.isBefore(dayjs(this.endDate))) {
@@ -548,7 +545,11 @@ export default {
                     this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
                 });
 
-                console.error(err);
+                if (err.message === "No chart data returned") {
+                    console.warn(err);
+                } else {
+                    console.error(err);
+                }
             }
         },
 
@@ -829,9 +830,29 @@ export default {
             this.selectedExercise = exercise;
             delete this.selectedExercise._id;
             this.searchExerciseModal = false;
+        },
+        
+        setFlipAnimation() {
+            try {
+                // Add transition end event that hides chart when flipped.
+                this.$refs.cardFlip.addEventListener("transitionend", () => {
+                    if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
+                        this.$el.querySelector(".chart").style.display = "none";
+                    }
+                })
+            }
+            catch {
+                console.warn("Error setting animation. Trying again.");
+                this.transitionAttemptTimeout = window.setTimeout(this.setFlipAnimation, 500);
+            }
+        }
+    },
+    
+    beforeDestroy() {
+        if (this.transitionAttemptTimeout) {
+            window.clearTimeout(this.transitionAttemptTimeout);
         }
     }
-    
 }
 </script>
 

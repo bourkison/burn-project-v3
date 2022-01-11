@@ -27,27 +27,27 @@ export const state = () => {
 };
 
 export const mutations = {
-    setWorkout: function(state, workout) {
+    setWorkout(state, workout) {
         state.workout = workout;
     },
 
-    setWorkoutValue: function(state, data) {
+    setWorkoutValue(state, data) {
         state.workout[data.key] = data.value;
     },
 
-    setPreviousWorkout: function(state, previousWorkout) {
+    setPreviousWorkout(state, previousWorkout) {
         state.previousWorkout = previousWorkout;
     },
 
-    addExercise: function(state, exercise) {
+    addExercise(state, exercise) {
         state.workout.recordedExercises.push(exercise);
     },
 
-    removeExercise: function(state, exerciseIndex) {
+    removeExercise(state, exerciseIndex) {
         state.workout.recordedExercises.splice(exerciseIndex, 1);
     },
 
-    changeExerciseOrder: function(state, data) {
+    changeExerciseOrder(state, data) {
         state.workout.recordedExercises.splice(
             data.n,
             0,
@@ -55,19 +55,19 @@ export const mutations = {
         );
     },
 
-    setExerciseValue: function(state, data) {
+    setExerciseValue(state, data) {
         Vue.set(state.workout.recordedExercises[data.exerciseIndex], data.key, data.value);
     },
 
-    addSet: function(state, data) {
+    addSet(state, data) {
         state.workout.recordedExercises[data.exerciseIndex].sets.push(data.set);
     },
 
-    removeSet: function(state, exerciseIndex) {
+    removeSet(state, exerciseIndex) {
         state.workout.recordedExercises[exerciseIndex].sets.pop();
     },
 
-    setSetValue: function(state, data) {
+    setSetValue(state, data) {
         Vue.set(
             state.workout.recordedExercises[data.exerciseIndex].sets[data.setIndex],
             data.key,
@@ -76,58 +76,37 @@ export const mutations = {
 
     },
 
-    setEmptyWorkout: function(state, value) {
+    setEmptyWorkout(state, value) {
         state.emptyWorkout = value;
     },
 
-    setIsFinishing: function(state, value) {
+    setIsFinishing(state, value) {
         state.isFinishing = value;
     },
 
-    setWorkoutCommenced: function(state, value) {
+    setWorkoutCommenced(state, value) {
         state.workoutCommenced = value;
     },
 
-    setStartTime: function(state, startTime) {
+    setStartTime(state, startTime) {
         state.startTime = startTime;
     },
 
-    setFinishTime: function(state, finishTime) {
+    setFinishTime(state, finishTime) {
         state.finishTime = finishTime;
     },
 
-    setDisplayToast: function(state, value) {
+    setDisplayToast(state, value) {
         state.displayToast = value;
     },
 
-    setInterval: function(state, timer) {
+    setInterval(state, timer) {
         state.interval = window.setInterval(() => {
-            const now = new Date().getTime();
-            let duration = now - state.startTime;
-
-            let hours = Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
-            let minutes = Math.floor(
-                (duration % (1000 * 60 * 60)) / (1000 * 60)
-            ).toLocaleString("en-US", {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-            });
-            let seconds = Math.floor((duration % (1000 * 60)) / 1000).toLocaleString("en-US", {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-            });
-
-            if (!state.isFinishing) {
-                if (!hours) {
-                    state.timeString = minutes + ":" + seconds;
-                } else {
-                    state.timeString = hours + ":" + minutes + ":" + seconds;
-                }
-            }
+            this.commit("activeWorkout/setTimeString");
         }, timer);
     },
 
-    setTimeString: function(state) {
+    setTimeString(state) {
         const now = new Date().getTime();
         let duration = now - state.startTime;
 
@@ -153,7 +132,7 @@ export const mutations = {
         }
     },
 
-    resetVariables: function(state) {
+    resetVariables(state) {
         window.clearInterval(state.interval);
 
         state.isFinishing = false;
@@ -173,42 +152,14 @@ export const mutations = {
 
     },
 
-    setTimer: function(state, seconds) {
+    setTimer(state, seconds) {
         if (seconds !== 0) {
 
             state.countdownEndTime = new Date().getTime() + (seconds * 1000);
             state.countdownActive = true;
 
             state.countdownInterval = window.setInterval(() => {
-                const now = new Date().getTime();
-                let timeLeft = state.countdownEndTime - now;
-
-                if (timeLeft > 0) {
-                    let hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
-                    let minutes = Math.floor(
-                        (timeLeft % (1000 * 60 * 60)) / (1000 * 60)
-                    ).toLocaleString("en-US", {
-                        minimumIntegerDigits: 2,
-                        useGrouping: false
-                    });
-                    let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000).toLocaleString("en-US", {
-                        minimumIntegerDigits: 2,
-                        useGrouping: false
-                    });
-    
-                    if (!hours) {
-                        state.countdownTimeString = minutes + ":" + seconds;
-                    } else {
-                        state.countdownTimeString = hours + ":" + minutes + ":" + seconds;
-                    }
-                } else {
-                    // PLAY SOUND AND END TIMER.
-                    state.countdownActive = false;
-                    state.countdownTimeString = "00:00";
-                    state.countdownEndTime = 0;
-                    window.clearInterval(state.countdownInterval);
-                }
-
+                this.commit("activeWorkout/setTimerString");
             })
         } else {
             state.countdownActive = false;
@@ -218,17 +169,48 @@ export const mutations = {
         }
     },
 
-    pushToWorkoutCharts: function(state, options) {
+    setTimerString(state) {
+        const now = new Date().getTime();
+        let timeLeft = state.countdownEndTime - now;
+
+        if (timeLeft > 0) {
+            let hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24));
+            let minutes = Math.floor(
+                (timeLeft % (1000 * 60 * 60)) / (1000 * 60)
+            ).toLocaleString("en-US", {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+            });
+            let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000).toLocaleString("en-US", {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+            });
+
+            if (!hours) {
+                state.countdownTimeString = minutes + ":" + seconds;
+            } else {
+                state.countdownTimeString = hours + ":" + minutes + ":" + seconds;
+            }
+        } else {
+            // PLAY SOUND AND END TIMER.
+            state.countdownActive = false;
+            state.countdownTimeString = "00:00";
+            state.countdownEndTime = 0;
+            window.clearInterval(state.countdownInterval);
+        }
+    },
+
+    pushToWorkoutCharts(state, options) {
         state.workoutCharts.push(options);
         console.log("PUSHED TO WORKOUT CHARTS", state.workoutCharts);
     },
 
-    updateExerciseOptions: function(state, data) {
+    updateExerciseOptions(state, data) {
         console.log("UPDATE EXERCISE OPTIONS:", data);
         state.workout.recordedExercises[data.exerciseIndex].options = Object.assign({}, state.workout.recordedExercises[data.exerciseIndex].options, data.options)
     },
 
-    setInitialUrl: function(state, url) {
+    setInitialUrl(state, url) {
         state.initialUrl = url;
     }
 };
