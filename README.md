@@ -1,4 +1,5 @@
 # Burn Project
+https://burn-project.herokuapp.com/workout
 
 ## Introduction
 Burn Project is a social network that allows users to 
