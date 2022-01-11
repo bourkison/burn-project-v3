@@ -1,5 +1,5 @@
 <template>
-    <b-container v-if="!isLoading && templateExists">
+    <b-container>
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container class="templateCard mainCard">
@@ -166,13 +166,6 @@
             </template>
         </b-modal>
     </b-container>
-    <b-container v-else-if="!isLoading && !templateExists">
-        <!-- 404 -->
-        <div>Template does not exist</div>
-    </b-container>
-    <b-container v-else>
-        <div style="margin-top: 40px;" class="text-center"><b-spinner /></div>
-    </b-container>
 </template>
 
 <script>
@@ -184,13 +177,10 @@ import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 export default {
-    name: "TemplateView",
     components: { CommentSection, DescriptionViewer, MuscleGroup, ExerciseExpandable },
     data() {
         return {
-            isLoading: true,
             isDeleting: false,
-            templateExists: false,
             templateData: null,
 
             likeCount: 0,
@@ -208,8 +198,6 @@ export default {
     },
 
     async asyncData({ req, params, store, error }) {
-        let isLoading = true;
-        let templateExists = false;
         let templateData = null;
         let likeCount = 0;
         let commentCount = 0;
@@ -262,7 +250,6 @@ export default {
                 );
             }
 
-            templateExists = true;
             templateData = {
                 _id: response.data._id,
                 createdBy: response.data.createdBy,
@@ -274,10 +261,7 @@ export default {
                 tags: response.data.tags
             };
 
-            isLoading = false;
-
             return {
-                templateExists,
                 templateData,
                 likeCount,
                 commentCount,
@@ -285,7 +269,6 @@ export default {
                 isLiked,
                 isFollowed,
                 isFollowable,
-                isLoading
             }
         } catch (err) {
             console.error(err);

@@ -108,7 +108,7 @@ import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 
 export default {
-    name: "TemplateFollowed",
+    middleware: ["requiresAuth"],
     components: {
         TemplateFeed,
         UsernameFilter,

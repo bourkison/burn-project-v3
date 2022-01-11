@@ -95,7 +95,7 @@ export default {
         };
     },
 
-    created: async function() {
+    async mounted() {
         let path = "/exercise";
         let myInit = {
             headers: {
@@ -187,7 +187,7 @@ export default {
     },
 
     methods: {
-        addExercise: function(exercise) {
+        addExercise(exercise) {
             if (this.selectedExercises.findIndex(x => x._id === exercise._id) < 0) {
                 document.querySelector("#exercise-" + exercise._id).classList.add("active");
                 this.selectedExercises.push(exercise);
@@ -196,14 +196,14 @@ export default {
             }
         },
 
-        removeExercise: function(exercise) {
+        removeExercise(exercise) {
             let index = this.selectedExercises.findIndex(x => x._id === exercise._id);
             this.selectedExercises.splice(index, 1);
 
             document.querySelector("#exercise-" + exercise._id).classList.remove("active");
         },
 
-        changeOrder: function(e) {
+        changeOrder(e) {
             console.log(e);
             if (e.newIndex !== e.oldIndex) {
                 this.selectedExercises.splice(
@@ -216,7 +216,7 @@ export default {
     },
 
     watch: {
-        selectedExercises: function(n) {
+        selectedExercises(n) {
             if (n.length > 0 && !this.sortable && !this.isLoading) {
                 this.$nextTick(() => {
                     this.sortable = new Sortable(

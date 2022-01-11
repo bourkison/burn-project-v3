@@ -9,9 +9,11 @@ const _0fdb4249 = () => interopDefault(import('../pages/templates/index.vue' /* 
 const _3d0ab972 = () => interopDefault(import('../pages/exercises/followed.vue' /* webpackChunkName: "pages/exercises/followed" */))
 const _f98be78e = () => interopDefault(import('../pages/exercises/new.vue' /* webpackChunkName: "pages/exercises/new" */))
 const _89d7ab2e = () => interopDefault(import('../pages/templates/followed.vue' /* webpackChunkName: "pages/templates/followed" */))
+const _446d17d7 = () => interopDefault(import('../pages/templates/new.vue' /* webpackChunkName: "pages/templates/new" */))
 const _6c8c34e4 = () => interopDefault(import('../pages/exercises/_exerciseId/index.vue' /* webpackChunkName: "pages/exercises/_exerciseId/index" */))
 const _a843a764 = () => interopDefault(import('../pages/templates/_templateId/index.vue' /* webpackChunkName: "pages/templates/_templateId/index" */))
 const _cdef5804 = () => interopDefault(import('../pages/exercises/_exerciseId/edit.vue' /* webpackChunkName: "pages/exercises/_exerciseId/edit" */))
+const _5c3f9584 = () => interopDefault(import('../pages/templates/_templateId/edit.vue' /* webpackChunkName: "pages/templates/_templateId/edit" */))
 const _7af23bdf = () => interopDefault(import('../pages/index.vue' /* webpackChunkName: "pages/index" */))
 
 const emptyFn = () => {}
@@ -46,6 +48,10 @@ export const routerOptions = {
     component: _89d7ab2e,
     name: "templates-followed"
   }, {
+    path: "/templates/new",
+    component: _446d17d7,
+    name: "templates-new"
+  }, {
     path: "/exercises/:exerciseId",
     component: _6c8c34e4,
     name: "exercises-exerciseId"
@@ -57,6 +63,10 @@ export const routerOptions = {
     path: "/exercises/:exerciseId/edit",
     component: _cdef5804,
     name: "exercises-exerciseId-edit"
+  }, {
+    path: "/templates/:templateId/edit",
+    component: _5c3f9584,
+    name: "templates-templateId-edit"
   }, {
     path: "/",
     component: _7af23bdf,

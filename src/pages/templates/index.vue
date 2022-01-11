@@ -106,7 +106,7 @@ import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 import TemplateFeed from "@/components/Template/TemplateFeed.vue";
 
 export default {
-    name: "TemplateDiscover",
+    middleware: ["requiresAuth"],
     components: {
         MuscleGroupSelector,
         TagSelector,

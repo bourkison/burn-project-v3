@@ -114,7 +114,6 @@ import TagSelector from "@/components/Utility/TagSelector.vue";
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
 export default {
-    name: "ExerciseDiscover",
     middleware: ["requiresAuth"],
     components: {
         ExerciseFeed,

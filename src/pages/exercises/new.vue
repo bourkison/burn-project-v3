@@ -107,7 +107,7 @@ import { v4 as uuidv4 } from "uuid";
 import awsvideoconfig from "@/aws-video-exports.js";
 
 export default {
-    name: "ExerciseNew",
+    middleware: ["requiresAuth"],
     components: {
         DifficultySelector,
         ImageUploader,
@@ -256,7 +256,7 @@ export default {
         },
 
         updateDescription(md) {
-            this.exerciseForm.description = md.content;
+            this.exerciseForm.description = md;
         },
 
         updateImages(images) {

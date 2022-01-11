@@ -1,5 +1,5 @@
 <template>
-    <b-container v-if="!isLoading && exerciseExists" class="mb-5">
+    <b-container class="mb-5">
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container class="exerciseCard mainCard">
@@ -11,6 +11,7 @@
                                     right
                                     class="float-right exercise-dropdown exercise-view-dropdown"
                                     variant="outline"
+                                    v-if="$store.state.userProfile && $store.state.userProfile.loggedIn"
                                 >
                                     <span
                                         v-if="$store.state.userProfile && $store.state.userProfile.docData && 
@@ -45,7 +46,7 @@
                                 {{ exerciseData.createdBy.username }}
                             </b-card-sub-title>
                         </b-card-body>
-                        <div v-if="!isLoading && (!$store.state.userProfile || !$store.state.userProfile.loggedIn) && exerciseData.filePaths.length">
+                        <div v-if="(!$store.state.userProfile || !$store.state.userProfile.loggedIn) && exerciseData.filePaths.length">
                             <div class="text-small text-muted text-center">Login or Sign Up to view images/video.</div>
                         </div>
                         <div v-else-if="imageUrls.length > 1">
@@ -96,7 +97,7 @@
             </b-col>
             <b-col sm="4">
                 <!-- Ads Here. -->
-                <b-container v-if="!isLoading && exerciseExists">
+                <b-container>
                     <b-card no-body class="exerciseCard">
                         <b-card-body>
                             <b-card-title>
@@ -184,13 +185,6 @@
             </template>
         </b-modal>
     </b-container>
-    <b-container v-else-if="!isLoading && !exerciseExists">
-        <!-- 404 -->
-        <div>Exercise does not exist!</div>
-    </b-container>
-    <b-container v-else>
-        <div style="margin-top:40px;" class="text-center"><b-spinner /></div>
-    </b-container>
 </template>
 
 <script>
@@ -208,9 +202,7 @@ export default {
     components: { CommentSection, MuscleGroup, Chart, VideoPlayer, DescriptionViewer },
     data() {
         return {
-            isLoading: true,
             isDeleting: false,
-            exerciseExists: false,
 
             exerciseData: null,
             imageUrls: [],
@@ -252,8 +244,6 @@ export default {
     },
 
     async asyncData({ params, error, store, req }) {
-        let isLoading = true;
-        let exerciseExists = false;
         let exerciseData = null;
         let chartOptions = {
             type: "exercise",
@@ -312,12 +302,9 @@ export default {
 
             if (response.data && response.data._id) {
                 response = response.data;
-                exerciseExists = true;
             } else {
-                error({ message: "Page not found", statusCode: 404 });
+                error({ message: "Exercise not found", statusCode: 404 });
             }
-
-            isLoading = false;
 
             exerciseData = {
                 _id: response._id,
@@ -342,8 +329,6 @@ export default {
             chartOptions.exerciseId = response._id;
 
             return {
-                isLoading,
-                exerciseExists,
                 exerciseData,
                 chartOptions,
                 likeCount,

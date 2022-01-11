@@ -1,5 +1,5 @@
 <template>
-    <b-container v-if="!isLoading && isAuthorized">
+    <b-container>
         <b-row align-v="center">
             <b-col sm="8">
                 <b-container>
@@ -99,14 +99,6 @@
             </b-col>
         </b-row>
     </b-container>
-    <b-container v-else-if="!isLoading && !isAuthorized">
-        <div class="text-center mt-5">
-            Not authorized.
-        </div>
-    </b-container>
-    <b-container v-else>
-        <b-spinner />
-    </b-container>
 </template>
 
 <script>
@@ -121,7 +113,7 @@ import TagSelector from "@/components/Utility/TagSelector.vue";
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
 export default {
-    name: "ExerciseEdit",
+    middleware: ["requiresAuth"],
     components: {
         DifficultySelector,
         ImageUploader,
@@ -131,10 +123,6 @@ export default {
     },
     data() {
         return {
-            isLoading: true,
-            isAuthorized: false,
-            exerciseExists: false,
-
             oldExerciseData: null,
             newExerciseData: null,
 
@@ -147,9 +135,6 @@ export default {
     },
 
     async asyncData({ params, store, req, redirect, error }) {
-        let isLoading = true;
-        let isAuthorized = false;
-        let exerciseExists = false;
         let oldExerciseData = null;
         let newExerciseData = null;
         let initImages = [];
@@ -166,9 +151,7 @@ export default {
             newExerciseData = response.data;
             oldExerciseData = response.data;
 
-            if (oldExerciseData.createdBy.username === store.state.userProfile.docData.username) {
-                isAuthorized = true;
-            } else {
+            if (oldExerciseData.createdBy.username !== store.state.userProfile.docData.username) {
                 console.warn("Unauthorized");
                 redirect("/exercises/" + params.exerciseId);
             }
@@ -194,11 +177,6 @@ export default {
                         path: oldExerciseData.filePaths[i],
                     });
                 });
-
-                exerciseExists = true;
-                isLoading = false;
-            } else {
-                throw new Error("No exercise data!");
             }
         } catch (err) {
             console.error(err);
@@ -206,9 +184,6 @@ export default {
         }
 
         return {
-            isLoading,
-            isAuthorized,
-            exerciseExists,
             oldExerciseData,
             newExerciseData,
             initImages
@@ -286,8 +261,8 @@ export default {
             }
         },
 
-        updateDescription() {
-            this.newExerciseData.description = this.$refs.toastuiEditor.invoke("getMarkdown");
+        updateDescription(md) {
+            this.newExerciseData.description = md;
         },
 
         updateImages(images) {
