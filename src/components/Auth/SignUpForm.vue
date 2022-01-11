@@ -306,8 +306,7 @@
 import { Auth, Storage, API } from "aws-amplify";
 
 import dayjs from "dayjs";
-import crypto from "crypto";
-import util from "util";
+import { v4 as uuidv4 } from "uuid";
 
 import AvatarEditor from "@/components/Utility/AvatarEditor.vue";
 
@@ -715,12 +714,9 @@ export default {
             }
 
             const imageName =
-                "profilePhotos/" +
                 username +
                 "/" +
-                dayjs().format("YYYYMMDDHHmmssSSS") +
-                "-" +
-                (await this.generateId(8));
+                uuidv4();
             const imageData = await fetch(image);
             const blob = await imageData.blob();
 
@@ -758,13 +754,6 @@ export default {
 
         selectCountry: function(country) {
             this.signUpForm.country = country;
-        },
-
-        generateId: async function(n) {
-            const randomBytes = util.promisify(crypto.randomBytes);
-            const rawBytes = await randomBytes(n);
-
-            return rawBytes.toString("hex");
         }
     },
 

@@ -163,13 +163,13 @@ const createLike = async function(event) {
         ])
         .then(response => {
             likeCheckResult = response;
-        }));
 
-        if (likeCheckResult.length > 0) {
-            likeCheckResult = likeCheckResult[0].isLiked;
-        } else {
-            likeCheckResult = false;
-        }
+            if (likeCheckResult.length > 0) {
+                likeCheckResult = likeCheckResult[0].isLiked;
+            } else {
+                likeCheckResult = false;
+            }
+        }));
     } else {
         try {
             promises.push(Model.aggregate([
@@ -219,9 +219,13 @@ const createLike = async function(event) {
             ])
             .then(response => {
                 likeCheckResult = response;
+                
+                if (likeCheckResult.length > 0) {
+                    likeCheckResult = likeCheckResult[0].isLiked;
+                } else {
+                    likeCheckResult = false;
+                }
             }));
-
-            likeCheckResult = likeCheckResult[0].isLiked;
         } catch (err) {
             console.error(err);
             const errorResponse =

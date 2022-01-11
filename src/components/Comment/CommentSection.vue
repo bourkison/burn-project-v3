@@ -193,7 +193,7 @@ export default {
         };
     },
 
-    created: async function() {
+    async mounted() {
         // Get most recent comments and comment count.
         this.isLoadingComments = true;
         const path = "/comment/" + this.$props.docId;
@@ -214,7 +214,7 @@ export default {
     },
 
     methods: {
-        toggleLike: async function() {
+        async toggleLike() {
             // Check we're not already in the process of liking.
             if (!this.isLiking) {
                 this.isLiking = true;
@@ -265,7 +265,7 @@ export default {
             }
         },
 
-        toggleFollow: async function() {
+        async toggleFollow() {
             if (this.isFollowable && !this.isFollowing) {
                 this.isFollowing = true;
                 const path = "/follow";
@@ -319,7 +319,7 @@ export default {
             }
         },
 
-        expandLikes: async function() {
+        async expandLikes() {
             if (this.likeCount > 0 && !this.isLoadingLikes) {
                 if (this.likes.length == 0) {
                     this.isLoadingLikes = true;
@@ -348,11 +348,11 @@ export default {
             }
         },
 
-        expandComments: function() {
+        expandComments() {
             this.commentsExpanded = !this.commentsExpanded;
         },
 
-        expandFollows: async function() {
+        async expandFollows() {
             if (this.followCount > 0 && !this.isLoadingFollows) {
                 if (this.follows.length == 0) {
                     this.isLoadingFollows = true;
@@ -380,12 +380,12 @@ export default {
             }
         },
 
-        addComment: function(comment) {
+        addComment(comment) {
             this.comments.unshift(comment);
-            this.commentCount++;
+            this.$emit("addComment")
         },
 
-        loadMoreComments: function() {
+        loadMoreComments() {
             // this.isLoadingMoreComments = true;
 
             // db.collection(this.$props.collection)

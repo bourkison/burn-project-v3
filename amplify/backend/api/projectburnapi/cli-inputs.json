@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "paths": {
+    "/user": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "read",
+          "update"
+        ]
+      },
+      "lambdaFunction": "projectburnUserHandler"
+    },
+    "/exercise": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnExerciseHandler"
+    },
+    "/template": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnTemplateHandler"
+    },
+    "/workout": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnWorkoutHandler"
+    },
+    "/post": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnPostHandler"
+    },
+    "/like": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnLikeHandler"
+    },
+    "/comment": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnCommentHandler"
+    },
+    "/follow": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnFollowHandler"
+    },
+    "/admin": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnAdminHandler"
+    },
+    "/stats": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnStatsHandler"
+    },
+    "/search": {
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "lambdaFunction": "projectburnSearchHandler"
+    },
+    "/public": {
+      "name": "/public",
+      "lambdaFunction": "projectburnPublicHandler",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/message": {
+      "name": "/message",
+      "lambdaFunction": "projectburnMessageHandler",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    },
+    "/notification": {
+      "name": "/notification",
+      "lambdaFunction": "projectburnNotificationHandler",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "burn-project-v3",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt --mode=development",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.10.2",
+    "@tiptap/extension-underline": "*",
+    "@tiptap/starter-kit": "*",
+    "@tiptap/vue-2": "*",
+    "aws-amplify": "^4.3.12",
+    "bootstrap-vue": "^2.21.2",
+    "browser-image-compression": "^1.0.14",
+    "chart.js": "^3.4.1",
+    "chartjs-adapter-date-fns": "^2.0.0",
+    "core-js": "^3.15.1",
+    "cropperjs": "^1.5.11",
+    "date-fns": "^2.25.0",
+    "dayjs": "^1.10.4",
+    "node-fetch": "^2.6.6",
+    "nuxt": "^2.15.7",
+    "random-color": "^1.0.1",
+    "sortablejs": "^1.13.0",
+    "uuid": "^3.4.0",
+    "video.js": "^7.17.0",
+    "vue-observe-visibility": "^1.0.0",
+    "vue-simple-markdown": "^1.1.5"
+  },
+  "devDependencies": {
+    "@nuxt/types": "^2.15.7",
+    "@nuxt/typescript-build": "^2.1.0"
+  }
+}

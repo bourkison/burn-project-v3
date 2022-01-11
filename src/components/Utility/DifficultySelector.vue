@@ -75,7 +75,7 @@ export default {
         };
     },
 
-    created: function() {
+    mounted() {
         if (this.$props.initDifficulty) {
             this.starClick(this.$props.initDifficulty - 1);
         }

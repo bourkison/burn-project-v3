@@ -21,14 +21,13 @@
 </template>
 
 <script>
-import Cropper from "cropperjs";
-import imageCompression from "browser-image-compression";
+// import Cropper from "cropperjs";
+// import imageCompression from "browser-image-compression";
 
 export default {
     name: "AvatarEditor",
     props: {
         inputImage: {
-            type: File,
             required: true
         }
     },
@@ -47,8 +46,6 @@ export default {
         if (this.$props.inputImage) {
             this.initEditor();
         }
-
-        console.log("CREATED");
     },
 
     methods: {

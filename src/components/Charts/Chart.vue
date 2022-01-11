@@ -235,6 +235,9 @@ export default {
             endDate: null,
             endDateToday: false,
 
+            // Interval for is setting transition fails
+            transitionAttemptTimeout: null,
+
             // Chart Data Options:
             trimLabels: false,
 
@@ -303,15 +306,15 @@ export default {
 
     computed: {
         preferenceIndex: {
-            get: function() {
+            get() {
                 return (this.newChartData.preferenceIndex + 1).toString();
             },
-            set: function(value) {
+            set(value) {
                 this.newChartData.preferenceIndex = Number(value) - 1;
             }
         },
 
-        preferenceIndexOrdinal: function() {
+        preferenceIndexOrdinal() {
             switch (this.preferenceIndex) {
                 case "1":
                     return "st favourite"
@@ -325,15 +328,15 @@ export default {
         },
 
         newDataToPull: {
-            get: function() {
+            get() {
                 return this.newChartData.dataToPull.split(",")
             },
-            set: function(value) {
+            set(value) {
                 this.newChartData.dataToPull = value.filter(x => { return x }).join(",");
             }
         },
 
-        validDataToPull: function() {
+        validDataToPull() {
             if (this.newDataToPull.length > 2 || !this.newDataToPull[0]) {
                 return false;
             }
@@ -342,35 +345,26 @@ export default {
         }
     },
 
-    created: function() {
+    created() {
+        this.resetVariables();
+    },
+
+    mounted() {
         dayjs.extend(isSameOrAfter);
         dayjs.extend(isSameOrBefore);
 
         this.getData();
-    },
-
-    mounted: function() {
-        // Add transition end event that hides chart when flipped.
-        this.$refs.cardFlip.addEventListener("transitionend", () => {
-            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
-                this.$el.querySelector(".chart").style.display = "none";
-            }
-        })
+        this.setFlipAnimation();
     },
 
     methods: {
-        getData: async function() {
+        async getData() {
             try {
                 if (!this.$props.options.type) {
                     throw new Error("No chart type given")
                 }
 
                 this.resetVariables();
-
-                Object.assign(this.chartOptions, this.$props.options);
-                Object.assign(this.newChartData, this.chartOptions.data);
-
-                this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
 
                 // Format edit values:
                 if (this.chartOptions.startDate.date) {
@@ -451,7 +445,7 @@ export default {
             }
         },
 
-        formatData: function(data) {
+        formatData(data) {
             try {
 
                 let date = dayjs(this.startDate);
@@ -472,7 +466,7 @@ export default {
                 }
 
                 if (!dataReturned) {
-                    throw new Error("No data returned");
+                    throw new Error("No chart data returned");
                 }
     
                 while (date.isBefore(dayjs(this.endDate))) {
@@ -551,11 +545,15 @@ export default {
                     this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
                 });
 
-                console.error(err);
+                if (err.message === "No chart data returned") {
+                    console.warn(err);
+                } else {
+                    console.error(err);
+                }
             }
         },
 
-        buildChart: function() {
+        buildChart() {
             Chart.register(...registerables);
             let ctx = this.$el.querySelector(".chart");
             ctx.height = 400;
@@ -715,7 +713,7 @@ export default {
             });
         },
 
-        buildDate: function(dateObj, interval, start) {
+        buildDate(dateObj, interval, start) {
             if (!dateObj.date) {
                 let date = dayjs().subtract(dateObj.amount, dateObj.unit);
 
@@ -740,7 +738,7 @@ export default {
             }
         },
 
-        flipCard: function() {
+        flipCard() {
             if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
                 this.$el.querySelector(".chart").style.display = "block";
             } else if (!this.$refs.cardFlip.classList.contains("flipped") && !this.hasData) {
@@ -751,7 +749,7 @@ export default {
             this.$refs.cardFlip.classList.toggle("flipped");
         },
 
-        updateChart: async function(save) {
+        async updateChart(save) {
             this.isLoading = true;
 
             if (save) {
@@ -809,7 +807,7 @@ export default {
             });
         },
 
-        resetVariables: function() {
+        resetVariables() {
             this.isLoading = true;
             this.hasData = false;
             this.cardTitle = "";
@@ -821,15 +819,40 @@ export default {
             this.chartLabels = [];
             this.chartData = {};
             this.chart = null;
+
+            Object.assign(this.chartOptions, this.$props.options);
+            Object.assign(this.newChartData, this.chartOptions.data);
+
+            this.newChartOptions = JSON.parse(JSON.stringify(this.chartOptions));
         },
 
-        selectExercise: function(exercise) {
+        selectExercise(exercise) {
             this.selectedExercise = exercise;
             delete this.selectedExercise._id;
             this.searchExerciseModal = false;
+        },
+        
+        setFlipAnimation() {
+            try {
+                // Add transition end event that hides chart when flipped.
+                this.$refs.cardFlip.addEventListener("transitionend", () => {
+                    if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".chart")) {
+                        this.$el.querySelector(".chart").style.display = "none";
+                    }
+                })
+            }
+            catch {
+                console.warn("Error setting animation. Trying again.");
+                this.transitionAttemptTimeout = window.setTimeout(this.setFlipAnimation, 500);
+            }
+        }
+    },
+    
+    beforeDestroy() {
+        if (this.transitionAttemptTimeout) {
+            window.clearTimeout(this.transitionAttemptTimeout);
         }
     }
-    
 }
 </script>
 
