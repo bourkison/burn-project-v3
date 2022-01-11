@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.10.2",
-    "@tiptap/extension-document": "*",
-    "@tiptap/extension-placeholder": "*",
-    "@tiptap/extension-text": "*",
+    "@tiptap/extension-document": "2.0.0-beta.15",
+    "@tiptap/extension-placeholder": "2.0.0-beta.46",
+    "@tiptap/extension-text": "2.0.0-beta.15",
     "@tiptap/extension-underline": "^2.0.0-beta.22",
     "@tiptap/starter-kit": "^2.0.0-beta.164",
     "@tiptap/vue-2": "^2.0.0-beta.75",
