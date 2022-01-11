@@ -1,5 +1,5 @@
 <template>
-    <div class="text-editor">
+    <div class="description-editor">
         <client-only>
             <div class="menubar">
                 <span v-for="actionName in activeButtons" :key="actionName">
@@ -109,7 +109,7 @@
                 </span>
             </div>
 
-            <editor-content class="text-editor__content" :editor="editor" />
+            <editor-content class="description-editor__content" :editor="editor" />
         </client-only>
     </div>
 </template>
@@ -193,32 +193,32 @@ export default {
 </script>
 
 <style>
-.ProseMirror {
+.description-editor .ProseMirror {
     text-align: initial;
 }
 
-.ProseMirror:focus {
+.description-editor .ProseMirror:focus {
     outline: none;
 }
 
-.text-editor {
+.description-editor {
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 3px;
 }
 
-.text-editor__content {
+.description-editor__content {
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
     padding: 0 1rem;
 }
 
-.text-editor__content .ProseMirror {
+.description-editor__content .ProseMirror {
     min-height: 15rem;
 }
 
-.text-editor__content pre {
+.description-editor__content pre {
     padding: 0.7rem 1rem;
     border-radius: 5px;
     background: black;
@@ -227,38 +227,38 @@ export default {
     overflow-x: auto;
 }
 
-.text-editor__content ul,
-.text-editor__content ol {
+.description-editor__content ul,
+.description-editor__content ol {
     padding-left: 1rem;
 }
 
-.text-editor__content li > p,
-.text-editor__content li > ol,
-.text-editor__content li > ul {
+.description-editor__content li > p,
+.description-editor__content li > ol,
+.description-editor__content li > ul {
     margin: 0;
 }
 
-.text-editor__content a {
+.description-editor__content a {
     color: inherit;
 }
 
-.text-editor__content blockquote {
+.description-editor__content blockquote {
     border-left: 3px solid rgba(0, 0, 0, 0.1);
     color: rgba(0, 0, 0, 0.8);
     padding-left: 0.8rem;
     font-style: italic;
 }
 
-.text-editor__content blockquote p {
+.description-editor__content blockquote p {
     margin: 0;
 }
 
-.text-editor__content img {
+.description-editor__content img {
     max-width: 100%;
     border-radius: 3px;
 }
 
-.text-editor__content table {
+.description-editor__content table {
     border-collapse: collapse;
     table-layout: fixed;
     width: 100%;
@@ -266,8 +266,8 @@ export default {
     overflow: hidden;
 }
 
-.text-editor__content table td,
-.text-editor__content table th {
+.description-editor__content table td,
+.description-editor__content table th {
     min-width: 1em;
     border: 2px solid grey;
     padding: 3px 5px;
@@ -276,17 +276,17 @@ export default {
     position: relative;
 }
 
-.text-editor__content table td > *,
-.text-editor__content table th > * {
+.description-editor__content table td > *,
+.description-editor__content table th > * {
     margin-bottom: 0;
 }
 
-.text-editor__content th {
+.description-editor__content th {
     font-weight: bold;
     text-align: left;
 }
 
-.text-editor__content .selectedCell:after {
+.description-editor__content .selectedCell:after {
     z-index: 2;
     position: absolute;
     content: "";
@@ -298,7 +298,7 @@ export default {
     pointer-events: none;
 }
 
-.text-editor__content .column-resize-handle {
+.description-editor__content .column-resize-handle {
     position: absolute;
     right: -2px;
     top: 0;
@@ -309,36 +309,36 @@ export default {
     pointer-events: none;
 }
 
-.text-editor__content .tableWrapper {
+.description-editor__content .tableWrapper {
     margin: 1em 0;
     overflow-x: auto;
 }
 
-.text-editor__content .resize-cursor {
+.description-editor__content .resize-cursor {
     cursor: ew-resize;
     cursor: col-resize;
 }
 
 /* MENUBAR */
-.text-editor .menubar {
+.description-editor .menubar {
     margin-bottom: 1rem;
     transition: visibility 0.2s 0.4s, opacity 0.2s 0.4s;
     border-bottom: 1px solid rgba(0, 0, 0, 0.125);
     padding: 0.5rem;
 }
 
-.text-editor .menubar.is-hidden {
+.description-editor .menubar.is-hidden {
     visibility: hidden;
     opacity: 0;
 }
 
-.text-editor .menubar.is-focused {
+.description-editor .menubar.is-focused {
     visibility: visible;
     opacity: 1;
     transition: visibility 0.2s, opacity 0.2s;
 }
 
-.text-editor .menubar__button {
+.description-editor .menubar__button {
     vertical-align: middle;
     width: 1.8rem;
     height: 1.2rem;
@@ -353,15 +353,15 @@ export default {
     cursor: pointer;
 }
 
-.text-editor .menubar__button:hover {
+.description-editor .menubar__button:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-.text-editor .menubar__button.is-active {
+.description-editor .menubar__button.is-active {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-.text-editor .menubar span {
+.description-editor .menubar span {
     font-size: 13.3333px;
 }
 </style>

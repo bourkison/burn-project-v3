@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.10.2",
+    "@tiptap/extension-document": "*",
+    "@tiptap/extension-placeholder": "*",
+    "@tiptap/extension-text": "*",
     "@tiptap/extension-underline": "^2.0.0-beta.22",
     "@tiptap/starter-kit": "^2.0.0-beta.164",
     "@tiptap/vue-2": "^2.0.0-beta.75",
@@ -29,6 +32,7 @@
     "sortablejs": "^1.13.0",
     "uuid": "^3.4.0",
     "video.js": "^7.17.0",
+    "vue-material-design-icons": "^5.0.0",
     "vue-observe-visibility": "^1.0.0",
     "vue-simple-markdown": "^1.1.5"
   },

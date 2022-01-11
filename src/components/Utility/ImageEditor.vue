@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import "cropperjs/dist/cropper.css";
 import Cropper from "cropperjs";
 import imageCompression from "browser-image-compression";
 
