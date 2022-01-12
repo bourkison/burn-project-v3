@@ -116,6 +116,7 @@
                 :isLiked="isLiked"
                 @like="handleLike(1)"
                 @unlike="handleLike(-1)"
+                @addComment="commentCount++"
             />
         </b-card>
     </div>

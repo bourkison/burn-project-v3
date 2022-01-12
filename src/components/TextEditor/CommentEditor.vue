@@ -1,52 +1,16 @@
 <template>
-    <div class="post-editor">
+    <div class="comment-editor">
         <client-only>
-            <editor-content class="post-editor__content" :editor="editor" />
-
-            <div class="menubar d-flex">
-                <div>
-                    <span title="Add image/video">
-                        <label for="file-input" class="menubar__button">
-                            <file-image-icon class="menubar__icon" :size="16" />
-                        </label>
-                    </span>
-                    <span title="Add exercise">
-                        <button class="menubar__button" @click="$emit('exerciseClick')">
-                            <dumbbell-icon class="menubar__icon" :size="16" />
-                        </button>
-                    </span>
-                    <span title="Add template">
-                        <button class="menubar__button" @click="$emit('templateClick')">
-                            <calendar-text-icon class="menubar__icon" :size="16" />
-                        </button>
-                    </span>
-                    <span title="Add workout">
-                        <button class="menubar__button" @click="$emit('workoutClick')">
-                            <weight-lifter-icon class="menubar__icon" :size="16" />
-                        </button>
-                    </span>
-                </div>
-                <div class="ml-auto">
-                    <span title="Create post">
-                        <b-button class="menubar__button" @click="$emit('postClick')" :disabled="isLoading">
-                            <span v-if="!isLoading" class="my-0 mx-auto">
-                                <note-edit-outline-icon class="menubar__icon" :size="16" />
-                            </span>
-                            <span class="d-flex my-0 mx-auto" v-else>
-                                <b-spinner class="align-self-center" style="height:16px;width:16px;" small />
-                            </span>
-                        </b-button>
-                    </span>
-                </div>
-            </div>
+            <editor-content class="comment-editor__content" :editor="editor" />
         </client-only>
     </div>
 </template>
 
 <script>
-import { API } from "aws-amplify";
+import { API } from "aws-amplify"
 
-import { Editor, EditorContent, VueRenderer } from "@tiptap/vue-2";
+import { Editor, EditorContent, VueRenderer, Extension } from "@tiptap/vue-2";
+import { Plugin, PluginKey } from 'prosemirror-state';
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
@@ -55,62 +19,73 @@ import History from "@tiptap/extension-history";
 import Placeholder from "@tiptap/extension-placeholder";
 import Mention from "@tiptap/extension-mention";
 
-import tippy from "tippy.js";
 
-import CalendarTextIcon from "vue-material-design-icons/CalendarText.vue";
-import DumbbellIcon from "vue-material-design-icons/Dumbbell.vue";
-import WeightLifterIcon from "vue-material-design-icons/WeightLifter.vue";
-import FileImageIcon from "vue-material-design-icons/FileImage.vue";
-import NoteEditOutlineIcon from "vue-material-design-icons/NoteEditOutline.vue";
+import tippy from "tippy.js";
 
 import MentionList from "@/components/TextEditor/Mention/MentionList.vue";
 
 const DEBOUNCE_TIME = 500;
 
 export default {
-    name: "PostEditor",
+    name: "CommentEditor",
     components: {
-        EditorContent,
-        CalendarTextIcon,
-        DumbbellIcon,
-        WeightLifterIcon,
-        FileImageIcon,
-        NoteEditOutlineIcon,
+        EditorContent
     },
     props: {
         value: {
             type: String,
-            default: "",
-        },
-        isLoading: {
-            type: Boolean,
-            required: true
+            default: ""
         }
     },
-    emits: ["input", "exerciseClick", "workoutClick", "templateClick", "postClick"],
+    emits: ["input", "addComment"],
     data() {
         return {
             editor: null,
+            editor: null,
+            suggesting: false,
             suggestionComponent: null,
             suggestionPopup: null,
 
             // Debounce:
             timeoutStart: 0,
             loadUsersTimeout: null
-        };
+        }
     },
 
     created() {
+        // Build plugin for emitting "addComment on Enter"
+        const EnterHandler = Extension.create({
+            name: "EventHandler",
+            addProseMirrorPlugins: () => {
+                return [
+                    new Plugin({
+                        props: {
+                            key: new PluginKey("enterHandler"),
+                            handleKeyDown: (view, event) => {
+                                if (!this.suggesting && event.key === "Enter" && !event.shiftKey) {
+                                    this.$emit("addComment")
+                                    return true;
+                                }
+
+                                return false;
+                            }
+                        }
+                    })
+                ]
+            }
+        })
+
         this.editor = new Editor({
             content: this.$props.value,
             extensions: [
                 Document,
                 Paragraph,
                 Text,
-                History,
                 HardBreak,
+                History,
+                EnterHandler,
                 Placeholder.configure({
-                    placeholder: "New post...",
+                    placeholder: "Add a comment...",
                 }),
                 Mention.configure({
                     HTMLAttributes: {
@@ -164,6 +139,8 @@ export default {
                                         trigger: 'manual',
                                         placement: 'bottom-start',
                                     })
+
+                                    this.suggesting = true;
                                 },
         
                                 onUpdate: (props) => {
@@ -185,6 +162,7 @@ export default {
                                 onExit: () => {
                                     this.suggestionPopup[0].destroy()
                                     this.suggestionComponent.destroy()
+                                    this.suggesting = false;
                                 }
                             }
                         }
@@ -229,6 +207,14 @@ export default {
         }
     },
 
+    watch: {
+        value(n) {
+            if (n === "") {
+                this.editor.commands.setContent(n);
+            }
+        }
+    },
+
     beforeDestroy() {
         this.editor.destroy();
         window.clearTimeout(this.loadUsersTimeout);
@@ -241,22 +227,24 @@ export default {
             this.suggestionPopup[0].destroy();
         }
     },
-};
+}
 </script>
 
 <style>
-.post-editor .ProseMirror {
-    text-align: initial;
-    padding: 0.5rem 1rem;
-}
-
-.post-editor {
+.comment-editor {
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 3px;
+    font-size: 14px;
 }
 
-.post-editor__content {
+.comment-editor .ProseMirror {
+    text-align: initial;
+    padding: 0 0.66em;
+    min-height: 2em;
+}
+
+.comment-editor__content {
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
@@ -265,61 +253,57 @@ export default {
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out
 }
 
-.post-editor__content:focus-within {
+.comment-editor__content:focus-within {
     border: 1px solid #80bdff;
-    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 0.15em rgba(0, 123, 255, 0.25);
 }
 
-.post-editor__content .ProseMirror {
-    height: 6rem;
-}
-
-.post-editor__content .user-mention {
+.comment-editor__content .user-mention {
     color: #007bff;
     text-decoration: none;
 }
 
-.post-editor__content .user-mention:hover {
+.comment-editor__content .user-mention:hover {
     color: #0056b3;
     text-decoration: underline;
     cursor: pointer;
 }
 
-.post-editor .menubar {
+.comment-editor .menubar {
     transition: visibility 0.2s 0.4s, opacity 0.2s 0.4s;
     border-top: 1px solid rgba(0, 0, 0, 0.125);
-    padding: 0.5rem;
+    padding: 0.5em;
 }
 
-.post-editor .menubar__button {
+.comment-editor .menubar__button {
     vertical-align: middle;
-    width: 1.6rem;
-    height: 1.5rem;
+    width: 1.6em;
+    height: 1.5em;
     font-weight: bold;
     display: inline-flex;
     background: transparent;
     border: 0;
     color: black;
     margin: 0;
-    margin-right: 0.2rem;
+    margin-right: 0.2em;
     border-radius: 3px;
     cursor: pointer;
     padding: 0;
 }
 
-.post-editor .menubar__button:hover {
+.comment-editor .menubar__button:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-.post-editor .menubar span {
+.comment-editor .menubar span {
     font-size: 13.3333px;
 }
 
-.post-editor .menubar__icon {
+.comment-editor .menubar__icon {
     margin: 0 auto;
 }
 
-.post-editor .ProseMirror p.is-editor-empty:first-child::before {
+.comment-editor .ProseMirror p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
     color: #adb5bd;
@@ -327,15 +311,12 @@ export default {
     height: 0;
 }
 
-.post-editor .ProseMirror p {
-    margin-bottom: 0.3333rem;
+.comment-editor .ProseMirror p {
+    margin-bottom: 0.3333em;
+    line-height: 2em;
 }
 
-.post-editor .ProseMirror p:last-child {
+.comment-editor .ProseMirror p:last-child {
     margin-bottom: 0;
 }
-
-/* .post-editor .ProseMirror-trailingBreak {
-    display: none;
-} */
 </style>

@@ -1,21 +1,18 @@
 <template>
     <b-form @submit.prevent="addComment">
         <b-form-group>
-            <b-form-input
-                @keyup.enter="addComment"
-                size="sm"
-                v-model="commentForm.content"
-                placeholder="Add a comment..."
-            />
+            <CommentEditor v-model="commentForm.content" @addComment="addComment" />
         </b-form-group>
     </b-form>
 </template>
 
 <script>
 import { API } from "aws-amplify";
+import CommentEditor from "@/components/TextEditor/CommentEditor.vue";
 
 export default {
     name: "CommentNew",
+    components: { CommentEditor },
     props: {
         coll: {
             type: String,

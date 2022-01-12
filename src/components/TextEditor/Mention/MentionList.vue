@@ -59,13 +59,8 @@ export default {
                 return true;
             }
 
-            if (event.key === "Enter") {
+            if (event.key === "Enter" || event.key === "Tab") {
                 this.enterHandler();
-                return true;
-            }
-
-            if (event.key === "Tab") {
-                this.selectItem(0);
                 return true;
             }
 
