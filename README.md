@@ -31,7 +31,7 @@ Burn Project is a social network that allows users to
 ### Post
 * Post Edit, Delete
 * ~~Redesign Post New (icons, etc)~~
-* Add mention functionality
+* ~~Add mention functionality~~
 
 ### Comments/Likes
 * Move the awaits into an array of promises to speed up process.

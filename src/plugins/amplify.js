@@ -19,11 +19,7 @@ export default async ({ store, req }) => {
         }
         catch(err) {
             console.error("Error logging in server side:", err);
-            store.commit("setLoggedInUser", {
-                loggedIn: false,
-                data: null,
-                docData: null
-            });
+            // Don't set anything so application shows spinning wheel while it tries to log in client side.
         }
     } else if (process.client) {
         Hub.listen("auth", async ({ payload: { event, data } }) => {
