@@ -45,25 +45,21 @@ export default {
     },
 
     computed: {
-        templateLength: function() {
+        templateLength() {
             return this.$props.templates.length
         }
     },
 
-    created: function() {
-        for (let i = 0; i < this.loadAmount; i++) {
-            let amount = Math.floor(Math.random() * 4) + 3;
-            let widths = [];
+    created() {
+        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.templates.templateFeedSkeletons));
+    },
 
-            for (let j = 0; j < amount; j++) {
-                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
-            }
-            this.skeleton.push([amount, widths]);
-        }
+    mounted() {
+        this.$store.commit("templates/emptySkeletons");
     },
 
     watch: {
-        templateLength: function(n, o) {
+        templateLength(n, o) {
             for (let i = 0; i < n - o; i++) {
                 let amount = Math.floor(Math.random() * 4) + 3;
                 let widths = [];

@@ -1,7 +1,7 @@
 <template>
     <b-form @submit.prevent="addComment">
         <b-form-group>
-            <CommentEditor v-model="commentForm.content" @addComment="addComment" />
+            <CommentEditor ref="editor" v-model="commentForm.content" @addComment="addComment" :replyingTo="replyingTo" />
         </b-form-group>
     </b-form>
 </template>
@@ -21,6 +21,10 @@ export default {
         docId: {
             type: String,
             required: true
+        },
+        replyingTo: {
+            type: String,
+            required: false
         }
     },
     data() {
@@ -69,6 +73,21 @@ export default {
                     .catch(err => {
                         console.error("Error adding comment", err);
                     });
+            }
+        }
+    },
+
+    watch: {
+        replyingTo(n) {
+            if (n !== "") {
+                const reply = `<span data-type="mention" class="user-mention" data-id="${n}">@${n}</span>`;
+                if (this.commentForm.content.substr(0, 3) === "<p>") {
+                    this.commentForm.content = "<p>" + reply + " " + this.commentForm.content.substr(3);
+                } else {
+                    this.commentForm.content = "<p>" + reply + "</p>";
+                }
+
+                this.$nextTick(() => { this.$emit("replied") });
             }
         }
     }

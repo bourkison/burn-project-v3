@@ -6,8 +6,7 @@ export const state = () => {
         apiName: "projectburnapi",
         workoutPromises: [],
         userProfile: null,
-        videoTokens: {},
-        postFeedSkeleton: []
+        videoTokens: {}
     };
 }
 
@@ -138,16 +137,20 @@ export const actions = {
         return;     
     },
 
-    nuxtServerInit({ state }) {
-        for (let i = 0; i < 5; i++) {
-            let amount = Math.floor(Math.random() * 4) + 3;
-            let widths = [];
+    nuxtServerInit({ commit }) {
+        const mutations = ["posts/pushSkeleton", "exercises/pushSkeleton", "templates/pushSkeleton"];
 
-            for (let j = 0; j < amount; j++) {
-                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
+        mutations.forEach(mut => {
+            for (let i = 0; i < 5; i++) {
+                let amount = Math.floor(Math.random() * 4) + 3;
+                let widths = [];
+    
+                for (let j = 0; j < amount; j++) {
+                    widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
+                }
+    
+                commit(mut, [amount, widths])
             }
-
-            state.postFeedSkeleton.push([amount, widths]);
-        }
+        })
     }
 }

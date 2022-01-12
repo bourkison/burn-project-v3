@@ -320,7 +320,7 @@ export default {
                 this.isLiked = false;
                 this.likeCount--;
             }
-        },
+        }
     },
 };
 </script>

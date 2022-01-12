@@ -7,43 +7,45 @@
             :src="comment.createdBy.profilePhoto"
         />
         <div style="width: 100%" class="bg-light rounded p-2">
-            <div>
+            <div class="d-flex align-items-center">
                 <router-link
                     :to="'/' + comment.createdBy.username"
-                    class="text-dark font-weight-bold"
+                    class="text-dark font-weight-bold pl-1"
                     >{{ comment.createdBy.username }}</router-link
                 >
-                <b-dropdown class="float-right" variant="outline">
-                    <span v-if="comment.createdBy.id === $store.state.userProfile.data.uid">
-                        <b-dropdown-item>Edit</b-dropdown-item>
-                        <b-dropdown-item variant="danger" @click="confirmDeleteComment"
-                            >Delete</b-dropdown-item
+                <b-dropdown class="ml-auto mr-2 comment-dropdown font-small" size="sm" variant="outline">
+                    <span v-if="comment.createdBy.username === $store.state.userProfile.docData.username">
+                        <b-dropdown-item class="comment-dropdown-item"><b-icon-pencil class="mr-1" /> Edit</b-dropdown-item>
+                        <b-dropdown-item class="comment-dropdown-item" variant="danger" @click="confirmDeleteComment"
+                            ><b-icon-trash class="mr-1" /> Delete</b-dropdown-item
                         >
+                    </span>
+                    <span v-else>
+                        <b-dropdown-item class="comment-dropdown-item" @click="replyComment"><b-icon-reply class="mr-1" /> Reply</b-dropdown-item>
+                        <b-dropdown-item class="comment-dropdown-item" variant="danger"><b-icon-exclamation class="mr-1" /> Report</b-dropdown-item>
                     </span>
                 </b-dropdown>
             </div>
             <div class="content">{{ comment.content }}</div>
-            <div class="like pl-1 pr-1 d-flex">
-                <div align-v="center">
-                    <b-icon-heart
-                        v-if="!isLiked"
-                        class="icon"
-                        @click="toggleLike"
-                        font-scale=".8"
-                    />
-                    <b-icon-heart-fill
-                        v-else
-                        variant="danger"
-                        class="icon"
-                        @click="toggleLike"
-                        font-scale=".8"
-                    />
-                    <span class="ml-1 text-muted count" style="font-size:12px;" @click="expandLikes"
-                        ><span v-if="!isLoading">{{ likeCount }}</span
-                        ><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span
-                        ><span v-else>likes</span></span
-                    >
-                </div>
+            <div class="like pl-1 pr-1 mt-2 mb-1 d-flex align-items-center">
+                <b-icon-heart
+                    v-if="!isLiked"
+                    class="icon"
+                    @click="toggleLike"
+                    font-scale=".8"
+                />
+                <b-icon-heart-fill
+                    v-else
+                    variant="danger"
+                    class="icon"
+                    @click="toggleLike"
+                    font-scale=".8"
+                />
+                <span class="ml-1 text-muted count" style="font-size:12px;" @click="expandLikes"
+                    ><span v-if="!isLoading">{{ likeCount }}</span
+                    ><span v-else>...</span>&nbsp;<span v-if="likeCount == 1">like</span
+                    ><span v-else>likes</span></span
+                >
                 <span class="ml-auto text-muted" style="font-size: 12px;">
                     {{ createdAtText }}
                 </span>
@@ -140,7 +142,7 @@ export default {
         };
     },
 
-    created: function() {
+    created() {
         dayjs.extend(relativeTime);
         this.createdAtText = dayjs(this.$props.comment.createdAt).fromNow();
         this.isLiked = this.$props.comment.isLiked;
@@ -148,7 +150,7 @@ export default {
     },
 
     methods: {
-        toggleLike: async function() {
+        async toggleLike() {
             if (!this.isLiking) {
                 this.isLiking = true;
 
@@ -203,7 +205,7 @@ export default {
             }
         },
 
-        expandLikes: function() {
+        expandLikes() {
             // if (this.likeCount > 0) {
             //     if (this.likes.length == 0) {
             //         this.isLoadingLikes = true;
@@ -230,11 +232,11 @@ export default {
             // }
         },
 
-        confirmDeleteComment: function() {
+        confirmDeleteComment() {
             this.modalIsDeleting = true;
         },
 
-        deleteComment: async function(e) {
+        async deleteComment(e) {
             e.preventDefault();
 
             this.isDeleting = true;
@@ -260,6 +262,11 @@ export default {
                 this.isDeleting = false;
                 this.modalIsDeleting = false;
             }
+        },
+
+        replyComment() {
+            console.log("Reply comment.vue");
+            this.$emit("replyComment", this.$props.comment.createdBy.username);
         }
     }
 };
@@ -278,8 +285,21 @@ export default {
     font-size: 15px;
 }
 
-.count:hover {
+.count:hover,
+.reply:hover {
     text-decoration: underline;
     cursor: pointer;
+}
+</style>
+
+<style>
+.comment-dropdown-item a {
+    font-size: 12px !important;
+    padding-left: 0.75rem !important
+}
+
+.comment-dropdown button {
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 </style>

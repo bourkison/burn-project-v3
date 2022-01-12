@@ -10,7 +10,7 @@
                 </div>
             </div>
 
-            <b-card-text class="mt-3">
+            <div class="mt-3">
                 <b-row class="text-center font-weight-bold">
                     <b-col cols="1">#</b-col>
                     <b-col cols="5">Exercise Name</b-col>
@@ -68,7 +68,7 @@
                         <b-icon-play />
                     </b-button>
                 </div>
-            </b-card-text>
+            </div>
         </b-card-body>
     </b-card>
 </template>

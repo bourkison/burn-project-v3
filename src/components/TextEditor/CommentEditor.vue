@@ -35,6 +35,10 @@ export default {
         value: {
             type: String,
             default: ""
+        },
+        replyingTo: {
+            type: String,
+            default: ""
         }
     },
     emits: ["input", "addComment"],
@@ -52,7 +56,7 @@ export default {
         }
     },
 
-    created() {
+    mounted() {
         // Build plugin for emitting "addComment on Enter"
         const EnterHandler = Extension.create({
             name: "EventHandler",
@@ -208,9 +212,21 @@ export default {
     },
 
     watch: {
-        value(n) {
-            if (n === "") {
-                this.editor.commands.setContent(n);
+        value: {
+            immediate: true,
+            handler(n) {
+                if (this.editor) {
+                    let html = this.editor.getHTML();
+                    if (n !== html) {
+                        this.editor.commands.setContent(n);
+                    }
+                }
+            }
+        },
+
+        replyingTo(n) {
+            if (n) {
+                this.editor.commands.focus();
             }
         }
     },

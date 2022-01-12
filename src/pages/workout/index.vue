@@ -66,7 +66,7 @@
                                 placeholder="Search for a workout or template..."
                                 v-model="searchText"
                             ></b-form-input>
-                            <b-card-text>
+                            <div>
                                 <b-container class="mt-3">
                                     <div v-if="filteredWorkouts.length > 0">
                                         <h5>Recent Workouts</h5>
@@ -110,7 +110,7 @@
                                         </b-list-group>
                                     </div>
                                 </b-container>
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                     </b-card>
                 </b-container>

@@ -98,9 +98,9 @@
                                 </div>
                             </b-card-title>
 
-                            <b-card-text class="mt-4" v-if="isLoggedInUser">
+                            <div class="mt-4" v-if="isLoggedInUser">
                                 <PostNew />
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                     </b-card>
 

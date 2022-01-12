@@ -7,7 +7,7 @@
                         <b-card-body>
                             <b-card-title>"{{ searchText }}" Results</b-card-title>
 
-                            <b-card-text>
+                            <div>
                                 <div class="text-center">
                                     <b-button
                                         pill
@@ -78,7 +78,7 @@
                                         </b-tab>
                                     </b-tabs>
                                 </div>
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                     </b-card>
                 </b-container>

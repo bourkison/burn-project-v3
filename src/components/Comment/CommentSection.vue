@@ -58,6 +58,7 @@
                             :comment="comment"
                             :coll="coll"
                             :docId="docId"
+                             @replyComment="replyComment"
                         />
                     </b-list-group>
                     <div class="text-center">
@@ -80,7 +81,7 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <CommentNew @addComment="addComment" :coll="coll" :docId="docId" />
+                <CommentNew @addComment="addComment" :coll="coll" :docId="docId" :replyingTo="replyingTo" @replied="replyComment('')" />
             </b-container>
         </b-collapse>
 
@@ -189,7 +190,9 @@ export default {
             comments: [],
             follows: [],
 
-            lastLoadedComment: null
+            lastLoadedComment: null,
+
+            replyingTo: ""
         };
     },
 
@@ -405,6 +408,11 @@ export default {
             //         this.isLoadingMoreComments = false;
             //         this.lastLoadedComment = commentSnapshot.docs[commentSnapshot.size - 1];
             //     });
+        },
+
+        replyComment(username) {
+            console.log("REPLY:", username);
+            this.replyingTo = username;
         }
     }
 };

@@ -84,7 +84,7 @@
                                     </div>
                                 </div>
 
-                                <b-card-text>
+                                <div>
                                     <b-form-textarea
                                         :value="workout.notes"
                                         @input="setWorkoutValue('notes', $event)"
@@ -93,7 +93,7 @@
                                         placeholder="Add workout notes..."
                                         class="p2 mt-2 border-white"
                                     ></b-form-textarea>
-                                </b-card-text>
+                                </div>
                             </b-card-body>
                         </b-card>
                         <div class="exercisesCont sortableContainer mb-2">
@@ -112,7 +112,7 @@
                         </div>
                         <b-card no-body class="mb-4">
                             <b-card-body>
-                                <b-card-text>
+                                <div>
                                     <div class="text-center">
                                         <b-button
                                             variant="outline-danger"
@@ -138,7 +138,7 @@
                                             <span v-else><b-spinner small /></span>
                                         </b-button>
                                     </div>
-                                </b-card-text>
+                                </div>
                             </b-card-body>
                         </b-card>
                     </div>

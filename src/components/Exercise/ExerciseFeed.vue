@@ -51,15 +51,12 @@ export default {
     },
 
     created: function() {
-        for (let i = 0; i < this.loadAmount; i++) {
-            let amount = Math.floor(Math.random() * 4) + 3;
-            let widths = [];
+        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.exercises.exerciseSkeletons));
+        console.log(this.skeleton);
+    },
 
-            for (let j = 0; j < amount; j++) {
-                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
-            }
-            this.skeleton.push([amount, widths]);
-        }
+    mounted() {
+        this.$store.commit("exercises/emptySkeletons");
     },
 
     watch: {

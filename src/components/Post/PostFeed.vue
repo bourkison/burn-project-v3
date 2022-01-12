@@ -46,7 +46,11 @@ export default {
     },
 
     created() {
-        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.postFeedSkeleton));
+        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.posts.postFeedSkeletons));
+    },
+
+    mounted() {
+        this.$store.commit("posts/emptySkeletons");
     },
 
     computed: {
