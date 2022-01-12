@@ -44,18 +44,31 @@
 </template>
 
 <script>
-import { Editor, EditorContent } from "@tiptap/vue-2";
+import { API } from "aws-amplify";
+
+import { Editor, EditorContent, VueRenderer } from "@tiptap/vue-2";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import History from "@tiptap/extension-history";
 import Placeholder from "@tiptap/extension-placeholder";
+import Mention from "@tiptap/extension-mention";
+
+import tippy from "tippy.js";
+import _ from "lodash";
 
 import CalendarTextIcon from "vue-material-design-icons/CalendarText.vue";
 import DumbbellIcon from "vue-material-design-icons/Dumbbell.vue";
 import WeightLifterIcon from "vue-material-design-icons/WeightLifter.vue";
 import FileImageIcon from "vue-material-design-icons/FileImage.vue";
 import NoteEditOutlineIcon from "vue-material-design-icons/NoteEditOutline.vue";
+
+import MentionList from "@/components/TextEditor/Mention/MentionList.vue";
+
+let suggestionComponent = null;
+const DEBOUNCE_TIME = 500;
+let timeoutStart = 0;
+let loadUsersTimeout = null;
 
 export default {
     name: "PostEditor",
@@ -80,11 +93,12 @@ export default {
     emits: ["input", "exerciseClick", "workoutClick", "templateClick", "postClick"],
     data() {
         return {
-            editor: null,
+            editor: null
         };
     },
 
     created() {
+        console.log("created this", this);
         this.editor = new Editor({
             content: this.initialValue,
             extensions: [
@@ -95,12 +109,119 @@ export default {
                 Placeholder.configure({
                     placeholder: "New post...",
                 }),
+                Mention.configure({
+                    HTMLAttributes: {
+                        class: "user-mention"
+                    },
+                    suggestion: {
+                        items: async ({ query }) => {
+                            // Debounce promise
+                            return await new Promise(async (resolve) => {
+                                const now = (new Date()).getTime();
+
+                                if (!timeoutStart || now - timeoutStart > 500) {
+                                    console.log("Items called instantly")
+                                    timeoutStart = now
+                                    resolve(await this.loadUsers(query))
+                                } else {
+                                    window.clearTimeout(loadUsersTimeout);
+                                    let waitTime = DEBOUNCE_TIME;
+
+                                    if (timeoutStart) {
+                                        waitTime = (timeoutStart + DEBOUNCE_TIME) - now;
+                                    }
+
+                                    console.log("Items debounced", waitTime);
+
+                                    loadUsersTimeout = setTimeout(async () => {
+                                        timeoutStart = (new Date()).getTime();
+                                        console.log("Debounce over");
+                                        resolve(await this.loadUsers(query))
+                                    }, waitTime)
+                                }
+                            })
+                        },
+
+                        render: () => {
+                            let suggestionPopup;
+
+                            return {
+                                onStart: (props) => {
+                                    suggestionComponent = new VueRenderer(MentionList, {
+                                        parent: this,
+                                        propsData: { ...props, isLoadingMentions: false }
+                                    });
+        
+                                    suggestionPopup = tippy('body', {
+                                        getReferenceClientRect: props.clientRect,
+                                        appendTo: () => document.body,
+                                        content: suggestionComponent.element,
+                                        showOnCreate: true,
+                                        interactive: true,
+                                        trigger: 'manual',
+                                        placement: 'bottom-start',
+                                    })
+                                },
+        
+                                onUpdate: (props) => {
+                                    suggestionComponent.updateProps(props);
+                                    suggestionPopup[0].setProps({
+                                        getReferenceClientRect: props.clientRect,
+                                    });
+                                },
+        
+                                onKeyDown: (props) => {
+                                    if (props.event.key === 'Escape') {
+                                        suggestionPopup[0].hide()
+                                        return true
+                                    }
+        
+                                    return suggestionComponent.ref?.onKeyDown(props)
+                                },
+        
+                                onExit: () => {
+                                    suggestionPopup[0].destroy()
+                                    suggestionComponent.destroy()
+                                }
+                            }
+                        }
+                    }
+                })
             ],
             onUpdate: () => {
-                console.log("Text", this.editor.getText());
-                this.$emit("input", this.editor.getText());
+                this.$emit("input", this.editor.getHTML());
             },
         });
+    },
+
+    methods: {
+        async loadUsers(query) {
+            try {
+                if (query.trim()) {
+                    suggestionComponent.updateProps({ isLoadingMentions: true });
+                    const path = "/search";
+                    const myInit = {
+                        headers: {
+                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                        },
+                        queryStringParameters: {
+                            q: query,
+                            collections: "user"
+                        }
+                    }
+    
+                    const response = await API.get(this.$store.state.apiName, path, myInit);
+                    suggestionComponent.updateProps({ isLoadingMentions: false });
+                    const usernames = response.data.user.map(user => { return user.username });
+                    return usernames;
+                } else {
+                    return [];
+                }
+            }
+            catch (err) {
+                return [];
+            }
+        }
     },
 
     beforeDestroy() {

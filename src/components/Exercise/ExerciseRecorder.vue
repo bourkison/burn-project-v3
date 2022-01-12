@@ -136,7 +136,7 @@
                     <b-card no-body>
                         <div ref="backCardBody" class="back-body" :style="'height:' + cardBodyHeight">
                             <b-card-body>
-                                <b-card-title><h6>Edit Exercise</h6></b-card-title>
+                                <b-card-title title-tag="h6">Edit Exercise</b-card-title>
 
                                 <div class="mt-3">
                                     <b-form @submit.prevent="updateExerciseSettings">

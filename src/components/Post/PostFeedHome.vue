@@ -27,9 +27,10 @@
         <div class="text-center" v-if="moreToLoad">
             <b-button
                 @click="loadMorePosts"
-                variant="outline-dark"
+                variant="outline"
                 size="sm"
                 v-b-visible.200="loadMorePosts"
+                :disabled="isLoadingMore"
             >
                 <span v-if="!isLoadingMore">More</span>
                 <span v-else><b-spinner small/></span>
