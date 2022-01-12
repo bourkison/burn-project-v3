@@ -91,6 +91,7 @@ export default {
         return {
             editor: null,
             suggestionComponent: null,
+            suggestionPopup: null,
 
             // Debounce:
             timeoutStart: 0,
@@ -142,8 +143,6 @@ export default {
                         },
 
                         render: () => {
-                            let suggestionPopup;
-
                             return {
                                 onStart: (props) => {
                                     this.suggestionComponent = new VueRenderer(MentionList, {
@@ -151,7 +150,7 @@ export default {
                                         propsData: { ...props, isLoadingMentions: false }
                                     });
         
-                                    suggestionPopup = tippy('body', {
+                                    this.suggestionPopup = tippy('body', {
                                         getReferenceClientRect: props.clientRect,
                                         appendTo: () => document.body,
                                         content: this.suggestionComponent.element,
@@ -164,14 +163,14 @@ export default {
         
                                 onUpdate: (props) => {
                                     this.suggestionComponent.updateProps(props);
-                                    suggestionPopup[0].setProps({
+                                    this.suggestionPopup[0].setProps({
                                         getReferenceClientRect: props.clientRect,
                                     });
                                 },
         
                                 onKeyDown: (props) => {
                                     if (props.event.key === 'Escape') {
-                                        suggestionPopup[0].hide()
+                                        this.suggestionPopup[0].hide()
                                         return true
                                     }
         
@@ -179,7 +178,7 @@ export default {
                                 },
         
                                 onExit: () => {
-                                    suggestionPopup[0].destroy()
+                                    this.suggestionPopup[0].destroy()
                                     this.suggestionComponent.destroy()
                                 }
                             }
@@ -226,8 +225,8 @@ export default {
     beforeDestroy() {
         this.editor.destroy();
         window.clearTimeout(this.loadUsersTimeout);
-        suggestionPopup[0].destroy()
-        this.suggestionComponent.destroy()
+        this.suggestionComponent.destroy();
+        this.suggestionPopup[0].destroy();
     },
 };
 </script>
