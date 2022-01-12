@@ -118,6 +118,10 @@ export default {
                     suggestion: {
                         items: async ({ query }) => {
                             // Debounce promise
+                            if (this.suggestionComponent) {
+                                this.suggestionComponent.updateProps({ isLoadingMentions: true });
+                            }
+
                             return await new Promise(async (resolve) => {
                                 const now = (new Date()).getTime();
 
@@ -209,7 +213,9 @@ export default {
                     }
     
                     const response = await API.get(this.$store.state.apiName, path, myInit);
-                    this.suggestionComponent.updateProps({ isLoadingMentions: false });
+                    if (this.suggestionComponent) {
+                        this.suggestionComponent.updateProps({ isLoadingMentions: false });
+                    }
                     const usernames = response.data.user.map(user => { return user.username });
                     return usernames;
                 } else {
@@ -225,8 +231,14 @@ export default {
     beforeDestroy() {
         this.editor.destroy();
         window.clearTimeout(this.loadUsersTimeout);
-        this.suggestionComponent.destroy();
-        this.suggestionPopup[0].destroy();
+
+        if (this.suggestionComponent !== null) {
+            this.suggestionComponent.destroy();
+        }
+
+        if (this.suggestionPopup[0] !== null) {
+            this.suggestionPopup[0].destroy();
+        }
     },
 };
 </script>
@@ -259,6 +271,17 @@ export default {
 
 .post-editor__content .ProseMirror {
     height: 6rem;
+}
+
+.post-editor__content .user-mention {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.post-editor__content .user-mention:hover {
+    color: #0056b3;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .post-editor .menubar {

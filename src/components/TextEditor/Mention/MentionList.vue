@@ -43,6 +43,7 @@ export default {
     data() {
         return {
             selectedIndex: 0,
+            selected: false,
         };
     },
 
@@ -60,6 +61,11 @@ export default {
 
             if (event.key === "Enter") {
                 this.enterHandler();
+                return true;
+            }
+
+            if (event.key === "Tab") {
+                this.selectItem(0);
                 return true;
             }
 
@@ -81,8 +87,15 @@ export default {
         selectItem(index) {
             const item = this.items[index];
 
-            if (item) {
-                this.command({ id: item });
+            if (item && !this.selected) {
+                // TODO: Fix position out of line error.
+                try {
+                    this.command({ id: item });
+                    this.selected = true;
+                }
+                catch (err) {
+                    console.error(err);
+                }
             }
         },
     },
