@@ -27,7 +27,6 @@
     "cropperjs": "^1.5.11",
     "date-fns": "^2.25.0",
     "dayjs": "^1.10.4",
-    "lodash": "^4.17.21",
     "node-fetch": "^2.6.6",
     "nuxt": "^2.15.7",
     "random-color": "^1.0.1",

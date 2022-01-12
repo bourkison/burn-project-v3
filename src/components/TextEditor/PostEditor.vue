@@ -55,7 +55,6 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Mention from "@tiptap/extension-mention";
 
 import tippy from "tippy.js";
-import _ from "lodash";
 
 import CalendarTextIcon from "vue-material-design-icons/CalendarText.vue";
 import DumbbellIcon from "vue-material-design-icons/Dumbbell.vue";
@@ -65,10 +64,7 @@ import NoteEditOutlineIcon from "vue-material-design-icons/NoteEditOutline.vue";
 
 import MentionList from "@/components/TextEditor/Mention/MentionList.vue";
 
-let suggestionComponent = null;
 const DEBOUNCE_TIME = 500;
-let timeoutStart = 0;
-let loadUsersTimeout = null;
 
 export default {
     name: "PostEditor",
@@ -93,7 +89,12 @@ export default {
     emits: ["input", "exerciseClick", "workoutClick", "templateClick", "postClick"],
     data() {
         return {
-            editor: null
+            editor: null,
+            suggestionComponent: null,
+
+            // Debounce:
+            timeoutStart: 0,
+            loadUsersTimeout: null
         };
     },
 
@@ -119,24 +120,22 @@ export default {
                             return await new Promise(async (resolve) => {
                                 const now = (new Date()).getTime();
 
-                                if (!timeoutStart || now - timeoutStart > 500) {
-                                    console.log("Items called instantly")
-                                    timeoutStart = now
+                                if (!this.timeoutStart || now - this.timeoutStart > 500) {
+                                    this.timeoutStart = now
                                     resolve(await this.loadUsers(query))
                                 } else {
-                                    window.clearTimeout(loadUsersTimeout);
+                                    window.clearTimeout(this.loadUsersTimeout);
                                     let waitTime = DEBOUNCE_TIME;
 
-                                    if (timeoutStart) {
-                                        waitTime = (timeoutStart + DEBOUNCE_TIME) - now;
+                                    if (this.timeoutStart) {
+                                        waitTime = (this.timeoutStart + DEBOUNCE_TIME) - now;
                                     }
 
-                                    console.log("Items debounced", waitTime);
-
-                                    loadUsersTimeout = setTimeout(async () => {
-                                        timeoutStart = (new Date()).getTime();
-                                        console.log("Debounce over");
-                                        resolve(await this.loadUsers(query))
+                                    this.loadUsersTimeout = setTimeout(async () => {
+                                        if (this.suggestionComponent !== null) {
+                                            this.timeoutStart = (new Date()).getTime();
+                                            resolve(await this.loadUsers(query))
+                                        }
                                     }, waitTime)
                                 }
                             })
@@ -147,7 +146,7 @@ export default {
 
                             return {
                                 onStart: (props) => {
-                                    suggestionComponent = new VueRenderer(MentionList, {
+                                    this.suggestionComponent = new VueRenderer(MentionList, {
                                         parent: this,
                                         propsData: { ...props, isLoadingMentions: false }
                                     });
@@ -155,7 +154,7 @@ export default {
                                     suggestionPopup = tippy('body', {
                                         getReferenceClientRect: props.clientRect,
                                         appendTo: () => document.body,
-                                        content: suggestionComponent.element,
+                                        content: this.suggestionComponent.element,
                                         showOnCreate: true,
                                         interactive: true,
                                         trigger: 'manual',
@@ -164,7 +163,7 @@ export default {
                                 },
         
                                 onUpdate: (props) => {
-                                    suggestionComponent.updateProps(props);
+                                    this.suggestionComponent.updateProps(props);
                                     suggestionPopup[0].setProps({
                                         getReferenceClientRect: props.clientRect,
                                     });
@@ -176,12 +175,12 @@ export default {
                                         return true
                                     }
         
-                                    return suggestionComponent.ref?.onKeyDown(props)
+                                    return this.suggestionComponent.ref?.onKeyDown(props)
                                 },
         
                                 onExit: () => {
                                     suggestionPopup[0].destroy()
-                                    suggestionComponent.destroy()
+                                    this.suggestionComponent.destroy()
                                 }
                             }
                         }
@@ -198,7 +197,7 @@ export default {
         async loadUsers(query) {
             try {
                 if (query.trim()) {
-                    suggestionComponent.updateProps({ isLoadingMentions: true });
+                    this.suggestionComponent.updateProps({ isLoadingMentions: true });
                     const path = "/search";
                     const myInit = {
                         headers: {
@@ -211,7 +210,7 @@ export default {
                     }
     
                     const response = await API.get(this.$store.state.apiName, path, myInit);
-                    suggestionComponent.updateProps({ isLoadingMentions: false });
+                    this.suggestionComponent.updateProps({ isLoadingMentions: false });
                     const usernames = response.data.user.map(user => { return user.username });
                     return usernames;
                 } else {
@@ -226,6 +225,9 @@ export default {
 
     beforeDestroy() {
         this.editor.destroy();
+        window.clearTimeout(this.loadUsersTimeout);
+        suggestionPopup[0].destroy()
+        this.suggestionComponent.destroy()
     },
 };
 </script>
