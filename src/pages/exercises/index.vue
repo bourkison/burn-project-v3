@@ -195,7 +195,7 @@ export default Vue.extend({
                 const path = "/exercise";
                 let myInit = {
                     headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
+                        Authorization: await this.$accessor.fetchJwtToken()
                     },
                     queryStringParameters: {
                         loadAmount: 5,
@@ -211,7 +211,7 @@ export default Vue.extend({
                     myInit.queryStringParameters.tags = this.selectedTags.join(",");
                 }
 
-                const response = await API.get(this.$store.state.apiName, path, myInit);
+                const response = await API.get(this.$accessor.apiName, path, myInit);
 
                 response.data.forEach((exercise: IExerciseReference) => {
                     let temp = exercise;
@@ -242,7 +242,7 @@ export default Vue.extend({
                     const path = "/exercise";
                     let myInit = {
                         headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                            Authorization: await this.$accessor.fetchJwtToken()
                         },
                         queryStringParameters: {
                             loadAmount: 5,
@@ -259,7 +259,7 @@ export default Vue.extend({
                         myInit.queryStringParameters.tags = this.selectedTags.join(",");
                     }
     
-                    const response = await API.get(this.$store.state.apiName, path, myInit);
+                    const response = await API.get(this.$accessor.apiName, path, myInit);
     
                     response.data.forEach((exercise: IExerciseReference) => {
                         let temp = exercise;

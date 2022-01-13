@@ -1,4 +1,4 @@
-import { getAccessorType,  mutationTree } from "typed-vuex"
+import { mutationTree } from "typed-vuex"
 
 export const state = () => {
     return {

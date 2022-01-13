@@ -166,7 +166,11 @@ export default Vue.extend({
                 // As await does not work in forEach.
                 const imageResults = await Promise.all(
                     this.imagesToUpload.map(async (image, i) => {
-                        const imageName = this.$store.state.userProfile.docData.username + "/" + uuid();
+                        if (!this.$accessor.userProfile || !this.$accessor.userProfile.docData) {
+                            throw new Error("Not logged in");
+                        }
+
+                        const imageName = this.$accessor.userProfile.docData.username + "/" + uuid();
     
                         const imageData = await fetch(image.url);
                         const blob = await imageData.blob();
@@ -190,7 +194,11 @@ export default Vue.extend({
                     this.exerciseForm.filePaths.push({ key: result.key, fileType: "image" });
                 });
             } else if (this.videoToUpload) {
-                const videoUuid = this.$store.state.userProfile.docData.username + "/" + uuid();
+                if (!this.$accessor.userProfile || !this.$accessor.userProfile.docData) {
+                    throw new Error("Not logged in");
+                }
+
+                const videoUuid = this.$accessor.userProfile.docData.username + "/" + uuid();
                 const fileNameSplit = this.videoToUpload.name.split(".")
                 const fileExtension = fileNameSplit[fileNameSplit.length - 1];
                 const fileName = `${videoUuid}.${fileExtension}`
@@ -230,7 +238,7 @@ export default Vue.extend({
             const path = "/exercise";
             const myInit = {
                 headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
+                    Authorization: await this.$accessor.fetchJwtToken()
                 },
                 body: {
                     exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
@@ -238,7 +246,7 @@ export default Vue.extend({
             };
 
             try {
-                const response = await API.post(this.$store.state.apiName, path, myInit);
+                const response = await API.post(this.$accessor.apiName, path, myInit);
                 this.$router.push("/exercises/" + response._id);
             } catch (err) {
                 if (err instanceof Error) {

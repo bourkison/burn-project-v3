@@ -152,14 +152,14 @@ export default Vue.extend({
                 const path = "/template";
                 const myInit = {
                     headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
+                        Authorization: await this.$accessor.fetchJwtToken()
                     },
                     body: {
                         templateForm: this.templateForm
                     }
                 };
 
-                const response = await API.post(this.$store.state.apiName, path, myInit);
+                const response = await API.post(this.$accessor.apiName, path, myInit);
 
                 if (!response.data) {
                     if (response.message) {

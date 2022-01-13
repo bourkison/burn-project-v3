@@ -175,7 +175,7 @@ export default Vue.extend({
         }
     },
 
-    async asyncData({ params, store, req, redirect, error }) {
+    async asyncData({ params, app: { $accessor }, req, redirect, error }) {
         let oldExerciseData: ICreateExercise | null = null;
         let newExerciseData: ICreateExercise | null = null;
         let initImages: IImageToUpload[] = [];
@@ -184,11 +184,11 @@ export default Vue.extend({
             const path = "/exercise/" + params.exerciseId;
             const myInit = {
                 headers: {
-                    Authorization: await store.dispatch("fetchJwtToken", { req })
+                    Authorization: await $accessor.fetchJwtToken({ req })
                 }
             };
 
-            const response = await API.get(store.state.apiName, path, myInit);
+            const response = await API.get($accessor.apiName, path, myInit);
             newExerciseData = response.data;
             oldExerciseData = response.data;
 
@@ -196,7 +196,7 @@ export default Vue.extend({
                 throw new Error("No exercise data");
             } 
 
-            if (oldExerciseData.createdBy && oldExerciseData.createdBy.username !== store.state.userProfile.docData.username) {
+            if (oldExerciseData.createdBy && $accessor.userProfile && $accessor.userProfile.docData && oldExerciseData.createdBy.username !== $accessor.userProfile.docData.username) {
                 console.warn("Unauthorized");
                 redirect("/exercises/" + params.exerciseId);
             }
@@ -251,7 +251,11 @@ export default Vue.extend({
                     const imagePaths = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             if (!image.path) {
-                                const imageName = this.$store.state.userProfile.docData.username + "/" + uuid();
+                                if (!this.$accessor.userProfile || !this.$accessor.userProfile.docData) {
+                                    throw new Error("Not logged in");
+                                }
+
+                                const imageName = this.$accessor.userProfile.docData.username + "/" + uuid();
 
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
@@ -287,7 +291,7 @@ export default Vue.extend({
                     const path = "/exercise/" + this.$route.params.exerciseid;
                     const myInit = {
                         headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
+                            Authorization: await this.$accessor.fetchJwtToken()
                         },
                         body: {
                             exerciseForm: this.newExerciseData,
@@ -295,7 +299,7 @@ export default Vue.extend({
                         }
                     };
 
-                    const response = await API.put(this.$store.state.apiName, path, myInit);
+                    const response = await API.put(this.$accessor.apiName, path, myInit);
 
                     this.$router.push("/exercises/" + response.data._id);
                 }

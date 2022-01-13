@@ -127,7 +127,7 @@ export const actions = actionTree({ state, mutations }, {
         return;
     },
 
-    async fetchJwtToken({}, data: { req: IncomingMessage | null }): Promise<string> {
+    async fetchJwtToken({}, data?: { req: IncomingMessage | null }): Promise<string> {
         try {
             if (process.server && data && data.req) {
                 const SSR = withSSRContext({ req: data.req });

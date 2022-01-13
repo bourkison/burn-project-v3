@@ -255,7 +255,7 @@ export default Vue.extend({
         }
     },
 
-    async asyncData({ params, error, store, req }) {
+    async asyncData({ params, error, app: { $accessor }, req }) {
         let exerciseData: IExercise;
         let chartOptions: IChart = {
             chartType: "exercise",
@@ -292,20 +292,20 @@ export default Vue.extend({
 
         try {
             let response;
-            if (store.state.userProfile && store.state.userProfile.loggedIn) {
+            if ($accessor.userProfile && $accessor.userProfile.loggedIn) {
                 const path = "/exercise/" + params.exerciseId
                 const myInit = {
                     headers: {
-                        Authorization: await store.dispatch("fetchJwtToken", { req })
+                        Authorization: await $accessor.fetchJwtToken({ req })
                     },
                     queryStringParameters: {
                         counters: true
                     }
                 };
 
-                response = (await API.get(store.state.apiName, path, myInit));
+                response = (await API.get($accessor.apiName, path, myInit));
             } else {
-                response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
+                response = await API.get($accessor.apiName, "/public/exercise/" + params.exerciseId, {});
             }
 
             if (response.data && response.data._id) {
@@ -356,7 +356,7 @@ export default Vue.extend({
     },
 
     mounted() {
-        if (this.$store.state.userProfile && this.$store.state.userProfile.loggedIn) {
+        if (this.$accessor.state.userProfile && this.$accessor.state.userProfile.loggedIn) {
             this.loadImages();
         }
     },
@@ -374,11 +374,11 @@ export default Vue.extend({
             const path = "/exercise/" + this.$route.params.exerciseid;
             const myInit = {
                 headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
+                    Authorization: await this.$accessor.fetchJwtToken()
                 }
             };
 
-            const response = await API.del(this.$store.state.apiName, path, myInit);
+            const response = await API.del(this.$accessor.apiName, path, myInit);
             console.log("Deletion success!", response);
 
             this.isDeleting = false;
