@@ -35,23 +35,15 @@ const getExercise = async function(event) {
         measureBy: 1,
         muscleGroups: 1,
         name: 1,
-        tags: 1
+        tags: 1,
+        public: 1
     };
 
     if (counters) {
         findProjection.likeCount = 1;
         findProjection.commentCount = 1;
         findProjection.followCount = 1;
-        findProjection.likes = { 
-            $elemMatch: {
-                "createdBy.username": username
-            }  
-        };
-        findProjection.follows = {
-            $elemMatch: {
-                "username": username
-            }
-        };
+        findProjection.usedAmount = 1;
     }
 
     const result = await Exercise.findOne({ _id: exerciseId }, findProjection).exec();
@@ -79,6 +71,7 @@ const getExercise = async function(event) {
         muscleGroups: result.muscleGroups,
         name: result.name,
         tags: result.tags,
+        public: result.public
     }
 
     if (counters) {
@@ -92,6 +85,7 @@ const getExercise = async function(event) {
         responseData.isLiked = isLiked;
         responseData.isFollowed = isFollowed;
         responseData.isFollowable = isFollowable;
+        responseData.usedAmount = result.usedAmount;
     }
 
     response.statusCode = 200;

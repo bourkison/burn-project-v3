@@ -95,7 +95,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ICreateExercise, IFilePath } from "@/types/types";
+import { ICreateExercise, IImageToUpload } from "@/types";
 
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
@@ -109,14 +109,14 @@ import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 import { uuid } from "uuidv4";
 import awsvideoconfig from "@/aws-video-exports.js";
 
-interface Data {
+interface ExerciseNewData {
     exerciseForm: ICreateExercise;
-    imagesToUpload: IFilePath[];
-    videoToUpload: IFilePath | null;
+    imagesToUpload: IImageToUpload[];
+    videoToUpload: File | null;
     isCreating: boolean;
     errorCountdown: number;
     errorMessage: string;
-    errorInterval: number | null;
+    errorInterval: number | undefined;
 }
 
 export default Vue.extend({
@@ -128,7 +128,7 @@ export default Vue.extend({
         TagSelector,
         DescriptionEditor
     },
-    data(): Data {
+    data(): ExerciseNewData {
         return {
             exerciseForm: {
                 name: "",
@@ -147,7 +147,7 @@ export default Vue.extend({
             // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
     head() {
@@ -190,13 +190,13 @@ export default Vue.extend({
                     this.exerciseForm.filePaths.push({ key: result.key, fileType: "image" });
                 });
             } else if (this.videoToUpload) {
-                const uuid = this.$store.state.userProfile.docData.username + "/" + uuid();
+                const videoUuid = this.$store.state.userProfile.docData.username + "/" + uuid();
                 const fileNameSplit = this.videoToUpload.name.split(".")
                 const fileExtension = fileNameSplit[fileNameSplit.length - 1];
-                const fileName = `${uuid}.${fileExtension}`
+                const fileName = `${videoUuid}.${fileExtension}`
                 const videoObject = {
                     input: {
-                        id: uuid
+                        id: videoUuid
                     }
                 }
 
@@ -205,9 +205,9 @@ export default Vue.extend({
 
                 const videoAsset = {
                     input: {
-                        vodAssetVideoId: uuid,
-                        title: uuid,
-                        description: uuid
+                        vodAssetVideoId: videoUuid,
+                        title: videoUuid,
+                        description: videoUuid
                     }
                 }
 
@@ -224,7 +224,7 @@ export default Vue.extend({
                 })
                 .catch(err => { console.error("ERROR UPLOADED:", err) });
 
-                this.exerciseForm.filePaths.push({ key: uuid, fileType: "video" });
+                this.exerciseForm.filePaths.push({ key: videoUuid, fileType: "video" });
             }
 
             const path = "/exercise";
@@ -241,37 +241,43 @@ export default Vue.extend({
                 const response = await API.post(this.$store.state.apiName, path, myInit);
                 this.$router.push("/exercises/" + response._id);
             } catch (err) {
-                this.displayError(err);
+                if (err instanceof Error) {
+                    this.displayError(err);
+                } else if (typeof err === "string") {
+                    this.displayError(new Error(err))
+                } else {
+                    console.error(err);
+                }
             } finally {
                 this.isCreating = false;
             }
         },
 
-        updateDescription(md) {
+        updateDescription(md: string) {
             this.exerciseForm.description = md;
         },
 
-        updateImages(images) {
+        updateImages(images: IImageToUpload[]) {
             this.imagesToUpload = images;
         },
 
-        updateVideo(video) {
+        updateVideo(video: File) {
             this.videoToUpload = video;
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]) {
             this.exerciseForm.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]) {
             this.exerciseForm.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty) {
+        updateDifficulty(difficulty: number) {
             this.exerciseForm.difficulty = difficulty;
         },
 
-        displayError(err) {
+        displayError(err: Error) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -281,7 +287,7 @@ export default Vue.extend({
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
