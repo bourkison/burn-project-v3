@@ -114,21 +114,27 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue"
+
 import { Editor, EditorContent } from "@tiptap/vue-2";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 
-export default {
+interface DescriptionEditorData {
+    editor: Editor | undefined;
+}
+
+export default Vue.extend({
     name: "DescriptionEditor",
     components: { EditorContent },
     props: {
         initialValue: {
-            type: String,
+            type: String as PropType<string>,
             default: "",
         },
         activeButtons: {
-            type: Array,
+            type: Array as PropType<string[]>,
             validator: function (list) {
                 for (let el of list) {
                     // The value must match one of these strings
@@ -148,10 +154,10 @@ export default {
                             "redo",
                         ].indexOf(el) === -1
                     ) {
-                        return -1;
+                        return false;
                     }
                 }
-                return 1;
+                return true;
             },
             default: () => [
                 "bold",
@@ -169,10 +175,9 @@ export default {
             ],
         },
     },
-    emits: ["input"],
-    data() {
+    data(): DescriptionEditorData {
         return {
-            editor: null,
+            editor: undefined,
         };
     },
 
@@ -181,15 +186,15 @@ export default {
             content: this.initialValue,
             extensions: [StarterKit, Underline],
             onUpdate: () => {
-                this.$emit("input", this.editor.getHTML());
+                if (this.editor) this.$emit("input", this.editor.getHTML());
             },
         });
     },
 
     beforeDestroy() {
-        this.editor.destroy();
+        if (this.editor) this.editor.destroy();
     },
-};
+});
 </script>
 
 <style>

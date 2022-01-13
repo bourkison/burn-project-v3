@@ -66,19 +66,31 @@
     </div>
 </template>
 
-<script>
-import { API } from "aws-amplify";
-import Sortable from "sortablejs";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { IExerciseReference } from "@/types";
 
-export default {
+import { API } from "aws-amplify";
+import Sortable, { SortableOptions, SortableEvent } from "sortablejs";
+
+interface TemplateBuilderData {
+    isLoading: boolean;
+    createdExercises: IExerciseReference[];
+    followedExercises: IExerciseReference[];
+    selectedExercises: IExerciseReference[];
+    sortable: Sortable | undefined;
+    sortableOptions: SortableOptions | undefined;
+}
+
+export default Vue.extend({
     name: "TemplateBuilder",
     props: {
         initExercises: {
-            type: Array,
+            type: Array as PropType<IExerciseReference[]>,
             required: false
         }
     },
-    data() {
+    data(): TemplateBuilderData {
         return {
             isLoading: true,
 
@@ -86,16 +98,28 @@ export default {
             followedExercises: [],
             selectedExercises: [],
 
-            sortable: null,
+            sortable: undefined,
             sortableOptions: {
                 handle: ".sortableHandle",
                 animation: 300,
-                onEnd: this.changeOrder
             }
         };
     },
 
     async mounted() {
+        this.sortableOptions.onEnd = (e: SortableEvent): void => {
+            console.log(e);
+            if (e.newIndex !== e.oldIndex) {
+                if (this !== undefined) {
+                    this.selectedExercises.splice(
+                        e.newIndex,
+                        0,
+                        this.selectedExercises.splice(e.oldIndex, 1)[0]
+                    );
+                }   
+            }
+        }
+
         let path = "/exercise";
         let myInit = {
             headers: {
@@ -104,9 +128,16 @@ export default {
             queryStringParameters: {
                 loadAmount: 99
             }
+        } as {
+            headers: {
+                Authorization: string
+            },
+            queryStringParameters? :{
+                loadAmount?: number
+            }
         };
 
-        const exerciseReferenceResponse = (await API.get(this.$store.state.apiName, path, myInit))
+        const exerciseReferenceResponse: IExerciseReference[] = (await API.get(this.$store.state.apiName, path, myInit))
             .data;
 
         exerciseReferenceResponse.forEach(exerciseReference => {
@@ -123,17 +154,19 @@ export default {
         });
 
         // Once exercises are downloaded, check for initExercises.
-        if (this.$props.initExercises) {
-            let initExercisePromises = [];
+        if (this.initExercises) {
+            let initExercisePromises: Promise<IExerciseReference>[] = [];
 
-            this.$props.initExercises.forEach(exercise => {
+            this.initExercises.forEach(exercise => {
                 // Check we haven't downloaded already (i.e. in followed or created exercises)
-                let cIndex, fIndex;
+                let cIndex: number, fIndex: number;
 
                 cIndex = this.createdExercises.findIndex(x => x._id === exercise.exerciseId);
 
                 if (cIndex < 0) {
                     fIndex = this.followedExercises.findIndex(x => x._id === exercise.exerciseId);
+                } else {
+                    fIndex = -1;
                 }
 
                 // If not, download.
@@ -141,7 +174,15 @@ export default {
                     path = "/exercise/" + exercise.exerciseId;
                     initExercisePromises.push(
                         API.get(this.$store.state.apiName, path, myInit).then(result => {
-                            return result.data;
+                            return {
+                                _id: result.data._id,
+                                exerciseId: result.data._id,
+                                name: result.data.name,
+                                muscleGroups: result.data.muscleGroups,
+                                tags: result.data.tags,
+                                createdBy: result.data.createdBy,
+                                createdAt: result.data.createdAt
+                            };
                         })
                     );
                 } else if (cIndex >= 0) {
@@ -165,21 +206,24 @@ export default {
                 exercises.forEach(exercise => {
                     this.selectedExercises.push(exercise);
                     this.$nextTick(() => {
-                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
+                        const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                        if (exerciseEl) exerciseEl.classList.add("active")
                     });
                 });
             }
 
             this.$nextTick(() => {
-                this.sortable = new Sortable(
-                    document.querySelector("#selectedContainer"),
-                    this.sortableOptions
-                );
-                this.$props.initExercises.forEach(exercise => {
-                    if (document.querySelector("#exercise-" + exercise._id)) {
-                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
-                    }
-                });
+                const cont = document.getElementById("selectedContainer");
+                if (cont && this.sortableOptions) {
+                    this.sortable = new Sortable(
+                        cont,
+                        this.sortableOptions
+                    );
+                    this.initExercises.forEach(exercise => {
+                        const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                        if (exerciseEl) exerciseEl.classList.add("active");
+                    });
+                }
             });
         }
 
@@ -187,51 +231,48 @@ export default {
     },
 
     methods: {
-        addExercise(exercise) {
+        addExercise(exercise: IExerciseReference): void {
             if (this.selectedExercises.findIndex(x => x._id === exercise._id) < 0) {
-                document.querySelector("#exercise-" + exercise._id).classList.add("active");
+                const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                if (exerciseEl) exerciseEl.classList.add("active");
                 this.selectedExercises.push(exercise);
             } else {
                 this.removeExercise(exercise);
             }
         },
 
-        removeExercise(exercise) {
+        removeExercise(exercise: IExerciseReference): void {
             let index = this.selectedExercises.findIndex(x => x._id === exercise._id);
-            this.selectedExercises.splice(index, 1);
-
-            document.querySelector("#exercise-" + exercise._id).classList.remove("active");
-        },
-
-        changeOrder(e) {
-            console.log(e);
-            if (e.newIndex !== e.oldIndex) {
-                this.selectedExercises.splice(
-                    e.newIndex,
-                    0,
-                    this.selectedExercises.splice(e.oldIndex, 1)[0]
-                );
+            if (index) {
+                this.selectedExercises.splice(index, 1);
+                const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                if (exerciseEl) exerciseEl.classList.remove("active");
+            } else {
+                console.warn("Exercise index not found");
             }
-        }
+        },
     },
 
     watch: {
-        selectedExercises(n) {
+        selectedExercises(n: IExerciseReference[]) {
             if (n.length > 0 && !this.sortable && !this.isLoading) {
                 this.$nextTick(() => {
-                    this.sortable = new Sortable(
-                        document.querySelector("#selectedContainer"),
-                        this.sortableOptions
-                    );
+                    const cont = document.getElementById("selectedContainer");
+                    if (cont && this.sortableOptions) {
+                        this.sortable = new Sortable(
+                            cont,
+                            this.sortableOptions
+                        );
+                    }
                 });
             } else if (n.length == 0 && this.sortable) {
-                this.sortable = null;
+                this.sortable = undefined;
             }
 
             this.$emit("updateExercises", this.selectedExercises);
         }
     }
-};
+});
 </script>
 
 <style scoped>

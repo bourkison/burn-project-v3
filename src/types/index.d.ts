@@ -1,6 +1,11 @@
 export type TMeasureBy = "repsWeight"|"reps"|"timeWeight"|"time"
 export type TChartType = "recentWorkouts"|"exercise"
 
+export type HTMLElementEvent<T extends HTMLElement> = Event & {
+    target: T; 
+    currentTarget: T;
+}
+
 export interface IResponsiveDate {
     unit: ""|"day"|"week"|"month";
     amount: number;
@@ -46,7 +51,7 @@ export interface IExercise {
 }
 
 export interface IExerciseReference {
-    _id: string
+    _id?: string
     exerciseId: string;
     name: string;
     muscleGroups: string[];
@@ -58,6 +63,16 @@ export interface IExerciseReference {
     createdAt: Date;
     isFollow?: boolean;
     loaded?: boolean;
+}
+
+// Template
+export interface ICreateTemplate {
+    name: string;
+    description: string;
+    exercises: IExerciseReference[];
+    difficulty: number;
+    muscleGroups: string[];
+    tags: string[];
 }
 
 // Chart

@@ -245,63 +245,71 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { HTMLElementEvent } from "@/types";
+
+interface MuscleGroupData {
+    mostRecentClick: string | undefined;
+    hoveredPart: string;
+}
+
+export default Vue.extend({
     name: "MuscleGroup",
     props: {
         editable: {
-            type: Boolean,
+            type: Boolean as PropType<Boolean>,
             required: false
         },
         selectedGroups: {
-            type: Array,
+            type: Array as PropType<string[]>,
             required: false
         }
     },
-    data() {
+    data(): MuscleGroupData {
         return {
             // Temp variable as watcher doesn't seem to work when clicking body parts.
-            mostRecentClick: null,
+            mostRecentClick: undefined,
             hoveredPart: " "
         };
     },
 
     mounted() {
         // Force a refresh of selected groups. Super hacky and gross.
-        this.updateFills(this.$props.selectedGroups, []);
+        this.updateFills(this.selectedGroups, []);
     },
 
     methods: {
-        bodyPartClickHandler(e) {
-            if (this.$props.editable) {
-                this.mostRecentClick = e.target.parentElement.id;
+        bodyPartClickHandler(e: HTMLElementEvent<HTMLElement>): void {
+            if (this.editable && e.target.parentElement) {
+                this.mostRecentClick = e.target.parentElement.id || "";
                 this.$emit("mgClick", this.mostRecentClick);
             }
         },
 
-        updateFills(newVal, oldVal) {
+        updateFills(newVal: string[], oldVal: string[]): void {
             // Not sure what's happening here. Watcher appears to be broken when clicking on SVG.
             // Do this check to workaround as only happens when pushing to array.
-            if (newVal.length == oldVal.length && newVal.length > 0) {
-                this.$refs[newVal[newVal.length - 1]].children.forEach(child => {
+            if (newVal.length == oldVal.length && newVal.length) {
+                Array.from(((this.$refs[newVal[newVal.length - 1]] as HTMLElement).children as HTMLCollectionOf<HTMLElement>)).forEach((child) => {
                     child.style.fill = "red";
                 });
             } else if (newVal.length > oldVal.length && newVal.length > 0) {
                 let difference = newVal.filter(x => !oldVal.includes(x));
                 difference.forEach(ref => {
-                    this.$refs[ref].children.forEach(child => {
+                    Array.from(((this.$refs[ref] as HTMLElement).children as HTMLCollectionOf<HTMLElement>)).forEach((child) => {
                         child.style.fill = "red";
                     });
                 });
             } else if (oldVal.length > 0) {
                 let difference = oldVal.filter(x => !newVal.includes(x));
-                this.$refs[difference[0]].children.forEach(child => {
+                Array.from(((this.$refs[difference[0]] as HTMLElement).children as HTMLCollectionOf<HTMLElement>)).forEach((child) => {
                     child.style.fill = "rgb(64,64,64)";
                 });
-            }
+                }
         },
 
-        hoverHandler(hover, part) {
+        hoverHandler(hover: number, part: string): void {
             if (hover) {
                 this.hoveredPart = part;
             } else {
@@ -311,11 +319,11 @@ export default {
     },
 
     watch: {
-        selectedGroups(n, o) {
+        selectedGroups(n: string[], o: string[]): void {
             this.updateFills(n, o);
         }
     }
-};
+});
 </script>
 
 <style scoped>

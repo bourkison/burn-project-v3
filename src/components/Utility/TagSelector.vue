@@ -27,16 +27,25 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { HTMLElementEvent } from "@/types";
+
+interface TagSelectorData {
+    inputText: string;
+    selectedTags: string[];
+    tagOptions: string[];
+}
+
+export default Vue.extend({
     name: "TagSelector",
     props: {
         initTags: {
-            type: Array,
+            type: Array as PropType<string[]>,
             required: false
         }
     },
-    data() {
+    data(): TagSelectorData {
         return {
             inputText: "",
             selectedTags: [],
@@ -44,9 +53,9 @@ export default {
         };
     },
 
-    created: function() {
-        if (this.$props.initTags) {
-            this.$props.initTags.forEach(tag => {
+    created() {
+        if (this.initTags) {
+            this.initTags.forEach(tag => {
                 this.selectedTags.push(tag);
 
                 // Remove from available (if it's there).
@@ -56,7 +65,7 @@ export default {
     },
 
     methods: {
-        dataListAdd: function(e) {
+        dataListAdd(e: HTMLElementEvent<HTMLTextAreaElement>): void {
             if (this.inputText.trim() !== "" && this.selectedTags.length < 5) {
                 // Add selected to selectedTags
                 this.selectedTags.push(e.target.value);
@@ -69,7 +78,7 @@ export default {
             }
         },
 
-        detectEnter: function(e) {
+        detectEnter(e: KeyboardEvent): void {
             if (e.key === "Enter" && this.inputText.trim() !== "" && this.selectedTags.length < 5) {
                 // Check its not already selected.
                 if (!this.selectedTags.includes(this.inputText)) {
@@ -84,18 +93,18 @@ export default {
             }
         },
 
-        pillRemove: function(tag) {
+        pillRemove(tag: string): void {
             this.selectedTags = this.selectedTags.filter(x => x !== tag);
             this.tagOptions.push(tag);
         }
     },
 
     watch: {
-        selectedTags: function() {
+        selectedTags() {
             this.$emit("updateTags", this.selectedTags);
         }
     }
-};
+});
 </script>
 
 <style scoped>
