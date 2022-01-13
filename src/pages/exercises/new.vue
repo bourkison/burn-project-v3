@@ -157,7 +157,7 @@ export default Vue.extend({
     },
 
     methods: {
-        async createExercise() {
+        async createExercise(): Promise<void> {
             this.isCreating = true;
 
             if (this.imagesToUpload.length) {
@@ -253,31 +253,31 @@ export default Vue.extend({
             }
         },
 
-        updateDescription(md: string) {
+        updateDescription(md: string): void {
             this.exerciseForm.description = md;
         },
 
-        updateImages(images: IImageToUpload[]) {
+        updateImages(images: IImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 
-        updateVideo(video: File) {
+        updateVideo(video: File): void {
             this.videoToUpload = video;
         },
 
-        updateTags(tags: string[]) {
+        updateTags(tags: string[]): void {
             this.exerciseForm.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups: string[]) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.exerciseForm.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty: number) {
+        updateDifficulty(difficulty: number): void {
             this.exerciseForm.difficulty = difficulty;
         },
 
-        displayError(err: Error) {
+        displayError(err: Error): void {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";

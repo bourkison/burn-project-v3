@@ -45,6 +45,21 @@ export interface IExercise {
     isFollowable: boolean;
 }
 
+export interface IExerciseReference {
+    _id: string
+    exerciseId: string;
+    name: string;
+    muscleGroups: string[];
+    tags: string[];
+    createdBy: {
+        username: string;
+        userId: string;
+    }
+    createdAt: Date;
+    isFollow?: boolean;
+    loaded?: boolean;
+}
+
 // Chart
 interface IChartData {
     preferenceIndex?: number;

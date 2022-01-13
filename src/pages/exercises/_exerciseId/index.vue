@@ -362,11 +362,11 @@ export default Vue.extend({
     },
 
     methods: {
-        confirmDeleteExercise() {
+        confirmDeleteExercise(): void {
             this.modalIsDeleting = true;
         },
 
-        async deleteExercise(e: Event) {
+        async deleteExercise(e: Event): Promise<void> {
             e.preventDefault();
 
             this.isDeleting = true;
@@ -386,7 +386,7 @@ export default Vue.extend({
             this.$router.push("/exercises");
         },
 
-        handleLike(x: number) {
+        handleLike(x: number): void {
             if (this.exerciseData) {
                 if (x > 0) {
                     this.exerciseData.likeCount++;
@@ -398,7 +398,7 @@ export default Vue.extend({
             }
         },
 
-        handleFollow(x: number) {
+        handleFollow(x: number): void {
             if (this.exerciseData) {
                 if (x > 0) {
                     this.exerciseData.followCount++;
@@ -410,7 +410,7 @@ export default Vue.extend({
             }
         },
 
-        async loadImages() {
+        async loadImages(): Promise<void> {
             try {
                 let urlPromises: Promise<string>[] = [];
 
@@ -462,7 +462,7 @@ export default Vue.extend({
             }
         },
 
-        updateChart(options: IChart) {
+        updateChart(options: IChart): void {
             this.chartOptions = options;
         }
     }

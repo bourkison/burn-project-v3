@@ -237,7 +237,7 @@ export default Vue.extend({
     },
 
     methods: {
-        async updateExercise() {
+        async updateExercise(): Promise<void> {
             console.log("Update", this.newExerciseData, this.imagesToUpload, this.imagesToDelete);
             console.log("JSON:", JSON.stringify(this.newExerciseData));
 
@@ -306,27 +306,27 @@ export default Vue.extend({
             }
         },
 
-        updateDescription(md: string) {
+        updateDescription(md: string): void {
             this.newExerciseData.description = md;
         },
 
-        updateImages(images: IImageToUpload[]) {
+        updateImages(images: IImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 
-        updateTags(tags: string[]) {
+        updateTags(tags: string[]): void {
             this.newExerciseData.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups: string[]) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.newExerciseData.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty: number) {
+        updateDifficulty(difficulty: number): void {
             this.newExerciseData.difficulty = difficulty;
         },
 
-        deleteInitImage(path: string) {
+        deleteInitImage(path: string): void {
             this.imagesToDelete.push(path);
         }
     }
