@@ -189,7 +189,7 @@ export default Vue.extend({
                 throw new Error("No exercise data");
             } 
 
-            if (oldExerciseData.createdBy && $accessor.userProfile && $accessor.userProfile.docData && oldExerciseData.createdBy.username !== $accessor.userProfile.docData.username) {
+            if (!oldExerciseData.createdBy || !$accessor.userProfile || !$accessor.userProfile.docData || oldExerciseData.createdBy.username !== $accessor.userProfile.docData.username) {
                 console.warn("Unauthorized");
                 redirect("/exercises/" + params.exerciseId);
             }

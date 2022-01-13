@@ -120,3 +120,28 @@ export type CreateTemplateInit = {
         templateForm: ICreateTemplate
     }
 }
+
+export type EditTemplateParams = {
+    templateId: string;
+    init: EditTemplateInit;
+}
+
+export type EditTemplateInit = {
+    headers?: {
+        Authorization?: string
+    }
+    body: {
+        templateForm: ICreateTemplate;
+    }
+}
+
+export type DeleteTemplateParams = {
+    templateId: string;
+    init: DeleteTemplateInit;
+}
+
+export type DeleteTemplateInit = {
+    headers?: {
+        Authorization?: string
+    }
+}

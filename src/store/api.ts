@@ -18,7 +18,11 @@ import {
     EditExerciseParams,
     EditExerciseInit,
     DeleteExerciseParams,
-    DeleteExerciseInit
+    DeleteExerciseInit,
+    EditTemplateParams,
+    EditTemplateInit,
+    DeleteTemplateParams,
+    DeleteTemplateInit
 } from "@/types/api";
 
 export const state = () => {
@@ -195,7 +199,7 @@ export const actions = actionTree(
                 myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
             }
 
-            const response = await API.del(state.apiName, path, myInit);
+            await API.del(state.apiName, path, myInit);
             return;
         },
 
@@ -334,5 +338,37 @@ export const actions = actionTree(
 
             return response.data._id;
         },
+
+        async editTemplate({ state }, input: EditTemplateParams): Promise<string> {
+            const path = "/template/" + input.templateId;
+            let myInit: EditTemplateInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const response = await API.put(state.apiName, path, myInit);
+            return response.data._id;
+        },
+
+        async deleteTemplate({ state }, input: DeleteTemplateParams): Promise<void> {
+            const path = "/template/" + input.templateId;
+            let myInit: DeleteTemplateInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.del(state.apiName, path, myInit);
+            return;
+        }
     }
 );

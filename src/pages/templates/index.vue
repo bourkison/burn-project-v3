@@ -227,7 +227,7 @@ export default Vue.extend({
             }
         },
 
-        displayError(err: any) {
+        displayError(err: any): void {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -242,7 +242,7 @@ export default Vue.extend({
             }, 1000);
         },
 
-        updateMuscleGroups(muscleGroups: string[]) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
@@ -273,7 +273,7 @@ export default Vue.extend({
             this.downloadTemplates();
         },
 
-        updateTags(tags: string[]) {
+        updateTags(tags: string[]): void {
             this.selectedTags = tags;
             let isFiltered = false;
 

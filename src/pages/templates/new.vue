@@ -127,7 +127,7 @@ export default Vue.extend({
             templateForm: {
                 name: "",
                 description: "",
-                exercises: [],
+                exerciseReferences: [],
                 difficulty: 1,
                 muscleGroups: [],
                 tags: []
@@ -183,7 +183,7 @@ export default Vue.extend({
                 temp.push(exercise);
             });
 
-            this.templateForm.exercises = temp;
+            this.templateForm.exerciseReferences = temp;
         },
 
         displayError(err: any) {

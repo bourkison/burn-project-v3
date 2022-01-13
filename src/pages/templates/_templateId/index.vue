@@ -245,16 +245,7 @@ export default Vue.extend({
             e.preventDefault();
 
             this.isDeleting = true;
-
-            const path = "/template/" + this.$route.params.templateId;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$accessor.fetchJwtToken()
-                }
-            };
-
-            const response = await API.del(this.$accessor.apiName, path, myInit);
-            console.log("Deletion success:", response);
+            await this.$accessor.api.deleteTemplate({ templateId: this.$route.params.templateId, init: {} });
 
             this.isDeleting = false;
             this.modalIsDeleting = false;

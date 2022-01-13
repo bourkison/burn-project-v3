@@ -122,10 +122,14 @@ export type IExerciseReference = {
 export type ICreateTemplate = {
     name: string;
     description: string;
-    exercises: IExerciseReference[];
+    exerciseReferences: IExerciseReference[];
     difficulty: number;
     muscleGroups: string[];
     tags: string[];
+    createdBy?: {
+        username: string;
+        userId: string;
+    }
 }
 
 export type ITemplate = {
