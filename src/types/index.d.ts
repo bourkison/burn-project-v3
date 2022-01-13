@@ -16,6 +16,10 @@ export interface ICreateExercise {
     filePaths: IFilePath[]
     muscleGroups: string[]
     tags: string[]
+    createdBy?: {
+        username: string;
+        userId: string;
+    }
 }
 
 export interface IExercise {
@@ -78,5 +82,5 @@ export interface IImageToUpload {
     url: string;
     editable: boolean;
     id: number;
-    path: string | null;
+    path: IFilePath | null;
 }

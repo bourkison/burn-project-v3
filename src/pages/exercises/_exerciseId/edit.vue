@@ -101,9 +101,13 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { MetaInfo } from "vue-meta";
+import { ICreateExercise, IImageToUpload } from "@/types";
+
 import { API, Storage } from "aws-amplify";
-import { v4 as uuidv4 } from "uuid"
+import { uuid } from "uuidv4"
 
 import ImageUploader from "@/components/Utility/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
@@ -112,7 +116,16 @@ import TagSelector from "@/components/Utility/TagSelector.vue";
 
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-export default {
+interface ExerciseEditData {
+    oldExerciseData: ICreateExercise;
+    newExerciseData: ICreateExercise;
+    initImages: IImageToUpload[];
+    imagesToUpload: IImageToUpload[];
+    imagesToDelete: string[];
+    isUpdating: boolean;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         DifficultySelector,
@@ -121,10 +134,26 @@ export default {
         TagSelector,
         DescriptionEditor
     },
-    data() {
+    data(): ExerciseEditData {
         return {
-            oldExerciseData: null,
-            newExerciseData: null,
+            oldExerciseData: {
+                name: "",
+                description: "",
+                muscleGroups: [],
+                difficulty: 1,
+                filePaths: [],
+                measureBy: "repsWeight",
+                tags: []
+            },
+            newExerciseData: {
+                name: "",
+                description: "",
+                muscleGroups: [],
+                difficulty: 1,
+                filePaths: [],
+                measureBy: "repsWeight",
+                tags: []
+            },
 
             initImages: [],
             // Images to upload includes init images (but we skip over when uploading as we already have path)
@@ -133,11 +162,23 @@ export default {
             isUpdating: false
         };
     },
+    head(): MetaInfo {
+        return {
+            title: this.oldExerciseData ? "Burn · Edit " + this.oldExerciseData.name : "Burn · Edit Exercise",
+            meta: [
+                {
+                    hid: "description",
+                    name: "description",
+                    content: this.$route.params.exerciseId + " tutorial"
+                }
+            ]
+        }
+    },
 
     async asyncData({ params, store, req, redirect, error }) {
-        let oldExerciseData = null;
-        let newExerciseData = null;
-        let initImages = [];
+        let oldExerciseData: ICreateExercise | null = null;
+        let newExerciseData: ICreateExercise | null = null;
+        let initImages: IImageToUpload[] = [];
 
         try {
             const path = "/exercise/" + params.exerciseId;
@@ -151,18 +192,22 @@ export default {
             newExerciseData = response.data;
             oldExerciseData = response.data;
 
-            if (oldExerciseData.createdBy.username !== store.state.userProfile.docData.username) {
+            if (!oldExerciseData || !newExerciseData) {
+                throw new Error("No exercise data");
+            } 
+
+            if (oldExerciseData.createdBy && oldExerciseData.createdBy.username !== store.state.userProfile.docData.username) {
                 console.warn("Unauthorized");
                 redirect("/exercises/" + params.exerciseId);
             }
 
             if (newExerciseData) {
-                let urlPromises = [];
+                let urlPromises: Promise<string>[] = [];
 
                 newExerciseData.filePaths.forEach(path => {
-                    if (path.type === "video") {
+                    if (path.fileType === "video") {
                         console.log("EDITING VIDEO");
-                    } else if (path.type === "image") {
+                    } else if (path.fileType === "image") {
                         urlPromises.push(Storage.get(path.key));
                     }
                 });
@@ -174,11 +219,11 @@ export default {
                         id: i,
                         url: url,
                         editable: false,
-                        path: oldExerciseData.filePaths[i],
+                        path: oldExerciseData ? oldExerciseData.filePaths[i] : null,
                     });
                 });
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
             error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
@@ -206,7 +251,7 @@ export default {
                     const imagePaths = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             if (!image.path) {
-                                const imageName = this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                                const imageName = this.$store.state.userProfile.docData.username + "/" + uuid();
 
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
@@ -233,7 +278,7 @@ export default {
                     );
 
                     imagePaths.forEach(path => {
-                        this.newExerciseData.filePaths.push({ key: path.key, type: "image" });
+                        this.newExerciseData.filePaths.push({ key: path.key, fileType: "image" });
                     });
                 } catch (err) {
                     console.error("Error uploading image(s):", err);
@@ -257,47 +302,35 @@ export default {
             } catch (err) {
                 console.error("Error updating exercise:", err);
             } finally {
-                this.isUpadting = false;
+                this.isUpdating = false;
             }
         },
 
-        updateDescription(md) {
+        updateDescription(md: string) {
             this.newExerciseData.description = md;
         },
 
-        updateImages(images) {
+        updateImages(images: IImageToUpload[]) {
             this.imagesToUpload = images;
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]) {
             this.newExerciseData.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]) {
             this.newExerciseData.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty) {
+        updateDifficulty(difficulty: number) {
             this.newExerciseData.difficulty = difficulty;
         },
 
-        deleteInitImage(path) {
+        deleteInitImage(path: string) {
             this.imagesToDelete.push(path);
-        },
-
-        dataURLtoBlob(dataurl) {
-            var arr = dataurl.split(","),
-                mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]),
-                n = bstr.length,
-                u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], { type: mime });
         }
     }
-};
+});
 </script>
 
 <style scoped>
