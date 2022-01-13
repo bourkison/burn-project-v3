@@ -291,57 +291,26 @@ export default Vue.extend({
         };
 
         try {
-            let response;
-            if ($accessor.userProfile && $accessor.userProfile.loggedIn) {
-                const path = "/exercise/" + params.exerciseId
-                const myInit = {
-                    headers: {
-                        Authorization: await $accessor.fetchJwtToken({ req })
-                    },
-                    queryStringParameters: {
-                        counters: true
-                    }
-                };
-
-                response = (await API.get($accessor.apiName, path, myInit));
-            } else {
-                response = await API.get($accessor.apiName, "/public/exercise/" + params.exerciseId, {});
-            }
-
-            if (response.data && response.data._id) {
-                response = response.data;
-            } else {
-                error({ message: "Exercise not found", statusCode: 404 });
-            }
-
-            exerciseData = {
-                _id: response._id,
-                createdBy: response.createdBy,
-                description: response.description,
-                difficulty: response.difficulty,
-                filePaths: response.filePaths,
-                measureBy: response.measureBy,
-                muscleGroups: response.muscleGroups,
-                name: response.name,
-                tags: response.tags,
-                likeCount: response.likeCount,
-                commentCount: response.commentCount,
-                followCount: response.followCount,
-                isLiked: response.isLiked,
-                isFollowed: response.isFollowed,
-                isFollowable: response.isFollowable,
-                usedAmount: response.usedAmount,
-                public: response.public
+            const init = {
+                queryStringParameters: {
+                    counters: true
+                }
             };
+
+            if ($accessor.userProfile && $accessor.userProfile.loggedIn) {
+                exerciseData = await $accessor.api.getExercise({ req, init, exerciseId: params.exerciseId });
+            } else {
+                exerciseData = await $accessor.api.getExercisePublic({ req, init, exerciseId: params.exerciseId });
+            }
 
             chartOptions.data = chartOptions.data || {};
             chartOptions.data.exercise = {
-                exerciseId: response._id,
-                createdBy: response.createdBy,
-                name: response.name,
-                filePaths: response.filePaths,
-                tags: response.tags,
-                muscleGroups: response.muscleGroups
+                exerciseId: exerciseData._id,
+                createdBy: exerciseData.createdBy,
+                name: exerciseData.name,
+                filePaths: exerciseData.filePaths,
+                tags: exerciseData.tags,
+                muscleGroups: exerciseData.muscleGroups
             };
 
             return {
@@ -370,16 +339,8 @@ export default Vue.extend({
             e.preventDefault();
 
             this.isDeleting = true;
-
-            const path = "/exercise/" + this.$route.params.exerciseid;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$accessor.fetchJwtToken()
-                }
-            };
-
-            const response = await API.del(this.$accessor.apiName, path, myInit);
-            console.log("Deletion success!", response);
+            
+            await this.$accessor.api.deleteExercise({ exerciseId: this.$route.params.exerciseId, init: {} })
 
             this.isDeleting = false;
             this.modalIsDeleting = false;

@@ -235,19 +235,15 @@ export default Vue.extend({
                 this.exerciseForm.filePaths.push({ key: videoUuid, fileType: "video" });
             }
 
-            const path = "/exercise";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$accessor.fetchJwtToken()
-                },
-                body: {
-                    exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
-                }
-            };
 
             try {
-                const response = await API.post(this.$accessor.apiName, path, myInit);
-                this.$router.push("/exercises/" + response._id);
+                const init = {
+                    body: {
+                        exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
+                    }
+                };
+                const _id = await this.$accessor.api.createExercise({ init });
+                this.$router.push("/exercises/" + _id);
             } catch (err) {
                 if (err instanceof Error) {
                     this.displayError(err);

@@ -168,7 +168,10 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { ITemplate } from "@/types"
+
 import { API } from "aws-amplify";
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
@@ -176,9 +179,22 @@ import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
-export default {
+interface TemplateViewData {
+    isDeleting: boolean;
+    templateData: ITemplate | null;
+    likeCount: number;
+    commentCount: number;
+    followCount: number;
+    isLiked: boolean;
+    isFollowed: boolean;
+    isFollowable: boolean;
+    variants: string[];
+    modalIsDeleting: boolean;
+}
+
+export default Vue.extend({
     components: { CommentSection, DescriptionViewer, MuscleGroup, ExerciseExpandable },
-    data() {
+    data(): TemplateViewData {
         return {
             isDeleting: false,
             templateData: null,
@@ -197,91 +213,35 @@ export default {
         };
     },
 
-    async asyncData({ req, params, store, error }) {
-        let templateData = null;
-        let likeCount = 0;
-        let commentCount = 0;
-        let followCount = 0;
-        let isLiked = false;
-        let isFollowed = false;
-        let isFollowable = false;
+    async asyncData({ req, params, app: { $accessor }, error }) {
+        let templateData: ITemplate;
 
         try {
-            let response;
+            const init = { 
+                queryStringParameters: { 
+                    counters: true 
+                } 
+            }
 
-            if (store.state.userProfile && store.state.userProfile.loggedIn) {
-                const path = "/template/" + params.templateId;
-                const myInit = {
-                    headers: {
-                        Authorization: await store.dispatch("fetchJwtToken", { req })
-                    },
-                    queryStringParameters: {
-                        counters: true
-                    }
-                };
-    
-                response = await API.get(store.state.apiName, path, myInit);
-
-                likeCount = response.data.likeCount;
-                commentCount = response.data.commentCount;
-                followCount = response.data.followCount;
-                isLiked = response.data.isLiked;
-                isFollowed = response.data.isFollowed;
-                isFollowable = response.data.isFollowable;
+            if ($accessor.userProfile && $accessor.userProfile.loggedIn) {
+                templateData = await this.$accessor.api.getTemplate({ req, init, templateId: params.id })
             } else {
-                console.log("Making request", store.state.apiName, "/public/template/" + params.templateId)
-                response = await API.get(store.state.apiName, "/public/template/" + params.templateId, {});
+                templateData = await this.$accessor.api.getTemplatePublic({ req, templateId: params.id, init: {} })
             }
 
-            if (!response) {
-                throw new Error(
-                    "Error downloading template: " +
-                        params.templateId +
-                        " no repsonse"
-                );
-            }
-
-            if (!response.success) {
-                throw new Error(
-                    "Error downloading template: " +
-                        params.templateId +
-                        " call unsuccessful: " +
-                        response.errorMessage
-                );
-            }
-
-            templateData = {
-                _id: response.data._id,
-                createdBy: response.data.createdBy,
-                description: response.data.description,
-                difficulty: response.data.difficulty,
-                exerciseReferences: response.data.exerciseReferences,
-                muscleGroups: response.data.muscleGroups,
-                name: response.data.name,
-                tags: response.data.tags
-            };
-
-            return {
-                templateData,
-                likeCount,
-                commentCount,
-                followCount,
-                isLiked,
-                isFollowed,
-                isFollowable,
-            }
-        } catch (err) {
+            return { templateData }
+        } catch (err: any) {
             console.error(err);
             error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
     },
 
     methods: {
-        confirmDeleteTemplate() {
+        confirmDeleteTemplate(): void {
             this.modalIsDeleting = true;
         },
 
-        async deleteTemplate(e) {
+        async deleteTemplate(e: Event): Promise<void> {
             e.preventDefault();
 
             this.isDeleting = true;
@@ -289,11 +249,11 @@ export default {
             const path = "/template/" + this.$route.params.templateId;
             const myInit = {
                 headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
+                    Authorization: await this.$accessor.fetchJwtToken()
                 }
             };
 
-            const response = await API.del(this.$store.state.apiName, path, myInit);
+            const response = await API.del(this.$accessor.apiName, path, myInit);
             console.log("Deletion success:", response);
 
             this.isDeleting = false;
@@ -301,7 +261,7 @@ export default {
             this.$router.push("/templates");
         },
 
-        handleLike(x) {
+        handleLike(x: number): void {
             if (x > 0) {
                 this.likeCount++;
                 this.isLiked = true;
@@ -311,7 +271,7 @@ export default {
             }
         },
 
-        handleFollow(x) {
+        handleFollow(x: number): void {
             if (x > 0) {
                 this.followCount++;
                 this.isFollowed = true;
@@ -321,7 +281,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

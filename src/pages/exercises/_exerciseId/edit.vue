@@ -181,16 +181,9 @@ export default Vue.extend({
         let initImages: IImageToUpload[] = [];
 
         try {
-            const path = "/exercise/" + params.exerciseId;
-            const myInit = {
-                headers: {
-                    Authorization: await $accessor.fetchJwtToken({ req })
-                }
-            };
-
-            const response = await API.get($accessor.apiName, path, myInit);
-            newExerciseData = response.data;
-            oldExerciseData = response.data;
+            const response = await $accessor.api.getExercise({ req, exerciseId: params.exerciseId, init: {} })
+            newExerciseData = JSON.parse(JSON.stringify(response));
+            oldExerciseData = JSON.parse(JSON.stringify(response));
 
             if (!oldExerciseData || !newExerciseData) {
                 throw new Error("No exercise data");
@@ -288,20 +281,15 @@ export default Vue.extend({
                     console.error("Error uploading image(s):", err);
                 } finally {
                     // Now update exercise document.
-                    const path = "/exercise/" + this.$route.params.exerciseid;
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$accessor.fetchJwtToken()
-                        },
+                    const init = {
                         body: {
                             exerciseForm: this.newExerciseData,
                             imagesToDelete: this.imagesToDelete
                         }
                     };
 
-                    const response = await API.put(this.$accessor.apiName, path, myInit);
-
-                    this.$router.push("/exercises/" + response.data._id);
+                    const _id = await this.$accessor.api.editExercise({ init, exerciseId: this.$route.params.exerciseId })
+                    this.$router.push("/exercises/" + _id);
                 }
             } catch (err) {
                 console.error("Error updating exercise:", err);

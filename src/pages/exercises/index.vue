@@ -108,10 +108,9 @@
 <script lang="ts">
 import Vue from "vue";
 import { IExerciseReference } from "@/types";
+import { QueryExerciseInit } from "@/types/api";
 
-import { API } from "aws-amplify";
 import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
-
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
@@ -126,18 +125,6 @@ interface ExerciseDiscoverData {
     errorCountdown: number;
     errorMessage: string;
     errorInterval: number | undefined;
-}
-
-interface ExerciseInit {
-    headers: {
-        Authorization: string
-    },
-    queryStringParameters: {
-        loadAmount?: number;
-        user?: boolean;
-        muscleGroups?: string;
-        tags?: string;
-    }
 }
 
 export default Vue.extend({
@@ -190,45 +177,16 @@ export default Vue.extend({
         async downloadExercises(): Promise<void> {
             try {
                 this.isLoading = true;
-                this.exercises = [];
-
-                const path = "/exercise";
-                let myInit = {
-                    headers: {
-                        Authorization: await this.$accessor.fetchJwtToken()
-                    },
-                    queryStringParameters: {
-                        loadAmount: 5,
-                        user: false
-                    }
-                } as ExerciseInit;
-
-                if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                }
-
-                if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                }
-
-                const response = await API.get(this.$accessor.apiName, path, myInit);
-
-                response.data.forEach((exercise: IExerciseReference) => {
-                    let temp = exercise;
-                    temp.loaded = false;
-                    this.exercises.push(temp);
-                });
-
-                if (response.data.length < 5) {
-                    this.moreToLoad = false;
-                }
-            } catch (err: any) {
+                await this.queryExercises();
+            }
+            catch (err: any) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
 
                 this.moreToLoad = false;
-            } finally {
+            }
+            finally {
                 this.isLoading = false;
                 this.isLoadingMore = false;
             }
@@ -238,38 +196,7 @@ export default Vue.extend({
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
-    
-                    const path = "/exercise";
-                    let myInit = {
-                        headers: {
-                            Authorization: await this.$accessor.fetchJwtToken()
-                        },
-                        queryStringParameters: {
-                            loadAmount: 5,
-                            user: false,
-                            startAt: this.exercises[this.exercises.length - 1]._id
-                        }
-                    } as ExerciseInit;
-    
-                    if (this.selectedMgs.length > 0) {
-                        myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                    }
-    
-                    if (this.selectedTags.length > 0) {
-                        myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                    }
-    
-                    const response = await API.get(this.$accessor.apiName, path, myInit);
-    
-                    response.data.forEach((exercise: IExerciseReference) => {
-                        let temp = exercise;
-                        temp.loaded = false;
-                        this.exercises.push(temp);
-                    })
-    
-                    if (response.data.length < 5) {
-                        this.moreToLoad = false;
-                    }
+                    await this.queryExercises();
                 }
                 catch (err: any) {
                     if (err.response && err.response.status !== 404) {
@@ -281,6 +208,33 @@ export default Vue.extend({
                 finally {
                     this.isLoadingMore = false;
                 }
+            }
+        },
+
+        async queryExercises(): Promise<void> {
+            let init: QueryExerciseInit = {
+                queryStringParameters:  {
+                    loadAmount: 5,
+                    user: false
+                }
+            };
+
+            if (this.selectedMgs.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            }
+
+            if (this.selectedTags.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
+            const references = await this.$accessor.api.queryExercise({ init });
+            references.forEach(reference => {
+                reference.loaded = false;
+                this.exercises.push(reference);
+            })
+
+            if (references.length < 5) {
+                this.$nextTick(() => { this.moreToLoad = false });
             }
         },
 

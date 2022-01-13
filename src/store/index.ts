@@ -4,6 +4,7 @@ import * as activeWorkoutModule from "./activeWorkout";
 import * as exercisesModule from "./exercises";
 import * as postsModule from "./posts";
 import * as templatesModule from "./templates";
+import * as apiModule from "./api";
 
 import { Auth, API, withSSRContext } from "aws-amplify";
 
@@ -127,7 +128,7 @@ export const actions = actionTree({ state, mutations }, {
         return;
     },
 
-    async fetchJwtToken({}, data?: { req: IncomingMessage | null }): Promise<string> {
+    async fetchJwtToken({}, data?: { req: IncomingMessage | null | undefined }): Promise<string> {
         try {
             if (process.server && data && data.req) {
                 const SSR = withSSRContext({ req: data.req });
@@ -196,6 +197,7 @@ export const accessorType = getAccessorType({
         exercises: exercisesModule,
         activeWorkout: activeWorkoutModule,
         posts: postsModule,
-        templates: templatesModule
+        templates: templatesModule,
+        api: apiModule
     }
 })

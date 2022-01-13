@@ -21,20 +21,20 @@ declare module 'vue/types/vue' {
     }
   }
 
-export interface IResponsiveDate {
+export type IResponsiveDate = {
     unit: ""|"day"|"week"|"month";
     amount: number;
     date: Date | null;
 }
 
 // USER
-export interface IUserProfile {
+export type IUserProfile = {
     data: CognitoUserSession | null;
     docData: IUserDocData | null;
     loggedIn: boolean;
 }
 
-export interface IUserDocData {
+export type IUserDocData = {
     _id: string;
     username: string;
     country: string;
@@ -66,7 +66,7 @@ export interface IUserDocData {
 }
 
 // Exercise
-export interface ICreateExercise {
+export type ICreateExercise = {
     name: string
     description: string
     difficulty: number
@@ -80,7 +80,7 @@ export interface ICreateExercise {
     }
 }
 
-export interface IExercise {
+export type IExercise = {
     _id: string;
     createdBy: {
         username: string;
@@ -103,7 +103,7 @@ export interface IExercise {
     isFollowable: boolean;
 }
 
-export interface IExerciseReference {
+export type IExerciseReference = {
     _id?: string
     exerciseId: string;
     name: string;
@@ -115,11 +115,11 @@ export interface IExerciseReference {
     }
     createdAt: Date;
     isFollow?: boolean;
-    loaded?: boolean;
+    loaded?: boolean; // Used to let page know if component loaded.
 }
 
 // Template
-export interface ICreateTemplate {
+export type ICreateTemplate = {
     name: string;
     description: string;
     exercises: IExerciseReference[];
@@ -128,7 +128,29 @@ export interface ICreateTemplate {
     tags: string[];
 }
 
-export interface ITemplateReference {
+export type ITemplate = {
+    _id: string;
+    createdBy: {
+        username: string;
+        userId: string;
+    }
+    description: string;
+    difficulty: number;
+    exerciseReferences: IExerciseReference[];
+    muscleGroups: string[];
+    name: string;
+    tags: string[];
+    likeCount: number;
+    commentCount: number;
+    followCount: number;
+    usedAmount: number;
+    public: boolean;
+    isLiked: boolean;
+    isFollowed: boolean;
+    isFollowable: boolean;
+}
+
+export type ITemplateReference = {
     _id?: string
     templateId: string;
     name: string;
@@ -142,7 +164,7 @@ export interface ITemplateReference {
 }
 
 // Workout
-export interface IWorkout {
+export type IWorkout = {
     duration: number;
     name: string;
     notes: string;
@@ -155,7 +177,7 @@ export interface IWorkout {
     public: boolean;
 }
 
-export interface IRecordedExercise {
+export type IRecordedExercise = {
     exerciseReference: IExerciseReference;
     notes: string;
     options: {
@@ -165,14 +187,14 @@ export interface IRecordedExercise {
     sets: IRecordedSet[]
 }
 
-export interface IRecordedSet {
+export type IRecordedSet = {
     weightAmount: number;
     measureAmount: number;
     measureBy: TMeasureBy;
 }
 
 // Chart
-interface IChartData {
+type IChartData = {
     preferenceIndex?: number;
     exercise?: {
         exerciseId: string;
@@ -188,7 +210,7 @@ interface IChartData {
     dataToPull?: string;
 }
 
-export interface IChart {
+export type IChart = {
     chartType: TChartType;
     startDate: IResponsiveDate;
     endDate: IResponsiveDate;
@@ -199,12 +221,12 @@ export interface IChart {
     data?: IChartData
 }
 
-export interface IFilePath {
+export type IFilePath = {
     key: string
     fileType: "image"|"video"
 }
 
-export interface IImageToUpload {
+export type IImageToUpload = {
     url: string;
     editable: boolean;
     id: number;

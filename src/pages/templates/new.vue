@@ -148,30 +148,14 @@ export default Vue.extend({
                 this.isCreating = true;
 
                 console.log(JSON.stringify(JSON.stringify({ templateForm: this.templateForm })));
-
-                const path = "/template";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$accessor.fetchJwtToken()
-                    },
+                const init = {
                     body: {
                         templateForm: this.templateForm
                     }
                 };
 
-                const response = await API.post(this.$accessor.apiName, path, myInit);
-
-                if (!response.data) {
-                    if (response.message) {
-                        throw new Error("API Error in response: " + response.errorMessage);
-                    } else {
-                        throw new Error("No response");
-                    }
-                }
-
-                console.log("RESPONSE:", response);
-
-                this.$router.push("/templates/" + response._id);
+                const _id = await this.$accessor.api.createTemplate({ init })
+                this.$router.push("/templates/" + _id);
             } catch (err: any) {
                 this.displayError(err);
             } finally {
