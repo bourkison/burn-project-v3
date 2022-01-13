@@ -1,8 +1,10 @@
 import { API } from "aws-amplify";
 
 import { actionTree } from "typed-vuex";
-import { ITemplate, IExercise, IExerciseReference } from "@/types";
+import { ITemplate, IExercise, IExerciseReference, ITemplateReference } from "@/types";
 import {
+    QueryTemplateParams,
+    QueryTemplateInit,
     GetTemplateParams,
     GetTemplateInit,
     CreateTemplateParams,
@@ -202,6 +204,46 @@ export const actions = actionTree(
          * TEMPLATE API
          *
          */
+        async queryTemplate({ state }, input: QueryTemplateParams): Promise<ITemplateReference[]> {
+            const path = "/template";
+            let myInit: QueryTemplateInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken({ req: input.req }),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken({
+                    req: input.req,
+                });
+            }
+            
+            const data = await API.get(state.apiName, path, myInit);
+
+            if (!data.success) {
+                throw new Error("Query template unsuccessful: " + data.message);
+            }
+
+            let response: ITemplateReference[] = [];
+            data.data.forEach((exerciseReference: any) => {
+                response.push({
+                    templateId: exerciseReference.templateId,
+                    name: exerciseReference.name,
+                    muscleGroups: exerciseReference.muscleGroups,
+                    tags: exerciseReference.tags,
+                    createdBy: {
+                        username: exerciseReference.username,
+                        userId: exerciseReference.userId
+                    },
+                    createdAt: exerciseReference.createdAt,
+                    isFollow: exerciseReference.isFollow
+                })
+            });
+
+            return response;
+
+        },
+
         async getTemplate({ state }, input: GetTemplateParams): Promise<ITemplate> {
             const path = "/template/" + input.templateId;
             let myInit: GetTemplateInit = input.init;

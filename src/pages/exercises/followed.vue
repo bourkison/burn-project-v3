@@ -113,6 +113,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { IExerciseReference } from "@/types";
+import { QueryExerciseInit } from "@/types/api"
 
 import { API } from "aws-amplify";
 import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
@@ -131,18 +132,6 @@ interface ExerciseFollowData {
     errorCountdown: number;
     errorMessage: string;
     errorInterval: number | undefined;
-}
-
-interface ExerciseInit {
-    headers: {
-        Authorization: string
-    },
-    queryStringParameters: {
-        loadAmount?: number;
-        user?: boolean;
-        muscleGroups?: string;
-        tags?: string;
-    }
 }
 
 export default Vue.extend({
@@ -195,29 +184,7 @@ export default Vue.extend({
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
-                    const path = "/exercise";
-                    let myInit = {
-                        headers: {
-                            Authorization: await this.$accessor.fetchJwtToken()
-                        },
-                        queryStringParameters: {
-                            loadAmount: 5,
-                            user: true,
-                            startAt: this.exercises[this.exercises.length - 1].exerciseId
-                        }
-                    };
-    
-                    const response = await API.get(this.$accessor.apiName, path, myInit);
-    
-                    response.data.forEach((exercise: IExerciseReference) => {
-                        let temp = exercise;
-                        temp.loaded = false;
-                        this.exercises.push(temp);
-                    })
-    
-                    if (response.data.length < 5) {
-                        this.moreToLoad = false;
-                    }
+                    await this.queryExercise(this.exercises[this.exercises.length - 1].exerciseId)
                 }
                 catch (err) {
                     // console.error(err.response.status);
@@ -229,63 +196,48 @@ export default Vue.extend({
         async downloadExercises(): Promise<void> {
             try {
                 this.isLoading = true;
-                this.exercises = [];
-
-                const path = "/exercise";
-                let myInit = {
-                    headers: {
-                        Authorization: await this.$accessor.fetchJwtToken()
-                    },
-                    queryStringParameters: {
-                        loadAmount: 5,
-                        user: true
-                    }
-                } as ExerciseInit;
-
-                if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                }
-
-                if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                }
-
-                const response = await API.get(this.$accessor.apiName, path, myInit).catch(
-                    err => {
-                        console.log("ERROR:", err.response);
-                        if (err.response.status === 404) {
-                            this.exercises = [];
-                        } else {
-                            throw err;
-                        }
-                    }
-                );
-
-                if (!response) {
-                    throw new Error("No response");
-                }
-
-                if (!response.success) {
-                    throw new Error("Unsuccessful: " + response.errorMessage);
-                }
-
-                response.data.forEach((exercise: IExerciseReference) => {
-                    let temp = exercise;
-                    temp.loaded = false;
-                    this.exercises.push(temp)
-                });
-
-                if (response.data.length < 5) {
-                    this.moreToLoad = false;
-                }
-
-                this.isLoadingMore = false;
-            } catch (err: any) {
+                await this.queryExercise();
+            } 
+            catch (err: any) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
-            } finally {
+            } 
+            finally {
                 this.isLoading = false;
+                this.isLoadingMore = false;
+
+            }
+        },
+
+        async queryExercise(startAt?: string): Promise<void> {
+            let init: QueryExerciseInit = {
+                queryStringParameters: {
+                    loadAmount: 5,
+                    user: true
+                }
+            }
+
+            if (startAt && init.queryStringParameters) {
+                init.queryStringParameters.startAt = startAt;
+            }
+
+            if (this.selectedMgs.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            }
+
+            if (this.selectedTags.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
+            const references = await this.$accessor.api.queryExercise({ init });
+            references.forEach(reference => {
+                reference.loaded = false;
+                this.exercises.push(reference);
+            })
+
+            if (references.length < 5) {
+                this.moreToLoad = false;
             }
         },
 

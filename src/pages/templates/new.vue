@@ -98,8 +98,6 @@
 import Vue from "vue";
 import { ICreateTemplate, IExerciseReference } from "@/types";
 
-import { API } from "aws-amplify";
-
 import TemplateBuilder from "@/components/Template/TemplateBuilder.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";

@@ -161,6 +161,8 @@ export type ITemplateReference = {
         userId: string
     };
     createdAt: Date;
+    isFollow?: boolean;
+    loaded?: boolean;
 }
 
 // Workout

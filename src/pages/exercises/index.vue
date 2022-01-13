@@ -196,7 +196,7 @@ export default Vue.extend({
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
-                    await this.queryExercises();
+                    await this.queryExercises(this.exercises[this.exercises.length - 1].exerciseId);
                 }
                 catch (err: any) {
                     if (err.response && err.response.status !== 404) {
@@ -211,13 +211,17 @@ export default Vue.extend({
             }
         },
 
-        async queryExercises(): Promise<void> {
+        async queryExercises(startAt?: string): Promise<void> {
             let init: QueryExerciseInit = {
                 queryStringParameters:  {
                     loadAmount: 5,
                     user: false
                 }
             };
+
+            if (startAt && init.queryStringParameters) {
+                init.queryStringParameters.startAt = startAt;
+            }
 
             if (this.selectedMgs.length > 0 && init.queryStringParameters) {
                 init.queryStringParameters.muscleGroups = this.selectedMgs.join(",");

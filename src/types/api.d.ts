@@ -16,6 +16,7 @@ export type QueryExerciseInit = {
         user?: boolean;
         muscleGroups?: string;
         tags?: string;
+        startAt?: string
     }
 }
 
@@ -74,6 +75,24 @@ export type DeleteExerciseInit = {
 }
 
 // Template
+export type QueryTemplateParams = {
+    init: QueryTemplateInit;
+    req?: IncomingMessage
+}
+
+export type QueryTemplateInit = {
+    headers?: {
+        Authorization?: string
+    }
+    queryStringParameters?: {
+        loadAmount?: number;
+        user?: boolean;
+        muscleGroups?: string;
+        tags?: string;
+        startAt?: string;
+    }
+}
+
 export type GetTemplateParams = {
     templateId: string;
     init: GetTemplateInit | {};
