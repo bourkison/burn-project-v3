@@ -1,3 +1,6 @@
+import { accessorType } from "~/store";
+import { CognitoUserSession } from "amazon-cognito-identity-js";
+
 export type TMeasureBy = "repsWeight"|"reps"|"timeWeight"|"time"
 export type TChartType = "recentWorkouts"|"exercise"
 
@@ -6,10 +9,60 @@ export type HTMLElementEvent<T extends HTMLElement> = Event & {
     currentTarget: T;
 }
 
+declare module 'vue/types/vue' {
+    interface Vue {
+      $accessor: typeof accessorType
+    }
+  }
+  
+  declare module '@nuxt/types' {
+    interface NuxtAppOptions {
+      $accessor: typeof accessorType
+    }
+  }
+
 export interface IResponsiveDate {
     unit: ""|"day"|"week"|"month";
     amount: number;
     date: Date | null;
+}
+
+// USER
+export interface IUserProfile {
+    data: CognitoUserSession | null;
+    docData: IUserDocData | null;
+    loggedIn: boolean;
+}
+
+export interface IUserDocData {
+    _id: string;
+    username: string;
+    country: string;
+    dob: string;
+    email: string;
+    firstName: string;
+    surname: string;
+    gender: string;
+    height: number;
+    metric: boolean;
+    options?: {
+        charts?: {
+            homepage?: {
+                leftRail?: IChart,
+                rightRaight?: IChart
+            },
+            profile?: {
+                leftRail?: IChart,
+                rightRaight?: IChart
+            },
+            workout?: {
+                leftRail?: IChart,
+                rightRaight?: IChart
+            },
+        }
+    };
+    weight: number;
+    workouts: IWorkout[]
 }
 
 // Exercise
@@ -73,6 +126,49 @@ export interface ICreateTemplate {
     difficulty: number;
     muscleGroups: string[];
     tags: string[];
+}
+
+export interface ITemplateReference {
+    _id?: string
+    templateId: string;
+    name: string;
+    muscleGroups: string[];
+    tags: string[];
+    createdBy: {
+        username: string;
+        userId: string
+    };
+    createdAt: Date;
+}
+
+// Workout
+export interface IWorkout {
+    duration: number;
+    name: string;
+    notes: string;
+    recordedExercises: IRecordedExercise[]
+    uniqueExercises: string[];
+    options?: {
+        charts?: IChart[]
+    }[]
+    templateReference: ITemplateReference;
+    public: boolean;
+}
+
+export interface IRecordedExercise {
+    exerciseReference: IExerciseReference;
+    notes: string;
+    options: {
+        measureBy: TMeasureBy;
+        weightUnit: "kg"|"lb"
+    }
+    sets: IRecordedSet[]
+}
+
+export interface IRecordedSet {
+    weightAmount: number;
+    measureAmount: number;
+    measureBy: TMeasureBy;
 }
 
 // Chart

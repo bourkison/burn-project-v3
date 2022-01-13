@@ -1,10 +1,12 @@
 import Amplify, { Auth, Hub, withSSRContext } from "aws-amplify";
 import awsconfig from "@/aws-exports";
 
+import { HubCallback } from '@aws-amplify/core/lib/Hub'
+import { Module } from "@nuxt/types"
+
 Amplify.configure({ ...awsconfig, ssr: true });
 
-
-export default async ({ store, req }) => {
+const amplifyModule: Module = async ({ store, req }) => {
     // Check if user logs in or out.
     // If log in we also fetch the user document, else we commit user data to equal null.
     if (process.server && (!store.state.userProfile || !store.state.userProfile.loggedIn)) {
@@ -22,7 +24,7 @@ export default async ({ store, req }) => {
             // Don't set anything so application shows spinning wheel while it tries to log in client side.
         }
     } else if (process.client) {
-        Hub.listen("auth", async ({ payload: { event, data } }) => {
+        const authListener: HubCallback = async ({ payload: { event, data } }) => {
             switch (event) {
                 case "signIn":
                     console.log("SIGNEDIN");
@@ -49,7 +51,9 @@ export default async ({ store, req }) => {
                     console.log("Unhandled Auth Hub use case:", event, data);
                     break;
             }
-        });
+        }
+
+        Hub.listen("auth", authListener);
 
         // Try login again if not already logged in.
         if (!store.state.userProfile || !store.state.userProfile.loggedIn) {
@@ -69,3 +73,5 @@ export default async ({ store, req }) => {
         }
     }
 }
+
+export default amplifyModule;

@@ -284,8 +284,7 @@ const createExercise = async function(event) {
     // Now build out and send the new Exercise.
     const userReference = {
         userId: user._id,
-        username: user.username,
-        createdAt: new Date()
+        username: user.username
     };
 
     const exercise = new Exercise({

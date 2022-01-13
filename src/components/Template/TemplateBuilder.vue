@@ -8,10 +8,10 @@
                         class="d-flex"
                         align-v="center"
                         v-for="exercise in createdExercises"
-                        :key="exercise._id"
+                        :key="exercise.exerciseId"
                         @click="addExercise(exercise)"
                         href="#"
-                        :id="'exercise-' + exercise._id"
+                        :id="'exercise-' + exercise.exerciseId"
                     >
                         <span>{{ exercise.name }}</span>
                         <b-icon-plus font-scale="1.2" class="ml-auto" />
@@ -25,10 +25,10 @@
                         class="d-flex"
                         align-v="center"
                         v-for="exercise in followedExercises"
-                        :key="exercise._id"
+                        :key="exercise.exerciseId"
                         @click="addExercise(exercise)"
                         href="#"
-                        :id="'exercise-' + exercise._id"
+                        :id="'exercise-' + exercise.exerciseId"
                     >
                         <span>{{ exercise.name }}</span>
                         <b-icon-plus font-scale="1.2" class="ml-auto" />
@@ -42,7 +42,7 @@
                         class="d-flex"
                         align-v="center"
                         v-for="exercise in selectedExercises"
-                        :key="exercise._id"
+                        :key="exercise.exerciseId"
                     >
                         <span>{{ exercise.name }}</span>
                         <span class="ml-auto" />
@@ -126,7 +126,8 @@ export default Vue.extend({
                 Authorization: await this.$store.dispatch("fetchJwtToken")
             },
             queryStringParameters: {
-                loadAmount: 99
+                loadAmount: 99,
+                user: true
             }
         } as {
             headers: {
@@ -134,6 +135,7 @@ export default Vue.extend({
             },
             queryStringParameters? :{
                 loadAmount?: number
+                user?: boolean
             }
         };
 
@@ -161,10 +163,10 @@ export default Vue.extend({
                 // Check we haven't downloaded already (i.e. in followed or created exercises)
                 let cIndex: number, fIndex: number;
 
-                cIndex = this.createdExercises.findIndex(x => x._id === exercise.exerciseId);
+                cIndex = this.createdExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
 
                 if (cIndex < 0) {
-                    fIndex = this.followedExercises.findIndex(x => x._id === exercise.exerciseId);
+                    fIndex = this.followedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
                 } else {
                     fIndex = -1;
                 }
@@ -175,8 +177,7 @@ export default Vue.extend({
                     initExercisePromises.push(
                         API.get(this.$store.state.apiName, path, myInit).then(result => {
                             return {
-                                _id: result.data._id,
-                                exerciseId: result.data._id,
+                                exerciseId: result.data.exerciseId,
                                 name: result.data.name,
                                 muscleGroups: result.data.muscleGroups,
                                 tags: result.data.tags,
@@ -206,7 +207,7 @@ export default Vue.extend({
                 exercises.forEach(exercise => {
                     this.selectedExercises.push(exercise);
                     this.$nextTick(() => {
-                        const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                        const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
                         if (exerciseEl) exerciseEl.classList.add("active")
                     });
                 });
@@ -220,7 +221,7 @@ export default Vue.extend({
                         this.sortableOptions
                     );
                     this.initExercises.forEach(exercise => {
-                        const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                        const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
                         if (exerciseEl) exerciseEl.classList.add("active");
                     });
                 }
@@ -232,8 +233,9 @@ export default Vue.extend({
 
     methods: {
         addExercise(exercise: IExerciseReference): void {
-            if (this.selectedExercises.findIndex(x => x._id === exercise._id) < 0) {
-                const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+            if (this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId) < 0) {
+                const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
+                console.log("ADDED:", exerciseEl);
                 if (exerciseEl) exerciseEl.classList.add("active");
                 this.selectedExercises.push(exercise);
             } else {
@@ -242,10 +244,10 @@ export default Vue.extend({
         },
 
         removeExercise(exercise: IExerciseReference): void {
-            let index = this.selectedExercises.findIndex(x => x._id === exercise._id);
+            let index = this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
             if (index) {
                 this.selectedExercises.splice(index, 1);
-                const exerciseEl = document.getElementById("#exercise-" + exercise._id);
+                const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
                 if (exerciseEl) exerciseEl.classList.remove("active");
             } else {
                 console.warn("Exercise index not found");
