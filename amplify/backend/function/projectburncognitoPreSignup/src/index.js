@@ -20,6 +20,8 @@ exports.handler = async (event, context, callback) => {
 
     const User = await MongooseModels().User(MONGODB_URI);
 
+    // TODO: Check if username exists
+
     // Build new user
     const user = new User({
         username: event.userName,
@@ -29,23 +31,12 @@ exports.handler = async (event, context, callback) => {
         gender: event.request.userAttributes.gender,
         dob: event.request.userAttributes.birthdate,
         country: event.request.userAttributes.locale,
-        followerCount: 0,
-        followingCount: 0,
-        followers: [],
-        following: [],
-        exercises: [],
-        templates: [],
-        workouts: [],
-        likes: [],
-        comments: [],
-        postFeed: [],
-        postReferences: [],
         options: {
             charts: {
                 homepage: {
                     leftRail: [
                         {
-                            type: "recentWorkouts",
+                            chartType: "recentWorkouts",
                             startDate: {
                                 unit: "week",
                                 amount: 6,
@@ -56,21 +47,17 @@ exports.handler = async (event, context, callback) => {
                                 amount: 0,
                                 date: null
                             },
-                            data: {
-    
-                            },
                             interval: "week",
                             backgroundColor: "#007bff",
                             borderColor: "#007bff",
                             pointBackgroundColor: "#007bff"
                         }
-                    ],
-                    rightRail: []
+                    ]
                 },
                 profile: {
                     leftRail: [
                         {
-                            type: "recentWorkouts",
+                            chartType: "recentWorkouts",
                             startDate: {
                                 unit: "week",
                                 amount: 6,
@@ -81,16 +68,12 @@ exports.handler = async (event, context, callback) => {
                                 amount: 0,
                                 date: null
                             },
-                            data: {
-    
-                            },
                             interval: "week",
                             backgroundColor: "#007bff",
                             borderColor: "#007bff",
                             pointBackgroundColor: "#007bff"
                         }
-                    ],
-                    rightRail: []
+                    ]
                 }
             }
         }

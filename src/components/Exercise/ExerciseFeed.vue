@@ -52,7 +52,6 @@ export default {
 
     created: function() {
         this.skeleton = JSON.parse(JSON.stringify(this.$store.state.exercises.exerciseSkeletons));
-        console.log(this.skeleton);
     },
 
     mounted() {

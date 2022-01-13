@@ -92,7 +92,7 @@ export const actions = {
             });
         }
         catch (err) {
-            console.error("USER DOC ERR:", err);
+            console.error(err);
             commit("setLoggedInUser", { loggedIn: false, data: null, docData: null });
         }
 

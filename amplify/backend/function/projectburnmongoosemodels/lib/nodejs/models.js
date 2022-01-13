@@ -134,6 +134,12 @@ const chart = {
                 return true;
             }
         }
+    },
+    data: {
+        preferenceIndex: {
+            type: Number,
+            required: false
+        }
     }
 }
 
@@ -358,7 +364,7 @@ const workoutSchema = new mongoose.Schema(
         },
         options: {
             charts: {
-                type: Array[chart],
+                type: [chart],
                 default: []
             }
         },
@@ -377,8 +383,14 @@ const commentSchema = new mongoose.Schema(
             required: true
         },
         createdBy: {
-            type: userReferenceSchema,
-            required: true
+            username: {
+                type: String,
+                required: true
+            },
+            userId: {
+                type: ObjectId,
+                required: true
+            }
         },
         likes: {
             type: [likeSchema],
@@ -515,26 +527,6 @@ const conversationSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-
-const notificationSchema = new mongoose.Schema(
-    {
-        notificationType: {
-            type: String,
-            required: true,
-            enum: ["postLike", "postComment", "exerciseLike", "exerciseComment", "templateLike", "templateComment", "commentLike", "userFollow", "exerciseFollow", "templateFollow"]
-        },
-        targetId: {
-            type: ObjectId,
-            required: true
-        },
-        seen: {
-            type: Boolean,
-            required: true
-        }
-    },
-    { timestamps: true }
-)
-
 const postSchema = new mongoose.Schema(
     {
         content: {
@@ -626,7 +618,7 @@ const userSchema = new mongoose.Schema(
                         return false;
                     }
 
-                    if (/^[a-z0-9]+$/i.test(u)) {
+                    if (!/^[a-z0-9]+$/i.test(u)) {
                         return false;
                     }
 
@@ -649,7 +641,7 @@ const userSchema = new mongoose.Schema(
             required: true,
             validate: {
                 validator(e) {
-                    return emailValidator(e);
+                    return emailValidator.validate(e);
                 }
             }
         },

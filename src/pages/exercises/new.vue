@@ -93,7 +93,10 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { ICreateExercise, IFilePath } from "@/types/types";
+
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
@@ -101,12 +104,22 @@ import ImageUploader from "@/components/Utility/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
-import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue"
+import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-import { v4 as uuidv4 } from "uuid";
+import { uuid } from "uuidv4";
 import awsvideoconfig from "@/aws-video-exports.js";
 
-export default {
+interface Data {
+    exerciseForm: ICreateExercise;
+    imagesToUpload: IFilePath[];
+    videoToUpload: IFilePath | null;
+    isCreating: boolean;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | null;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         DifficultySelector,
@@ -115,7 +128,7 @@ export default {
         TagSelector,
         DescriptionEditor
     },
-    data() {
+    data(): Data {
         return {
             exerciseForm: {
                 name: "",
@@ -123,35 +136,13 @@ export default {
                 muscleGroups: [],
                 difficulty: 1,
                 filePaths: [],
-                measureBy: "Reps",
+                measureBy: "repsWeight",
                 tags: []
             },
 
             imagesToUpload: [],
             videoToUpload: null,
             isCreating: false,
-
-            // Editor:
-            editorOptions: {
-                minHeight: "300px",
-                language: "en-US",
-                hideModeSwitch: true,
-                usageStatistics: false,
-                toolbarItems: [
-                    "heading",
-                    "bold",
-                    "italic",
-                    "divider",
-                    "link",
-                    "ul",
-                    "ol",
-                    "quote",
-                    "divider",
-                    "indent",
-                    "outdent",
-                    "hr"
-                ]
-            },
 
             // Errror handling:
             errorCountdown: 0,
@@ -175,7 +166,7 @@ export default {
                 // As await does not work in forEach.
                 const imageResults = await Promise.all(
                     this.imagesToUpload.map(async (image, i) => {
-                        const imageName = this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                        const imageName = this.$store.state.userProfile.docData.username + "/" + uuid();
     
                         const imageData = await fetch(image.url);
                         const blob = await imageData.blob();
@@ -195,10 +186,11 @@ export default {
     
                 console.log("Image Results:", imageResults);
                 imageResults.forEach(result => {
-                    this.exerciseForm.filePaths.push({ key: result.key, type: "image" });
+                    // @ts-ignore
+                    this.exerciseForm.filePaths.push({ key: result.key, fileType: "image" });
                 });
             } else if (this.videoToUpload) {
-                const uuid = this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                const uuid = this.$store.state.userProfile.docData.username + "/" + uuid();
                 const fileNameSplit = this.videoToUpload.name.split(".")
                 const fileExtension = fileNameSplit[fileNameSplit.length - 1];
                 const fileName = `${uuid}.${fileExtension}`
@@ -232,7 +224,7 @@ export default {
                 })
                 .catch(err => { console.error("ERROR UPLOADED:", err) });
 
-                this.exerciseForm.filePaths.push({ key: uuid, type: "video" });
+                this.exerciseForm.filePaths.push({ key: uuid, fileType: "video" });
             }
 
             const path = "/exercise";
@@ -294,7 +286,7 @@ export default {
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>

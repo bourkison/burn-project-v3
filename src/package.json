@@ -29,17 +29,18 @@
     "dayjs": "^1.10.4",
     "node-fetch": "^2.6.6",
     "nuxt": "^2.15.7",
+    "nuxt-property-decorator": "^2.9.1",
     "random-color": "^1.0.1",
     "sortablejs": "^1.13.0",
     "tippy.js": "^6.3.7",
-    "uuid": "^3.4.0",
+    "uuidv4": "^6.2.12",
     "video.js": "^7.17.0",
     "vue-material-design-icons": "^5.0.0",
     "vue-observe-visibility": "^1.0.0",
     "vue-simple-markdown": "^1.1.5"
   },
   "devDependencies": {
-    "@nuxt/types": "^2.15.7",
+    "@nuxt/types": "^2.13.2",
     "@nuxt/typescript-build": "^2.1.0"
   }
 }

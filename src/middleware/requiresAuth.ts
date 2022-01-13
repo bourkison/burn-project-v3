@@ -1,6 +1,7 @@
 import { Auth, withSSRContext } from "aws-amplify"
+import { Middleware } from "@nuxt/types"
 
-export default async function({ redirect, req }) {
+const requiresAuth: Middleware = async function({ redirect, req }) {
     if (process.server) {
         const SSR = withSSRContext({ req });
         await SSR.Auth.currentSession().catch(() => { redirect("/") })
@@ -10,3 +11,5 @@ export default async function({ redirect, req }) {
 
     return;
 }
+
+export default requiresAuth;
