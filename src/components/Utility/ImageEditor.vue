@@ -46,12 +46,32 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue"
 import "cropperjs/dist/cropper.css";
 import Cropper from "cropperjs";
 import imageCompression from "browser-image-compression";
 
-export default {
+type ImageEditorData = {
+    isLoadingArr: boolean[];
+    inputURLs: string[];
+    cropper: Cropper[];
+    isLoading: boolean;
+    inputImages: {
+        id: number;
+        url: string;
+        ratio: number;
+    }[];
+    images: {
+        id: number;
+        url: string;
+        editable: boolean;
+        path: string | null;
+    }[];
+    imageIncrementor: number;
+}
+
+export default Vue.extend({
     name: "ImageEditor",
     props: {
         imagesToAdd: {
@@ -71,7 +91,7 @@ export default {
             required: false
         }
     },
-    data() {
+    data(): ImageEditorData {
         return {
             isLoadingArr: [],
             inputURLs: [],
@@ -85,14 +105,14 @@ export default {
         };
     },
 
-    created: function() {
+    created() {
         if (this.$props.initId) {
             this.imageIncrementor = this.$props.initId;
         }
     },
 
     methods: {
-        setCropper: function(el, i, w, h) {
+        setCropper(el: HTMLImageElement, i: number, w: number, h: number): void {
             setTimeout(() => {
                 // Element is set to hidden as default so loader can show without
                 // not rendering the element due to v-if
@@ -115,7 +135,7 @@ export default {
             }, 100);
         },
 
-        addImage: function(index) {
+        addImage(index: number): void {
             const canvas = this.cropper[index].getCroppedCanvas();
             const url = canvas.toDataURL("png", 1.0);
             // IMAGES: { id, url, editable, path }
@@ -130,7 +150,7 @@ export default {
             this.rebuildCroppers();
         },
 
-        cancelImage: function(index, id) {
+        cancelImage(index: number, id: number): void {
             this.images.splice(index, 1);
             let inputIndex = this.inputImages.findIndex(x => x.id === id);
             this.inputImages.splice(inputIndex, 1);
@@ -139,7 +159,7 @@ export default {
             this.$emit("cancelEdit");
         },
 
-        rebuildCroppers: function() {
+        rebuildCroppers(): void {
             // Reload the image uploader.
             this.cropper.forEach(crop => {
                 crop.destroy();
@@ -152,10 +172,16 @@ export default {
             this.$nextTick(() => {
                 let i = 0;
                 this.images.forEach(image => {
-                    const imgEl = document.querySelector("#cropper" + i);
-                    const imgCont = document.querySelector("#imgCont" + i);
+                    const imgEl = document.getElementById("cropper" + i);
+                    const imgCont = document.getElementById("imgCont" + i);
 
-                    let width = this.$refs.tabs.$el.clientWidth - 48;
+                    if (!this.$refs || !this.$refs.tabs) {
+                        throw new Error("Tabs ref not found in rebuild");
+                    } else if (!imgEl || !imgCont) {
+                        throw new Error("Image element or container not found on rebuild");
+                    }
+
+                    let width = (this.$refs.tabs as HTMLElement).clientWidth - 48;                    
 
                     this.isLoadingArr.push(true);
                     let height = width / image.ratio;
@@ -170,13 +196,13 @@ export default {
 
                     console.log(height);
 
-                    this.setCropper(imgEl, i, width, height);
+                    this.setCropper((imgEl as HTMLImageElement), i, width, height);
                     i++;
                 });
             });
         },
 
-        loadImage: async img => {
+        async loadImage(img: HTMLImageElement): Promise<boolean> {
             return new Promise(resolve => {
                 img.onload = async () => {
                     console.log("Image Loaded");
@@ -185,21 +211,21 @@ export default {
             });
         },
 
-        readFileAsDataURL: async file => {
-            return new Promise(resolve => {
+        async readFileAsDataURL(file: File): Promise<string | ArrayBuffer> {
+            return new Promise((resolve, reject) => {
                 let fileReader = new FileReader();
-                fileReader.onload = () => resolve(fileReader.result);
+                fileReader.onload = () => fileReader.result ? resolve(fileReader.result) : reject("No file reader result");
                 fileReader.readAsDataURL(file);
             });
         }
     },
     watch: {
-        imagesToAdd: function(n) {
+        async imagesToAdd(n): Promise<void> {
             if (n.length > 0) {
-                let compressionPromises = [];
-                let readerPromises = [];
-                let imagePromises = [];
-                let images = [];
+                let compressionPromises: Promise<File>[] = [];
+                let readerPromises: Promise<string>[] = [];
+                let imagePromises: Promise<boolean>[] = [];
+                let images: HTMLImageElement[] = [];
 
                 this.isLoading = true;
 
@@ -215,115 +241,132 @@ export default {
                 }
 
                 // Once images compressed, convert to Data URLs.
-                Promise.all(compressionPromises)
-                    .then(files => {
-                        files.forEach(file => {
-                            readerPromises.push(this.readFileAsDataURL(file));
-                        });
+                const files = await Promise.all(compressionPromises)
+                files.forEach(file => {
+                    readerPromises.push(this.readFileAsDataURL(file));
+                });
 
-                        return Promise.all(readerPromises);
-                    })
+                const urls = await Promise.all(readerPromises);
+                urls.forEach(url => {
                     // Once converted, put into an image so we can read ratio.
-                    .then(urls => {
-                        urls.forEach(url => {
-                            let image = new Image();
-                            image.src = url;
-                            this.inputURLs.push(url);
-                            images.push(image);
-                            imagePromises.push(this.loadImage(image));
+                    let image = new Image();
+                    image.src = url;
+                    this.inputURLs.push(url);
+                    images.push(image);
+                    imagePromises.push(this.loadImage(image));
+                })
+
+                await Promise.all(imagePromises);
+
+                // Once image loaded, read the ratio.
+                for (let i = 0; i < images.length; i++) {
+                    if (this.$refs && this.$refs.tabs) {
+                        let width = (this.$refs.tabs as HTMLElement).clientWidth - 48;
+
+                        const ratio = images[i].width / images[i].height;
+
+                        // This is the initial and wont get deleted so we can edit later on.
+                        this.inputImages.push({
+                            id: this.imageIncrementor,
+                            url: images[i].src,
+                            ratio: ratio
                         });
 
-                        return Promise.all(imagePromises);
-                    })
-                    // Once image loaded, read the ratio.
-                    .then(() => {
-                        for (let i = 0; i < images.length; i++) {
-                            let width = this.$refs.tabs.$el.clientWidth - 48;
-                            const ratio = images[i].width / images[i].height;
+                        // This is the one that is referenced in template.
+                        this.images.push({
+                            id: this.imageIncrementor,
+                            url: images[i].src,
+                            ratio: ratio,
+                            edit: false
+                        });
 
-                            // This is the initial and wont get deleted so we can edit later on.
-                            this.inputImages.push({
-                                id: this.imageIncrementor,
-                                url: images[i].src,
-                                ratio: ratio
-                            });
-                            // This is the one that is referenced in template.
-                            this.images.push({
-                                id: this.imageIncrementor,
-                                url: images[i].src,
-                                ratio: ratio,
-                                edit: false
-                            });
+                        this.imageIncrementor++;
 
-                            this.imageIncrementor++;
+                        this.$nextTick(() => {
+                            let imageIndex =
+                                i + this.images.length - this.$props.imagesToAdd.length;
+                            
+                            const imgEl = document.getElementById("cropper" + imageIndex);
+                            const imgCont = document.getElementById("imgCont" + imageIndex);
 
-                            this.$nextTick(() => {
-                                let imageIndex =
-                                    i + this.images.length - this.$props.imagesToAdd.length;
-                                const imgEl = document.querySelector("#cropper" + imageIndex);
-                                const imgCont = document.querySelector("#imgCont" + imageIndex);
+                            if (!imgCont || !imgEl) {
+                                throw new Error("Img cont or img el not found")
+                            }
 
-                                let height = width / ratio;
+                            let height = width / ratio;
 
-                                if (height > 600) {
-                                    console.log("TOO HIGH", height, i);
-                                    height = 600;
-                                    width = height * ratio;
+                            if (height > 600) {
+                                console.log("TOO HIGH", height, i);
+                                height = 600;
+                                width = height * ratio;
 
-                                    imgCont.style.height = "600px";
-                                    imgCont.style.width = width + "px";
-                                }
+                                imgCont.style.height = "600px";
+                                imgCont.style.width = width + "px";
+                            }
 
-                                console.log("Setting cropper", imgEl, i, width, height);
-                                this.setCropper(imgEl, imageIndex, width, height);
-                            });
-                        }
-                    })
-                    .catch(e => {
-                        console.error("Error setting up for cropper.", e);
-                    });
+                            console.log("Setting cropper", imgEl, i, width, height);
+                            this.setCropper((imgEl as HTMLImageElement), imageIndex, width, height);
+                        });
+                    }
+                }
             }
         },
 
-        imagesToEdit: function(n) {
+        imagesToEdit(n): void {
             if (n.length > 0) {
                 // Only difference between inputImages and images is the edit key/value.
                 // Set that to true.
-                const image = this.inputImages.find(x => x.id === n[n.length - 1]);
-                image.edit = true;
-                this.images.push(JSON.parse(JSON.stringify(image)));
+                const temp = this.inputImages.find(x => x.id === n[n.length - 1]);
+                if (!temp) {
+                    throw new Error("Image not found in inputImages");
+                }
+
+                const image = {
+                    id: temp.id,
+                    ratio: temp.ratio,
+                    url: temp.url,
+                    edit: true
+                }
+
+                this.images.push(image);
 
                 // Now set up the new cropper.
-                let width = this.$refs.tabs.$el.clientWidth - 48;
-                this.$nextTick(() => {
-                    const imgEl = document.querySelector(
-                        "#cropper" + (this.images.length - 1).toString()
-                    );
-                    const imgCont = document.querySelector(
-                        "#imgCont" + (this.images.length - 1).toString()
-                    );
-
-                    let height = width / image.ratio;
-
-                    if (height > 600) {
-                        console.log("TOO HIGH", height);
-                        height = 600;
-                        width = height * image.ratio;
-
-                        imgCont.style.height = "600px";
-                        imgCont.style.width = width + "px";
-                    }
-
-                    console.log(height);
-
-                    this.setCropper(imgEl, this.images.length - 1, width, height);
-                });
+                if (this.$refs && this.$refs.tabs) {
+                    let width = (this.$refs.tabs as HTMLElement).clientWidth - 48;
+                    this.$nextTick(() => {
+                        const imgEl = document.getElementById(
+                            "cropper" + (this.images.length - 1).toString()
+                        );
+                        const imgCont = document.getElementById(
+                            "imgCont" + (this.images.length - 1).toString()
+                        );
+    
+                        if (!imgCont || !imgEl) {
+                            throw new Error("Img cont or img el not found")
+                        }
+    
+                        let height = width / image.ratio;
+    
+                        if (height > 600) {
+                            console.log("TOO HIGH", height);
+                            height = 600;
+                            width = height * image.ratio;
+    
+                            imgCont.style.height = "600px";
+                            imgCont.style.width = width + "px";
+                        }
+    
+                        console.log(height);
+    
+                        this.setCropper((imgEl as HTMLImageElement), this.images.length - 1, width, height);
+                    });
+                }
             }
         },
 
         // Altered in PostNew, and indicates a new post has been added, so all
         // variables must be reset and we start again.
-        resetVariablesIncrementor: function() {
+        resetVariablesIncrementor(): void {
             this.isLoadingArr = [];
             this.inputURLs = [];
             this.cropper = [];
@@ -335,7 +378,7 @@ export default {
             console.log("Editor reset");
         }
     }
-};
+});
 </script>
 
 <style scoped>

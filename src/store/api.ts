@@ -22,7 +22,7 @@ import {
     EditTemplateParams,
     EditTemplateInit,
     DeleteTemplateParams,
-    DeleteTemplateInit
+    DeleteTemplateInit,
 } from "@/types/api";
 
 export const state = () => {
@@ -52,7 +52,7 @@ export const actions = actionTree(
                     req: input.req,
                 });
             }
-            
+
             const data = await API.get(state.apiName, path, myInit);
 
             if (!data.success) {
@@ -68,15 +68,14 @@ export const actions = actionTree(
                     tags: exerciseReference.tags,
                     createdBy: {
                         username: exerciseReference.username,
-                        userId: exerciseReference.userId
+                        userId: exerciseReference.userId,
                     },
                     createdAt: exerciseReference.createdAt,
-                    isFollow: exerciseReference.isFollow
-                })
+                    isFollow: exerciseReference.isFollow,
+                });
             });
 
             return response;
-
         },
 
         async getExercise({ state }, input: GetExerciseParams): Promise<IExercise> {
@@ -155,7 +154,7 @@ export const actions = actionTree(
             };
         },
 
-        async createExercise({ state }, input: CreateExerciseParams ): Promise<string> {
+        async createExercise({ state }, input: CreateExerciseParams): Promise<string> {
             const path = "/exercise";
             let myInit: CreateExerciseInit = input.init;
 
@@ -171,7 +170,7 @@ export const actions = actionTree(
             return response.data._id;
         },
 
-        async editExercise({ state }, input: EditExerciseParams ): Promise<string> {
+        async editExercise({ state }, input: EditExerciseParams): Promise<string> {
             const path = "/exercise/" + input.exerciseId;
             let myInit: EditExerciseInit = input.init;
 
@@ -221,7 +220,7 @@ export const actions = actionTree(
                     req: input.req,
                 });
             }
-            
+
             const data = await API.get(state.apiName, path, myInit);
 
             if (!data.success) {
@@ -237,15 +236,14 @@ export const actions = actionTree(
                     tags: exerciseReference.tags,
                     createdBy: {
                         username: exerciseReference.username,
-                        userId: exerciseReference.userId
+                        userId: exerciseReference.userId,
                     },
                     createdAt: exerciseReference.createdAt,
-                    isFollow: exerciseReference.isFollow
-                })
+                    isFollow: exerciseReference.isFollow,
+                });
             });
 
             return response;
-
         },
 
         async getTemplate({ state }, input: GetTemplateParams): Promise<ITemplate> {
@@ -369,6 +367,6 @@ export const actions = actionTree(
 
             await API.del(state.apiName, path, myInit);
             return;
-        }
+        },
     }
 );

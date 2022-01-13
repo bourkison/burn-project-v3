@@ -20,24 +20,32 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { ITemplateReference } from "~/types";
+
 import TemplateComponent from "@/components/Template/TemplateComponent.vue";
 import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
 
-export default {
+type TemplateFeedData = {
+    skeleton: [number, string[]][] | [];
+    loadAmount: number;
+}
+
+export default Vue.extend({
     name: "TemplateFeed",
     components: { TemplateComponent, LoadingComponent },
     props: {
         templates: {
-            required: true,
-            type: Array
+            type: Array as PropType<ITemplateReference[]>,
+            required: true
         },
         isLoading: {
-            required: true,
-            type: Boolean
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     },
-    data() {
+    data(): TemplateFeedData {
         return {
             skeleton: [],
             loadAmount: 5
@@ -45,13 +53,13 @@ export default {
     },
 
     computed: {
-        templateLength() {
-            return this.$props.templates.length
+        templateLength(): number {
+            return this.templates.length
         }
     },
 
     created() {
-        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.templates.templateFeedSkeletons));
+        this.skeleton = this.$accessor.templates.templateFeedSkeletons
     },
 
     mounted() {
@@ -59,7 +67,7 @@ export default {
     },
 
     watch: {
-        templateLength(n, o) {
+        templateLength(n, o): void {
             for (let i = 0; i < n - o; i++) {
                 let amount = Math.floor(Math.random() * 4) + 3;
                 let widths = [];
@@ -71,7 +79,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

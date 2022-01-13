@@ -23,9 +23,11 @@
 </template>
 
 <script>
+import Vue, { PropType } from "vue";
+
 import Sortable from "sortablejs";
 
-export default {
+export default Vue.extend({
     name: "ImageSorter",
     props: {
         imagesProp: {
@@ -35,13 +37,12 @@ export default {
     },
     data() {
         return {
-            temp: [1, 2, 3],
             sortedImages: [],
             sortable: null
         };
     },
 
-    mounted: function() {
+    mounted() {
         this.$props.imagesProp.forEach(img => {
             this.sortedImages.push(img);
         });
@@ -63,7 +64,7 @@ export default {
     },
 
     methods: {
-        changeOrder: function(e) {
+        changeOrder(e) {
             if (e.newIndex !== e.oldIndex) {
                 this.sortedImages.splice(e.newIndex, 0, this.sortedImages.splice(e.oldIndex, 1)[0]);
                 console.log("sort", e.oldIndex, "-->", e.newIndex);
@@ -71,18 +72,18 @@ export default {
             }
         },
 
-        editImage: function(id) {
+        editImage(id) {
             this.$emit("editImage", id);
         },
 
-        deleteImage: function(id) {
+        deleteImage(id) {
             console.log(id);
             this.$emit("deleteImage", id);
         }
     },
 
     watch: {
-        imagesProp: function(n) {
+        imagesProp(n) {
             if (n.length > this.sortedImages.length) {
                 // console.log("Change back")
                 // this.images = [];
@@ -113,7 +114,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

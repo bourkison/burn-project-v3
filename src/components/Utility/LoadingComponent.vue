@@ -13,18 +13,20 @@
     </b-card>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue";
+
+export default Vue.extend({
     name: "LoadingComponent",
     props: {
         skeletonAmount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true
         },
         skeletonWidth: {
-            type: Array,
+            type: Array as PropType<string[]>,
             required: true
         }
     }
-};
+});
 </script>

@@ -258,7 +258,7 @@ export default Vue.extend({
     name: "MuscleGroup",
     props: {
         editable: {
-            type: Boolean as PropType<Boolean>,
+            type: Boolean as PropType<boolean>,
             required: false
         },
         selectedGroups: {

@@ -32,35 +32,43 @@
     </b-card>
 </template>
 
-<script>
-import { API } from "aws-amplify";
-import DescriptionViewer from "@/components/TextEditor/DescriptionViewer";
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { IExercise, IExerciseReference } from "@/types";
 
-export default {
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
+
+type ExerciseExpandable = {
+    exerciseData: IExercise | undefined;
+    isLoading: boolean;
+    isVisible: false
+}
+
+export default Vue.extend({
     name: "ExerciseExpandable",
     components: { DescriptionViewer },
     props: {
         exercise: {
-            type: Object,
+            type: Object as PropType<IExerciseReference>,
             required: true
         },
         accordionIndex: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true
         },
         templateId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         lazy: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         }
     },
 
-    data() {
+    data(): ExerciseExpandable {
         return {
-            exerciseData: null,
+            exerciseData: undefined,
             isLoading: true,
 
             isVisible: false
@@ -75,41 +83,13 @@ export default {
 
     methods: {
         async downloadData() {
-            try {
-                let response;
-                
-                if (this.$store.state.userProfile && this.$store.state.userProfile.loggedIn) {
-                    const path = "/exercise/" + this.$props.exercise.exerciseId;
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        }
-                    };
-
-                    response = await API.get(this.$store.state.apiName, path, myInit);
+            try {                
+                if (this.$accessor.userProfile && this.$accessor.userProfile.loggedIn) {
+                    this.exerciseData = await this.$accessor.api.getExercise({ exerciseId: this.exercise.exerciseId, init: {} })
                 } else {
-                    response = await API.get(this.$store.state.apiName, "/public/exercise/" + this.$props.exercise.exerciseId, {});
+                    this.exerciseData = await this.$accessor.api.getExercisePublic({ exerciseId: this.exercise.exerciseId, init: {} });
                 }
 
-
-                if (!response) {
-                    throw new Error(
-                        "Error downloading exercise: " +
-                            this.$props.exercise.exerciseId +
-                            " no repsonse"
-                    );
-                }
-
-                if (!response.success) {
-                    throw new Error(
-                        "Error downloading exercise: " +
-                            this.$props.exercise.exerciseId +
-                            " call unsuccessful: " +
-                            response.errorMessage
-                    );
-                }
-
-                this.exerciseData = response.data;
                 this.isLoading = false;
             } catch (err) {
                 console.error(err);
@@ -125,7 +105,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>
