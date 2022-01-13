@@ -110,7 +110,10 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { IExerciseReference } from "@/types";
+
 import { API } from "aws-amplify";
 import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
 
@@ -118,7 +121,31 @@ import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
-export default {
+interface ExerciseFollowData {
+    isLoading: boolean;
+    exercises: IExerciseReference[];
+    selectedMgs: string[];
+    selectedTags: string[];
+    isLoadingMore: boolean;
+    moreToLoad: boolean;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+interface ExerciseInit {
+    headers: {
+        Authorization: string
+    },
+    queryStringParameters: {
+        loadAmount?: number;
+        user?: boolean;
+        muscleGroups?: string;
+        tags?: string;
+    }
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         ExerciseFeed,
@@ -126,7 +153,7 @@ export default {
         TagSelector,
         UsernameFilter
     },
-    data() {
+    data(): ExerciseFollowData {
         return {
             isLoading: true,
             exercises: [], // Exercises from user doc.
@@ -138,12 +165,11 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedExercise: null,
 
             // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
     head() {
@@ -153,11 +179,11 @@ export default {
     },
 
     created() {
-        if (this.$route.query.muscleGroups) {
+        if (this.$route.query.muscleGroups && typeof this.$route.query.muscleGroups === "string") {
             this.selectedMgs = this.$route.query.muscleGroups.split(",");
         }
 
-        if (this.$route.query.tags) {
+        if (this.$route.query.tags && typeof this.$route.query.tags === "string") {
             this.selectedTags = this.$route.query.tags.split(",");
         }
 
@@ -165,7 +191,7 @@ export default {
     },
 
     methods: {
-        async loadMoreExercises() {
+        async loadMoreExercises(): Promise<void> {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
@@ -183,7 +209,7 @@ export default {
     
                     const response = await API.get(this.$store.state.apiName, path, myInit);
     
-                    response.data.forEach(exercise => {
+                    response.data.forEach((exercise: IExerciseReference) => {
                         let temp = exercise;
                         temp.loaded = false;
                         this.exercises.push(temp);
@@ -200,7 +226,7 @@ export default {
             }
         },
 
-        async downloadExercises() {
+        async downloadExercises(): Promise<void> {
             try {
                 this.isLoading = true;
                 this.exercises = [];
@@ -214,7 +240,7 @@ export default {
                         loadAmount: 5,
                         user: true
                     }
-                };
+                } as ExerciseInit;
 
                 if (this.selectedMgs.length > 0) {
                     myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
@@ -243,7 +269,7 @@ export default {
                     throw new Error("Unsuccessful: " + response.errorMessage);
                 }
 
-                response.data.forEach(exercise => {
+                response.data.forEach((exercise: IExerciseReference) => {
                     let temp = exercise;
                     temp.loaded = false;
                     this.exercises.push(temp)
@@ -254,7 +280,7 @@ export default {
                 }
 
                 this.isLoadingMore = false;
-            } catch (err) {
+            } catch (err: any) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
@@ -263,12 +289,12 @@ export default {
             }
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             console.log("UPDATING MUSCLE GROUPS");
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -283,19 +309,19 @@ export default {
             if (isFiltered) {
                 this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({ path: "/exercises/followed", query: null });
+                this.$router.replace({ path: "/exercises/followed", query: undefined });
             }
 
             this.downloadExercises();
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             console.log("UPDATING TAGS");
 
             this.selectedTags = tags;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -310,12 +336,12 @@ export default {
             if (isFiltered) {
                 this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({ path: "/exercises/followed", query: null });
+                this.$router.replace({ path: "/exercises/followed", query: undefined });
             }
             this.downloadExercises();
         },
 
-        displayError(err) {
+        displayError(err: any) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -325,12 +351,12 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>
