@@ -36,6 +36,7 @@
     "tippy.js": "^6.3.7",
     "uuidv4": "^6.2.12",
     "video.js": "^7.17.0",
+    "vue-advanced-cropper": "^1.9.0",
     "vue-material-design-icons": "^5.0.0",
     "vue-observe-visibility": "^1.0.0",
     "vue-simple-markdown": "^1.1.5"

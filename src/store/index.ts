@@ -103,7 +103,7 @@ export const mutations = mutationTree(state, {
 })
 
 export const actions = actionTree({ state, mutations }, {
-    async fetchUser({ state, commit, dispatch }, data: { user: CognitoUserSession, req: IncomingMessage | null }): Promise<void> {
+    async fetchUser({ state, commit, dispatch }, data: { user: CognitoUserSession, req?: IncomingMessage }): Promise<void> {
         const path = "/user/" + data.user.getIdToken().payload["cognito:username"];
         const myInit = {
             headers: {
@@ -128,7 +128,7 @@ export const actions = actionTree({ state, mutations }, {
         return;
     },
 
-    async fetchJwtToken({}, data?: { req: IncomingMessage | null | undefined }): Promise<string> {
+    async fetchJwtToken({}, data?: { req?: IncomingMessage }): Promise<string> {
         try {
             if (process.server && data && data.req) {
                 const SSR = withSSRContext({ req: data.req });

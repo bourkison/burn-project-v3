@@ -65,8 +65,8 @@ type ImageEditorData = {
     images: {
         id: number;
         url: string;
-        editable: boolean;
-        path: string | null;
+        ratio: number;
+        edit: boolean;
     }[];
     imageIncrementor: number;
 }
@@ -106,8 +106,8 @@ export default Vue.extend({
     },
 
     created() {
-        if (this.$props.initId) {
-            this.imageIncrementor = this.$props.initId;
+        if (this.initId) {
+            this.imageIncrementor = this.initId;
         }
     },
 
@@ -126,7 +126,6 @@ export default Vue.extend({
                         ready: () => {
                             el.style.visibility = "visible";
                             this.isLoading = false;
-                            this.cropperSet++;
                             console.log("Cropper ready!", this.isLoadingArr, i, el);
                             this.$set(this.isLoadingArr, i, false);
                         }
@@ -139,10 +138,14 @@ export default Vue.extend({
             const canvas = this.cropper[index].getCroppedCanvas();
             const url = canvas.toDataURL("png", 1.0);
             // IMAGES: { id, url, editable, path }
-            this.images[index].url = url;
-            this.images[index].editable = true;
-            this.images[index].path = null;
-            this.$emit("addImage", this.images[index]);
+            const output = {
+                id: this.images[index].id,
+                url: url,
+                editable: true,
+                path: null
+            };
+
+            this.$emit("addImage", output);
             console.log("IMAGE ADD:", this.images[index]);
 
             this.images.splice(index, 1);
@@ -211,10 +214,10 @@ export default Vue.extend({
             });
         },
 
-        async readFileAsDataURL(file: File): Promise<string | ArrayBuffer> {
+        async readFileAsDataURL(file: File): Promise<string> {
             return new Promise((resolve, reject) => {
                 let fileReader = new FileReader();
-                fileReader.onload = () => fileReader.result ? resolve(fileReader.result) : reject("No file reader result");
+                fileReader.onload = () => fileReader.result ? resolve(fileReader.result as string) : reject("No file reader result");
                 fileReader.readAsDataURL(file);
             });
         }
