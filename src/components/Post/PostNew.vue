@@ -57,7 +57,7 @@ import { API, Storage, graphqlOperation } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
 import PostEditor from "@/components/TextEditor/PostEditor.vue";
-import ImageUploader from "@/components/Utility/ImageUploader.vue";
+import ImageUploader from "~/components/Image/ImageUploader.vue";
 
 import WorkoutSearch from "@/components/Workout/WorkoutSearch.vue";
 import WorkoutShare from "@/components/Workout/WorkoutShare.vue";

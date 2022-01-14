@@ -28,7 +28,7 @@ import TemplateComponent from "@/components/Template/TemplateComponent.vue";
 import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
 
 type TemplateFeedData = {
-    skeleton: [number, string[]][] | [];
+    skeleton: [number, string[]][];
     loadAmount: number;
 }
 

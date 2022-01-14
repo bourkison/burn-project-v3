@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import { API } from "aws-amplify"
 
 import { Editor, EditorContent, VueRenderer, Extension } from "@tiptap/vue-2";
@@ -26,7 +27,7 @@ import MentionList from "@/components/TextEditor/Mention/MentionList.vue";
 
 const DEBOUNCE_TIME = 500;
 
-export default {
+export default Vue.extend({
     name: "CommentEditor",
     components: {
         EditorContent
@@ -41,7 +42,6 @@ export default {
             default: ""
         }
     },
-    emits: ["input", "addComment"],
     data() {
         return {
             editor: null,
@@ -243,7 +243,7 @@ export default {
             this.suggestionPopup[0].destroy();
         }
     },
-}
+})
 </script>
 
 <style>

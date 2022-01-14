@@ -70,7 +70,6 @@
 import Vue, { PropType } from "vue";
 import { IExerciseReference } from "@/types";
 
-import { API } from "aws-amplify";
 import Sortable, { SortableOptions, SortableEvent } from "sortablejs";
 
 interface TemplateBuilderData {
@@ -120,34 +119,9 @@ export default Vue.extend({
             }
         }
 
-        let path = "/exercise";
-        let myInit = {
-            headers: {
-                Authorization: await this.$store.dispatch("fetchJwtToken")
-            },
-            queryStringParameters: {
-                loadAmount: 99,
-                user: true
-            }
-        } as {
-            headers: {
-                Authorization: string
-            },
-            queryStringParameters? :{
-                loadAmount?: number
-                user?: boolean
-            }
-        };
-
-        const exerciseReferenceResponse: IExerciseReference[] = (await API.get(this.$store.state.apiName, path, myInit))
-            .data;
+        const exerciseReferenceResponse: IExerciseReference[] = await this.$accessor.api.queryExercise({ init: { queryStringParameters: { loadAmount: 99, user: true }}})
 
         exerciseReferenceResponse.forEach(exerciseReference => {
-            path = "/exercise/" + exerciseReference.exerciseId;
-            myInit = {
-                headers: myInit.headers
-            };
-
             if (exerciseReference.isFollow) {
                 this.followedExercises.push(exerciseReference);
             } else {
@@ -173,19 +147,17 @@ export default Vue.extend({
 
                 // If not, download.
                 if (cIndex < 0 && fIndex < 0) {
-                    path = "/exercise/" + exercise.exerciseId;
-                    initExercisePromises.push(
-                        API.get(this.$store.state.apiName, path, myInit).then(result => {
-                            return {
-                                exerciseId: result.data.exerciseId,
-                                name: result.data.name,
-                                muscleGroups: result.data.muscleGroups,
-                                tags: result.data.tags,
-                                createdBy: result.data.createdBy,
-                                createdAt: result.data.createdAt
-                            };
+                    initExercisePromises.push(new Promise(async (resolve) => {
+                        const e = await this.$accessor.api.getExercise({ exerciseId: exercise.exerciseId, init: {} });
+                        resolve({
+                            exerciseId: e._id,
+                            name: e.name,
+                            muscleGroups: e.muscleGroups,
+                            tags: e.tags,
+                            createdBy: e.createdBy,
+                            createdAt: e.createdAt
                         })
-                    );
+                    }));
                 } else if (cIndex >= 0) {
                     initExercisePromises.push(
                         new Promise(resolve => {

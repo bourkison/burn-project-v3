@@ -1,7 +1,6 @@
 import { API } from "aws-amplify";
 
 import { actionTree } from "typed-vuex";
-import { ITemplate, IExercise, IExerciseReference, ITemplateReference } from "@/types";
 import {
     QueryTemplateParams,
     QueryTemplateInit,
@@ -9,6 +8,14 @@ import {
     GetTemplateInit,
     CreateTemplateParams,
     CreateTemplateInit,
+    Template,
+    TemplateReference,
+    EditTemplateParams,
+    EditTemplateInit,
+    DeleteTemplateParams,
+    DeleteTemplateInit,
+} from "@/types/template";
+import {
     QueryExerciseParams,
     QueryExerciseInit,
     GetExerciseParams,
@@ -19,11 +26,12 @@ import {
     EditExerciseInit,
     DeleteExerciseParams,
     DeleteExerciseInit,
-    EditTemplateParams,
-    EditTemplateInit,
-    DeleteTemplateParams,
-    DeleteTemplateInit,
-} from "@/types/api";
+    Exercise,
+    ExerciseReference,
+} from "@/types/exercise";
+import { UserProfile, UserDocData, GetUserParams, GetUserInit } from "@/types/user";
+import { QueryPostParams, QueryPostInit, PostReference } from "@/types/post";
+import { FollowParams, FollowInit } from "@/types/follow";
 
 export const state = () => {
     return {
@@ -36,10 +44,10 @@ export const actions = actionTree(
     {
         /*
          *
-         * EXERCISE API
+         * ----------- EXERCISE API -----------
          *
          */
-        async queryExercise({ state }, input: QueryExerciseParams): Promise<IExerciseReference[]> {
+        async queryExercise({ state }, input: QueryExerciseParams): Promise<ExerciseReference[]> {
             const path = "/exercise";
             let myInit: QueryExerciseInit = input.init;
 
@@ -59,7 +67,7 @@ export const actions = actionTree(
                 throw new Error("Query exercise unsuccessful: " + data.message);
             }
 
-            let response: IExerciseReference[] = [];
+            let response: ExerciseReference[] = [];
             data.data.forEach((exerciseReference: any) => {
                 response.push({
                     exerciseId: exerciseReference.exerciseId,
@@ -78,7 +86,7 @@ export const actions = actionTree(
             return response;
         },
 
-        async getExercise({ state }, input: GetExerciseParams): Promise<IExercise> {
+        async getExercise({ state }, input: GetExerciseParams): Promise<Exercise> {
             const path = "/exercise/" + input.exerciseId;
             let myInit: GetExerciseInit = input.init;
 
@@ -119,10 +127,11 @@ export const actions = actionTree(
                 isLiked: data.data.isLiked,
                 isFollowed: data.data.isFollowed,
                 isFollowable: data.data.isFollowable,
+                createdAt: data.data.createdAt,
             };
         },
 
-        async getExercisePublic({ state }, input: GetExerciseParams): Promise<IExercise> {
+        async getExercisePublic({ state }, input: GetExerciseParams): Promise<Exercise> {
             const path = "/public/exercise/" + input.exerciseId;
             const data = await API.get(state.apiName, path, input.init);
 
@@ -151,6 +160,7 @@ export const actions = actionTree(
                 isLiked: data.data.isLiked,
                 isFollowed: data.data.isFollowed,
                 isFollowable: data.data.isFollowable,
+                createdAt: data.data.createdAt,
             };
         },
 
@@ -204,10 +214,10 @@ export const actions = actionTree(
 
         /*
          *
-         * TEMPLATE API
+         * ----------- TEMPLATE API -----------
          *
          */
-        async queryTemplate({ state }, input: QueryTemplateParams): Promise<ITemplateReference[]> {
+        async queryTemplate({ state }, input: QueryTemplateParams): Promise<TemplateReference[]> {
             const path = "/template";
             let myInit: QueryTemplateInit = input.init;
 
@@ -227,7 +237,7 @@ export const actions = actionTree(
                 throw new Error("Query template unsuccessful: " + data.message);
             }
 
-            let response: ITemplateReference[] = [];
+            let response: TemplateReference[] = [];
             data.data.forEach((exerciseReference: any) => {
                 response.push({
                     templateId: exerciseReference.templateId,
@@ -246,7 +256,7 @@ export const actions = actionTree(
             return response;
         },
 
-        async getTemplate({ state }, input: GetTemplateParams): Promise<ITemplate> {
+        async getTemplate({ state }, input: GetTemplateParams): Promise<Template> {
             const path = "/template/" + input.templateId;
             let myInit: GetTemplateInit = input.init;
 
@@ -289,7 +299,7 @@ export const actions = actionTree(
             };
         },
 
-        async getTemplatePublic({ state }, input: GetTemplateParams): Promise<ITemplate> {
+        async getTemplatePublic({ state }, input: GetTemplateParams): Promise<Template> {
             const path = "/public/template";
             const data = await API.get(state.apiName, path, input.init);
 
@@ -368,5 +378,147 @@ export const actions = actionTree(
             await API.del(state.apiName, path, myInit);
             return;
         },
+
+        /*
+         *
+         * ----------- USER API -----------
+         *
+         */
+        /** @summary Gets all document data from current logged in profile */
+        async getUser({ state }, input: GetUserParams): Promise<UserDocData> {
+            const path = "/user/" + input.userId;
+            let myInit: GetUserInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            if (myInit.queryStringParameters?.view === "profile") {
+                throw new Error("Profile query passed through.");
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+
+            return {
+                _id: data.data._id,
+                username: data.data.username,
+                country: data.data.country,
+                dob: data.data.dob,
+                email: data.data.email,
+                firstName: data.data.firstName,
+                surname: data.data.surname,
+                gender: data.data.gender,
+                height: data.data.height,
+                metric: data.data.metric,
+                options: data.data.options,
+                weight: data.data.weight,
+                workouts: data.data.workouts,
+            };
+        },
+
+        /** @summary Gets public document data from a user. Must pass through view === "profile" into queryStringParameters */
+        async getUserProfile({ state }, input: GetUserParams): Promise<UserProfile> {
+            const path = "/user/" + input.userId;
+            let myInit: GetUserInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            if (myInit.queryStringParameters?.view !== "profile") {
+                throw new Error("No profile query passed through.");
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+
+            return {
+                _id: data.data._id,
+                username: data.data.username,
+                options: data.data.options,
+                followerCount: data.data.followerCount,
+                followingCount: data.data.followingCount,
+                followers: data.data.followers,
+                isFollowed: data.data.isFollowed,
+                isLoggedInUser: data.data.isLoggedInUser
+            };
+        },
+
+        /*
+         *
+         * ----------- POST API -----------
+         *
+         */
+        async queryPost({ state }, input: QueryPostParams): Promise<PostReference[]> {
+            let myInit: QueryPostInit = input.init;
+            const path = "/post";
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+            let response: PostReference[] = [];
+            data.data.forEach((postReference: any) => {
+                response.push({
+                    _id: postReference._id,
+                    createdBy: {
+                        username: postReference.createdBy.username,
+                        userId: postReference.createdBy.userId
+                    },
+                    createdAt: postReference.createdAt
+                })
+            })
+
+            return response
+        },
+
+        /*
+         *
+         * ----------- FOLLOW API -----------
+         *
+         */
+        async createFollow({ state }, input: FollowParams): Promise<void> {
+            const path = "/follow";
+            let myInit: FollowInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.post(state.apiName, path, myInit);
+            return;
+        },
+
+        async deleteFollow({ state }, input: FollowParams): Promise<void> {
+            const path = "/follow";
+            let myInit: FollowInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.del(state.apiName, path, myInit);
+            return;
+        }
     }
 );

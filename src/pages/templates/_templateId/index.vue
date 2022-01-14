@@ -172,8 +172,6 @@
 import Vue from "vue";
 import { ITemplate } from "@/types"
 
-import { API } from "aws-amplify";
-
 import CommentSection from "@/components/Comment/CommentSection.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";

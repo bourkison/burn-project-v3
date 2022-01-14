@@ -5,6 +5,7 @@
                 :imagesToAdd="addedFiles"
                 :imagesToEdit="imagesToEdit"
                 @addImage="addImage"
+                @imageAddedFromEdit="imagesToEdit = []"
                 @cancelEdit="filesInEdit--"
                 :resetVariablesIncrementor="resetVariablesIncrementor"
                 :maxCropperHeight="450"
@@ -288,6 +289,14 @@ export default Vue.extend({
         if (this.videoOptions && this.videoOptions.sources) {
             URL.revokeObjectURL(this.videoOptions.sources[0].src);
         }
+
+        this.editedFiles.forEach(file => {
+            URL.revokeObjectURL(file.url);
+        })
+
+        this.sortedFiles.forEach(file => {
+            URL.revokeObjectURL(file.url);
+        })
     }
 });
 </script>

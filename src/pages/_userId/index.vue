@@ -2,7 +2,7 @@
     <b-container class="profileCont">
         <b-row>
             <b-col cols="3">
-                <div v-if="!isLoggedInUser">
+                <div v-if="!profile.isLoggedInUser">
                     <div v-for="(chart, index) in profile.charts.leftRail" :key="index">
                         <Chart
                             :username="profile.username"
@@ -55,7 +55,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <div v-if="isLoggedInUser" class="ml-5 mr-5 pt-1">
+                                        <div v-if="profile.isLoggedInUser" class="ml-5 mr-5 pt-1">
                                             <b-button block variant="outline-dark" size="sm"
                                                 >Edit Profile</b-button
                                             >
@@ -98,7 +98,7 @@
                                 </div>
                             </b-card-title>
 
-                            <div class="mt-4" v-if="isLoggedInUser">
+                            <div class="mt-4" v-if="profile.isLoggedInUser">
                                 <PostNew />
                             </div>
                         </b-card-body>
@@ -129,7 +129,10 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { UserProfile } from "@/types/user";
+import { PostReference } from "@/types/post"
 import { API } from "aws-amplify";
 
 import PostNew from "@/components/Post/PostNew.vue";
@@ -137,16 +140,23 @@ import PostFeed from "@/components/Post/PostFeed.vue";
 
 import Chart from "@/components/Charts/Chart.vue";
 
-export default {
+interface ProfileViewData {
+    isLoading: boolean;
+    posts: PostReference[];
+    profile: UserProfile | null;
+    isFollowing: boolean;
+    isLoadingMore: boolean;
+    moreToLoad: boolean;
+}
+
+export default Vue.extend({
     components: { PostFeed, PostNew, Chart },
-    data() {
+    data(): ProfileViewData {
         return {
             isLoading: true,
             posts: [],
-            profile: {},
+            profile: null,
             isFollowing: false,
-            isFollowed: false,
-            isLoggedInUser: false,
 
             // Lazy loading:
             isLoadingMore: true,
@@ -154,28 +164,16 @@ export default {
         };
     },
 
-    async asyncData({ store, req, params, error }) {
-        let profile = {};
+    async asyncData({ app: { $accessor }, req, params, error }) {
+        let profile: UserProfile;
 
         try {
-            const path = "/user/" + params.userId;
-            const myInit = {
-                headers: {
-                    Authorization: await store.dispatch("fetchJwtToken", { req }),
-                },
-                queryStringParameters: {
-                    view: "profile",
-                },
-            };
-
-            profile = (await API.get(store.state.apiName, path, myInit)).data;
-        } catch (err) {
-            console.error(err);
-            console.log("ERROR:", err.status);
+            profile = await $accessor.api.getUserProfile({ req, userId: params.userId, init: { queryStringParameters: { view: "profile" }}});
+            return { profile };
+        } catch (err: any) {
+            console.log("ERROR:", err);
             error({ message: err.message, statusCode: err.response && err.response.status });
         }
-
-        return { profile };
     },
 
     mounted() {
@@ -189,22 +187,16 @@ export default {
             this.isLoadingMore = true;
             this.posts = [];
             this.isFollowing = false;
-            this.isFollowed = this.profile.isFollowed;
-            this.isLoggedInUser = this.profile.isLoggedInUser;
 
             try {
-                const path = "/post";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken"),
-                    },
+                const init = {
                     queryStringParameters: {
-                        userId: this.profile._id,
+                        userId: this.profile?._id,
                         loadAmount: 5,
-                    },
+                    }
                 };
 
-                this.posts = (await API.get(this.$store.state.apiName, path, myInit)).data;
+                this.posts = await this.$accessor.api.queryPost({ init });
 
                 if (this.posts.length < 5) {
                     this.moreToLoad = false;
@@ -219,51 +211,43 @@ export default {
         },
 
         async handleFollow() {
-            if (!this.isFollowing) {
+            if (this.profile && !this.isFollowing) {
                 this.isFollowing = true;
-                const path = "/follow";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken"),
-                    },
+                const init = {
                     queryStringParameters: {
                         docId: this.profile._id,
                         coll: "user",
-                    },
+                    }
                 };
 
-                if (!this.isFollowed) {
+                if (!this.profile.isFollowed) {
                     try {
-                        console.log("FOLLOWING");
-                        const followResponse = await API.post(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
-                        this.isFollowed = true;
+                        console.log("FOLLOWING...");
+                        await this.$accessor.api.createFollow({ init });
+                        this.profile.isFollowed = true;
                         this.profile.followerCount++;
-                        console.log("FOLLOWED:", followResponse);
-                    } catch (err) {
-                        this.isFollowed = false;
+                        console.log("FOLLOWED");
+                    }
+                    catch (err) {
+                        this.profile.isFollowed = false;
                         console.error(err);
-                    } finally {
+                    }
+                    finally {
                         this.isFollowing = false;
                     }
-                } else {
+                } else if (this.profile) {
                     try {
-                        console.log("UNFOLLOWING");
-                        const unfollowResponse = await API.del(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
-                        this.isFollowed = false;
+                        console.log("UNFOLLOWING...");
+                        await this.$accessor.api.deleteFollow({ init });
+                        this.profile.isFollowed = false;
                         this.profile.followerCount--;
-                        console.log("UNFOLLOWED:", unfollowResponse);
-                    } catch (err) {
-                        this.isFollowed = true;
+                        console.log("UNFOLLOWED");
+                    }
+                    catch (err) {
+                        this.profile.isFollowed = true;
                         console.error(err);
-                    } finally {
+                    }
+                    finally {
                         this.isFollowing = false;
                     }
                 }
@@ -271,15 +255,11 @@ export default {
         },
 
         async loadMorePosts() {
-            if (!this.isLoadingMore) {
+            if (!this.isLoadingMore && this.profile) {
                 console.log("LOADING MORE!");
                 this.isLoadingMore = true;
 
-                const path = "/post";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken"),
-                    },
+                const init = {
                     queryStringParameters: {
                         loadAmount: 5,
                         startAt: this.posts[this.posts.length - 1]._id,
@@ -287,7 +267,7 @@ export default {
                     },
                 };
 
-                const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
+                const postResult = await this.$accessor.api.queryPost({ init });
 
                 postResult.forEach((post) => {
                     this.posts.push(post);
@@ -298,12 +278,10 @@ export default {
                 }
 
                 this.isLoadingMore = false;
-
-                console.log("POST RESULT:", postResult);
             }
         },
     },
-};
+});
 </script>
 
 <style scoped>

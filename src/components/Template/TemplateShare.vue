@@ -13,12 +13,13 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { ITemplate } from "~/types";
 
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 
-export default {
+export default Vue.extend({
     name: "TemplateShare",
     components: { ExerciseExpandable },
     props: {
@@ -30,7 +31,7 @@ export default {
     data() {
         return {
             isLoading: true,
-            template: {}
+            template: {} as ITemplate
         };
     },
 
@@ -39,18 +40,11 @@ export default {
     },
 
     methods: {
-        downloadTemplate: async function() {
+        async downloadTemplate(): Promise<void> {
             this.isLoading = true;
 
-            const path = "/template/" + this.$props.templateId;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                }
-            };
-
             try {
-                this.template = (await API.get(this.$store.state.apiName, path, myInit)).data;
+                this.template = await this.$accessor.api.getTemplate({  templateId: this.templateId, init: {} });
             } catch (err) {
                 console.error(err);
             } finally {
@@ -60,9 +54,9 @@ export default {
     },
 
     watch: {
-        templateId: function() {
+        templateId(): void {
             this.downloadTemplate();
         }
     }
-};
+});
 </script>

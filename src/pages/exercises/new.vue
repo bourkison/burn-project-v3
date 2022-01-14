@@ -100,7 +100,7 @@ import { ICreateExercise, IImageToUpload } from "@/types";
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
-import ImageUploader from "@/components/Utility/ImageUploader.vue";
+import ImageUploader from "~/components/Image/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";

@@ -10,7 +10,9 @@ import { Auth, API, withSSRContext } from "aws-amplify";
 
 // Types:
 import { getAccessorType, mutationTree, actionTree } from "typed-vuex";
-import { IUserProfile, IWorkout, IChart } from "@/types";
+import { Chart } from "@/types";
+import { LoggedInUser } from "@/types/user";
+import { Workout } from "@/types/workout";
 import { ActiveWorkoutState } from "./activeWorkout";
 import { CognitoUserSession } from "amazon-cognito-identity-js";
 import { IncomingMessage } from "connect"
@@ -20,7 +22,7 @@ export const state = () => {
     return {
         apiName: "projectburnapi",
         workoutPromises: [] as Promise<any>[],
-        userProfile: null as IUserProfile | null,
+        userProfile: null as LoggedInUser | null,
         videoTokens: {} as { [key: string]: any }
     };
 }
@@ -44,7 +46,7 @@ export const mutations = mutationTree(state, {
         }
     },
 
-    SET_LOGGED_IN_USER(state, user: IUserProfile): void {
+    SET_LOGGED_IN_USER(state, user: LoggedInUser): void {
         state.userProfile = user;
     },
 
@@ -56,7 +58,7 @@ export const mutations = mutationTree(state, {
         state.workoutPromises = promises;
     },
 
-    PUSH_WORKOUT_TO_USER_WORKOUTS(state, workout: IWorkout): void {
+    PUSH_WORKOUT_TO_USER_WORKOUTS(state, workout: Workout): void {
         console.log("UNSHIFTING WORKOUTS", workout);
         if (state.userProfile && state.userProfile.docData) {
             state.userProfile.docData.workouts ? state.userProfile.docData.workouts.unshift(workout) : state.userProfile.docData.workouts = [workout];
@@ -76,7 +78,7 @@ export const mutations = mutationTree(state, {
         }
     },
 
-    UPDATE_CHART(state, data: { position: string, index: number, options: IChart }): void {
+    UPDATE_CHART(state, data: { position: string, index: number, options: Chart }): void {
         if (state.userProfile) {
             switch (data.position) {
                 case "homepageLeftRail":
@@ -145,7 +147,7 @@ export const actions = actionTree({ state, mutations }, {
         }
     },
 
-    async updateChart({ state, commit, dispatch }, data: { save: boolean, position: string, options: IChart, index: number }) {
+    async updateChart({ state, commit, dispatch }, data: { save: boolean, position: string, options: Chart, index: number }) {
         if (data.save) {
             const path = "/stats/" + data.position;
             const myInit = {

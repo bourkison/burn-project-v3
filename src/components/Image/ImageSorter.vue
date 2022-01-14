@@ -1,6 +1,6 @@
 <template>
     <div class="imageSorterCont">
-        <b-row v-if="imagesProp.length > 0" class="sortableCont" align-h="center">
+        <b-row v-if="imagesProp.length > 0" class="sortableCont" id="image-sort-cont" align-h="center">
             <b-col v-for="(img, i) in imagesProp" :key="i" sm="4" class="sortableItem">
                 <b-card :img-src="img.url" img-top>
                     <div class="text-center">
@@ -22,75 +22,74 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue, { PropType } from "vue";
+import Sortable, { SortableEvent } from "sortablejs";
 
-import Sortable from "sortablejs";
+type TImage = {
+    id: string;
+    file: File;
+    url: string;
+    editable: boolean;
+    path: string | null;
+}
 
 export default Vue.extend({
     name: "ImageSorter",
     props: {
         imagesProp: {
-            type: Array,
+            type: Array as PropType<TImage[]>,
             required: true
         }
     },
     data() {
         return {
-            sortedImages: [],
-            sortable: null
+            sortedImages: [] as TImage[],
+            sortable: null as Sortable | null
         };
     },
 
     mounted() {
-        this.$props.imagesProp.forEach(img => {
+        this.imagesProp.forEach(img => {
             this.sortedImages.push(img);
         });
 
-        if (this.$props.imagesProp.length > 0) {
+        if (this.imagesProp.length > 0) {
             const sortableOptions = {
                 animation: 300,
                 onEnd: this.changeOrder
             };
 
-            this.$nextTick(
-                () =>
-                    (this.sortable = new Sortable(
-                        document.querySelector(".sortableCont"),
-                        sortableOptions
-                    ))
-            );
+            this.$nextTick(() => {
+                const cont = document.getElementById("image-sort-cont");
+                if (cont) {
+                    this.sortable = new Sortable(cont, sortableOptions)
+                }
+            })
         }
     },
 
     methods: {
-        changeOrder(e) {
-            if (e.newIndex !== e.oldIndex) {
+        changeOrder(e: SortableEvent) {
+            if (e.newIndex !== e.oldIndex && e.newIndex && e.oldIndex) {
                 this.sortedImages.splice(e.newIndex, 0, this.sortedImages.splice(e.oldIndex, 1)[0]);
                 console.log("sort", e.oldIndex, "-->", e.newIndex);
                 this.$emit("sort", this.sortedImages);
             }
         },
 
-        editImage(id) {
+        editImage(id: string) {
             this.$emit("editImage", id);
         },
 
-        deleteImage(id) {
-            console.log(id);
+        deleteImage(id: string) {
             this.$emit("deleteImage", id);
         }
     },
 
     watch: {
-        imagesProp(n) {
+        imagesProp(n: TImage[]) {
             if (n.length > this.sortedImages.length) {
-                // console.log("Change back")
-                // this.images = [];
-                // this.$props.imagesProp.forEach(img => {
-                //     this.images.push(img);
-                // })
-
                 for (let i = n.length - this.sortedImages.length; i > 0; i--) {
                     this.sortedImages.push(n[n.length - i]);
                 }
@@ -102,13 +101,12 @@ export default Vue.extend({
                     onEnd: this.changeOrder
                 };
 
-                this.$nextTick(
-                    () =>
-                        (this.sortable = new Sortable(
-                            document.querySelector(".sortableCont"),
-                            sortableOptions
-                        ))
-                );
+                this.$nextTick(() => {
+                const cont = document.getElementById("image-sort-cont");
+                    if (cont) {
+                        this.sortable = new Sortable(cont, sortableOptions)
+                    }
+                });
             } else if (n.length == 0) {
                 this.sortable = null;
             }
