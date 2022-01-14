@@ -1,13 +1,13 @@
 <template>
     <div>
-        <div ref="mImgEdit" class="imageEditor" style="visibility:hidden;position:absolute;">
+        <div ref="mImgEdit" class="imageEditor">
             <ImageEditor
                 :imagesToAdd="addedFiles"
-                :initId="initId"
                 :imagesToEdit="imagesToEdit"
                 @addImage="addImage"
                 @cancelEdit="filesInEdit--"
                 :resetVariablesIncrementor="resetVariablesIncrementor"
+                :maxCropperHeight="450"
             />
         </div>
         <div v-if="displayVideo" class="p-2">
@@ -28,7 +28,7 @@
                 accept="image/*,video/*"
                 multiple
                 @change="handleFileUpload"
-                :file-name-formatter="formatNames"
+                :name="formatNames"
             ></b-form-file>
         </div>
         <div class="d-inline" v-else>
@@ -44,30 +44,61 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue"
+
 import { v4 as uuid } from "uuid"
 import ImageEditor from "@/components/Utility/ImageEditor.vue";
 import ImageSorter from "@/components/Utility/ImageSorter.vue";
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 
-export default {
+type ImageUploaderData = {
+    addedFiles: {
+        file: File,
+        id: string
+    }[]
+    editedFiles: TImage[];
+    sortedFiles: TImage[];
+    imagesToEdit: string[];
+    filesInEdit: number;
+    displayVideo: boolean;
+    videoFile: File | null;
+    videoOptions: {
+        autoplay: boolean;
+        controls: boolean;
+        sources: {
+            src: string;
+            type: string;
+        }[]
+    } | null;
+}
+
+type TImage = {
+    id: string;
+    file: File;
+    url: string;
+    editable: boolean;
+    path: string | null;
+}
+
+export default Vue.extend({
     name: "ImageUploader",
     components: { ImageEditor, ImageSorter, VideoPlayer },
     props: {
         initImages: {
-            type: Array,
-            required: false
+            type: Array as PropType<TImage[]>,
+            default: []
         },
         inlineDisplay: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         },
         resetVariablesIncrementor: {
-            type: Number,
+            type: Number as PropType<number>,
             required: false
         }
     },
-    data() {
+    data(): ImageUploaderData {
         return {
             // addedFiles is new files and gets passed to ImageEditor.
             addedFiles: [],
@@ -78,69 +109,64 @@ export default {
             // imagesToEdit is an array of IDs thats passed to image editor that have already been passed through before.
             imagesToEdit: [],
 
-            // initId is the number of images passed at the start
-            // Used for determining new image IDs.
-            initId: 0,
-
             filesInEdit: 0,
 
             displayVideo: false,
             videoFile: null,
-            videoOptions: {}
+            videoOptions: null
         };
     },
 
-    created: function() {
-        if (this.$props.initImages) {
-            this.$props.initImages.forEach(img => {
-                this.sortedFiles.push(img);
-                this.editedFiles.push(img);
-            });
-
-            this.initId = this.$props.initImages.length;
+    computed: {
+        formatNames(): string {
+            return this.filesInEdit === 1
+                ? "1 file selected"
+                : `${this.filesInEdit.toString()} files selected`;
         }
     },
 
-    methods: {
-        formatNames: function() {
-            return this.filesInEdit === 1
-                ? "1 file selected"
-                : `${this.filesInEdit} files selected`;
-        },
+    created() {
+        this.initImages.forEach(img => {
+            this.sortedFiles.push(img);
+            this.editedFiles.push(img);
+        });
+    },
 
-        handleFileUpload: async function(e) {
-            // FIRST ENSURE EITHER ALL INPUTS ARE IMAGE, OR THERE IS ONLY 1 VIDEO.
-            e.target.files.forEach((file) => {
-                if (!file.type.includes("image/") && !file.type.includes("video/")) {
+    methods: {
+        async handleFileUpload(e: Event): Promise<void> {
+            let files = (e.target as HTMLInputElement).files;
+
+            if (!files || !files.length) {
+                return;
+            }
+
+            // First ensure all files are image, or there is only 1 video file.
+            for (let i = 0; i < files.length; i++) {
+                if (!files[i].type.includes("image/") && !files[i].type.includes("video/")) {
                     throw new Error("Unrecognised file type.");
                 }
 
-                if (file.type.includes("video/") && e.target.files.length > 1) {
+                if (files[i].type.includes("video/") && files.length > 1) {
                     throw new Error("Can only upload 1 video");
                 }
-            });
+            }
 
-            console.log("HANDLE UPLOAD", e);
-
-            if (e.target.files[0].type.includes("image/")) {
+            if (files[0].type.includes("image/")) {
                 if (this.videoFile) {
                     this.videoFile = null;
                     this.displayVideo = false;
                 }
 
-                this.filesInEdit += e.target.files.length;
+                this.filesInEdit += files.length;
     
                 this.addedFiles = [];
 
-                e.target.files.forEach(file => {
-                    console.log("Pushing files to added files:", file);
+                for (let i = 0; i < files.length; i++) {
                     this.addedFiles.push({
-                        file: file,
+                        file: files[i],
                         id: uuid()
                     });
-                });
-
-                console.log("Added files:", this.addedFiles);
+                }
             } else {
                 // Video upload logic:
                 if (this.videoFile) {
@@ -155,15 +181,15 @@ export default {
                     await this.$nextTick();
                 }
 
-                this.videoFile = e.target.files[0];
+                this.videoFile = files[0];
 
                 this.videoOptions = {
                     autoplay: true,
                     controls: true,
                     sources: [
                         {
-                            src: URL.createObjectURL(e.target.files[0]),
-                            type: e.target.files[0].type
+                            src: URL.createObjectURL(files[0]),
+                            type: files[0].type
                         }
                     ]
                 }
@@ -173,27 +199,25 @@ export default {
             }
         },
 
-        addImage: function(data) {
-            delete data.edit;
-            delete data.ratio;
-
+        addImage(data: TImage) {
             this.editedFiles.push(data);
             this.sortedFiles.push(data);
 
             this.filesInEdit--;
         },
 
-        editImage: function(id) {
+        editImage(id: string) {
             this.imagesToEdit.push(id);
             this.deleteImage(id);
             this.filesInEdit++;
         },
 
-        deleteImage: function(id) {
+        deleteImage(id: string) {
             let editedIndex = this.editedFiles.findIndex(x => x.id === id);
             let sortedIndex = this.sortedFiles.findIndex(x => x.id === id);
 
             if (!this.sortedFiles[sortedIndex].editable) {
+                // @ts-ignore
                 this.$bvModal
                     .msgBoxConfirm(
                         "You are about to delete an image that you have already uploaded. Are you sure?",
@@ -209,14 +233,14 @@ export default {
                             centered: true
                         }
                     )
-                    .then(value => {
+                    .then((value: boolean) => {
                         if (value) {
                             this.$emit("deleteInitImage", this.sortedFiles[sortedIndex].path);
                             this.editedFiles.splice(editedIndex, 1);
                             this.sortedFiles.splice(sortedIndex, 1);
                         }
                     })
-                    .catch(e => {
+                    .catch((e: any) => {
                         console.error(e);
                     });
             } else {
@@ -225,40 +249,47 @@ export default {
             }
         },
 
-        sort: function(arr) {
+        sort(arr: TImage[]) {
             this.sortedFiles = arr;
         }
     },
     watch: {
-        filesInEdit: function() {
-            if (this.filesInEdit > 0) {
-                this.$refs.mImgEdit.style.visibility = "visible";
-                this.$refs.mImgEdit.style.position = "inherit";
-            } else {
-                this.$refs.mImgEdit.style.visibility = "hidden";
-                this.$refs.mImgEdit.style.position = "absolute";
+        filesInEdit() {
+            if (this.$refs.mImgEdit) {
+                if (this.filesInEdit > 0) {
+                    (this.$refs.mImgEdit as HTMLElement).style.visibility = "visible";
+                    (this.$refs.mImgEdit as HTMLElement).style.position = "inherit";
+                } else {
+                    (this.$refs.mImgEdit as HTMLElement).style.visibility = "hidden";
+                    (this.$refs.mImgEdit as HTMLElement).style.position = "absolute";
+                }
             }
         },
 
-        sortedFiles: function() {
+        sortedFiles() {
             this.$emit("updateImages", this.sortedFiles);
         },
 
         // Changed in PostNew. Is an indication to reset all variables within.
-        resetVariablesIncrementor: function() {
+        resetVariablesIncrementor() {
             this.addedFiles = [];
             this.editedFiles = [];
             this.sortedFiles = [];
             this.imagesToEdit = [];
-            this.initId = 0;
             this.filesInEdit = 0;
             this.displayVideo = false;
             this.videoFile = null;
 
             console.log("Uploader reset");
         }
+    },
+
+    beforeDestroy() {
+        if (this.videoOptions && this.videoOptions.sources) {
+            URL.revokeObjectURL(this.videoOptions.sources[0].src);
+        }
     }
-};
+});
 </script>
 
 <style scoped>
@@ -268,6 +299,8 @@ export default {
 
 .imageEditor {
     margin-bottom: 15px;
+    visibility:hidden;
+    position:absolute;
 }
 
 .videoPlayer {

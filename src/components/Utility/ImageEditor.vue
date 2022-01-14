@@ -5,16 +5,27 @@
             As b-tabs sets to display none. 
         -->
         <b-card no-body no-title>
-            <cropper 
-                :src="inputImages[0] ? inputImages[0].url : null"
-                ref="cropper"
-                class="cropper"
-                id="cropper-el"
-                backgroundClass="cropperBackground"
-                :stencil-props="{ aspectRatio: 0.9 }"
-                :canvas="{ minHeight: 450, maxHeight: 450, minWidth: 0, maxWidth: 2048 }"
-                @change="getCropperEvent"
-            />
+            <div class="cropper-cont">
+                <cropper 
+                    :src="inputImages[selectedImageIndex] ? inputImages[selectedImageIndex].url : null"
+                    ref="cropper"
+                    class="cropper"
+                    id="cropper-el"
+                    backgroundClass="cropperBackground"
+                    :stencil-props="{ aspectRatio: 0.9 }"
+                    :canvas="{ maxHeight: maxCropperHeight }"
+                    @ready="cropperReadyEvent"
+                />
+                <div class="crop-button-cont" v-if="!cropperLoading">
+                    <b-button @click="cancelImage" variant="danger" class="crop-button crop-cancel-button">Cancel</b-button>
+                    <b-button @click="addImage" class="crop-button crop-add-button">Add</b-button>
+                </div>
+            </div>
+            <div class="image-selector-cont d-flex">
+                <div class="image-selector-item" :class="{ 'is-active': selectedImageIndex === index }" v-for="(image, index) in inputImages" :key="image.id">
+                    <img @click="selectImage(index)" :src="image.url" />
+                </div>
+            </div>
         </b-card>
     </div>
 </template>
@@ -34,15 +45,14 @@ type ImageEditorData = {
         url: string;
         cropperHeight: string;
     }[];
-    images: {
-        id: number;
+    editableImages: {
+        id: string;
+        file: File;
         url: string;
-        ratio: number;
-        edit: boolean;
+        cropperHeight: string;
     }[];
-    imageIncrementor: number;
     selectedImageIndex: number;
-    MAX_CROPPER_HEIGHT: number;
+    cropperLoading: boolean
 }
 
 export default Vue.extend({
@@ -51,43 +61,30 @@ export default Vue.extend({
     props: {
         imagesToAdd: {
             type: Array as PropType<{ file: File, id: string }[]>,
-            default: []
+            default() { return [] }
         },
         imagesToEdit: {
-            type: Array,
-            required: false
+            type: Array as PropType<string[]>,
+            default() { return [] }
         },
-        initId: {
-            type: Number,
-            required: false
-        },
-        resetVariablesIncrementor: {
-            type: Number,
-            required: false
+        maxCropperHeight: {
+            type: Number as PropType<number>,
+            required: true
         }
     },
     data(): ImageEditorData {
         return {
             isLoading: false,
             inputImages: [],
-            images: [],
+            editableImages: [],
             selectedImageIndex: 0,
-            MAX_CROPPER_HEIGHT: 450,
-
-            // Img incrementor:
-            imageIncrementor: 0
+            cropperLoading: true,
         };
     },
 
-    created() {
-        if (this.initId) {
-            this.imageIncrementor = this.initId;
-        }
-    },
-
     methods: {
-        getCropperEvent(e: any): void {
-            console.log("CROPPER:", e);
+        cropperReadyEvent(): void {
+            this.cropperLoading = false;
         },
 
         async loadImage(file: File): Promise<HTMLImageElement> {
@@ -95,10 +92,64 @@ export default Vue.extend({
             image.src = URL.createObjectURL(file);
 
             return await new Promise(resolve => {
-                image.onload = async () => {
+                image.onload = () => {
+                    URL.revokeObjectURL(image.src);
                     resolve(image);
                 }
             })
+        },
+
+        addImage(): void {
+            if (this.$refs.cropper) {
+                const { canvas } = (this.$refs.cropper as Cropper).getResult();
+                if (canvas) {
+                    canvas.toBlob((blob) => {
+                        this.$emit("addImage", {
+                            file: blob,
+                            id: this.inputImages[this.selectedImageIndex].id,
+                            url: URL.createObjectURL(blob),
+                            editable: true,
+                            path: null
+                        });
+
+                        this.editableImages.push(this.inputImages[this.selectedImageIndex]);
+                        this.inputImages.splice(this.selectedImageIndex, 1);
+
+                        if (this.inputImages.length === 0) {
+                            this.selectedImageIndex = 0;
+                        } else if (this.selectedImageIndex >= this.inputImages.length) {
+                            this.selectedImageIndex = this.inputImages.length - 1;
+                        } else {
+                            this.setMaxWidth();
+                        }
+                    }, this.inputImages[this.selectedImageIndex].file.type);
+                }
+            }
+        },
+
+        cancelImage(): void {
+            URL.revokeObjectURL(this.inputImages[this.selectedImageIndex].url);
+            this.inputImages.splice(this.selectedImageIndex, 1);
+
+            if (this.inputImages.length === 0) {
+                this.selectedImageIndex = 0;
+            } else if (this.selectedImageIndex >= this.inputImages.length) {
+                this.selectedImageIndex = this.inputImages.length - 1;
+            } else {
+                this.setMaxWidth();
+            }
+
+            this.$emit("cancelEdit");
+        },
+
+        selectImage(i: number): void {
+            this.selectedImageIndex = i;
+        },
+
+        setMaxWidth(): void {
+            this.cropperLoading = true;
+            const cropperEl = document.getElementById("cropper-el");
+            if (cropperEl) cropperEl.style.maxWidth = this.inputImages[this.selectedImageIndex].cropperHeight;
         }
     },
 
@@ -112,12 +163,11 @@ export default Vue.extend({
                 this.imagesToAdd.forEach(imageToAdd => {
                     cropperWidthPromises.push(this.loadImage(imageToAdd.file).then(image => {
                         const ratio = image.width / image.height;
-                        return (this.MAX_CROPPER_HEIGHT * ratio).toString() + "px";
+                        return (this.maxCropperHeight * ratio).toString() + "px";
                     }))
                 })
     
                 this.imagesToAdd.forEach(imageToAdd => {
-                    console.log("Compressing image...");
                     compressionPromises.push(
                         imageCompression(imageToAdd.file, {
                             maxSizeMB: 1,
@@ -142,11 +192,34 @@ export default Vue.extend({
                     })
                 })
             }
+        },
+
+        selectedImageIndex(): void {
+            this.setMaxWidth();
+        },
+
+        imagesToEdit(): void {
+            this.imagesToEdit.forEach(id => {
+                const index = this.editableImages.findIndex(x => x.id === id);
+
+                if (index > -1) {
+                    this.inputImages.push(this.editableImages[index]);
+                    this.editableImages.splice(index, 1);
+                    this.selectedImageIndex = this.inputImages.length - 1;
+                    this.$emit("imageAddedFromEdit");
+                }
+            })
         }
     },
 
+
+
     beforeDestroy() {
         this.inputImages.forEach(image => {
+            URL.revokeObjectURL(image.url);
+        })
+
+        this.editableImages.forEach(image => {
             URL.revokeObjectURL(image.url);
         })
     }
@@ -154,16 +227,81 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.cropper-cont {
+    position: relative;
+}
+
 .cropper {
     max-height: 450px;
     margin: 0 auto;
 }
 
-.buttons {
-    margin-top: 15px;
+.crop-button-cont {
+    display: flex;
+    justify-items: center;
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
 }
-.buttons button {
+
+.crop-button {
+    display: flex;
+    justify-content: center;
+    padding: 3px 15px;
+    transition: background .5s;
+    font-size: 13px;
+    cursor: pointer;
     margin: 0 2px;
+}
+
+.crop-add-button {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.crop-button:hover {
+    background: #000;
+}
+
+.crop-cancel-button {
+    background: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+
+.crop-cancel-button:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
+
+.image-selector-cont {
+    margin: 0 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.image-selector-item {
+    height: 64px;
+    width: 64px;
+    overflow: hidden;
+    margin: 0 4px;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.9);
+    margin-top: 10px;
+}
+
+.image-selector-item img {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+}
+
+.image-selector-item.is-active {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 </style>
 
