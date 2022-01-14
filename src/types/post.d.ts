@@ -8,6 +8,7 @@ export type Post = {
     createdBy: {
         username: string;
         userId: string;
+        profilePhoto: string;
     }
     filePaths: FilePath[];
     share?: {
@@ -23,6 +24,7 @@ export type PostReference = {
     createdBy: {
         username: string;
         userId: string;
+        profilePhoto: string;
     };
     createdAt: Date;
 }

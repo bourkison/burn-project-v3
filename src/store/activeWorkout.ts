@@ -2,14 +2,15 @@ import { API } from "aws-amplify";
 import Vue from 'vue';
 
 import { mutationTree, actionTree } from "typed-vuex";
-import { IWorkout, IChart, IRecordedExercise, IRecordedSet } from "@/types"
+import { Chart } from "@/types"
+import { Workout, RecordedExercise, RecordedSet } from "@/types/workout"
 
 export const state = () => {
     return {
         isFinishing: false,
         workoutCommenced: false,
-        workout: undefined as IWorkout | undefined,
-        previousWorkout: undefined as IWorkout | undefined,
+        workout: undefined as Workout | undefined,
+        previousWorkout: undefined as Workout | undefined,
         emptyWorkout: true,
         displayToast: false,
         startTime: 0,
@@ -25,14 +26,14 @@ export const state = () => {
         countdownTimeString: "00:00",
 
         // Charts
-        workoutCharts: [] as IChart[]
+        workoutCharts: [] as Chart[]
     }
 };
 
 export type ActiveWorkoutState = ReturnType<typeof state>;
 
 export const mutations = mutationTree(state, {
-    SET_WORKOUT(state, workout: IWorkout): void {
+    SET_WORKOUT(state, workout: Workout): void {
         state.workout = workout;
     },
 
@@ -40,11 +41,11 @@ export const mutations = mutationTree(state, {
         if (state.workout) Vue.set(state.workout, data.key, data.value)
     },
 
-    SET_PREVIOUS_WORKOUT(state, previousWorkout: IWorkout): void {
+    SET_PREVIOUS_WORKOUT(state, previousWorkout: Workout): void {
         state.previousWorkout = previousWorkout;
     },
 
-    ADD_EXERCISE(state, exercise: IRecordedExercise): void {
+    ADD_EXERCISE(state, exercise: RecordedExercise): void {
         if (state.workout) state.workout.recordedExercises.push(exercise);
     },
 
@@ -62,13 +63,13 @@ export const mutations = mutationTree(state, {
         }
     },
 
-    SET_EXERCISE_VALUE(state, data: { key: string, value: string, exerciseIndex: number }): void {
+    SET_EXERCISE_VALUE(state, data: { key: string, value: any, exerciseIndex: number }): void {
         if (state.workout) {
             Vue.set(state.workout.recordedExercises[data.exerciseIndex], data.key, data.value);
         }
     },
 
-    ADD_SET(state, data: { set: IRecordedSet, exerciseIndex: number }): void {
+    ADD_SET(state, data: { set: RecordedSet, exerciseIndex: number }): void {
         if (state.workout) state.workout.recordedExercises[data.exerciseIndex].sets.push(data.set);
     },
 
@@ -76,7 +77,7 @@ export const mutations = mutationTree(state, {
         if (state.workout) state.workout.recordedExercises[exerciseIndex].sets.pop();
     },
 
-    SET_SET_VALUE(state, data: { exerciseIndex: number, setIndex: number, key: "weightAmount"|"measureAmount"|"measureBy", value: string }): void {
+    SET_SET_VALUE(state, data: { exerciseIndex: number, setIndex: number, key: "weightAmount"|"measureAmount"|"measureBy", value: any }): void {
         if (state.workout) {
             Vue.set(
                 state.workout.recordedExercises[data.exerciseIndex].sets[data.setIndex],
@@ -111,7 +112,7 @@ export const mutations = mutationTree(state, {
         state.displayToast = value;
     },
 
-    SET_INERVAL(state, timer: number): void {
+    SET_INTERVAL(state, timer: number): void {
         state.interval = window.setInterval(() => {
             // @ts-ignore
             this.app.$accessor.activeWorkout.SET_TIME_STRING();
@@ -213,7 +214,7 @@ export const mutations = mutationTree(state, {
         }
     },
 
-    PUSH_TO_WORKOUT_CHART(state, options: IChart): void {
+    PUSH_TO_WORKOUT_CHARTS(state, options: Chart): void {
         state.workoutCharts.push(options);
     },
 
@@ -235,7 +236,7 @@ export const actions = actionTree({ state, mutations }, {
 
         payload.duration = state.finishTime - state.startTime;
         payload.uniqueExercises = [];
-        payload.recordedExercises.forEach((exercise: IRecordedExercise) => {
+        payload.recordedExercises.forEach((exercise: RecordedExercise) => {
             // delete exercise.exerciseReference._id;
             // delete exercise.exerciseReference.createdAt;
             // delete exercise.exerciseReference.updatedAt;
@@ -267,7 +268,7 @@ export const actions = actionTree({ state, mutations }, {
         const path = "/workout";
         const myInit = {
             headers: {
-                Authorization: await this.app.$accessor.fetchJwtToken({ req: null })
+                Authorization: await this.app.$accessor.fetchJwtToken()
             },
             body: {
                 workoutForm: payload

@@ -63,6 +63,7 @@ export type UserReference = {
     username: string;
     userId: string;
     createdAt: Date;
+    profilePhoto: string;
 }
 
 // API

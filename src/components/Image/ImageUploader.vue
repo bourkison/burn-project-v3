@@ -49,8 +49,8 @@
 import Vue, { PropType } from "vue"
 
 import { v4 as uuid } from "uuid"
-import ImageEditor from "@/components/Utility/ImageEditor.vue";
-import ImageSorter from "@/components/Utility/ImageSorter.vue";
+import ImageEditor from "@/components/Image/ImageEditor.vue";
+import ImageSorter from "@/components/Image/ImageSorter.vue";
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 
 type ImageUploaderData = {

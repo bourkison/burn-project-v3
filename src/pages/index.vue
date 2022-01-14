@@ -46,16 +46,18 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+
 import QuickStart from "@/components/Utility/QuickStart.vue";
 import PostFeedHome from "@/components/Post/PostFeedHome.vue";
 import Chart from "@/components/Charts/Chart.vue";
 
-export default {
+export default Vue.extend({
     name: "Home",
     components: { PostFeedHome, Chart, QuickStart },
 
-};
+});
 </script>
 
 <style scoped>

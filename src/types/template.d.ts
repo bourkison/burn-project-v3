@@ -12,6 +12,7 @@ export type CreateTemplate = {
     createdBy?: {
         username: string;
         userId: string;
+        profilePhoto: string;
     }
 }
 
@@ -20,6 +21,7 @@ export type Template = {
     createdBy: {
         username: string;
         userId: string;
+        profilePhoto: string;
     }
     description: string;
     difficulty: number;
@@ -35,6 +37,7 @@ export type Template = {
     isLiked: boolean;
     isFollowed: boolean;
     isFollowable: boolean;
+    createdAt: Date;
 }
 
 export type TemplateReference = {
@@ -45,7 +48,8 @@ export type TemplateReference = {
     tags: string[];
     createdBy: {
         username: string;
-        userId: string
+        userId: string;
+        profilePhoto: string;
     };
     createdAt: Date;
     isFollow?: boolean;

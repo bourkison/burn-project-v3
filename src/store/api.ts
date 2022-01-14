@@ -29,9 +29,11 @@ import {
     Exercise,
     ExerciseReference,
 } from "@/types/exercise";
+import { QueryWorkoutParams, QueryWorkoutInit, GetWorkoutParams, GetWorkoutInit, Workout, RecordedExercise, RecordedSet } from "@/types/workout";
 import { UserProfile, UserDocData, GetUserParams, GetUserInit } from "@/types/user";
 import { QueryPostParams, QueryPostInit, PostReference } from "@/types/post";
 import { FollowParams, FollowInit } from "@/types/follow";
+import { SearchParams, SearchInit, SearchResult } from "@/types/search";
 
 export const state = () => {
     return {
@@ -77,6 +79,7 @@ export const actions = actionTree(
                     createdBy: {
                         username: exerciseReference.username,
                         userId: exerciseReference.userId,
+                        profilePhoto: data.data.createdBy.profilePhoto
                     },
                     createdAt: exerciseReference.createdAt,
                     isFollow: exerciseReference.isFollow,
@@ -111,6 +114,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
+                    profilePhoto: data.data.createdBy.profilePhoto
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -144,6 +148,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
+                    profilePhoto: data.data.createdBy.profilePhoto
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -247,6 +252,7 @@ export const actions = actionTree(
                     createdBy: {
                         username: exerciseReference.username,
                         userId: exerciseReference.userId,
+                        profilePhoto: data.data.createdBy.profilePhoto
                     },
                     createdAt: exerciseReference.createdAt,
                     isFollow: exerciseReference.isFollow,
@@ -281,6 +287,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
+                    profilePhoto: data.data.createdBy.profilePhoto
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -296,6 +303,7 @@ export const actions = actionTree(
                 isLiked: data.data.isLiked,
                 isFollowed: data.data.isFollowed,
                 isFollowable: data.data.isFollowable,
+                createdAt: data.data.createdAt
             };
         },
 
@@ -312,6 +320,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
+                    profilePhoto: data.data.createdBy.profilePhoto
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -327,6 +336,7 @@ export const actions = actionTree(
                 isLiked: data.data.isLiked,
                 isFollowed: data.data.isFollowed,
                 isFollowable: data.data.isFollowable,
+                createdAt: data.data.createdAt
             };
         },
 
@@ -377,6 +387,106 @@ export const actions = actionTree(
 
             await API.del(state.apiName, path, myInit);
             return;
+        },
+
+        /*
+         *
+         * ----------- WORKOUT API -----------
+         *
+         */
+        async queryWorkout({ state }, input: QueryWorkoutParams): Promise<Workout[]> {
+            const path = "/workout";
+            let myInit: QueryWorkoutInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+            let response: Workout[] = [];
+
+            data.data.forEach((workout: Workout) => {
+                let recordedExercises: RecordedExercise[] = [];
+                workout.recordedExercises.forEach((recordedExercise: RecordedExercise) => {
+                    let sets: RecordedSet[] = [];
+                    
+                    recordedExercise.sets.forEach(set => {
+                        sets.push({
+                            weightAmount: set.weightAmount,
+                            measureAmount: set.measureAmount,
+                            measureBy: set.measureBy
+                        })
+                    });
+
+                    recordedExercises.push({
+                        exerciseReference: recordedExercise.exerciseReference,
+                        notes: recordedExercise.notes,
+                        sets: sets,
+                        options: recordedExercise.options
+                    });
+                })
+
+
+                response.push({
+                    duration: workout.duration,
+                    name: workout.name,
+                    notes: workout.notes,
+                    uniqueExercises: workout.uniqueExercises,
+                    public: workout.public,
+                    templateReference: workout.templateReference,
+                    recordedExercises: recordedExercises
+                })
+            })
+
+            return response;
+        },
+
+        async getWorkout({ state }, input: GetWorkoutParams): Promise<Workout> {
+            const path = "/workout/" + input.workoutId;
+            let myInit: GetWorkoutInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+            let recordedExercises: RecordedExercise[] = [];
+            data.data.recordedExercises.forEach((recordedExercise: RecordedExercise) => {
+                let sets: RecordedSet[] = [];
+                    
+                recordedExercise.sets.forEach(set => {
+                    sets.push({
+                        weightAmount: set.weightAmount,
+                        measureAmount: set.measureAmount,
+                        measureBy: set.measureBy
+                    })
+                });
+
+                recordedExercises.push({
+                    exerciseReference: recordedExercise.exerciseReference,
+                    notes: recordedExercise.notes,
+                    sets: sets,
+                    options: recordedExercise.options
+                });
+            })
+
+            return {
+                duration: data.data.duration,
+                name: data.data.name,
+                notes: data.data.notes,
+                uniqueExercises: data.data.uniqueExercises,
+                public: data.data.public,
+                templateReference: data.data.templateReference,
+                recordedExercises: recordedExercises
+            }
         },
 
         /*
@@ -475,7 +585,8 @@ export const actions = actionTree(
                     _id: postReference._id,
                     createdBy: {
                         username: postReference.createdBy.username,
-                        userId: postReference.createdBy.userId
+                        userId: postReference.createdBy.userId,
+                        profilePhoto: data.data.createdBy.profilePhoto
                     },
                     createdAt: postReference.createdAt
                 })
@@ -519,6 +630,32 @@ export const actions = actionTree(
 
             await API.del(state.apiName, path, myInit);
             return;
+        },
+
+        /*
+         *
+         * ----------- SEARCH API -----------
+         *
+         */
+        async getSearch({ state }, input: SearchParams): Promise<SearchResult> {
+            const path = "/search";
+            let myInit: SearchInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+
+            return {
+                user: data.data.user ? data.data.user : undefined,
+                exercise: data.data.exercise ? data.data.exercise : undefined,
+                template: data.data.template ? data.data.template : undefined
+            }
         }
     }
 );

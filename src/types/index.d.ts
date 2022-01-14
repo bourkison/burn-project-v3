@@ -1,4 +1,5 @@
 import { accessorType } from "~/store";
+import { ExerciseReference } from "./exercise";
 
 export type TMeasureBy = "repsWeight"|"reps"|"timeWeight"|"time"
 export type TChartType = "recentWorkouts"|"exercise"
@@ -29,17 +30,7 @@ export type ResponsiveDate = {
 // Chart
 type ChartData = {
     preferenceIndex?: number;
-    exercise?: {
-        exerciseId: string;
-        createdBy: {
-            username: string;
-            userId: string;
-        }
-        name: string;
-        filePaths: FilePath[];
-        tags: string[];
-        muscleGroups: string[]
-    };
+    exercise?: ExerciseReference;
     dataToPull?: string;
 }
 

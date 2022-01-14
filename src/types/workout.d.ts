@@ -11,8 +11,8 @@ export type Workout = {
     uniqueExercises: string[];
     options?: {
         charts?: Chart[]
-    }[]
-    templateReference: TemplateReference;
+    }
+    templateReference: TemplateReference | null;
     public: boolean;
 }
 
@@ -23,11 +23,38 @@ export type RecordedExercise = {
         measureBy: TMeasureBy;
         weightUnit: "kg"|"lb"
     }
-    sets: RecordedSet[]
+    sets: RecordedSet[];
+    uid?: string;
 }
 
 export type RecordedSet = {
     weightAmount: number;
     measureAmount: number;
     measureBy: TMeasureBy;
+}
+
+// API
+export type QueryWorkoutParams = {
+    init: QueryWorkoutInit
+}
+
+export type QueryWorkoutInit = {
+    headers?: {
+        Authorization?: string
+    };
+    queryStringParameters?: {
+        templateId?: string;
+        loadAmount?: number;
+    }
+}
+
+export type GetWorkoutParams = {
+    workoutId: string;
+    init: GetWorkoutInit
+}
+
+export type GetWorkoutInit = {
+    headers?: {
+        Authorization?: string
+    }
 }

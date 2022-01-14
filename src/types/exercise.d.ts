@@ -13,6 +13,7 @@ export type CreateExercise = {
     createdBy?: {
         username: string;
         userId: string;
+        profilePhoto: string;
     }
 }
 
@@ -21,6 +22,7 @@ export type Exercise = {
     createdBy: {
         username: string;
         userId: string;
+        profilePhoto: string;
     }
     description: string;
     difficulty: number;
@@ -49,6 +51,7 @@ export type ExerciseReference = {
     createdBy: {
         username: string;
         userId: string;
+        profilePhoto: string;
     }
     createdAt: Date;
     isFollow?: boolean;

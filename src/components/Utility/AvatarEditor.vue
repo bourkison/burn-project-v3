@@ -42,14 +42,14 @@ export default {
         };
     },
 
-    created: function() {
+    created() {
         if (this.$props.inputImage) {
             this.initEditor();
         }
     },
 
     methods: {
-        initEditor: function() {
+        initEditor() {
             this.isLoading = true;
 
             let image;
@@ -110,19 +110,19 @@ export default {
                 });
         },
 
-        cancelEdit: function() {
+        cancelEdit() {
             console.log("Cancel");
             this.$emit("cancelEdit");
         },
 
-        addImage: function() {
+        addImage() {
             const canvas = this.cropper.getCroppedCanvas();
             const url = canvas.toDataURL("png", 1.0);
 
             this.$emit("addImage", url);
         },
 
-        readFileAsDataURL: async file => {
+        async readFileAsDataURL(file) {
             return new Promise(resolve => {
                 let fileReader = new FileReader();
                 fileReader.onload = () => resolve(fileReader.result);
@@ -130,7 +130,7 @@ export default {
             });
         },
 
-        loadImage: async img => {
+        async loadImage(img) {
             return new Promise(resolve => {
                 img.onload = async () => {
                     resolve(true);
@@ -140,7 +140,7 @@ export default {
     },
 
     watch: {
-        inputImage: function() {
+        inputImage() {
             console.log("CHANGE");
             this.image = null;
             this.initImage = null;
