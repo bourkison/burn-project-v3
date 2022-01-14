@@ -107,7 +107,7 @@ import { MetaInfo } from "vue-meta";
 import { ICreateExercise, IImageToUpload } from "@/types";
 
 import { API, Storage } from "aws-amplify";
-import { uuid } from "uuidv4"
+import { v4 as uuid } from "uuid"
 
 import ImageUploader from "@/components/Utility/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";

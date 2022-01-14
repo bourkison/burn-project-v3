@@ -106,7 +106,7 @@ import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import awsvideoconfig from "@/aws-video-exports.js";
 
 interface ExerciseNewData {

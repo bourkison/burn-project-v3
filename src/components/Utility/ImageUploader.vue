@@ -25,7 +25,6 @@
         <div class="imageInput" v-if="!inlineDisplay">
             <b-form-file
                 class="imageInput"
-                v-model="addedFiles"
                 accept="image/*,video/*"
                 multiple
                 @change="handleFileUpload"
@@ -46,6 +45,7 @@
 </template>
 
 <script>
+import { v4 as uuid } from "uuid"
 import ImageEditor from "@/components/Utility/ImageEditor.vue";
 import ImageSorter from "@/components/Utility/ImageSorter.vue";
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
@@ -120,6 +120,8 @@ export default {
                 }
             });
 
+            console.log("HANDLE UPLOAD", e);
+
             if (e.target.files[0].type.includes("image/")) {
                 if (this.videoFile) {
                     this.videoFile = null;
@@ -128,13 +130,17 @@ export default {
 
                 this.filesInEdit += e.target.files.length;
     
-                if (this.$props.inlineDisplay) {
-                    this.addedFiles = [];
-    
-                    e.target.files.forEach(file => {
-                        this.addedFiles.push(file);
+                this.addedFiles = [];
+
+                e.target.files.forEach(file => {
+                    console.log("Pushing files to added files:", file);
+                    this.addedFiles.push({
+                        file: file,
+                        id: uuid()
                     });
-                }
+                });
+
+                console.log("Added files:", this.addedFiles);
             } else {
                 // Video upload logic:
                 if (this.videoFile) {
