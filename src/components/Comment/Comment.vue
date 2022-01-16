@@ -105,7 +105,6 @@ import Vue, { PropType } from "vue";
 import { Comment } from "@/types/comment";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { API } from "aws-amplify";
 
 import UserList from "@/components/User/UserList.vue";
 

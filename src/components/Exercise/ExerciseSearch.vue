@@ -59,7 +59,6 @@
 <script lang="ts">
 import Vue from "vue";
 import { ExerciseReference } from "@/types/exercise";
-import { API } from "aws-amplify";
 
 export default Vue.extend({
     name: "ExerciseSearch",

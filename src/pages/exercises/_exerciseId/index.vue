@@ -189,7 +189,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { IExercise, IChart } from "@/types";
+import { Chart as TChart } from "@/types";
+import { Exercise } from "@/types/exercise";
 import { MetaInfo } from "vue-meta";
 
 import { API, graphqlOperation, Storage } from "aws-amplify";
@@ -204,7 +205,7 @@ import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 interface ExerciseViewData {
     isDeleting: boolean;
-    exerciseData: IExercise | null;
+    exerciseData: Exercise | null;
     imageUrls: string[];
     video: {
         id: string;
@@ -212,7 +213,7 @@ interface ExerciseViewData {
         token: string;
         options: object
     };
-    chartOptions: IChart | {};
+    chartOptions: TChart | {};
     carouselModel: number;
     variants: string[];
     modalIsDeleting: boolean;
@@ -256,8 +257,8 @@ export default Vue.extend({
     },
 
     async asyncData({ params, error, app: { $accessor }, req }) {
-        let exerciseData: IExercise;
-        let chartOptions: IChart = {
+        let exerciseData: Exercise;
+        let chartOptions: TChart = {
             chartType: "exercise",
             startDate: {
                 unit: "month",
@@ -274,12 +275,13 @@ export default Vue.extend({
                     exerciseId: "",
                     createdBy: {
                         username: "",
-                        userId: ""
+                        userId: "",
+                        profilePhoto: ""
                     },
                     name: "",
-                    filePaths: [],
                     tags: [],
-                    muscleGroups: []
+                    muscleGroups: [],
+                    createdAt: new Date()
                 },
                 preferenceIndex: 0,
                 dataToPull: "orm"
@@ -308,9 +310,9 @@ export default Vue.extend({
                 exerciseId: exerciseData._id,
                 createdBy: exerciseData.createdBy,
                 name: exerciseData.name,
-                filePaths: exerciseData.filePaths,
                 tags: exerciseData.tags,
-                muscleGroups: exerciseData.muscleGroups
+                muscleGroups: exerciseData.muscleGroups,
+                createdAt: exerciseData.createdAt
             };
 
             return {
@@ -423,7 +425,7 @@ export default Vue.extend({
             }
         },
 
-        updateChart(options: IChart): void {
+        updateChart(options: TChart): void {
             this.chartOptions = options;
         }
     }

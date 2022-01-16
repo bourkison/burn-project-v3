@@ -81,11 +81,13 @@
 
 </template>
 
-<script>
-import WorkoutComponent from "@/components/Workout/WorkoutComponent";
+<script lang="ts">
+import Vue from "vue";
+import { Workout } from "@/types/workout";
+import WorkoutComponent from "@/components/Workout/WorkoutComponent.vue";
 import { API } from "aws-amplify";
 
-export default {
+export default Vue.extend({
     components: { WorkoutComponent },
     middleware: ["requiresAuth"],
     data() {
@@ -94,26 +96,20 @@ export default {
         };
     },
 
-    async asyncData({ store, req }) {
-        let workouts = [];
+    async asyncData({ req }) {
+        let workouts: Workout[] = [];
         
-        const path = "/workout";
-        const myInit = {
-            headers: {
-                Authorization: await store.dispatch("fetchJwtToken", { req })
-            },
+        const init = {
             queryStringParameters: {
                 loadAmount: 10
             }
         };
 
-        const data = (await API.get(store.state.apiName, path, myInit)).data;
-
-        workouts = data;
+        workouts = await this.$accessor.api.queryWorkout({ init, req });
 
         return { workouts }
     }
-};
+});
 </script>
 
 <style scoped>

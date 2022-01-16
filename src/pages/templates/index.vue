@@ -98,8 +98,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ITemplateReference } from "@/types";
-import { QueryTemplateInit } from "@/types/api";
+import { TemplateReference, QueryTemplateInit } from "@/types/template";
 
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
@@ -109,7 +108,7 @@ import TemplateFeed from "@/components/Template/TemplateFeed.vue";
 
 type TemplateDiscoverData = {
     isLoading: boolean;
-    templates: ITemplateReference[];
+    templates: TemplateReference[];
     selectedMgs: string[];
     selectedTags: string[]
     isLoadingMore: boolean;

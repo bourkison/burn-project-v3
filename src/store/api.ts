@@ -426,10 +426,10 @@ export const actions = actionTree(
 
             if (!myInit.headers) {
                 myInit.headers = {
-                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                    Authorization: await this.app.$accessor.fetchJwtToken({ req: input.req }),
                 };
             } else if (!myInit.headers.Authorization) {
-                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken({ req: input.req });
             }
 
             const data = await API.get(state.apiName, path, myInit);

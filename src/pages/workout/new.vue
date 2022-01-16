@@ -454,6 +454,8 @@ export default Vue.extend({
                     },
                     uniqueExercises: uniqueExercises,
                     public: true,
+                    _id: "",
+                    createdAt: new Date()
                 });
 
                 // Check if user has done this before.
@@ -552,6 +554,8 @@ export default Vue.extend({
                     options: workoutDocument.options || {},
                     uniqueExercises: workoutDocument.uniqueExercises,
                     public: workoutDocument.public,
+                    _id: "",
+                    createdAt: new Date()
                 });
 
                 // Generate a unique ID for each exercise (for the keys).
@@ -580,6 +584,8 @@ export default Vue.extend({
                     templateReference: null,
                     public: true,
                     options: {},
+                    _id: "",
+                    createdAt: new Date()
                 };
 
                 this.$accessor.activeWorkout.SET_WORKOUT(workout);

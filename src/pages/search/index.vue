@@ -144,16 +144,19 @@ export default Vue.extend({
                 values.forEach((responses, index) => {
                     if (keys[index] === "user") {
                         responses.forEach(userResponse => {
+                            // @ts-ignore
                             userResponses.push(userResponse);
                         })
                     }
                     else if (keys[index] === "exercise") {
                         responses.forEach(exerciseResponse => {
+                            // @ts-ignore
                             exerciseResponses.push(exerciseResponse);
                         })
                     }
                     else if (keys[index] === "template") {
                         responses.forEach(templateResponse => {
+                            // @ts-ignore
                             templateResponses.push(templateResponse);
                         })
                     }

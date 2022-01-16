@@ -104,7 +104,8 @@
 <script lang="ts">
 import Vue from "vue";
 import { MetaInfo } from "vue-meta";
-import { ICreateExercise, IImageToUpload } from "@/types";
+import { ImageToUpload } from "@/types";
+import { CreateExercise } from "@/types/exercise";
 
 import { Storage } from "aws-amplify";
 import { v4 as uuid } from "uuid"
@@ -117,10 +118,10 @@ import TagSelector from "@/components/Utility/TagSelector.vue";
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
 interface ExerciseEditData {
-    oldExerciseData: ICreateExercise;
-    newExerciseData: ICreateExercise;
-    initImages: IImageToUpload[];
-    imagesToUpload: IImageToUpload[];
+    oldExerciseData: CreateExercise;
+    newExerciseData: CreateExercise;
+    initImages: ImageToUpload[];
+    imagesToUpload: ImageToUpload[];
     imagesToDelete: string[];
     isUpdating: boolean;
 }
@@ -176,9 +177,9 @@ export default Vue.extend({
     },
 
     async asyncData({ params, app: { $accessor }, req, redirect, error }) {
-        let oldExerciseData: ICreateExercise | null = null;
-        let newExerciseData: ICreateExercise | null = null;
-        let initImages: IImageToUpload[] = [];
+        let oldExerciseData: CreateExercise | null = null;
+        let newExerciseData: CreateExercise | null = null;
+        let initImages: ImageToUpload[] = [];
 
         try {
             const response = await $accessor.api.getExercise({ req, exerciseId: params.exerciseId, init: {} })
@@ -302,7 +303,7 @@ export default Vue.extend({
             this.newExerciseData.description = md;
         },
 
-        updateImages(images: IImageToUpload[]): void {
+        updateImages(images: ImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 

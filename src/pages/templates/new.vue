@@ -96,7 +96,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ICreateTemplate, IExerciseReference } from "@/types";
+import { CreateTemplate } from "@/types/template";
+import { ExerciseReference } from "@/types/exercise";
 
 import TemplateBuilder from "@/components/Template/TemplateBuilder.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
@@ -106,7 +107,7 @@ import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
 interface TemplateNewData {
     isCreating: boolean;
-    templateForm: ICreateTemplate;
+    templateForm: CreateTemplate;
     errorCountdown: number;
     errorMessage: string;
     errorInterval: number | undefined;
@@ -177,9 +178,9 @@ export default Vue.extend({
             this.templateForm.muscleGroups = mgs;
         },
 
-        updateExercises(exercises: IExerciseReference[]): void {
-            let temp: IExerciseReference[] = [];
-            exercises.forEach((exercise: IExerciseReference) => {
+        updateExercises(exercises: ExerciseReference[]): void {
+            let temp: ExerciseReference[] = [];
+            exercises.forEach((exercise: ExerciseReference) => {
                 temp.push(exercise);
             });
 

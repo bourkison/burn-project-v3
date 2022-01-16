@@ -114,7 +114,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ICreateTemplate, IExerciseReference } from "@/types";
+import { CreateTemplate } from "@/types/template";
+import { ExerciseReference } from "@/types/exercise";
 
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
@@ -124,8 +125,8 @@ import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
 type TemplateEditData = {
     isUpdating: boolean;
-    oldTemplateData: ICreateTemplate;
-    newTemplateData: ICreateTemplate;
+    oldTemplateData: CreateTemplate;
+    newTemplateData: CreateTemplate;
     errorCountdown: number;
     errorMessage: string;
     errorInterval: number | undefined;
@@ -169,8 +170,8 @@ export default Vue.extend({
     },
 
     async asyncData({ params, app: { $accessor }, redirect, error, req }) {
-        let oldTemplateData: ICreateTemplate | null = null;
-        let newTemplateData: ICreateTemplate | null = null;
+        let oldTemplateData: CreateTemplate | null = null;
+        let newTemplateData: CreateTemplate | null = null;
 
         try {
             const data = await $accessor.api.getTemplate({ templateId: params.templateId, req, init: {} })
@@ -230,7 +231,7 @@ export default Vue.extend({
             this.newTemplateData.difficulty = difficulty;
         },
 
-        updateExercises(exercises: IExerciseReference[]): void {
+        updateExercises(exercises: ExerciseReference[]): void {
             this.newTemplateData.exerciseReferences = exercises;
         },
 

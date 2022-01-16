@@ -36,7 +36,7 @@ export default Vue.extend({
     },
 
     methods: {
-        addComment: async function() {
+        async addComment() {
             if (this.commentForm.content.trim() !== "") {
                 try {
                     let payload = this.commentForm;

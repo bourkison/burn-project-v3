@@ -132,8 +132,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { UserProfile } from "@/types/user";
-import { PostReference } from "@/types/post"
-import { API } from "aws-amplify";
+import { PostReference } from "@/types/post";
 
 import PostNew from "@/components/Post/PostNew.vue";
 import PostFeed from "@/components/Post/PostFeed.vue";

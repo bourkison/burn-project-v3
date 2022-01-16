@@ -1,6 +1,7 @@
 import { Chart, TMeasureBy } from "@/types";
 import { TemplateReference } from "@/types/template";
 import { ExerciseReference } from "@/types/exercise";
+import { IncomingMessage } from "connect";
 
 // Workout
 export type Workout = {
@@ -37,7 +38,8 @@ export type RecordedSet = {
 
 // API
 export type QueryWorkoutParams = {
-    init: QueryWorkoutInit
+    init: QueryWorkoutInit;
+    req?: IncomingMessage
 }
 
 export type QueryWorkoutInit = {

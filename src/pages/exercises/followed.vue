@@ -112,10 +112,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { IExerciseReference } from "@/types";
-import { QueryExerciseInit } from "@/types/api"
+import { ExerciseReference, QueryExerciseInit } from "@/types/exercise";
 
-import { API } from "aws-amplify";
 import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
 
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
@@ -124,7 +122,7 @@ import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
 interface ExerciseFollowData {
     isLoading: boolean;
-    exercises: IExerciseReference[];
+    exercises: ExerciseReference[];
     selectedMgs: string[];
     selectedTags: string[];
     isLoadingMore: boolean;
@@ -231,7 +229,7 @@ export default Vue.extend({
             }
 
             const references = await this.$accessor.api.queryExercise({ init });
-            references.forEach(reference => {
+            references.forEach((reference: ExerciseReference) => {
                 reference.loaded = false;
                 this.exercises.push(reference);
             })

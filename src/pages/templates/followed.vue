@@ -100,19 +100,18 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ITemplateReference } from "~/types";
+import { TemplateReference, QueryTemplateInit } from "@/types/template";
 
 import TemplateFeed from "@/components/Template/TemplateFeed.vue";
 
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
-import { QueryTemplateInit } from "~/types/api";
 
 type TemplateFollowedData = {
     isLoading: boolean;
     templateExists: boolean;
-    templates: ITemplateReference[];
+    templates: TemplateReference[];
     selectedMgs: string[];
     selectedTags: string[];
     isLoadingMore: boolean;

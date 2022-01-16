@@ -170,7 +170,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ITemplate } from "@/types"
+import { Template } from "@/types/template"
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
@@ -179,7 +179,7 @@ import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 interface TemplateViewData {
     isDeleting: boolean;
-    templateData: ITemplate | null;
+    templateData: Template | null;
     likeCount: number;
     commentCount: number;
     followCount: number;
@@ -212,7 +212,7 @@ export default Vue.extend({
     },
 
     async asyncData({ req, params, app: { $accessor }, error }) {
-        let templateData: ITemplate;
+        let templateData: Template;
 
         try {
             const init = { 

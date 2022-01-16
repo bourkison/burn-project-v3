@@ -86,13 +86,12 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { API } from "aws-amplify"
 
 type MainSearchData = {
     isLoading: boolean;
     searchText: string;
     hasResults: boolean;
-    userResults: { _id: string, name: string }[];
+    userResults: { _id: string, username: string }[];
     exerciseResults: { _id: string, name: string }[];
     templateResults: { _id: string, name: string }[];
     displayPopover: boolean;
@@ -165,16 +164,19 @@ export default Vue.extend({
                 values.forEach((responses, index) => {
                     if (keys[index] === "user") {
                         responses.forEach(userResponse => {
+                            // @ts-ignore
                             this.userResults.push(userResponse);
                         })
                     }
                     else if (keys[index] === "exercise") {
                         responses.forEach(exerciseResponse => {
+                            // @ts-ignore
                             this.exerciseResults.push(exerciseResponse);
                         })
                     }
                     else if (keys[index] === "template") {
                         responses.forEach(templateResponse => {
+                            // @ts-ignore
                             this.templateResults.push(templateResponse);
                         })
                     }

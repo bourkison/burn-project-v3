@@ -202,14 +202,7 @@ export default Vue.extend({
 
     async mounted() {
         try {
-            const path = "/post/" + this.$props.postId;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken"),
-                },
-            };
-
-            this.postData = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            this.postData = await this.$accessor.api.getPost({ postId: this.postId, init: {} });
 
             if (!this.postData) {
                 throw new Error("No post data!");
