@@ -57,7 +57,7 @@ import {
     RecordedSet,
 } from "@/types/workout";
 import { UserProfile, UserDocData, GetUserParams, GetUserInit } from "@/types/user";
-import { QueryPostParams, QueryPostInit, PostReference } from "@/types/post";
+import { Post, QueryPostParams, QueryPostInit, PostReference, CreatePostParams, CreatePostInit, GetPostParams, GetPostInit } from "@/types/post";
 import { Follow, QueryFollowParams, QueryFollowInit, FollowParams, FollowInit } from "@/types/follow";
 import { SearchParams, SearchInit, SearchResult } from "@/types/search";
 
@@ -457,6 +457,7 @@ export const actions = actionTree(
                 });
 
                 response.push({
+                    _id: workout._id,
                     duration: workout.duration,
                     name: workout.name,
                     notes: workout.notes,
@@ -505,6 +506,7 @@ export const actions = actionTree(
             });
 
             return {
+                _id: data.data._id,
                 duration: data.data.duration,
                 name: data.data.name,
                 notes: data.data.notes,
@@ -621,6 +623,89 @@ export const actions = actionTree(
             });
 
             return response;
+        },
+
+        async getPost({ state }, input: GetPostParams): Promise<Post> {
+            let myInit: GetPostInit = input.init
+            const path = "/post/" + input.postId;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+
+            let response: Post = {
+                _id: data.data._id,
+                content: data.data._content,
+                createdBy: {
+                    username: data.data.createdBy.username,
+                    userId: data.data.createdBy.userId,
+                    profilePhoto: data.data.createdBy.profilePhoto
+                },
+                filePaths: data.data.filePaths,
+                likeCount: data.data.likeCount,
+                commentCount: data.data.commentCount,
+                createdAt: data.data.createdAt,
+                isLiked: data.data.isLiked
+            }
+
+            if (data.data.share) {
+                response.share = {
+                    _id: data.data.share._id,
+                    coll: data.data.share.coll
+                }
+            }
+
+            return response;
+        },
+
+        async createPost({ state }, input: CreatePostParams): Promise<Post> {
+            let myInit: CreatePostInit = input.init;
+            const path = "/post";
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.post(state.apiName, path, myInit);
+
+            if (data.data && data.data.postReference) {
+                let response: Post = {
+                    _id: data.data.postReference._id,
+                    content: data.data.postReference._content,
+                    createdBy: {
+                        username: data.data.postReference.createdBy.username,
+                        userId: data.data.postReference.createdBy.userId,
+                        profilePhoto: data.data.postReference.createdBy.profilePhoto
+                    },
+                    filePaths: data.data.postReference.filePaths,
+                    likeCount: data.data.postReference.likeCount,
+                    commentCount: data.data.postReference.commentCount,
+                    createdAt: data.data.postReference.createdAt,
+                    isLiked: false
+                }
+    
+                if (data.data.postReference.share) {
+                    response.share = {
+                        _id: data.data.postReference.share._id,
+                        coll: data.data.postReference.share.coll
+                    }
+                }
+    
+                return response;
+            } else {
+                throw new Error("No response from server");
+            }
+
         },
 
         /*

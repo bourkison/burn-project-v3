@@ -111,9 +111,9 @@
                 :docId="postData._id"
                 coll="post"
                 :followableComponent="false"
-                :likeCount="likeCount"
-                :commentCount="commentCount"
-                :isLiked="isLiked"
+                :likeCount="postData.likeCount"
+                :commentCount="postData.commentCount"
+                :isLiked="postData.isLiked"
                 @like="handleLike(1)"
                 @unlike="handleLike(-1)"
                 @addComment="commentCount++"
@@ -136,7 +136,10 @@
     
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { Post } from "@/types/post";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -151,21 +154,22 @@ import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
 
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
+import { VideoJsPlayerOptions } from "video.js";
 
-export default {
+export default Vue.extend({
     name: "PostComponent",
     components: { CommentSection, WorkoutShare, ExerciseShare, TemplateShare, VideoPlayer },
     props: {
         postId: {
             required: true,
-            type: String,
+            type: String as PropType<string>,
         },
         skeletonAmount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true,
         },
         skeletonWidth: {
-            type: Array,
+            type: Array as PropType<number[]>,
             required: true,
         },
     },
@@ -173,21 +177,18 @@ export default {
     data() {
         return {
             isLoading: true,
-            postData: {},
-            imgUrls: [],
+            postData: null as Post | null,
+            imgUrls: [] as string[],
             video: {
                 id: "",
                 url: "",
                 token: "",
-                options: {},
+                options: {} as VideoJsPlayerOptions,
             },
             createdAtText: "",
-            createdAtTextInterval: null,
+            createdAtTextInterval: null as number | null,
             createdAtTextIntervalLength: 0,
 
-            likeCount: 0,
-            commentCount: 0,
-            isLiked: false,
             loadedSuccessfully: false,
 
             // Bootstrap:
@@ -208,23 +209,14 @@ export default {
                 },
             };
 
-            const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            this.postData = (await API.get(this.$store.state.apiName, path, myInit)).data;
 
-            this.postData = {
-                _id: response._id,
-                createdBy: response.createdBy,
-                createdAt: response.createdAt,
-                content: response.content,
-                filePaths: response.filePaths,
-                share: response.share,
-            };
-
-            this.likeCount = response.likeCount;
-            this.commentCount = response.commentCount;
-            this.isLiked = response.isLiked;
+            if (!this.postData) {
+                throw new Error("No post data!");
+            }
 
             this.createdAtText = dayjs(this.postData.createdAt).fromNow();
-            const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt)).unix();
+            const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt).unix()).unix();
 
             if (secondsAgo < 2700) {
                 // 2700 = 45 minutes, when createdAtText = an hour ago
@@ -235,27 +227,29 @@ export default {
                 }
 
                 this.createdAtTextInterval = window.setInterval(() => {
-                    this.createdAtText = dayjs(this.postData.createdAt).fromNow();
-                    const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt)).unix();
-
-                    if (secondsAgo > 2700) {
-                        window.clearInterval(this.createdAtTextInterval);
-                    } else if (secondsAgo > 90) {
-                        this.createdAtTextIntervalLength = 60000;
+                    if (this.postData) {
+                        this.createdAtText = dayjs(this.postData.createdAt).fromNow();
+                        const secondsAgo = dayjs().subtract(dayjs(this.postData.createdAt).unix()).unix();
+    
+                        if (secondsAgo > 2700) {
+                            if (this.createdAtTextInterval) window.clearInterval(this.createdAtTextInterval);
+                        } else if (secondsAgo > 90) {
+                            this.createdAtTextIntervalLength = 60000;
+                        }
                     }
                 }, this.createdAtTextIntervalLength);
             }
 
             try {
-                let urlPromises = [];
+                let urlPromises: Promise<string>[] = [];
 
                 this.postData.filePaths.forEach(async (path) => {
-                    if (path.type === "video") {
+                    if (path.fileType === "video") {
                         const videoObject = {
                             id: path.key,
                         };
 
-                        const response = await API.graphql(
+                        const response: any = await API.graphql(
                             graphqlOperation(getVideoObject, videoObject)
                         );
 
@@ -279,7 +273,7 @@ export default {
                                 },
                             ],
                         };
-                    } else if (path.type === "image") {
+                    } else if (path.fileType === "image") {
                         urlPromises.push(Storage.get(path.key));
                     }
                 });
@@ -312,17 +306,17 @@ export default {
     },
 
     methods: {
-        handleLike(x) {
-            if (x > 0) {
-                this.isLiked = true;
-                this.likeCount++;
-            } else {
-                this.isLiked = false;
-                this.likeCount--;
+        handleLike(x: number): void {
+            if (x > 0 && this.postData) {
+                this.postData.isLiked = true;
+                this.postData.likeCount++;
+            } else if (this.postData) {
+                this.postData.isLiked = false;
+                this.postData.likeCount--;
             }
         }
     },
-};
+});
 </script>
 
 <style scoped>

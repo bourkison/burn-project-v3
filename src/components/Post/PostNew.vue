@@ -52,7 +52,14 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { ImageToUpload } from "@/types";
+import { CreatePost } from "@/types/post";
+import { Workout } from "@/types/workout";
+import { ExerciseReference } from "@/types/exercise";
+import { TemplateReference } from "@/types/template";
+
 import { API, Storage, graphqlOperation } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
@@ -69,7 +76,7 @@ import TemplateShare from "@/components/Template/TemplateShare.vue";
 import { v4 as uuidv4 } from "uuid";
 import awsvideoconfig from "@/aws-video-exports.js";
 
-export default {
+export default Vue.extend({
     name: "PostNew",
     components: {
         PostEditor,
@@ -88,9 +95,9 @@ export default {
                 content: "",
                 filePaths: [],
                 share: {},
-            },
-            imagesToUpload: [],
-            videoToUpload: null,
+            } as CreatePost,
+            imagesToUpload: [] as ImageToUpload[],
+            videoToUpload: null as File | null,
 
             // Modals:
             exerciseModal: false,
@@ -104,7 +111,7 @@ export default {
     },
 
     methods: {
-        createPost: async function () {
+        async createPost(): Promise<void> {
             if (!this.isPosting) {
                 try {
                     console.log(JSON.stringify(JSON.stringify(this.post)));
@@ -115,7 +122,7 @@ export default {
                         const uploadResults = await Promise.all(
                             this.imagesToUpload.map(async (image, i) => {
                                 const imageName =
-                                    this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                                    this.$accessor.userProfile?.docData?.username + "/" + uuidv4() || uuidv4();
 
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
@@ -139,11 +146,15 @@ export default {
                         );
 
                         uploadResults.forEach((result) => {
-                            this.post.filePaths.push({ key: result.key, type: "image" });
+                            if (result) {
+                                this.post.filePaths.push({ key: result.key, fileType: "image" });
+                            } else {
+                                console.error("No response from upload");
+                            }
                         });
                     } else if (this.videoToUpload) {
                         const uuid =
-                            this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                            this.$accessor.userProfile?.docData?.username + "/" + uuidv4() || "";
                         const fileNameSplit = this.videoToUpload.name.split(".");
                         const fileExtension = fileNameSplit[fileNameSplit.length - 1];
                         const fileName = `${uuid}.${fileExtension}`;
@@ -180,24 +191,20 @@ export default {
                             console.error("ERROR UPLOADED:", err);
                         });
 
-                        this.post.filePaths.push({ key: uuid, type: "video" });
+                        this.post.filePaths.push({ key: uuid, fileType: "video" });
                         console.log("UUID:", uuid);
                     }
 
-                    const path = "/post";
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken"),
-                        },
+                    const init = {
                         body: {
-                            postForm: JSON.parse(JSON.stringify(this.post)),
+                            postForm: this.post
                         },
                     };
 
-                    const response = await API.post(this.$store.state.apiName, path, myInit);
+                    const response = await this.$accessor.api.createPost({ init });
 
                     console.log("POST CREATED:", response);
-                    this.$emit("newPost", response.data.postReference);
+                    this.$emit("newPost", response);
                     this.isPosting = false;
                     this.resetVariablesIncrementor++;
                     this.resetVariables();
@@ -207,7 +214,7 @@ export default {
             }
         },
 
-        addWorkout: function (workout) {
+        addWorkout: function (workout: Workout): void {
             this.post.share = {
                 _id: workout._id,
                 type: "workout",
@@ -216,7 +223,7 @@ export default {
             this.workoutModal = false;
         },
 
-        addExercise: function (exercise) {
+        addExercise: function (exercise: ExerciseReference): void {
             this.post.share = {
                 _id: exercise.exerciseId,
                 type: "exercise",
@@ -225,7 +232,7 @@ export default {
             this.exerciseModal = false;
         },
 
-        addTemplate: function (template) {
+        addTemplate: function (template: TemplateReference): void {
             this.post.share = {
                 _id: template.templateId,
                 type: "template",
@@ -234,15 +241,15 @@ export default {
             this.templateModal = false;
         },
 
-        updateImages: function (images) {
+        updateImages: function (images: ImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 
-        updateVideo: function (video) {
+        updateVideo: function (video: File): void {
             this.videoToUpload = video;
         },
 
-        resetVariables: function () {
+        resetVariables: function (): void {
             (this.isPosting = false),
                 (this.post = {
                     content: "",
@@ -252,7 +259,7 @@ export default {
                 (this.imagesToUpload = []);
         },
     },
-};
+});
 </script>
 
 <style scoped>

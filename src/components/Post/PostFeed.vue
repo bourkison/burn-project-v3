@@ -21,50 +21,53 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { PostReference } from "@/types/post";
+
 import PostComponent from "@/components/Post/PostComponent.vue";
 import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
 
-export default {
+export default Vue.extend({
     name: "Feed",
     components: { PostComponent, LoadingComponent },
     props: {
         posts: {
-            type: Array,
+            type: Array as PropType<PostReference[]>,
             required: true
         },
         isLoading: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         }
     },
     data() {
         return {
-            skeleton: [],
+            skeleton: [] as [number, string[]][],
             loadAmount: 5,
         };
     },
 
     created() {
-        this.skeleton = JSON.parse(JSON.stringify(this.$store.state.posts.postFeedSkeletons));
+        this.skeleton = this.$accessor.posts.postFeedSkeletons;
     },
 
     mounted() {
-        this.$store.commit("posts/emptySkeletons");
+        this.$accessor.posts.EMPTY_SKELETONS();
     },
 
     computed: {
-        postLength() {
-            return this.$props.posts.length;
+        postLength(): number {
+            return this.posts.length;
         }
     },
 
     methods: {
-        addPost(p) {
-            this.$emit("addPost", p.id);
+        addPost(p: PostReference) {
+            this.$emit("addPost", p);
         },
 
-        postLoaded(index) {
+        postLoaded(index: number) {
             this.$emit("postLoaded", index);
         }
     },
@@ -84,7 +87,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

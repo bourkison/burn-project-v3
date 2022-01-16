@@ -95,7 +95,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ICreateExercise, IImageToUpload } from "@/types";
+import { ImageToUpload } from "@/types";
+import { CreateExercise } from "@/types/exercise";
 
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
@@ -110,8 +111,8 @@ import { v4 as uuid } from "uuid";
 import awsvideoconfig from "@/aws-video-exports.js";
 
 interface ExerciseNewData {
-    exerciseForm: ICreateExercise;
-    imagesToUpload: IImageToUpload[];
+    exerciseForm: CreateExercise;
+    imagesToUpload: ImageToUpload[];
     videoToUpload: File | null;
     isCreating: boolean;
     errorCountdown: number;
@@ -261,7 +262,7 @@ export default Vue.extend({
             this.exerciseForm.description = md;
         },
 
-        updateImages(images: IImageToUpload[]): void {
+        updateImages(images: ImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 

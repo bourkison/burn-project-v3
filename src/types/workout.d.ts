@@ -4,6 +4,7 @@ import { ExerciseReference } from "@/types/exercise";
 
 // Workout
 export type Workout = {
+    _id: string;
     duration: number;
     name: string;
     notes: string;

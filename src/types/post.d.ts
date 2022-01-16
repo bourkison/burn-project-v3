@@ -17,6 +17,8 @@ export type Post = {
     },
     likeCount: number;
     commentCount: number;
+    createdAt: Date;
+    isLiked: boolean;
 }
 
 export type PostReference = {
@@ -27,6 +29,16 @@ export type PostReference = {
         profilePhoto: string;
     };
     createdAt: Date;
+    loaded?: boolean;
+}
+
+export type CreatePost = {
+    content: string;
+    filePaths: FilePath[];
+    share: {
+        _id: string;
+        coll: "post"|"exercise"|"template"|"workout"
+    } | {}
 }
 
 // API
@@ -43,5 +55,29 @@ export type QueryPostInit = {
         loadAmount: number
         startAt?: string
         userId?: string
+    }
+}
+
+export type GetPostParams = {
+    postId: string;
+    init: GetPostInit;
+}
+
+export type GetPostInit = {
+    headers?: {
+        Authorization?: string;
+    }
+}
+
+export type CreatePostParams = {
+    init: CreatePostInit
+}
+
+export type CreatePostInit = {
+    headers?: {
+        Authorization?: string
+    },
+    body: {
+        postForm: CreatePost
     }
 }
