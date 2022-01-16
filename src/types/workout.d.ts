@@ -57,4 +57,7 @@ export type GetWorkoutInit = {
     headers?: {
         Authorization?: string
     }
+    queryStringParameters?: {
+        username?: string;
+    }
 }

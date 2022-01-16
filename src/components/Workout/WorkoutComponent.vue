@@ -73,15 +73,18 @@
     </b-card>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { Workout } from "@/types/workout";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-export default {
+export default Vue.extend({
     name: "WorkoutComponent",
     props: {
         workout: {
-            type: Object,
+            type: Object as PropType<Workout>,
             required: true
         }
     },
@@ -120,7 +123,7 @@ export default {
             this.durationText = hours + ":" + minutes + ":" + seconds;
         }
     }
-};
+});
 </script>
 
 <style scoped>

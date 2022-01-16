@@ -2,25 +2,25 @@
     <div class="description-viewer" v-html="value"></div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue"
+
+export default Vue.extend({
     name: "DescriptionViewer",
     props: {
         value: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         }
     }
-}
+})
 </script>
 
 <style scoped>
     .description-viewer {
         margin-top: 0.5rem;
     }
-</style>
 
-<style>
     .description-viewer h1 {
         font-size: 2rem;
     }
