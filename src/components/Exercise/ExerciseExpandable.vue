@@ -34,12 +34,12 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue"
-import { IExercise, IExerciseReference } from "@/types";
+import { Exercise, ExerciseReference } from "@/types/exercise";
 
 import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 type ExerciseExpandable = {
-    exerciseData: IExercise | undefined;
+    exerciseData: Exercise | undefined;
     isLoading: boolean;
     isVisible: false
 }
@@ -49,7 +49,7 @@ export default Vue.extend({
     components: { DescriptionViewer },
     props: {
         exercise: {
-            type: Object as PropType<IExerciseReference>,
+            type: Object as PropType<ExerciseReference>,
             required: true
         },
         accordionIndex: {
@@ -82,7 +82,7 @@ export default Vue.extend({
     },
 
     methods: {
-        async downloadData() {
+        async downloadData(): Promise<void> {
             try {                
                 if (this.$accessor.userProfile && this.$accessor.userProfile.loggedIn) {
                     this.exerciseData = await this.$accessor.api.getExercise({ exerciseId: this.exercise.exerciseId, init: {} })

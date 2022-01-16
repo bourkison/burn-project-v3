@@ -20,37 +20,43 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { ExerciseReference } from "@/types/exercise";
+
 import ExerciseComponent from "@/components/Exercise/ExerciseComponent.vue";
 import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
 
-export default {
+type ExerciseFeedData = {
+    skeleton: [number, string[]][]
+}
+
+export default Vue.extend({
     name: "ExerciseFeed",
     components: { ExerciseComponent, LoadingComponent },
     props: {
         exercises: {
-            type: Array,
+            type: Array as PropType<ExerciseReference[]>,
             required: true
         },
         isLoading: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         }
     },
-    data() {
+    data(): ExerciseFeedData {
         return {
-            skeleton: [],
-            loadAmount: 5
+            skeleton: []
         };
     },
 
     computed: {
-        exerciseLength: function() {
-            return this.$props.exercises.length;
+        exerciseLength(): number {
+            return this.exercises.length;
         }
     },
 
-    created: function() {
+    created() {
         this.skeleton = JSON.parse(JSON.stringify(this.$store.state.exercises.exerciseSkeletons));
     },
 
@@ -59,7 +65,7 @@ export default {
     },
 
     watch: {
-        exerciseLength: function(n) {
+        exerciseLength(n) {
             let len = this.skeleton.length;
 
             for (let i = 0; i < n - len; i++) {
@@ -73,7 +79,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

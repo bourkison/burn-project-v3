@@ -170,6 +170,10 @@ const exerciseReferenceSchema = new mongoose.Schema(
             userId: {
                 type: String,
                 required: true
+            },
+            profilePhoto: {
+                type: String,
+                required: true
             }
         },
         createdAt: {
@@ -189,6 +193,10 @@ const postReferenceSchema = new mongoose.Schema(
             },
             userId: {
                 type: ObjectId,
+                required: true
+            },
+            profilePhoto: {
+                type: String,
                 required: true
             }
         },
@@ -225,6 +233,10 @@ const templateReferenceSchema = new mongoose.Schema(
             },
             userId: {
                 type: ObjectId,
+                required: true
+            },
+            profilePhoto: {
+                type: String,
                 required: true
             }
         },
@@ -304,6 +316,10 @@ const likeSchema = new mongoose.Schema(
             },
             userId: {
                 type: ObjectId,
+                required: true
+            },
+            profilePhoto: {
+                type: String,
                 required: true
             }
         }
@@ -390,6 +406,10 @@ const commentSchema = new mongoose.Schema(
             userId: {
                 type: ObjectId,
                 required: true
+            },
+            profilePhoto: {
+                type: String,
+                required: true
             }
         },
         likes: {
@@ -423,6 +443,10 @@ const notificationSchema = new mongoose.Schema(
             userId: {
                 type: ObjectId,
                 required: true
+            },
+            profilePhoto: {
+                type: String,
+                required: true
             }
         },
         seen: {
@@ -452,6 +476,10 @@ const reportSchema = new mongoose.Schema(
             userId: {
                 type: ObjectId,
                 required: true
+            },
+            profilePhoto: {
+                type: String,
+                required: true
             }
         },
         reason: {
@@ -479,6 +507,10 @@ const messageSchema = new mongoose.Schema(
             },
             userId: {
                 type: ObjectId,
+                required: true
+            },
+            profilePhoto: {
+                type: String,
                 required: true
             }
         },
@@ -515,6 +547,10 @@ const conversationSchema = new mongoose.Schema(
                 userId: {
                     type: ObjectId,
                     required: true
+                },
+                profilePhoto: {
+                    type: String,
+                    required: true
                 }
             }],
             required: true
@@ -540,6 +576,10 @@ const postSchema = new mongoose.Schema(
             },
             userId: {
                 type: ObjectId,
+                required: true
+            },
+            profilePhoto: {
+                type: String,
                 required: true
             }
         },
@@ -594,6 +634,10 @@ const postSchema = new mongoose.Schema(
                 },
                 userId: {
                     type: ObjectId,
+                    required: true
+                },
+                profilePhoto: {
+                    type: String,
                     required: true
                 }
             }],
@@ -704,6 +748,10 @@ const userSchema = new mongoose.Schema(
                     type: String,
                     required: true
                 },
+                profilePhoto: {
+                    type: String,
+                    required: true
+                },
                 createdAt: {
                     type: Date,
                     default: Date.now
@@ -718,6 +766,10 @@ const userSchema = new mongoose.Schema(
                     required: true
                 },
                 username: {
+                    type: String,
+                    required: true
+                },
+                profilePhoto: {
                     type: String,
                     required: true
                 },
@@ -756,6 +808,10 @@ const userSchema = new mongoose.Schema(
                         required: true
                     },
                     userId: {
+                        type: String,
+                        required: true
+                    },
+                    profilePhoto: {
                         type: String,
                         required: true
                     }
@@ -797,6 +853,10 @@ const userSchema = new mongoose.Schema(
                     userId: {
                         type: String,
                         required: true
+                    },
+                    profilePhoto: {
+                        type: String,
+                        required: true
                     }
                 },
                 createdAt: {
@@ -831,6 +891,10 @@ const userSchema = new mongoose.Schema(
                             required: true
                         },
                         userId: {
+                            type: String,
+                            required: true
+                        },
+                        profilePhoto: {
                             type: String,
                             required: true
                         }
@@ -907,6 +971,10 @@ const exerciseSchema = new mongoose.Schema(
             userId: {
                 type: String,
                 required: true
+            },
+            profilePhoto: {
+                type: String,
+                required: true
             }
         },
         description: {
@@ -974,6 +1042,10 @@ const exerciseSchema = new mongoose.Schema(
                     type: String,
                     required: true
                 },
+                profilePhoto: {
+                    type: String,
+                    required: true
+                },
                 createdAt: {
                     type: Date,
                     default: Date.now
@@ -1021,6 +1093,10 @@ const templateSchema = new mongoose.Schema(
                 required: true
             },
             userId: {
+                type: String,
+                required: true
+            },
+            profilePhoto: {
                 type: String,
                 required: true
             }
@@ -1082,6 +1158,10 @@ const templateSchema = new mongoose.Schema(
                     required: true
                 },
                 userId: {
+                    type: String,
+                    required: true
+                },
+                profilePhoto: {
                     type: String,
                     required: true
                 },

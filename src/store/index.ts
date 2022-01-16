@@ -173,7 +173,7 @@ export const actions = actionTree({ state, mutations }, {
     },
 
     nuxtServerInit({ commit }) {
-        const mutations = ["posts/pushSkeleton", "exercises/pushSkeleton", "templates/pushSkeleton"];
+        const mutations = ["posts/PUSH_SKELETON", "exercises/PUSH_SKELETON", "templates/PUSH_SKELETON"];
 
         mutations.forEach(mut => {
             for (let i = 0; i < 5; i++) {
