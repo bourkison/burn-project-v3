@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
-import { ITemplateReference } from "~/types";
+import { TemplateReference } from "@/types/template";
 
 import TemplateComponent from "@/components/Template/TemplateComponent.vue";
 import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
@@ -37,7 +37,7 @@ export default Vue.extend({
     components: { TemplateComponent, LoadingComponent },
     props: {
         templates: {
-            type: Array as PropType<ITemplateReference[]>,
+            type: Array as PropType<TemplateReference[]>,
             required: true
         },
         isLoading: {

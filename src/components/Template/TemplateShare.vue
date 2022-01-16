@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ITemplate } from "~/types";
+import { Template } from "~/types/template";
 
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 
@@ -31,7 +31,7 @@ export default Vue.extend({
     data() {
         return {
             isLoading: true,
-            template: {} as ITemplate
+            template: {} as Template
         };
     },
 

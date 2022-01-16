@@ -3,7 +3,7 @@ import { IncomingMessage } from "connect";
 export type SearchResult = {
     user?: {
         _id: string;
-        name: string;
+        username: string;
     }[];
     exercise?: {
         _id: string;

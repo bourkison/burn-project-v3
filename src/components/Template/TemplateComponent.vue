@@ -71,7 +71,7 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
-import { ITemplate } from "~/types";
+import { Template } from "@/types/template";
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
@@ -79,7 +79,7 @@ import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
 type TemplateComponentData = {
     isLoading: boolean;
-    templateData: ITemplate | undefined;
+    templateData: Template | undefined;
     loadedSuccessfully: boolean;
 }
 

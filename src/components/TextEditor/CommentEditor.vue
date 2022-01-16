@@ -6,7 +6,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue';
 import { API } from "aws-amplify"
 
@@ -44,15 +44,14 @@ export default Vue.extend({
     },
     data() {
         return {
-            editor: null,
-            editor: null,
+            editor: null as Editor | null,
             suggesting: false,
-            suggestionComponent: null,
-            suggestionPopup: null,
+            suggestionComponent: null as VueRenderer | null,
+            suggestionPopup: null as ReturnType<typeof tippy> | null,
 
             // Debounce:
             timeoutStart: 0,
-            loadUsersTimeout: null
+            loadUsersTimeout: null as ReturnType<typeof setTimeout> | null
         }
     },
 
@@ -64,6 +63,7 @@ export default Vue.extend({
                 return [
                     new Plugin({
                         props: {
+                            // @ts-ignore
                             key: new PluginKey("enterHandler"),
                             handleKeyDown: (view, event) => {
                                 if (!this.suggesting && event.key === "Enter" && !event.shiftKey) {
@@ -109,7 +109,9 @@ export default Vue.extend({
                                     this.timeoutStart = now
                                     resolve(await this.loadUsers(query))
                                 } else {
-                                    window.clearTimeout(this.loadUsersTimeout);
+                                    if (this.loadUsersTimeout) {
+                                        window.clearTimeout(this.loadUsersTimeout);
+                                    }
                                     let waitTime = DEBOUNCE_TIME;
 
                                     if (this.timeoutStart) {
@@ -148,24 +150,27 @@ export default Vue.extend({
                                 },
         
                                 onUpdate: (props) => {
-                                    this.suggestionComponent.updateProps(props);
-                                    this.suggestionPopup[0].setProps({
-                                        getReferenceClientRect: props.clientRect,
-                                    });
+                                    if (this.suggestionComponent) this.suggestionComponent.updateProps(props);
+                                    if (this.suggestionPopup && this.suggestionPopup[0]) {
+                                        this.suggestionPopup[0].setProps({
+                                            getReferenceClientRect: props.clientRect,
+                                        });
+                                    }
                                 },
         
                                 onKeyDown: (props) => {
-                                    if (props.event.key === 'Escape') {
+                                    if (props.event.key === 'Escape' && this.suggestionPopup) {
                                         this.suggestionPopup[0].hide()
                                         return true
                                     }
-        
+
+                                    // @ts-ignore
                                     return this.suggestionComponent.ref?.onKeyDown(props)
                                 },
         
                                 onExit: () => {
-                                    this.suggestionPopup[0].destroy()
-                                    this.suggestionComponent.destroy()
+                                    if (this.suggestionPopup) this.suggestionPopup[0].destroy()
+                                    if (this.suggestionComponent) this.suggestionComponent.destroy()
                                     this.suggesting = false;
                                 }
                             }
@@ -174,33 +179,31 @@ export default Vue.extend({
                 })
             ],
             onUpdate: () => {
-                this.$emit("input", this.editor.getHTML());
+                if (this.editor) this.$emit("input", this.editor.getHTML());
             },
         });
     },
 
     methods: {
-        async loadUsers(query) {
+        async loadUsers(query: string) {
             try {
-                if (query.trim()) {
+                if (query.trim() && this.suggestionComponent) {
                     this.suggestionComponent.updateProps({ isLoadingMentions: true });
-                    const path = "/search";
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
+                    const init = {
                         queryStringParameters: {
                             q: query,
                             collections: "user"
                         }
                     }
-    
-                    const response = await API.get(this.$store.state.apiName, path, myInit);
-                    if (this.suggestionComponent) {
-                        this.suggestionComponent.updateProps({ isLoadingMentions: false });
+
+                    const response = await this.$accessor.api.getSearch({ init })
+                    this.suggestionComponent.updateProps({ isLoadingMentions: false });
+                    const usernames = response.user?.map(user => { return user.username });
+                    if (usernames) {
+                        return usernames;
+                    } else {
+                        return []
                     }
-                    const usernames = response.data.user.map(user => { return user.username });
-                    return usernames;
                 } else {
                     return [];
                 }
@@ -225,15 +228,20 @@ export default Vue.extend({
         },
 
         replyingTo(n) {
-            if (n) {
+            if (n && this.editor) {
                 this.editor.commands.focus();
             }
         }
     },
 
     beforeDestroy() {
-        this.editor.destroy();
-        window.clearTimeout(this.loadUsersTimeout);
+        if (this.editor) {
+            this.editor.destroy();
+        }
+        
+        if (this.loadUsersTimeout) {
+            window.clearTimeout(this.loadUsersTimeout);
+        }
 
         if (this.suggestionComponent !== null) {
             this.suggestionComponent.destroy();

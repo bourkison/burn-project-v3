@@ -68,15 +68,15 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
-import { IExerciseReference } from "@/types";
+import { ExerciseReference } from "@/types/exercise";
 
 import Sortable, { SortableOptions, SortableEvent } from "sortablejs";
 
 interface TemplateBuilderData {
     isLoading: boolean;
-    createdExercises: IExerciseReference[];
-    followedExercises: IExerciseReference[];
-    selectedExercises: IExerciseReference[];
+    createdExercises: ExerciseReference[];
+    followedExercises: ExerciseReference[];
+    selectedExercises: ExerciseReference[];
     sortable: Sortable | undefined;
     sortableOptions: SortableOptions | undefined;
 }
@@ -85,7 +85,7 @@ export default Vue.extend({
     name: "TemplateBuilder",
     props: {
         initExercises: {
-            type: Array as PropType<IExerciseReference[]>,
+            type: Array as PropType<ExerciseReference[]>,
             required: false
         }
     },
@@ -106,20 +106,20 @@ export default Vue.extend({
     },
 
     async mounted() {
-        this.sortableOptions.onEnd = (e: SortableEvent): void => {
-            console.log(e);
-            if (e.newIndex !== e.oldIndex) {
-                if (this !== undefined) {
+        if (this.sortableOptions) {
+            this.sortableOptions.onEnd = (e: SortableEvent): void => {
+                console.log(e);
+                if (e.newIndex && e.oldIndex && e.newIndex !== e.oldIndex) {
                     this.selectedExercises.splice(
                         e.newIndex,
                         0,
                         this.selectedExercises.splice(e.oldIndex, 1)[0]
                     );
-                }   
+                }
             }
         }
 
-        const exerciseReferenceResponse: IExerciseReference[] = await this.$accessor.api.queryExercise({ init: { queryStringParameters: { loadAmount: 99, user: true }}})
+        const exerciseReferenceResponse: ExerciseReference[] = await this.$accessor.api.queryExercise({ init: { queryStringParameters: { loadAmount: 99, user: true }}})
 
         exerciseReferenceResponse.forEach(exerciseReference => {
             if (exerciseReference.isFollow) {
@@ -131,7 +131,7 @@ export default Vue.extend({
 
         // Once exercises are downloaded, check for initExercises.
         if (this.initExercises) {
-            let initExercisePromises: Promise<IExerciseReference>[] = [];
+            let initExercisePromises: Promise<ExerciseReference>[] = [];
 
             this.initExercises.forEach(exercise => {
                 // Check we haven't downloaded already (i.e. in followed or created exercises)
@@ -204,7 +204,7 @@ export default Vue.extend({
     },
 
     methods: {
-        addExercise(exercise: IExerciseReference): void {
+        addExercise(exercise: ExerciseReference): void {
             if (this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId) < 0) {
                 const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
                 console.log("ADDED:", exerciseEl);
@@ -215,7 +215,7 @@ export default Vue.extend({
             }
         },
 
-        removeExercise(exercise: IExerciseReference): void {
+        removeExercise(exercise: ExerciseReference): void {
             let index = this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
             if (index) {
                 this.selectedExercises.splice(index, 1);
@@ -228,7 +228,7 @@ export default Vue.extend({
     },
 
     watch: {
-        selectedExercises(n: IExerciseReference[]) {
+        selectedExercises(n: ExerciseReference[]) {
             if (n.length > 0 && !this.sortable && !this.isLoading) {
                 this.$nextTick(() => {
                     const cont = document.getElementById("selectedContainer");

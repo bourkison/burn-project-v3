@@ -43,8 +43,8 @@
     </div>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue, { PropType } from "vue";
 
 import { Editor, EditorContent, VueRenderer } from "@tiptap/vue-2";
 import Document from "@tiptap/extension-document";
@@ -67,7 +67,7 @@ import MentionList from "@/components/TextEditor/Mention/MentionList.vue";
 
 const DEBOUNCE_TIME = 500;
 
-export default {
+export default Vue.extend({
     name: "PostEditor",
     components: {
         EditorContent,
@@ -79,24 +79,23 @@ export default {
     },
     props: {
         value: {
-            type: String,
+            type: String as PropType<string>,
             default: "",
         },
         isLoading: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         }
     },
-    emits: ["input", "exerciseClick", "workoutClick", "templateClick", "postClick"],
     data() {
         return {
-            editor: null,
-            suggestionComponent: null,
-            suggestionPopup: null,
+            editor: null as Editor | null,
+            suggestionComponent: null as VueRenderer | null,
+            suggestionPopup: null as ReturnType<typeof tippy> | null,
 
             // Debounce:
             timeoutStart: 0,
-            loadUsersTimeout: null
+            loadUsersTimeout: null as ReturnType<typeof setTimeout> | null
         };
     },
 
@@ -130,7 +129,9 @@ export default {
                                     this.timeoutStart = now
                                     resolve(await this.loadUsers(query))
                                 } else {
-                                    window.clearTimeout(this.loadUsersTimeout);
+                                    if (this.loadUsersTimeout !== null) {
+                                        window.clearTimeout(this.loadUsersTimeout);
+                                    }
                                     let waitTime = DEBOUNCE_TIME;
 
                                     if (this.timeoutStart) {
@@ -167,24 +168,28 @@ export default {
                                 },
         
                                 onUpdate: (props) => {
-                                    this.suggestionComponent.updateProps(props);
-                                    this.suggestionPopup[0].setProps({
-                                        getReferenceClientRect: props.clientRect,
-                                    });
+                                    if (this.suggestionComponent) this.suggestionComponent.updateProps(props);
+                                    if (this.suggestionPopup && this.suggestionPopup[0]) {
+                                        this.suggestionPopup[0].setProps({
+                                            getReferenceClientRect: props.clientRect,
+                                        });
+                                    }
                                 },
         
                                 onKeyDown: (props) => {
-                                    if (props.event.key === 'Escape') {
+                                    if (props.event.key === 'Escape' && this.suggestionPopup) {
                                         this.suggestionPopup[0].hide()
                                         return true
                                     }
+
+                                    // @ts-ignore
+                                    return this.suggestionComponent?.ref?.onKeyDown(props)
         
-                                    return this.suggestionComponent.ref?.onKeyDown(props)
                                 },
         
                                 onExit: () => {
-                                    this.suggestionPopup[0].destroy()
-                                    this.suggestionComponent.destroy()
+                                    if (this.suggestionComponent) this.suggestionComponent.destroy()
+                                    if (this.suggestionPopup) this.suggestionPopup[0].destroy()
                                 }
                             }
                         }
@@ -192,46 +197,51 @@ export default {
                 })
             ],
             onUpdate: () => {
-                this.$emit("input", this.editor.getHTML());
+                if (this.editor) {
+                    this.$emit("input", this.editor.getHTML());
+                }
             },
         });
     },
 
     methods: {
-        async loadUsers(query) {
+        async loadUsers(query: string): Promise<string[]> {
             try {
-                if (query.trim()) {
+                if (query.trim() && this.suggestionComponent) {
                     this.suggestionComponent.updateProps({ isLoadingMentions: true });
-                    const path = "/search";
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
+                    const init = {
                         queryStringParameters: {
                             q: query,
                             collections: "user"
                         }
                     }
-    
-                    const response = await API.get(this.$store.state.apiName, path, myInit);
-                    if (this.suggestionComponent) {
-                        this.suggestionComponent.updateProps({ isLoadingMentions: false });
+
+                    const response = await this.$accessor.api.getSearch({ init });
+                    this.suggestionComponent.updateProps({ isLoadingMentions: false });
+                    const usernames = response.user?.map(user => { return user.username });
+                    if (usernames) {
+                        return usernames;
+                    } else {
+                        return [];
                     }
-                    const usernames = response.data.user.map(user => { return user.username });
-                    return usernames;
                 } else {
                     return [];
                 }
             }
-            catch (err) {
+            catch {
                 return [];
             }
         }
     },
 
     beforeDestroy() {
-        this.editor.destroy();
-        window.clearTimeout(this.loadUsersTimeout);
+        if (this.editor) {
+            this.editor.destroy();
+        }
+        
+        if (this.loadUsersTimeout) {
+            window.clearTimeout(this.loadUsersTimeout);
+        }
 
         if (this.suggestionComponent !== null) {
             this.suggestionComponent.destroy();
@@ -241,7 +251,7 @@ export default {
             this.suggestionPopup[0].destroy();
         }
     },
-};
+});
 </script>
 
 <style>
