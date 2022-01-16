@@ -14,6 +14,7 @@ export type Workout = {
     }
     templateReference: TemplateReference | null;
     public: boolean;
+    createdAt: Date;
 }
 
 export type RecordedExercise = {

@@ -10,57 +10,59 @@
     </div>
 </template>
 
-<script>
-import videojs from 'video.js';
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import videojs, { VideoJsPlayerOptions, Player } from 'video.js';
 
-export default {
+export default Vue.extend({
     name: 'VideoPlayer',
     props: {
         options: {
-            type: Object,
+            type: Object as PropType<VideoJsPlayerOptions>,
             default() {
                 return {}
             }
         },
         token: {
-            type: String,
+            type: String as PropType<string>,
             default: ""
         },
         id: {
-            type: String,
+            type: String as PropType<string>,
             default: ""
         }
     },
     data() {
         return {
-            player: null,
+            player: null as Player | null,
             defaultOptions: {
                 autoplay: false,
                 controls: false,
                 muted: true
-            },
+            } as VideoJsPlayerOptions,
             userInteracted: false,
         }
     },
 
-    mounted: function() {
-        const options = Object.assign({}, this.defaultOptions, this.$props.options);
+    mounted() {
+        const options = Object.assign({}, this.defaultOptions, this.options);
 
-        if (this.$props.id && this.$props.token) {
-            const idArr = this.$props.id.split("/");
+        if (this.id && this.token) {
+            const idArr = this.id.split("/");
             const key = idArr[idArr.length - 1];
 
             this.$store.commit("setVideoToken", {
                 key: key,
-                token: this.$props.token
+                token: this.token
             });
 
+            // @ts-ignore
             videojs.Vhs.xhr.beforeRequest = (options) => {
                 const splitUrl = options.uri.split(".");
                 const splitId = splitUrl[splitUrl.length - 2].split("/");
                 const id = splitId[splitId.length - 2];
                 
-                const token = this.$store.state.videoTokens[id] && this.$store.state.videoTokens[id].token ? this.$store.state.videoTokens[id].token : "";
+                const token = this.$accessor.videoTokens[id] && this.$accessor.videoTokens[id].token ? this.$accessor.videoTokens[id].token : "";
 
                 options.uri = `${options.uri}${token}`;
                 return options;
@@ -71,19 +73,19 @@ export default {
         this.player.controlBar.playToggle.on('click', this.interacted);
     },
 
-    beforeDestroy: function() {
+    beforeDestroy() {
         if (this.player) {
             this.player.dispose();
         }
 
-        if (this.$props.id && this.$props.token) {
-            const key = this.$props.id.split("/")[this.$props.id.split("/").length - 1];
+        if (this.id && this.token) {
+            const key = this.id.split("/")[this.id.split("/").length - 1];
             this.$store.commit("deleteVideoToken", key);
         }
     },
 
     methods: {
-        playWhenViewable: function(isVisible) {
+        playWhenViewable(isVisible: boolean) {
             if (!this.userInteracted) {
                 if (isVisible && this.player.paused()) {
                     this.player.play();
@@ -93,9 +95,9 @@ export default {
             }
         },
 
-        interacted: function() {
+        interacted() {
             this.userInteracted = true;
         }
     }
-}
+})
 </script>

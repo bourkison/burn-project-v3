@@ -464,6 +464,7 @@ export const actions = actionTree(
                     public: workout.public,
                     templateReference: workout.templateReference,
                     recordedExercises: recordedExercises,
+                    createdAt: workout.createdAt
                 });
             });
 
@@ -511,6 +512,7 @@ export const actions = actionTree(
                 public: data.data.public,
                 templateReference: data.data.templateReference,
                 recordedExercises: recordedExercises,
+                createdAt: data.data.createdAt
             };
         },
 

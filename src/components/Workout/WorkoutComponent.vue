@@ -98,20 +98,20 @@ export default Vue.extend({
     created() {
         dayjs.extend(relativeTime);
 
-        this.createdAtText = dayjs(dayjs(this.$props.workout.createdAt)).fromNow();
+        this.createdAtText = dayjs(dayjs(this.workout.createdAt)).fromNow();
 
         // Duration text:
         let hours = Math.floor(
-            (this.$props.workout.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
+            (this.workout.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
         );
         let minutes = Math.floor(
-            (this.$props.workout.duration % (1000 * 60 * 60)) / (1000 * 60)
+            (this.workout.duration % (1000 * 60 * 60)) / (1000 * 60)
         ).toLocaleString("en-US", {
             minimumIntegerDigits: 2,
             useGrouping: false
         });
         let seconds = Math.floor(
-            (this.$props.workout.duration % (1000 * 60)) / 1000
+            (this.workout.duration % (1000 * 60)) / 1000
         ).toLocaleString("en-US", {
             minimumIntegerDigits: 2,
             useGrouping: false

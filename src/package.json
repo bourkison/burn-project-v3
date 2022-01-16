@@ -20,6 +20,7 @@
     "@tiptap/vue-2": "^2.0.0-beta.75",
     "@types/randomcolor": "^0.5.6",
     "@types/uuid": "^8.3.4",
+    "@types/video.js": "^7.3.29",
     "aws-amplify": "^4.3.12",
     "bootstrap-vue": "^2.21.2",
     "browser-image-compression": "^1.0.14",
