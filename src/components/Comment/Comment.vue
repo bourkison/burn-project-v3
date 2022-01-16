@@ -100,27 +100,29 @@
     </b-list-group-item>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { Comment } from "@/types/comment";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { API } from "aws-amplify";
 
 import UserList from "@/components/User/UserList.vue";
 
-export default {
+export default Vue.extend({
     name: "Comment",
     components: { UserList },
     props: {
         comment: {
-            type: Object,
+            type: Object as PropType<Comment>,
             required: true
         },
         coll: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         docId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         }
     },
@@ -144,9 +146,9 @@ export default {
 
     created() {
         dayjs.extend(relativeTime);
-        this.createdAtText = dayjs(this.$props.comment.createdAt).fromNow();
-        this.isLiked = this.$props.comment.isLiked;
-        this.likeCount = this.$props.comment.likeCount;
+        this.createdAtText = dayjs(this.comment.createdAt).fromNow();
+        this.isLiked = this.comment.isLiked;
+        this.likeCount = this.comment.likeCount;
     },
 
     methods: {
@@ -154,51 +156,44 @@ export default {
             if (!this.isLiking) {
                 this.isLiking = true;
 
-                const path = "/like";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     queryStringParameters: {
-                        docId: this.$props.docId,
-                        coll: this.$props.coll + "/comment",
-                        commentId: this.$props.comment._id
+                        docId: this.docId,
+                        coll: this.coll + "/comment",
+                        commentId: this.comment._id
                     }
                 };
 
                 if (!this.isLiked) {
-                    console.log("LIKING:", myInit);
-
                     this.likeCount++;
                     this.isLiked = true;
 
                     try {
-                        const likeResponse = await API.post(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
-                        console.log("LIKED:", likeResponse);
-                    } catch (err) {
+                        await this.$accessor.api.createLike({ init })
+                        console.log("LIKED.");
+                    }
+                    catch (err) {
                         console.error("LIKING ERROR:", err);
                         this.likeCount--;
                         this.isLiked = false;
-                    } finally {
+                    }
+                    finally {
                         this.isLiking = false;
                     }
                 } else {
-                    console.log("UNLIKING", myInit);
                     this.likeCount--;
                     this.isLiked = false;
 
                     try {
-                        const likeResponse = await API.del(this.$store.state.apiName, path, myInit);
-                        console.log("UNLIKED:", likeResponse);
-                    } catch (err) {
+                        await this.$accessor.api.deleteLike({ init })
+                        console.log("UNLIKED.");
+                    }
+                    catch (err) {
                         this.likeCount++;
                         this.isLiked = true;
                         console.error("UNLIKING ERROR:", err);
-                    } finally {
+                    }
+                    finally {
                         this.isLiking = false;
                     }
                 }
@@ -211,10 +206,10 @@ export default {
             //         this.isLoadingLikes = true;
             //         console.log("Downloading likes");
 
-            //         db.collection(this.$props.collection)
-            //             .doc(this.$props.docId)
+            //         db.collection(this.collection)
+            //             .doc(this.docId)
             //             .collection("comments")
-            //             .doc(this.$props.comment.id)
+            //             .doc(this.comment.id)
             //             .collection("likes")
             //             .get()
             //             .then(likeSnapshot => {
@@ -224,10 +219,10 @@ export default {
 
             //                 this.isLoadingLikes = false;
             //                 console.log(this.likes);
-            //                 this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
+            //                 this.$bvModal.show(this.comment._id + "-commentLikeModal");
             //             });
             //     } else {
-            //         this.$bvModal.show(this.$props.comment._id + "-commentLikeModal");
+            //         this.$bvModal.show(this.comment._id + "-commentLikeModal");
             //     }
             // }
         },
@@ -236,26 +231,21 @@ export default {
             this.modalIsDeleting = true;
         },
 
-        async deleteComment(e) {
+        async deleteComment(e: any) {
             e.preventDefault();
 
             this.isDeleting = true;
-
-            const path = "/comment";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
+            const init = {
                 queryStringParameters: {
-                    docId: this.$props.docId,
-                    coll: this.$props.coll,
-                    _id: this.$props.comment._id
+                    docId: this.docId,
+                    coll: this.coll,
+                    _id: this.comment._id
                 }
             };
 
             try {
-                const delCommentResponse = await API.del(this.$store.state.apiName, path, myInit);
-                console.log("DELETED:", delCommentResponse);
+                await this.$accessor.api.deleteComment({ init });
+                console.log("DELETED.");
             } catch (err) {
                 console.error("ERROR DELETING COMMENT:", err);
             } finally {
@@ -265,11 +255,10 @@ export default {
         },
 
         replyComment() {
-            console.log("Reply comment.vue");
-            this.$emit("replyComment", this.$props.comment.createdBy.username);
+            this.$emit("replyComment", this.comment.createdBy.username);
         }
     }
-};
+});
 </script>
 
 <style scoped>

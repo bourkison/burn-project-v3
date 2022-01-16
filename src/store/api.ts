@@ -2,6 +2,24 @@ import { API } from "aws-amplify";
 
 import { actionTree } from "typed-vuex";
 import {
+    Like,
+    QueryLikeParams,
+    QueryLikeInit,
+    CreateLikeParams,
+    CreateLikeInit,
+    DeleteLikeParams,
+    DeleteLikeInit,
+} from "@/types";
+import {
+    Comment,
+    QueryCommentParams,
+    QueryCommentInit,
+    CreateCommentParams,
+    CreateCommentInit,
+    DeleteCommentParams,
+    DeleteCommentInit
+} from "@/types/comment";
+import {
     QueryTemplateParams,
     QueryTemplateInit,
     GetTemplateParams,
@@ -29,10 +47,18 @@ import {
     Exercise,
     ExerciseReference,
 } from "@/types/exercise";
-import { QueryWorkoutParams, QueryWorkoutInit, GetWorkoutParams, GetWorkoutInit, Workout, RecordedExercise, RecordedSet } from "@/types/workout";
+import {
+    QueryWorkoutParams,
+    QueryWorkoutInit,
+    GetWorkoutParams,
+    GetWorkoutInit,
+    Workout,
+    RecordedExercise,
+    RecordedSet,
+} from "@/types/workout";
 import { UserProfile, UserDocData, GetUserParams, GetUserInit } from "@/types/user";
 import { QueryPostParams, QueryPostInit, PostReference } from "@/types/post";
-import { FollowParams, FollowInit } from "@/types/follow";
+import { Follow, QueryFollowParams, QueryFollowInit, FollowParams, FollowInit } from "@/types/follow";
 import { SearchParams, SearchInit, SearchResult } from "@/types/search";
 
 export const state = () => {
@@ -79,7 +105,7 @@ export const actions = actionTree(
                     createdBy: {
                         username: exerciseReference.username,
                         userId: exerciseReference.userId,
-                        profilePhoto: data.data.createdBy.profilePhoto
+                        profilePhoto: data.data.createdBy.profilePhoto,
                     },
                     createdAt: exerciseReference.createdAt,
                     isFollow: exerciseReference.isFollow,
@@ -114,7 +140,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
-                    profilePhoto: data.data.createdBy.profilePhoto
+                    profilePhoto: data.data.createdBy.profilePhoto,
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -148,7 +174,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
-                    profilePhoto: data.data.createdBy.profilePhoto
+                    profilePhoto: data.data.createdBy.profilePhoto,
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -252,7 +278,7 @@ export const actions = actionTree(
                     createdBy: {
                         username: exerciseReference.username,
                         userId: exerciseReference.userId,
-                        profilePhoto: data.data.createdBy.profilePhoto
+                        profilePhoto: data.data.createdBy.profilePhoto,
                     },
                     createdAt: exerciseReference.createdAt,
                     isFollow: exerciseReference.isFollow,
@@ -287,7 +313,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
-                    profilePhoto: data.data.createdBy.profilePhoto
+                    profilePhoto: data.data.createdBy.profilePhoto,
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -303,7 +329,7 @@ export const actions = actionTree(
                 isLiked: data.data.isLiked,
                 isFollowed: data.data.isFollowed,
                 isFollowable: data.data.isFollowable,
-                createdAt: data.data.createdAt
+                createdAt: data.data.createdAt,
             };
         },
 
@@ -320,7 +346,7 @@ export const actions = actionTree(
                 createdBy: {
                     username: data.data.createdBy.username,
                     userId: data.data.createdBy.userId,
-                    profilePhoto: data.data.createdBy.profilePhoto
+                    profilePhoto: data.data.createdBy.profilePhoto,
                 },
                 description: data.data.description,
                 difficulty: data.data.difficulty,
@@ -336,7 +362,7 @@ export const actions = actionTree(
                 isLiked: data.data.isLiked,
                 isFollowed: data.data.isFollowed,
                 isFollowable: data.data.isFollowable,
-                createdAt: data.data.createdAt
+                createdAt: data.data.createdAt,
             };
         },
 
@@ -413,23 +439,22 @@ export const actions = actionTree(
                 let recordedExercises: RecordedExercise[] = [];
                 workout.recordedExercises.forEach((recordedExercise: RecordedExercise) => {
                     let sets: RecordedSet[] = [];
-                    
-                    recordedExercise.sets.forEach(set => {
+
+                    recordedExercise.sets.forEach((set) => {
                         sets.push({
                             weightAmount: set.weightAmount,
                             measureAmount: set.measureAmount,
-                            measureBy: set.measureBy
-                        })
+                            measureBy: set.measureBy,
+                        });
                     });
 
                     recordedExercises.push({
                         exerciseReference: recordedExercise.exerciseReference,
                         notes: recordedExercise.notes,
                         sets: sets,
-                        options: recordedExercise.options
+                        options: recordedExercise.options,
                     });
-                })
-
+                });
 
                 response.push({
                     duration: workout.duration,
@@ -438,9 +463,9 @@ export const actions = actionTree(
                     uniqueExercises: workout.uniqueExercises,
                     public: workout.public,
                     templateReference: workout.templateReference,
-                    recordedExercises: recordedExercises
-                })
-            })
+                    recordedExercises: recordedExercises,
+                });
+            });
 
             return response;
         },
@@ -461,22 +486,22 @@ export const actions = actionTree(
             let recordedExercises: RecordedExercise[] = [];
             data.data.recordedExercises.forEach((recordedExercise: RecordedExercise) => {
                 let sets: RecordedSet[] = [];
-                    
-                recordedExercise.sets.forEach(set => {
+
+                recordedExercise.sets.forEach((set) => {
                     sets.push({
                         weightAmount: set.weightAmount,
                         measureAmount: set.measureAmount,
-                        measureBy: set.measureBy
-                    })
+                        measureBy: set.measureBy,
+                    });
                 });
 
                 recordedExercises.push({
                     exerciseReference: recordedExercise.exerciseReference,
                     notes: recordedExercise.notes,
                     sets: sets,
-                    options: recordedExercise.options
+                    options: recordedExercise.options,
                 });
-            })
+            });
 
             return {
                 duration: data.data.duration,
@@ -485,8 +510,8 @@ export const actions = actionTree(
                 uniqueExercises: data.data.uniqueExercises,
                 public: data.data.public,
                 templateReference: data.data.templateReference,
-                recordedExercises: recordedExercises
-            }
+                recordedExercises: recordedExercises,
+            };
         },
 
         /*
@@ -520,6 +545,7 @@ export const actions = actionTree(
                 dob: data.data.dob,
                 email: data.data.email,
                 firstName: data.data.firstName,
+                profilePhoto: data.data.profilePhoto,
                 surname: data.data.surname,
                 gender: data.data.gender,
                 height: data.data.height,
@@ -557,7 +583,7 @@ export const actions = actionTree(
                 followingCount: data.data.followingCount,
                 followers: data.data.followers,
                 isFollowed: data.data.isFollowed,
-                isLoggedInUser: data.data.isLoggedInUser
+                isLoggedInUser: data.data.isLoggedInUser,
             };
         },
 
@@ -586,13 +612,13 @@ export const actions = actionTree(
                     createdBy: {
                         username: postReference.createdBy.username,
                         userId: postReference.createdBy.userId,
-                        profilePhoto: data.data.createdBy.profilePhoto
+                        profilePhoto: data.data.createdBy.profilePhoto,
                     },
-                    createdAt: postReference.createdAt
-                })
-            })
+                    createdAt: postReference.createdAt,
+                });
+            });
 
-            return response
+            return response;
         },
 
         /*
@@ -600,6 +626,31 @@ export const actions = actionTree(
          * ----------- FOLLOW API -----------
          *
          */
+        async queryFollow({ state }, input: QueryFollowParams): Promise<Follow[]> {
+            const path = "/follow/" + input.docId;
+            let myInit: QueryFollowInit = input.init;
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+            let response: Follow[] = [];
+            data.data.follows.forEach((follow: Follow) => {
+                response.push({
+                    username: follow.username,
+                    userId: follow.userId,
+                    profilePhoto: follow.profilePhoto,
+                    createdAt: follow.createdAt
+                })
+            })
+
+            return response;
+        },
+
         async createFollow({ state }, input: FollowParams): Promise<void> {
             const path = "/follow";
             let myInit: FollowInit = input.init;
@@ -654,8 +705,155 @@ export const actions = actionTree(
             return {
                 user: data.data.user ? data.data.user : undefined,
                 exercise: data.data.exercise ? data.data.exercise : undefined,
-                template: data.data.template ? data.data.template : undefined
+                template: data.data.template ? data.data.template : undefined,
+            };
+        },
+
+        /*
+         *
+         * ----------- COMMENT API -----------
+         *
+         */
+        async queryComment({ state }, input: QueryCommentParams): Promise<Comment[]> {
+            const path = "/comment/" + input.docId;
+            let myInit: QueryCommentInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
             }
+
+            const data = await API.get(state.apiName, path, myInit);
+            let response: Comment[] = [];
+            data.data.comments.forEach((comment: Comment) => {
+                response.push({
+                    _id: comment._id,
+                    content: comment.content,
+                    createdAt: comment.createdAt,
+                    createdBy: {
+                        username: comment.createdBy.username,
+                        userId: comment.createdBy.userId,
+                        profilePhoto: comment.createdBy.profilePhoto,
+                    },
+                    likes: comment.likes,
+                    likeCount: comment.likeCount,
+                    isLiked: comment.isLiked
+                });
+            });
+
+            return response;
+        },
+
+        async createComment({ state }, input: CreateCommentParams): Promise<Comment> {
+            const path = "/comment";
+            let myInit: CreateCommentInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.post(state.apiName, path, myInit);
+            return {
+                _id: data._id,
+                createdAt: new Date(),
+                likeCount: 0,
+                likes: [],
+                createdBy: {
+                    username: this.app.$accessor.userProfile?.docData?.username || "",
+                    userId: this.app.$accessor.userProfile?.docData?._id || "",
+                    profilePhoto: this.app.$accessor.userProfile?.docData?.profilePhoto || ""
+                },
+                content: myInit.body.content,
+                isLiked: false
+            }
+        },
+
+        async deleteComment({ state }, input: DeleteCommentParams): Promise<void> {
+            const path = "/comment";
+            let myInit: DeleteCommentInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.del(state.apiName, path, myInit);
+            return;
+        },
+
+        /*
+         *
+         * ----------- LIKE API -----------
+         *
+         */
+        async queryLike({ state }, input: QueryLikeParams): Promise<Like[]> {
+            const path = "/like/" + input.docId;
+            let myInit: QueryLikeInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            const data = await API.get(state.apiName, path, myInit);
+            let response: Like[] = [];
+
+            data.data.likes.forEach((like: Like) => {
+                response.push({
+                    createdBy: {
+                        username: like.createdBy.username,
+                        userId: like.createdBy.userId,
+                        profilePhoto: like.createdBy.profilePhoto
+                    }
+                })
+            })
+
+            return response;
+        },
+
+        async createLike({ state }, input: CreateLikeParams): Promise<void> {
+            const path = "/like";
+            let myInit: CreateLikeInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.post(state.apiName, path, myInit);
+            return;
+        },
+
+        async deleteLike({ state }, input: DeleteLikeParams): Promise<void> {
+            const path = "/like";
+            let myInit: DeleteLikeInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.del(state.apiName, path, myInit);
+            return;
         }
     }
 );

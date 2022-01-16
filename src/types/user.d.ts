@@ -17,6 +17,7 @@ export type UserDocData = {
     dob: string;
     email: string;
     firstName: string;
+    profilePhoto: string;
     surname: string;
     gender: string;
     height: number;

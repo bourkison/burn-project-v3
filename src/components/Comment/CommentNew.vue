@@ -6,24 +6,24 @@
     </b-form>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue, { PropType } from "vue"
 import CommentEditor from "@/components/TextEditor/CommentEditor.vue";
 
-export default {
+export default Vue.extend({
     name: "CommentNew",
     components: { CommentEditor },
     props: {
         coll: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         docId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         replyingTo: {
-            type: String,
+            type: String as PropType<string>,
             required: false
         }
     },
@@ -32,47 +32,32 @@ export default {
             commentForm: {
                 content: ""
             },
-
-            numShards: 10
         };
     },
 
     methods: {
         addComment: async function() {
             if (this.commentForm.content.trim() !== "") {
-                let payload = this.commentForm;
-                this.commentForm = { content: "" };
-
-                const path = "/comment";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        docId: this.$props.docId,
-                        coll: this.$props.coll
-                    },
-                    body: {
-                        content: payload.content
-                    }
-                };
-
-                await API.post(this.$store.state.apiName, path, myInit)
-                    .then(commentResponse => {
-                        payload._id = commentResponse.data._id;
-                        payload.createdAt = new Date();
-                        payload.likeCount = 0;
-                        payload.likes = [];
-                        payload.createdBy = {
-                            username: this.$store.state.userProfile.docData.username,
-                            _id: this.$store.state.userProfile.docData._id
-                        };
-
-                        this.$emit("addComment", payload);
-                    })
-                    .catch(err => {
-                        console.error("Error adding comment", err);
-                    });
+                try {
+                    let payload = this.commentForm;
+                    this.commentForm = { content: "" };
+    
+                    const init = {
+                        queryStringParameters: {
+                            docId: this.$props.docId,
+                            coll: this.$props.coll
+                        },
+                        body: {
+                            content: payload.content
+                        }
+                    };
+    
+                    const commentResponse = await this.$accessor.api.createComment({ init });
+                    this.$emit("addComment", commentResponse);
+                }
+                catch (err) {
+                    console.error("Error adding comment:", err);
+                }
             }
         }
     },
@@ -91,5 +76,5 @@ export default {
             }
         }
     }
-};
+});
 </script>

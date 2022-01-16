@@ -56,3 +56,64 @@ export type ImageToUpload = {
     id: number;
     path: FilePath | null;
 }
+
+// Comment
+export type Like = {
+    createdBy: {
+        username: string;
+        userId: string;
+        profilePhoto: string;
+    }
+}
+
+export type Follow = {
+    userId: string;
+    username: string;
+    profilePhoto: string;
+    createdAt: Date;
+}
+
+// Like API
+export type QueryLikeParams = {
+    init: QueryLikeInit;
+    docId: string;
+}
+
+export type QueryLikeInit = {
+    headers?: {
+        Authorization?: string
+    }
+    queryStringParameters: {
+        coll: string;
+        commentId?: string;
+        loadAmount: number;
+    }
+}
+
+export type CreateLikeParams = {
+    init: CreateLikeInit
+}
+
+export type CreateLikeInit = {
+    headers?: {
+        Authorization?: string
+    }
+    queryStringParameters: {
+        docId: string;
+        coll: string;
+    }
+}
+
+export type DeleteLikeParams = {
+    init: DeleteLikeInit
+}
+
+export type DeleteLikeInit = {
+    headers?: {
+        Authorization?: string
+    }
+    queryStringParameters: {
+        docId: string;
+        coll: string;
+    }
+}

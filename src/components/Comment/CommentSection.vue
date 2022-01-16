@@ -85,7 +85,7 @@
             </b-container>
         </b-collapse>
 
-        <b-modal :id="docId + '-likeModal'" centered ok-only button-size="sm" hide-footer>
+        <b-modal v-model="likeModal" centered ok-only button-size="sm" hide-footer>
             <template #modal-title>
                 Likes
             </template>
@@ -106,7 +106,7 @@
             </div>
         </b-modal>
 
-        <b-modal :id="docId + '-followModal'" centered ok-only button-size="sm" hide-footer>
+        <b-modal v-model="followModal" centered ok-only button-size="sm" hide-footer>
             <template #modal-title>
                 Follows
             </template>
@@ -125,52 +125,54 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { Like, Follow } from "@/types";
+import { Comment as TComment } from "@/types/comment";
 
 import UserList from "@/components/User/UserList.vue";
 
 import Comment from "@/components/Comment/Comment.vue";
 import CommentNew from "@/components/Comment/CommentNew.vue";
 
-export default {
+export default Vue.extend({
     name: "CommentSection",
     components: { UserList, Comment, CommentNew },
     props: {
         docId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         coll: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         followableComponent: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         },
         likeCount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true
         },
         commentCount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true
         },
         isLiked: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         },
         followCount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: false
         },
         isFollowed: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: false
         },
         isFollowable: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: false
         }
     },
@@ -186,33 +188,30 @@ export default {
 
             commentsExpanded: false,
 
-            likes: [],
-            comments: [],
-            follows: [],
+            likes: [] as Like[],
+            comments: [] as TComment[],
+            follows: [] as Follow[],
 
             lastLoadedComment: null,
 
-            replyingTo: ""
+            replyingTo: "",
+            likeModal: false,
+            followModal: false
         };
     },
 
     async mounted() {
         // Get most recent comments and comment count.
         this.isLoadingComments = true;
-        const path = "/comment/" + this.$props.docId;
 
-        let myInit = {
-            headers: {
-                Authorization: await this.$store.dispatch("fetchJwtToken")
-            },
+        let init = {
             queryStringParameters: {
-                coll: this.$props.coll,
+                coll: this.coll,
                 loadAmount: 5
             }
         };
 
-        const commentResponse = await API.get(this.$store.state.apiName, path, myInit);
-        this.comments = commentResponse.data.comments;
+        this.comments = await this.$accessor.api.queryComment({ docId: this.docId, init })
         this.isLoadingComments = false;
     },
 
@@ -221,14 +220,10 @@ export default {
             // Check we're not already in the process of liking.
             if (!this.isLiking) {
                 this.isLiking = true;
-                const path = "/like";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     queryStringParameters: {
-                        docId: this.$props.docId,
-                        coll: this.$props.coll
+                        docId: this.docId,
+                        coll: this.coll
                     }
                 };
 
@@ -239,16 +234,14 @@ export default {
                     this.$emit("like");
 
                     try {
-                        const likeResponse = await API.post(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
-                        console.log("LIKED:", likeResponse);
-                    } catch (err) {
+                        await this.$accessor.api.createLike({ init })
+                        console.log("LIKED.");
+                    }
+                    catch (err) {
                         console.error("Liking error", err);
                         this.$emit("unlike");
-                    } finally {
+                    }
+                    finally {
                         this.isLiking = false;
                     }
                 } else {
@@ -256,12 +249,14 @@ export default {
                     this.$emit("unlike");
 
                     try {
-                        const likeResponse = await API.del(this.$store.state.apiName, path, myInit);
-                        console.log("UNLIKED:", likeResponse);
-                    } catch (err) {
+                        this.$accessor.api.deleteLike({ init });
+                        console.log("UNLIKED.");
+                    }
+                    catch (err) {
                         console.error("Unliking error", err);
                         this.$emit("like");
-                    } finally {
+                    }
+                    finally {
                         this.isLiking = false;
                     }
                 }
@@ -271,13 +266,9 @@ export default {
         async toggleFollow() {
             if (this.isFollowable && !this.isFollowing) {
                 this.isFollowing = true;
-                const path = "/follow";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     queryStringParameters: {
-                        docId: this.$props.docId,
+                        docId: this.docId,
                         coll: this.$props.coll
                     }
                 };
@@ -286,16 +277,14 @@ export default {
                     this.$emit("follow");
 
                     try {
-                        const followResponse = await API.post(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
-                        console.log("FOLLOWED:", followResponse);
-                    } catch (err) {
+                        await this.$accessor.api.createFollow({ init });
+                        console.log("FOLLOWED.");
+                    }
+                    catch (err) {
                         console.error("Following error", err);
                         this.$emit("unfollow");
-                    } finally {
+                    }
+                    finally {
                         this.isFollowing = false;
                     }
                 } else {
@@ -303,50 +292,42 @@ export default {
                     this.$emit("unfollow");
 
                     try {
-                        const followResponse = await API.del(
-                            this.$store.state.apiName,
-                            path,
-                            myInit
-                        );
-                        console.log("UNFOLLOWED:", followResponse);
-                    } catch (err) {
+                        this.$accessor.api.deleteFollow({ init });
+                        console.log("UNFOLLOWED.");
+                    }
+                    catch (err) {
                         this.$emit("follow");
                         console.error("Unfollowing error", err);
-                    } finally {
+                    }
+                    finally {
                         this.isFollowing = false;
                     }
 
                     console.log("UNFOLLOW");
                 }
-                document.activeElement.blur();
+                // document.activeElement.blur();
             }
         },
 
         async expandLikes() {
             if (this.likeCount > 0 && !this.isLoadingLikes) {
-                if (this.likes.length == 0) {
+                if (this.likes.length === 0) {
                     this.isLoadingLikes = true;
-                    this.$bvModal.show(this.$props.docId + "-likeModal");
+                    this.likeModal = true;
                     console.log("Downloading likes");
 
-                    const path = "/like/" + this.$props.docId;
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
+                    const init = {
                         queryStringParameters: {
                             loadAmount: 15,
                             coll: this.$props.coll
                         }
                     };
 
-                    this.likes = (
-                        await API.get(this.$store.state.apiName, path, myInit)
-                    ).data.likes;
+                    this.likes = await this.$accessor.api.queryLike({ docId: this.docId, init });
 
                     this.isLoadingLikes = false;
                 } else {
-                    this.$bvModal.show(this.$props.docId + "-likeModal");
+                    this.likeModal = true;
                 }
             }
         },
@@ -359,31 +340,25 @@ export default {
             if (this.followCount > 0 && !this.isLoadingFollows) {
                 if (this.follows.length == 0) {
                     this.isLoadingFollows = true;
-                    this.$bvModal.show(this.$props.docId + "-followModal");
+                    this.followModal = true;
                     console.log("Downloading follows");
 
-                    const path = "/follow/" + this.$props.docId;
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
+                    const init = {
                         queryStringParameters: {
                             coll: this.$props.coll,
                             loadAmount: 15
                         }
                     };
 
-                    this.follows = (
-                        await API.get(this.$store.state.apiName, path, myInit)
-                    ).data.follows;
+                    this.follows = await this.$accessor.api.queryFollow({ docId: this.docId, init });
                     this.isLoadingFollows = false;
                 } else {
-                    this.$bvModal.show(this.$props.docId + "-followModal");
+                    this.followModal = true;
                 }
             }
         },
 
-        addComment(comment) {
+        addComment(comment: TComment) {
             this.comments.unshift(comment);
             this.$emit("addComment")
         },
@@ -410,12 +385,12 @@ export default {
             //     });
         },
 
-        replyComment(username) {
+        replyComment(username: string) {
             console.log("REPLY:", username);
             this.replyingTo = username;
         }
     }
-};
+});
 </script>
 
 <style scoped>
