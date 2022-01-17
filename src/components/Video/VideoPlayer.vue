@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
-import videojs, { VideoJsPlayerOptions, Player } from 'video.js';
+import videojs, { VideoJsPlayerOptions } from 'video.js';
 
 export default Vue.extend({
     name: 'VideoPlayer',
@@ -34,7 +34,7 @@ export default Vue.extend({
     },
     data() {
         return {
-            player: null as Player | null,
+            player: null as ReturnType<typeof videojs> | null,
             defaultOptions: {
                 autoplay: false,
                 controls: false,
@@ -69,8 +69,12 @@ export default Vue.extend({
             }
         }
 
-        this.player = videojs(this.$refs.videoPlayer, options);
-        this.player.controlBar.playToggle.on('click', this.interacted);
+        if (this.$refs.videoPlayer) {
+            this.player = videojs((this.$refs.videoPlayer as HTMLElement), options);
+            this.player.controlBar.playToggle.on('click', this.interacted);
+        } else {
+            console.error("Ref not found in video player");
+        }
     },
 
     beforeDestroy() {
@@ -86,7 +90,7 @@ export default Vue.extend({
 
     methods: {
         playWhenViewable(isVisible: boolean) {
-            if (!this.userInteracted) {
+            if (!this.userInteracted && this.player) {
                 if (isVisible && this.player.paused()) {
                     this.player.play();
                 } else if (!isVisible && !this.player.paused()) {

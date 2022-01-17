@@ -82,3 +82,44 @@ export type GetUserInit = {
         view?: string
     }
 }
+
+export type UpdateUserParams = {
+    username: string;
+    init: UpdateUserInit;
+}
+
+export type UpdateUserInit = {
+    headers?: {
+        Authorization?: string;
+    }
+    body: {
+        userForm: {
+            country?: string;
+            dob?: string;
+            email?: string;
+            firstName?: string;
+            profilePhoto?: string;
+            surname?: string;
+            gender?: string;
+            height?: number;
+            metric?: boolean;
+            options?: {
+                charts?: {
+                    homepage?: {
+                        leftRail?: Chart[],
+                        rightRaight?: Chart[]
+                    },
+                    profile?: {
+                        leftRail?: Chart[],
+                        rightRaight?: Chart[]
+                    },
+                    workout?: {
+                        leftRail?: Chart[],
+                        rightRaight?: Chart[]
+                    },
+                }
+            };
+            weight?: number;
+        }
+    }
+}

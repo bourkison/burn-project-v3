@@ -56,7 +56,7 @@ import {
     RecordedExercise,
     RecordedSet,
 } from "@/types/workout";
-import { UserProfile, UserDocData, GetUserParams, GetUserInit } from "@/types/user";
+import { UserProfile, UserDocData, GetUserParams, GetUserInit, UpdateUserParams, UpdateUserInit } from "@/types/user";
 import { Post, QueryPostParams, QueryPostInit, PostReference, CreatePostParams, CreatePostInit, GetPostParams, GetPostInit } from "@/types/post";
 import { Follow, QueryFollowParams, QueryFollowInit, FollowParams, FollowInit } from "@/types/follow";
 import { SearchParams, SearchInit, SearchResult } from "@/types/search";
@@ -589,6 +589,22 @@ export const actions = actionTree(
                 isFollowed: data.data.isFollowed,
                 isLoggedInUser: data.data.isLoggedInUser,
             };
+        },
+
+        async updateUserProfile({ state }, input: UpdateUserParams): Promise<void> {
+            const path = "/user/" + input.username;
+            let myInit: UpdateUserInit = input.init;
+
+            if (!myInit.headers) {
+                myInit.headers = {
+                    Authorization: await this.app.$accessor.fetchJwtToken(),
+                };
+            } else if (!myInit.headers.Authorization) {
+                myInit.headers.Authorization = await this.app.$accessor.fetchJwtToken();
+            }
+
+            await API.put(state.apiName, path, myInit);
+            return;
         },
 
         /*

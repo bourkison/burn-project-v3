@@ -162,23 +162,25 @@ export default Vue.extend({
                 const values = Object.values(response);
 
                 values.forEach((responses, index) => {
-                    if (keys[index] === "user") {
-                        responses.forEach(userResponse => {
-                            // @ts-ignore
-                            this.userResults.push(userResponse);
-                        })
-                    }
-                    else if (keys[index] === "exercise") {
-                        responses.forEach(exerciseResponse => {
-                            // @ts-ignore
-                            this.exerciseResults.push(exerciseResponse);
-                        })
-                    }
-                    else if (keys[index] === "template") {
-                        responses.forEach(templateResponse => {
-                            // @ts-ignore
-                            this.templateResults.push(templateResponse);
-                        })
+                    if (responses) {
+                        if (keys[index] === "user") {
+                            responses.forEach(userResponse => {
+                                // @ts-ignore
+                                this.userResults.push(userResponse);
+                            })
+                        }
+                        else if (keys[index] === "exercise") {
+                            responses.forEach(exerciseResponse => {
+                                // @ts-ignore
+                                this.exerciseResults.push(exerciseResponse);
+                            })
+                        }
+                        else if (keys[index] === "template") {
+                            responses.forEach(templateResponse => {
+                                // @ts-ignore
+                                this.templateResults.push(templateResponse);
+                            })
+                        }
                     }
                 })
 
