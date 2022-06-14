@@ -2,7 +2,15 @@
 https://burn-project.herokuapp.com/
 
 ## Introduction
-Burn Project is a social network that allows users to 
+Burn Project is a social network that allows users to create, follow, like, comment and share exercises and workout templates among each other. Users can then track their own workouts, and chart their improvements/workout progress. Users can choose to share this progress with their peers, or alternatively keep their profile private.
+
+The website was designed to combat exorbitant fees charged by personal trainers and workout apps, by crowdsourcing exercise/workout information thus keeping the site completely free of charge. In doing so, this keeps health and fitness inclusive and available for all people of all socioeconomic backgrounds.
+
+The site uses the below technologies:
+* Vue.js / Nuxt.js
+* Typescript
+* Amazon Web Services (Amplify)
+
 
 ## TODO
 ### General
