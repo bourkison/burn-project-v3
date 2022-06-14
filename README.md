@@ -10,6 +10,7 @@ The site uses the below technologies:
 * Vue.js / Nuxt.js
 * Typescript
 * Amazon Web Services (Amplify)
+* MongoDB
 
 
 ## TODO
