@@ -19,6 +19,7 @@ The site uses the below technologies:
 * Sort by: Like Count, Date, Followed, Used Amount
 * On workout finish, increment counter on Exercise and Template
 * Popper broken over canvas element
+* Edit of templates and exercise should edit exercise references too
 
 ### Video
 * ~~Autopause video when out of view~~
