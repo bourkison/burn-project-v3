@@ -20,24 +20,32 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { TemplateReference } from "@/types/template";
+
 import TemplateComponent from "@/components/Template/TemplateComponent.vue";
 import LoadingComponent from "@/components/Utility/LoadingComponent.vue";
 
-export default {
+type TemplateFeedData = {
+    skeleton: [number, string[]][];
+    loadAmount: number;
+}
+
+export default Vue.extend({
     name: "TemplateFeed",
     components: { TemplateComponent, LoadingComponent },
     props: {
         templates: {
-            required: true,
-            type: Array
+            type: Array as PropType<TemplateReference[]>,
+            required: true
         },
         isLoading: {
-            required: true,
-            type: Boolean
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     },
-    data() {
+    data(): TemplateFeedData {
         return {
             skeleton: [],
             loadAmount: 5
@@ -45,25 +53,21 @@ export default {
     },
 
     computed: {
-        templateLength: function() {
-            return this.$props.templates.length
+        templateLength(): number {
+            return this.templates.length
         }
     },
 
-    created: function() {
-        for (let i = 0; i < this.loadAmount; i++) {
-            let amount = Math.floor(Math.random() * 4) + 3;
-            let widths = [];
+    created() {
+        this.skeleton = this.$accessor.templates.templateFeedSkeletons
+    },
 
-            for (let j = 0; j < amount; j++) {
-                widths.push((Math.floor(Math.random() * 50) + 50).toString() + "%");
-            }
-            this.skeleton.push([amount, widths]);
-        }
+    mounted() {
+        this.$store.commit("templates/emptySkeletons");
     },
 
     watch: {
-        templateLength: function(n, o) {
+        templateLength(n, o): void {
             for (let i = 0; i < n - o; i++) {
                 let amount = Math.floor(Math.random() * 4) + 3;
                 let widths = [];
@@ -75,7 +79,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

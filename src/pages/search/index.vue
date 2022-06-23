@@ -7,7 +7,7 @@
                         <b-card-body>
                             <b-card-title>"{{ searchText }}" Results</b-card-title>
 
-                            <b-card-text>
+                            <div>
                                 <div class="text-center">
                                     <b-button
                                         pill
@@ -78,7 +78,7 @@
                                         </b-tab>
                                     </b-tabs>
                                 </div>
-                            </b-card-text>
+                            </div>
                         </b-card-body>
                     </b-card>
                 </b-container>
@@ -93,12 +93,21 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
 
-export default {
+type SearchPageData = {
+    searchText: string;
+    hasResults: boolean;
+    userResponses: { _id: string, name: string }[];
+    exerciseResponses: { _id: string, name: string }[];
+    templateResponses: { _id: string, name: string }[];
+    tabIndex: number;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
-    data() {
+    data(): SearchPageData {
         return {
             searchText: "",
             hasResults: true,
@@ -111,44 +120,43 @@ export default {
         };
     },
 
-    async asyncData({ req, store, route, error }) {
+    async asyncData({ req, app: { $accessor }, route, error }) {
         let searchText = route.query.q;
-        let userResponses = [];
-        let exerciseResponses = [];
-        let templateResponses = [];
+        let userResponses: { _id: string, name: string }[] = [];
+        let exerciseResponses: { _id: string, name: string }[] = [];
+        let templateResponses: { _id: string, name: string }[] = [];
         let hasResults = true;
 
         try {
-            if (searchText) {
-                const path = "/search"
-                const myInit = {
-                    headers: {
-                        Authorization: await store.dispatch("fetchJwtToken", { req })
-                    },
+            if (searchText && typeof searchText === "string") {
+                const init = {
                     queryStringParameters: {
                         q: searchText,
                         collections: "exercise,template,user"
                     }
                 }
     
-                const response = await API.get(store.state.apiName, path, myInit);
+                const response = await $accessor.api.getSearch({ req, init });
     
-                const keys = Object.keys(response.data);
-                const values = Object.values(response.data);
+                const keys = Object.keys(response);
+                const values = Object.values(response);
     
                 values.forEach((responses, index) => {
                     if (keys[index] === "user") {
                         responses.forEach(userResponse => {
+                            // @ts-ignore
                             userResponses.push(userResponse);
                         })
                     }
                     else if (keys[index] === "exercise") {
                         responses.forEach(exerciseResponse => {
+                            // @ts-ignore
                             exerciseResponses.push(exerciseResponse);
                         })
                     }
                     else if (keys[index] === "template") {
                         responses.forEach(templateResponse => {
+                            // @ts-ignore
                             templateResponses.push(templateResponse);
                         })
                     }
@@ -159,7 +167,7 @@ export default {
                 }
             }
         }
-        catch (err) {
+        catch (err: any) {
             console.error(err);
             error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
@@ -172,7 +180,7 @@ export default {
             hasResults
         }
     }
-};
+});
 </script>
 
 <style scoped>

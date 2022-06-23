@@ -44,34 +44,31 @@
     </div>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { TemplateReference } from "@/types/template";
 
-export default {
+export default Vue.extend({
     name: "TemplateSearch",
     data() {
         return {
             isLoading: true,
             searchText: "",
-            createdTemplates: [],
-            followedTemplates: []
+            createdTemplates: [] as TemplateReference[],
+            followedTemplates: [] as TemplateReference[]
         };
     },
 
-    created: async function() {
+    async created() {
         try {
-            const path = "/template";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
+            const init = {
                 queryStringParameters: {
                     loadAmount: 25,
                     user: true
                 }
             };
 
-            const templateResults = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            const templateResults = await this.$accessor.api.queryTemplate({ init })
 
             templateResults.forEach(template => {
                 if (template.isFollow) {
@@ -81,7 +78,7 @@ export default {
                 }
             })
         }
-        catch (err) {
+        catch (err: any) {
             if (err.response && err.response.status === 404) {
                 console.error("No templates");
             } else {
@@ -94,7 +91,7 @@ export default {
     },
 
     computed: {
-        filteredCreatedTemplates: function() {
+        filteredCreatedTemplates: function(): TemplateReference[] {
             if (this.searchText) {
                 return this.createdTemplates.filter(createdTemplate => {
                     return createdTemplate.name
@@ -106,7 +103,7 @@ export default {
             }
         },
 
-        filteredFollowedTemplates: function() {
+        filteredFollowedTemplates: function(): TemplateReference[] {
             if (this.searchText) {
                 return this.followedTemplates.filter(followedTemplate => {
                     return followedTemplate.name
@@ -120,9 +117,9 @@ export default {
     },
 
     methods: {
-        selectTemplate: function(template) {
+        selectTemplate: function(template: TemplateReference) {
             this.$emit("selectTemplate", template);
         }
     }
-};
+});
 </script>

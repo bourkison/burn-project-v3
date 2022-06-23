@@ -93,20 +93,34 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { ImageToUpload } from "@/types";
+import { CreateExercise } from "@/types/exercise";
+
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { createVideoObject, createVodAsset } from "@/graphql/mutations";
 
-import ImageUploader from "@/components/Utility/ImageUploader.vue";
+import ImageUploader from "~/components/Image/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
-import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue"
+import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuid } from "uuid";
 import awsvideoconfig from "@/aws-video-exports.js";
 
-export default {
+interface ExerciseNewData {
+    exerciseForm: CreateExercise;
+    imagesToUpload: ImageToUpload[];
+    videoToUpload: File | null;
+    isCreating: boolean;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         DifficultySelector,
@@ -115,7 +129,7 @@ export default {
         TagSelector,
         DescriptionEditor
     },
-    data() {
+    data(): ExerciseNewData {
         return {
             exerciseForm: {
                 name: "",
@@ -123,7 +137,7 @@ export default {
                 muscleGroups: [],
                 difficulty: 1,
                 filePaths: [],
-                measureBy: "Reps",
+                measureBy: "repsWeight",
                 tags: []
             },
 
@@ -131,32 +145,10 @@ export default {
             videoToUpload: null,
             isCreating: false,
 
-            // Editor:
-            editorOptions: {
-                minHeight: "300px",
-                language: "en-US",
-                hideModeSwitch: true,
-                usageStatistics: false,
-                toolbarItems: [
-                    "heading",
-                    "bold",
-                    "italic",
-                    "divider",
-                    "link",
-                    "ul",
-                    "ol",
-                    "quote",
-                    "divider",
-                    "indent",
-                    "outdent",
-                    "hr"
-                ]
-            },
-
             // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
     head() {
@@ -166,7 +158,7 @@ export default {
     },
 
     methods: {
-        async createExercise() {
+        async createExercise(): Promise<void> {
             this.isCreating = true;
 
             if (this.imagesToUpload.length) {
@@ -175,7 +167,11 @@ export default {
                 // As await does not work in forEach.
                 const imageResults = await Promise.all(
                     this.imagesToUpload.map(async (image, i) => {
-                        const imageName = this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                        if (!this.$accessor.userProfile || !this.$accessor.userProfile.docData) {
+                            throw new Error("Not logged in");
+                        }
+
+                        const imageName = this.$accessor.userProfile.docData.username + "/" + uuid();
     
                         const imageData = await fetch(image.url);
                         const blob = await imageData.blob();
@@ -195,16 +191,21 @@ export default {
     
                 console.log("Image Results:", imageResults);
                 imageResults.forEach(result => {
-                    this.exerciseForm.filePaths.push({ key: result.key, type: "image" });
+                    // @ts-ignore
+                    this.exerciseForm.filePaths.push({ key: result.key, fileType: "image" });
                 });
             } else if (this.videoToUpload) {
-                const uuid = this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                if (!this.$accessor.userProfile || !this.$accessor.userProfile.docData) {
+                    throw new Error("Not logged in");
+                }
+
+                const videoUuid = this.$accessor.userProfile.docData.username + "/" + uuid();
                 const fileNameSplit = this.videoToUpload.name.split(".")
                 const fileExtension = fileNameSplit[fileNameSplit.length - 1];
-                const fileName = `${uuid}.${fileExtension}`
+                const fileName = `${videoUuid}.${fileExtension}`
                 const videoObject = {
                     input: {
-                        id: uuid
+                        id: videoUuid
                     }
                 }
 
@@ -213,9 +214,9 @@ export default {
 
                 const videoAsset = {
                     input: {
-                        vodAssetVideoId: uuid,
-                        title: uuid,
-                        description: uuid
+                        vodAssetVideoId: videoUuid,
+                        title: videoUuid,
+                        description: videoUuid
                     }
                 }
 
@@ -232,54 +233,56 @@ export default {
                 })
                 .catch(err => { console.error("ERROR UPLOADED:", err) });
 
-                this.exerciseForm.filePaths.push({ key: uuid, type: "video" });
+                this.exerciseForm.filePaths.push({ key: videoUuid, fileType: "video" });
             }
 
-            const path = "/exercise";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
-                body: {
-                    exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
-                }
-            };
 
             try {
-                const response = await API.post(this.$store.state.apiName, path, myInit);
-                this.$router.push("/exercises/" + response._id);
+                const init = {
+                    body: {
+                        exerciseForm: JSON.parse(JSON.stringify(this.exerciseForm))
+                    }
+                };
+                const _id = await this.$accessor.api.createExercise({ init });
+                this.$router.push("/exercises/" + _id);
             } catch (err) {
-                this.displayError(err);
+                if (err instanceof Error) {
+                    this.displayError(err);
+                } else if (typeof err === "string") {
+                    this.displayError(new Error(err))
+                } else {
+                    console.error(err);
+                }
             } finally {
                 this.isCreating = false;
             }
         },
 
-        updateDescription(md) {
+        updateDescription(md: string): void {
             this.exerciseForm.description = md;
         },
 
-        updateImages(images) {
+        updateImages(images: ImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 
-        updateVideo(video) {
+        updateVideo(video: File): void {
             this.videoToUpload = video;
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             this.exerciseForm.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.exerciseForm.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty) {
+        updateDifficulty(difficulty: number): void {
             this.exerciseForm.difficulty = difficulty;
         },
 
-        displayError(err) {
+        displayError(err: Error): void {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -289,12 +292,12 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>

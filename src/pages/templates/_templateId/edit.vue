@@ -112,8 +112,10 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { CreateTemplate } from "@/types/template";
+import { ExerciseReference } from "@/types/exercise";
 
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
@@ -121,7 +123,16 @@ import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TemplateBuilder from "@/components/Template/TemplateBuilder.vue";
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-export default {
+type TemplateEditData = {
+    isUpdating: boolean;
+    oldTemplateData: CreateTemplate;
+    newTemplateData: CreateTemplate;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         DescriptionEditor,
@@ -130,73 +141,48 @@ export default {
         DifficultySelector,
         TemplateBuilder
     },
-    data() {
+    data(): TemplateEditData {
         return {
             isUpdating: false,
 
-            oldTemplateData: {},
-            newTemplateData: {},
-
-            // Editor:
-            editorOptions: {
-                minHeight: "300px",
-                language: "en-US",
-                hideModeSwitch: true,
-                usageStatistics: false,
-                toolbarItems: [
-                    "heading",
-                    "bold",
-                    "italic",
-                    "divider",
-                    "link",
-                    "ul",
-                    "ol",
-                    "quote",
-                    "divider",
-                    "indent",
-                    "outdent",
-                    "hr"
-                ]
+            oldTemplateData: {
+                name: "",
+                description: "",
+                exerciseReferences: [],
+                difficulty: 1,
+                muscleGroups: [],
+                tags: []
+            },
+            newTemplateData: {
+                name: "",
+                description: "",
+                exerciseReferences: [],
+                difficulty: 1,
+                muscleGroups: [],
+                tags: []
             },
 
             // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
 
-    async asyncData({ params, req, redirect, store, error }) {
-        let oldTemplateData = null;
-        let newTemplateData = null;
+    async asyncData({ params, app: { $accessor }, redirect, error, req }) {
+        let oldTemplateData: CreateTemplate | null = null;
+        let newTemplateData: CreateTemplate | null = null;
 
         try {
-            const path = "/template/" + params.templateId;
-            const myInit = {
-                headers: {
-                    Authorization: await store.dispatch("fetchJwtToken", { req })
-                }
-            };
+            const data = await $accessor.api.getTemplate({ templateId: params.templateId, req, init: {} })
+            newTemplateData = data;
+            oldTemplateData = data;
 
-            const response = await API.get(store.state.apiName, path, myInit);
-
-            if (!response || !response.success) {
-                throw new Error(
-                    "Error downloading template: " +
-                        params.templateId +
-                        " response: " + response ? response.message : ""
-                );
-            }
-
-            console.log("RESPONSE:", response);
-            newTemplateData = response.data;
-            oldTemplateData = response.data;
-
-            if (oldTemplateData.createdBy.username !== store.state.userProfile.docData.username) {
+            if (!oldTemplateData.createdBy || !$accessor.userProfile || !$accessor.userProfile.docData || oldTemplateData.createdBy.username !== $accessor.userProfile.docData.username) {
                 console.warn("Unauthorized");
                 redirect("/templates/" + params.templateId);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
             error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
@@ -208,65 +194,48 @@ export default {
     },
 
     methods: {
-        async updateTemplate() {
+        async updateTemplate(): Promise<void> {
             try {
                 this.isUpdating = true;
                 console.log("Updating with:", JSON.stringify(this.newTemplateData));
-
-                const path = "/template/" + this.$route.params.templateid;
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     body: {
                         templateForm: this.newTemplateData
                     }
                 };
+                const _id = await this.$accessor.api.editTemplate({ init, templateId: this.$route.params.templateId });
 
-                const response = await API.put(this.$store.state.apiName, path, myInit);
-
-                if (!response) {
-                    throw new Error("no API response");
-                }
-
-                if (!response.success) {
-                    throw new Error("API error: " + response.errorMessage);
-                }
-
-                this.$router.push("/templates/" + response.data._id);
-            } catch (err) {
+                this.$router.push("/templates/" + _id);
+            }
+            catch (err) {
                 this.displayError(err);
-            } finally {
+            }
+            finally {
                 this.isUpdating = false;
             }
         },
 
-        updateDescription(md) {
-            this.newTemplateData.description = md;
+        updateDescription(description: string): void {
+            this.newTemplateData.description = description;
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             this.newTemplateData.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.newTemplateData.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty) {
+        updateDifficulty(difficulty: number): void {
             this.newTemplateData.difficulty = difficulty;
         },
 
-        updateExercises(exercises) {
-            let temp = [];
-            exercises.forEach(exercise => {
-                temp.push({ id: exercise.id, name: exercise.name });
-            });
-
-            this.newTemplateData.exercises = temp;
+        updateExercises(exercises: ExerciseReference[]): void {
+            this.newTemplateData.exerciseReferences = exercises;
         },
 
-        displayError(err) {
+        displayError(err: any): void {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -276,12 +245,12 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>

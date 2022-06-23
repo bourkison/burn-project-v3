@@ -110,15 +110,29 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { ExerciseReference, QueryExerciseInit } from "@/types/exercise";
+
 import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
 
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
-export default {
+interface ExerciseFollowData {
+    isLoading: boolean;
+    exercises: ExerciseReference[];
+    selectedMgs: string[];
+    selectedTags: string[];
+    isLoadingMore: boolean;
+    moreToLoad: boolean;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         ExerciseFeed,
@@ -126,7 +140,7 @@ export default {
         TagSelector,
         UsernameFilter
     },
-    data() {
+    data(): ExerciseFollowData {
         return {
             isLoading: true,
             exercises: [], // Exercises from user doc.
@@ -138,12 +152,11 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedExercise: null,
 
             // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
     head() {
@@ -153,11 +166,11 @@ export default {
     },
 
     created() {
-        if (this.$route.query.muscleGroups) {
+        if (this.$route.query.muscleGroups && typeof this.$route.query.muscleGroups === "string") {
             this.selectedMgs = this.$route.query.muscleGroups.split(",");
         }
 
-        if (this.$route.query.tags) {
+        if (this.$route.query.tags && typeof this.$route.query.tags === "string") {
             this.selectedTags = this.$route.query.tags.split(",");
         }
 
@@ -165,33 +178,11 @@ export default {
     },
 
     methods: {
-        async loadMoreExercises() {
+        async loadMoreExercises(): Promise<void> {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
-                    const path = "/exercise";
-                    let myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
-                        queryStringParameters: {
-                            loadAmount: 5,
-                            user: true,
-                            startAt: this.exercises[this.exercises.length - 1].exerciseId
-                        }
-                    };
-    
-                    const response = await API.get(this.$store.state.apiName, path, myInit);
-    
-                    response.data.forEach(exercise => {
-                        let temp = exercise;
-                        temp.loaded = false;
-                        this.exercises.push(temp);
-                    })
-    
-                    if (response.data.length < 5) {
-                        this.moreToLoad = false;
-                    }
+                    await this.queryExercise(this.exercises[this.exercises.length - 1].exerciseId)
                 }
                 catch (err) {
                     // console.error(err.response.status);
@@ -200,75 +191,60 @@ export default {
             }
         },
 
-        async downloadExercises() {
+        async downloadExercises(): Promise<void> {
             try {
                 this.isLoading = true;
-                this.exercises = [];
-
-                const path = "/exercise";
-                let myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        loadAmount: 5,
-                        user: true
-                    }
-                };
-
-                if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                }
-
-                if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                }
-
-                const response = await API.get(this.$store.state.apiName, path, myInit).catch(
-                    err => {
-                        console.log("ERROR:", err.response);
-                        if (err.response.status === 404) {
-                            this.exercises = [];
-                        } else {
-                            throw err;
-                        }
-                    }
-                );
-
-                if (!response) {
-                    throw new Error("No response");
-                }
-
-                if (!response.success) {
-                    throw new Error("Unsuccessful: " + response.errorMessage);
-                }
-
-                response.data.forEach(exercise => {
-                    let temp = exercise;
-                    temp.loaded = false;
-                    this.exercises.push(temp)
-                });
-
-                if (response.data.length < 5) {
-                    this.moreToLoad = false;
-                }
-
-                this.isLoadingMore = false;
-            } catch (err) {
+                await this.queryExercise();
+            } 
+            catch (err: any) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
-            } finally {
+            } 
+            finally {
                 this.isLoading = false;
+                this.isLoadingMore = false;
+
             }
         },
 
-        updateMuscleGroups(muscleGroups) {
+        async queryExercise(startAt?: string): Promise<void> {
+            let init: QueryExerciseInit = {
+                queryStringParameters: {
+                    loadAmount: 5,
+                    user: true
+                }
+            }
+
+            if (startAt && init.queryStringParameters) {
+                init.queryStringParameters.startAt = startAt;
+            }
+
+            if (this.selectedMgs.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            }
+
+            if (this.selectedTags.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
+            const references = await this.$accessor.api.queryExercise({ init });
+            references.forEach((reference: ExerciseReference) => {
+                reference.loaded = false;
+                this.exercises.push(reference);
+            })
+
+            if (references.length < 5) {
+                this.moreToLoad = false;
+            }
+        },
+
+        updateMuscleGroups(muscleGroups: string[]): void {
             console.log("UPDATING MUSCLE GROUPS");
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -283,19 +259,19 @@ export default {
             if (isFiltered) {
                 this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({ path: "/exercises/followed", query: null });
+                this.$router.replace({ path: "/exercises/followed", query: undefined });
             }
 
             this.downloadExercises();
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             console.log("UPDATING TAGS");
 
             this.selectedTags = tags;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -310,12 +286,12 @@ export default {
             if (isFiltered) {
                 this.$router.replace({ path: "/exercises/followed", query: query });
             } else {
-                this.$router.replace({ path: "/exercises/followed", query: null });
+                this.$router.replace({ path: "/exercises/followed", query: undefined });
             }
             this.downloadExercises();
         },
 
-        displayError(err) {
+        displayError(err: any) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -325,12 +301,12 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>

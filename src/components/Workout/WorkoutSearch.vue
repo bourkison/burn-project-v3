@@ -25,34 +25,32 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { Workout } from "@/types/workout";
 import { API } from "aws-amplify"
 
-export default {
+export default Vue.extend({
     name: "WorkoutSearch",
     data() {
         return {
             isLoading: true,
             searchText: "",
-            workouts: []
+            workouts: [] as Workout[]
         };
     },
 
     async created() {
         try {
-            const path = "/workout";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
+            const init = {
                 queryStringParameters: {
                     loadAmount: 25
                 }
             };
 
-            const workoutResults = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            const workoutResults = await this.$accessor.api.queryWorkout({ init })
 
-            let uniqueNames = [];
+            let uniqueNames: string[] = [];
             workoutResults.forEach(workout => {
                 if (!uniqueNames.includes(workout.name)) {
                     this.workouts.push(workout);
@@ -60,7 +58,7 @@ export default {
                 }
             })
         }
-        catch (err) {
+        catch (err: any) {
             if (err.response && err.response.status === 404) {
                 console.error("No workouts");
             } else {
@@ -74,7 +72,7 @@ export default {
     },
 
     computed: {
-        filteredWorkouts() {
+        filteredWorkouts(): Workout[] {
             if (this.searchText) {
                 return this.workouts.filter(workout => {
                     return workout.name.toLowerCase().includes(this.searchText.toLowerCase());
@@ -86,9 +84,9 @@ export default {
     },
 
     methods: {
-        selectWorkout(workout) {
+        selectWorkout(workout: Workout) {
             this.$emit("selectWorkout", workout);
         }
     }
-};
+});
 </script>

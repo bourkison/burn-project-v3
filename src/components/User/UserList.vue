@@ -5,14 +5,17 @@
     </b-list-group-item>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { UserReference } from "@/types/user"
+
+export default Vue.extend({
     name: "UserList",
     props: {
         userData: {
-            type: Object,
+            type: Object as PropType<UserReference>,
             required: true
         }
     }
-};
+});
 </script>

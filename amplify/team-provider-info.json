@@ -17,11 +17,11 @@
       "function": {
         "projectburnExerciseHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnExerciseHandler-486b4e544e4c656f3278-build.zip"
+          "s3Key": "amplify-builds/projectburnExerciseHandler-586759697973414a694b-build.zip"
         },
         "projectburnLikeHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnLikeHandler-77684e61587a6d394459-build.zip"
+          "s3Key": "amplify-builds/projectburnLikeHandler-2f474570724c4f413875-build.zip"
         },
         "projectburnWorkoutHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -33,7 +33,7 @@
         },
         "projectburnCommentHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnCommentHandler-5952715932736d676679-build.zip"
+          "s3Key": "amplify-builds/projectburnCommentHandler-33474f3154617254346f-build.zip"
         },
         "projectburnPostHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -49,15 +49,15 @@
         },
         "projectburncognitoPreSignup": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburncognitoPreSignup-4a6a787068367256504a-build.zip"
+          "s3Key": "amplify-builds/projectburncognitoPreSignup-2f2b5438356c622f442b-build.zip"
         },
         "projectburnmongoosemodels": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion2429ca6b-build.zip"
+          "s3Key": "amplify-builds/projectburnmongoosemodels-LambdaLayerVersion7b3039bf-build.zip"
         },
         "projectburnFollowHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnFollowHandler-616b34636b73364b6968-build.zip"
+          "s3Key": "amplify-builds/projectburnFollowHandler-68596a6f5979565a4570-build.zip"
         },
         "projectburnStatsHandler": {
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
@@ -75,7 +75,7 @@
         "projectburnPublicHandler": {
           "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",
           "deploymentBucketName": "amplify-projectburn-dev-203659-deployment",
-          "s3Key": "amplify-builds/projectburnPublicHandler-4f566d6e5934544f6542-build.zip"
+          "s3Key": "amplify-builds/projectburnPublicHandler-686b736e64314f763943-build.zip"
         },
         "projectburnMessageHandler": {
           "secretsPathAmplifyAppId": "d3tp6kskh7ft9m",

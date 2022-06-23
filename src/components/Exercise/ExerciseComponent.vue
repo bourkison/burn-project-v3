@@ -41,12 +41,12 @@
                     :docId="exerciseData._id"
                     coll="exercise"
                     :followableComponent="true"
-                    :likeCount="likeCount"
-                    :commentCount="commentCount"
-                    :followCount="followCount"
-                    :isLiked="isLiked"
-                    :isFollowed="isFollowed"
-                    :isFollowable="isFollowable"
+                    :likeCount="exerciseData.likeCount"
+                    :commentCount="exerciseData.commentCount"
+                    :followCount="exerciseData.followCount"
+                    :isLiked="exerciseData.isLiked"
+                    :isFollowed="exerciseData.isFollowed"
+                    :isFollowable="exerciseData.isFollowable"
                     @like="handleLike(1)"
                     @unlike="handleLike(-1)"
                     @follow="handleFollow(1)"
@@ -67,7 +67,10 @@
     </b-card>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { Exercise } from "@/types/exercise";
+
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
@@ -76,28 +79,49 @@ import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 import CommentSection from "@/components/Comment/CommentSection.vue";
 import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
-export default {
+type ExerciseComponent = {
+    isLoading: boolean;
+    exerciseData: Exercise | null;
+    imageUrls: string[];
+    video: {
+        id: string;
+        url: string;
+        token: string;
+        options: {
+            autoplay: boolean,
+            controls: boolean,
+            sources: {
+                src: string
+            }[]
+        } | {}
+    };
+    infoExpanded: boolean;
+    loadedSuccessfully: boolean;
+    carouselModel: number;
+}
+
+export default Vue.extend({
     name: "ExerciseComponent",
     components: { CommentSection, VideoPlayer, DescriptionViewer },
     props: {
         exerciseId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         skeletonAmount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true
         },
         skeletonWidth: {
-            type: Array,
+            type: Array as PropType<string[]>,
             required: true
         }
     },
 
-    data() {
+    data(): ExerciseComponent {
         return {
             isLoading: true,
-            exerciseData: {},
+            exerciseData: null,
             imageUrls: [],
             video: {
                 id: "",
@@ -106,13 +130,6 @@ export default {
                 options: {}
             },
 
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
-
-            isLiked: false,
-            isFollowed: false,
-            isFollowable: false,
             infoExpanded: false,
 
             // Error handling
@@ -124,7 +141,7 @@ export default {
     },
 
     mounted() {
-        if (this.$props.exerciseId) {
+        if (this.exerciseId) {
             this.downloadExercise();
         }
     },
@@ -132,47 +149,18 @@ export default {
     methods: {
         async downloadExercise() {
             try {
-                const path = "/exercise/" + this.$props.exerciseId;
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        counters: true
-                    }
-                };
-
-                const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
-
-                this.exerciseData = {
-                    _id: response._id,
-                    createdBy: response.createdBy,
-                    description: response.description,
-                    difficulty: response.difficulty,
-                    filePaths: response.filePaths,
-                    measureBy: response.measureBy,
-                    muscleGroups: response.muscleGroups,
-                    name: response.name,
-                    tags: response.tags
-                };
-
-                this.likeCount = response.likeCount;
-                this.commentCount = response.commentCount;
-                this.followCount = response.followCount;
-                this.isLiked = response.isLiked;
-                this.isFollowed = response.isFollowed;
-                this.isFollowable = response.isFollowable;
+                this.exerciseData = await this.$accessor.api.getExercise({ exerciseId: this.exerciseId, init: { queryStringParameters: { counters: true }}});
 
                 try {
-                    let urlPromises = [];
+                    let urlPromises: Promise<string>[] = [];
 
                     this.exerciseData.filePaths.forEach(async path => {
-                        if (path.type === "video") {
+                        if (path.fileType === "video") {
                             const videoObject = {
                                 id: path.key
                             }
 
-                            const response = await API.graphql(graphqlOperation(getVideoObject, videoObject));
+                            const response: any = await API.graphql(graphqlOperation(getVideoObject, videoObject));
 
                             this.video.token = response.data.getVideoObject.token;
                             this.video.id = path.key;
@@ -187,7 +175,7 @@ export default {
                                     }
                                 ]
                             }
-                        } else if (path.type === "image") {
+                        } else if (path.fileType === "image") {
                             urlPromises.push(Storage.get(path.key));
                         }
                     });
@@ -210,23 +198,23 @@ export default {
             }
         },
 
-        handleLike(x) {
-            if (x > 0) {
-                this.likeCount++;
-                this.isLiked = true;
-            } else {
-                this.likeCount--;
-                this.isLiked = false;
+        handleLike(x: number): void {
+            if (x > 0 && this.exerciseData) {
+                this.exerciseData.likeCount++;
+                this.exerciseData.isLiked = true;
+            } else if (this.exerciseData) {
+                this.exerciseData.likeCount--;
+                this.exerciseData.isLiked = false;
             }
         },
 
-        handleFollow(x) {
-            if (x > 0) {
-                this.followCount++;
-                this.isFollowed = true;
-            } else {
-                this.followCount--;
-                this.isFollowed = false;
+        handleFollow(x: number): void {
+            if (x > 0 && this.exerciseData) {
+                this.exerciseData.followCount++;
+                this.exerciseData.isFollowed = true;
+            } else if (this.exerciseData) {
+                this.exerciseData.followCount--;
+                this.exerciseData.isFollowed = false;
             }
         }
     },
@@ -238,7 +226,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style>

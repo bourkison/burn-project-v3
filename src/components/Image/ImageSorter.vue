@@ -1,9 +1,9 @@
 <template>
     <div class="imageSorterCont">
-        <b-row v-if="imagesProp.length > 0" class="sortableCont" align-h="center">
+        <b-row v-if="imagesProp.length > 0" class="sortableCont" id="image-sort-cont" align-h="center">
             <b-col v-for="(img, i) in imagesProp" :key="i" sm="4" class="sortableItem">
                 <b-card :img-src="img.url" img-top>
-                    <b-card-text class="text-center">
+                    <div class="text-center">
                         <b-icon-pencil-square
                             v-if="img.editable"
                             class="imgIcon"
@@ -15,81 +15,81 @@
                             font-scale="1.3"
                             @click="deleteImage(img.id)"
                         />
-                    </b-card-text>
+                    </div>
                 </b-card>
             </b-col>
         </b-row>
     </div>
 </template>
 
-<script>
-import Sortable from "sortablejs";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import Sortable, { SortableEvent } from "sortablejs";
 
-export default {
+type TImage = {
+    id: string;
+    file: File;
+    url: string;
+    editable: boolean;
+    path: string | null;
+}
+
+export default Vue.extend({
     name: "ImageSorter",
     props: {
         imagesProp: {
-            type: Array,
+            type: Array as PropType<TImage[]>,
             required: true
         }
     },
     data() {
         return {
-            temp: [1, 2, 3],
-            sortedImages: [],
-            sortable: null
+            sortedImages: [] as TImage[],
+            sortable: null as Sortable | null
         };
     },
 
-    mounted: function() {
-        this.$props.imagesProp.forEach(img => {
+    mounted() {
+        this.imagesProp.forEach(img => {
             this.sortedImages.push(img);
         });
 
-        if (this.$props.imagesProp.length > 0) {
+        if (this.imagesProp.length > 0) {
             const sortableOptions = {
                 animation: 300,
                 onEnd: this.changeOrder
             };
 
-            this.$nextTick(
-                () =>
-                    (this.sortable = new Sortable(
-                        document.querySelector(".sortableCont"),
-                        sortableOptions
-                    ))
-            );
+            this.$nextTick(() => {
+                const cont = document.getElementById("image-sort-cont");
+                if (cont) {
+                    this.sortable = new Sortable(cont, sortableOptions)
+                }
+            })
         }
     },
 
     methods: {
-        changeOrder: function(e) {
-            if (e.newIndex !== e.oldIndex) {
+        changeOrder(e: SortableEvent) {
+            if (e.newIndex !== e.oldIndex && e.newIndex && e.oldIndex) {
                 this.sortedImages.splice(e.newIndex, 0, this.sortedImages.splice(e.oldIndex, 1)[0]);
                 console.log("sort", e.oldIndex, "-->", e.newIndex);
                 this.$emit("sort", this.sortedImages);
             }
         },
 
-        editImage: function(id) {
+        editImage(id: string) {
             this.$emit("editImage", id);
         },
 
-        deleteImage: function(id) {
-            console.log(id);
+        deleteImage(id: string) {
             this.$emit("deleteImage", id);
         }
     },
 
     watch: {
-        imagesProp: function(n) {
+        imagesProp(n: TImage[]) {
             if (n.length > this.sortedImages.length) {
-                // console.log("Change back")
-                // this.images = [];
-                // this.$props.imagesProp.forEach(img => {
-                //     this.images.push(img);
-                // })
-
                 for (let i = n.length - this.sortedImages.length; i > 0; i--) {
                     this.sortedImages.push(n[n.length - i]);
                 }
@@ -101,19 +101,18 @@ export default {
                     onEnd: this.changeOrder
                 };
 
-                this.$nextTick(
-                    () =>
-                        (this.sortable = new Sortable(
-                            document.querySelector(".sortableCont"),
-                            sortableOptions
-                        ))
-                );
+                this.$nextTick(() => {
+                const cont = document.getElementById("image-sort-cont");
+                    if (cont) {
+                        this.sortable = new Sortable(cont, sortableOptions)
+                    }
+                });
             } else if (n.length == 0) {
                 this.sortable = null;
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

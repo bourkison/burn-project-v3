@@ -24,10 +24,18 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue"
+
+interface UsernameFilterData {
+    inputText: string;
+    selectedUsernames: string[];
+    suggestedUsernames: string[]
+}
+
+export default Vue.extend({
     name: "UsernameFilter",
-    data() {
+    data(): UsernameFilterData {
         return {
             inputText: "",
             selectedUsernames: [],
@@ -40,7 +48,7 @@ export default {
     },
 
     methods: {
-        usernameAdd: function() {
+        usernameAdd: function(): void {
             console.log("Test");
 
             if (
@@ -52,5 +60,5 @@ export default {
             }
         }
     }
-};
+});
 </script>

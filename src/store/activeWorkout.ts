@@ -1,112 +1,125 @@
 import { API } from "aws-amplify";
 import Vue from 'vue';
 
+import { mutationTree, actionTree } from "typed-vuex";
+import { Chart } from "@/types"
+import { Workout, RecordedExercise, RecordedSet } from "@/types/workout"
+
 export const state = () => {
     return {
         isFinishing: false,
         workoutCommenced: false,
-        workout: {},
-        previousWorkout: {},
+        workout: undefined as Workout | undefined,
+        previousWorkout: undefined as Workout | undefined,
         emptyWorkout: true,
         displayToast: false,
         startTime: 0,
         finishTime: 0,
-        interval: null,
+        interval: undefined as number | undefined,
         timeString: "00:00",
         initialUrl: "",
 
         // Countdown/timer
         countdownActive: false,
-        countdownInterval: null,
+        countdownInterval: undefined as number | undefined,
         countdownEndTime: 0,
         countdownTimeString: "00:00",
 
         // Charts
-        workoutCharts: []
+        workoutCharts: [] as Chart[]
     }
 };
 
-export const mutations = {
-    setWorkout(state, workout) {
+export type ActiveWorkoutState = ReturnType<typeof state>;
+
+export const mutations = mutationTree(state, {
+    SET_WORKOUT(state, workout: Workout): void {
         state.workout = workout;
     },
 
-    setWorkoutValue(state, data) {
-        state.workout[data.key] = data.value;
+    SET_WORKOUT_VALUE(state, data: { key: "duration"|"name"|"notes"|"public", value: any }): void {
+        if (state.workout) Vue.set(state.workout, data.key, data.value)
     },
 
-    setPreviousWorkout(state, previousWorkout) {
+    SET_PREVIOUS_WORKOUT(state, previousWorkout: Workout): void {
         state.previousWorkout = previousWorkout;
     },
 
-    addExercise(state, exercise) {
-        state.workout.recordedExercises.push(exercise);
+    ADD_EXERCISE(state, exercise: RecordedExercise): void {
+        if (state.workout) state.workout.recordedExercises.push(exercise);
     },
 
-    removeExercise(state, exerciseIndex) {
-        state.workout.recordedExercises.splice(exerciseIndex, 1);
+    REMOVE_EXERCISE(state, exerciseIndex: number): void {
+        if (state.workout) state.workout.recordedExercises.splice(exerciseIndex, 1);
     },
 
-    changeExerciseOrder(state, data) {
-        state.workout.recordedExercises.splice(
-            data.n,
-            0,
-            state.workout.recordedExercises.splice(data.o, 1)[0]
-        );
+    CHANGE_EXERCISE_ORDER(state, data: { n: number, o: number }): void {
+        if (state.workout) {
+            state.workout.recordedExercises.splice(
+                data.n,
+                0,
+                state.workout.recordedExercises.splice(data.o, 1)[0]
+            );
+        }
     },
 
-    setExerciseValue(state, data) {
-        Vue.set(state.workout.recordedExercises[data.exerciseIndex], data.key, data.value);
+    SET_EXERCISE_VALUE(state, data: { key: string, value: any, exerciseIndex: number }): void {
+        if (state.workout) {
+            Vue.set(state.workout.recordedExercises[data.exerciseIndex], data.key, data.value);
+        }
     },
 
-    addSet(state, data) {
-        state.workout.recordedExercises[data.exerciseIndex].sets.push(data.set);
+    ADD_SET(state, data: { set: RecordedSet, exerciseIndex: number }): void {
+        if (state.workout) state.workout.recordedExercises[data.exerciseIndex].sets.push(data.set);
     },
 
-    removeSet(state, exerciseIndex) {
-        state.workout.recordedExercises[exerciseIndex].sets.pop();
+    REMOVE_SET(state, exerciseIndex: number): void {
+        if (state.workout) state.workout.recordedExercises[exerciseIndex].sets.pop();
     },
 
-    setSetValue(state, data) {
-        Vue.set(
-            state.workout.recordedExercises[data.exerciseIndex].sets[data.setIndex],
-            data.key,
-            data.value
-        );
+    SET_SET_VALUE(state, data: { exerciseIndex: number, setIndex: number, key: "weightAmount"|"measureAmount"|"measureBy", value: any }): void {
+        if (state.workout) {
+            Vue.set(
+                state.workout.recordedExercises[data.exerciseIndex].sets[data.setIndex],
+                data.key,
+                data.value
+            );
+        }
 
     },
 
-    setEmptyWorkout(state, value) {
+    SET_EMPTY_WORKOUT(state, value: boolean): void {
         state.emptyWorkout = value;
     },
 
-    setIsFinishing(state, value) {
+    SET_IS_FINISHING(state, value: boolean): void {
         state.isFinishing = value;
     },
 
-    setWorkoutCommenced(state, value) {
+    SET_WORKOUT_COMMENCED(state, value: boolean): void {
         state.workoutCommenced = value;
     },
 
-    setStartTime(state, startTime) {
+    SET_START_TIME(state, startTime: number): void {
         state.startTime = startTime;
     },
 
-    setFinishTime(state, finishTime) {
+    SET_FINISH_TIME(state, finishTime: number): void {
         state.finishTime = finishTime;
     },
 
-    setDisplayToast(state, value) {
+    SET_DISPLAY_TOAST(state, value: boolean): void {
         state.displayToast = value;
     },
 
-    setInterval(state, timer) {
+    SET_INTERVAL(state, timer: number): void {
         state.interval = window.setInterval(() => {
-            this.commit("activeWorkout/setTimeString");
+            // @ts-ignore
+            this.app.$accessor.activeWorkout.SET_TIME_STRING();
         }, timer);
     },
 
-    setTimeString(state) {
+    SET_TIME_STRING(state): void {
         const now = new Date().getTime();
         let duration = now - state.startTime;
 
@@ -132,16 +145,16 @@ export const mutations = {
         }
     },
 
-    resetVariables(state) {
+    RESET_VARIABLES(state): void {
         window.clearInterval(state.interval);
 
         state.isFinishing = false;
         state.workoutCommenced = false;
-        state.workout = {};
-        state.previousWorkout = {};
+        state.workout = undefined;
+        state.previousWorkout = undefined;
         (state.emptyWorkout = true), (state.startTime = 0);
         state.finishTime = 0;
-        state.interval = null;
+        state.interval = undefined;
         state.timeString = "00:00";
         state.displayToast = false;
         state.countdownActive = false;
@@ -152,15 +165,16 @@ export const mutations = {
 
     },
 
-    setTimer(state, seconds) {
+    SET_TIMER(state, seconds: number): void {
         if (seconds !== 0) {
 
             state.countdownEndTime = new Date().getTime() + (seconds * 1000);
             state.countdownActive = true;
 
             state.countdownInterval = window.setInterval(() => {
-                this.commit("activeWorkout/setTimerString");
-            })
+                // @ts-ignore
+                this.app.$accessor.activeWorkout.SET_TIMER();
+            }, 1000)
         } else {
             state.countdownActive = false;
             state.countdownTimeString = "00:00";
@@ -169,7 +183,7 @@ export const mutations = {
         }
     },
 
-    setTimerString(state) {
+    SET_TIMER_STRING(state): void {
         const now = new Date().getTime();
         let timeLeft = state.countdownEndTime - now;
 
@@ -200,32 +214,33 @@ export const mutations = {
         }
     },
 
-    pushToWorkoutCharts(state, options) {
+    PUSH_TO_WORKOUT_CHARTS(state, options: Chart): void {
         state.workoutCharts.push(options);
-        console.log("PUSHED TO WORKOUT CHARTS", state.workoutCharts);
     },
 
-    updateExerciseOptions(state, data) {
+    UPDATE_EXERCISE_OPTIONS(state, data: { options: any, exerciseIndex: number }): void {
         console.log("UPDATE EXERCISE OPTIONS:", data);
-        state.workout.recordedExercises[data.exerciseIndex].options = Object.assign({}, state.workout.recordedExercises[data.exerciseIndex].options, data.options)
+        if (state.workout) {
+            state.workout.recordedExercises[data.exerciseIndex].options = Object.assign({}, state.workout.recordedExercises[data.exerciseIndex].options, data.options)
+        }
     },
 
-    setInitialUrl(state, url) {
+    SET_INITIAL_URL(state, url): void {
         state.initialUrl = url;
     }
-};
+});
 
-export const actions = {
-    async uploadWorkout({ state, commit, rootState, dispatch }) {
+export const actions = actionTree({ state, mutations }, {
+    async uploadWorkout({ state, commit }): Promise<void> {
         let payload = JSON.parse(JSON.stringify(state.workout));
 
         payload.duration = state.finishTime - state.startTime;
         payload.uniqueExercises = [];
-        payload.recordedExercises.forEach(exercise => {
-            delete exercise.exerciseReference._id;
-            delete exercise.exerciseReference.createdAt;
-            delete exercise.exerciseReference.updatedAt;
-            delete exercise.exerciseReference.isFollow;
+        payload.recordedExercises.forEach((exercise: RecordedExercise) => {
+            // delete exercise.exerciseReference._id;
+            // delete exercise.exerciseReference.createdAt;
+            // delete exercise.exerciseReference.updatedAt;
+            // delete exercise.exerciseReference.isFollow;
 
             exercise.sets.forEach(set => {
                 if (!set.weightAmount) {
@@ -253,7 +268,7 @@ export const actions = {
         const path = "/workout";
         const myInit = {
             headers: {
-                Authorization: await dispatch("fetchJwtToken", null, { root: true })
+                Authorization: await this.app.$accessor.fetchJwtToken()
             },
             body: {
                 workoutForm: payload
@@ -263,12 +278,12 @@ export const actions = {
         console.log("WORKOUT PAYLOAD", payload);
 
         const result = (
-            await API.post(rootState.apiName, path, myInit).catch(err => {
+            await API.post(this.app.$accessor.apiName, path, myInit).catch(err => {
                 console.error("Error uploading result:", err);
             })
         ).data.workout;
 
-        commit("pushWorkoutToUserWorkouts", result, { root: true });
-        commit("resetVariables");
+        this.app.$accessor.PUSH_WORKOUT_TO_USER_WORKOUTS(result);
+        this.app.$accessor.activeWorkout.RESET_VARIABLES()
     }
-};
+});

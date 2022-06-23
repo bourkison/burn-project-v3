@@ -19,7 +19,7 @@
                                 <div class="align-items-center text-muted small-font">
                                     <div class="d-flex align-items-center p-2">
                                         <div>
-                                            <span v-if="chartOptions.type ==='exercise'"><em>You have not recently done this exercise!</em></span>
+                                            <span v-if="chartOptions.chartType ==='exercise'"><em>You have not recently done this exercise!</em></span>
                                             <span v-else><em>No Data</em></span>
                                         </div>
                                         <div class="ml-auto" v-if="editable"><b-icon-bar-chart-line-fill class="clickableIcon" @click="flipCard" /></div>
@@ -48,7 +48,7 @@
                                 <b-form @submit.prevent="updateChart(false)">
                                     <b-form-group label="Chart Type" class="small-font">
                                         <div class="text-center">
-                                            <b-form-radio-group v-model="newChartOptions.type" :options="chartTypeOptions" size="sm" button-variant="outline-primary" buttons />
+                                            <b-form-radio-group v-model="newChartOptions.chartType" :options="chartTypeOptions" size="sm" button-variant="outline-primary" buttons />
                                         </div>
                                     </b-form-group>
 
@@ -121,7 +121,7 @@
                                     </b-form-group>
 
                                     <!-- EXERCISE CHART DATA -->
-                                    <div v-if="newChartOptions.type === 'exercise'">
+                                    <div v-if="newChartOptions.chartType === 'exercise'">
                                         <b-form-group class="small-font">
                                             <template #label>
                                                 <div class="d-flex">
@@ -360,7 +360,7 @@ export default {
     methods: {
         async getData() {
             try {
-                if (!this.$props.options.type) {
+                if (!this.chartOptions.chartType) {
                     throw new Error("No chart type given")
                 }
 
@@ -375,7 +375,7 @@ export default {
                     this.newEndDateDynamic = true
                 }
 
-                if (this.chartOptions.type === "exercise") {
+                if (this.chartOptions.chartType === "exercise") {
                     this.trimLabels = true;
 
                     if (this.chartOptions.data.exercise && this.chartOptions.data.exercise.exerciseId) {
@@ -397,7 +397,7 @@ export default {
                     endDate: this.endDate
                 };
     
-                switch (this.chartOptions.type) {
+                switch (this.chartOptions.chartType) {
                     case "recentWorkouts":
                         path = "/stats/recentworkouts";
                         break;
@@ -418,7 +418,7 @@ export default {
 
                         break;
                     default:
-                        throw new Error("Unrecognised chart type: " + this.chartOptions.type);
+                        throw new Error("Unrecognised chart type: " + this.chartOptions.chartType);
                 }
     
                 const myInit = {
@@ -530,9 +530,9 @@ export default {
                 }
     
                 // Set card title:
-                if (this.chartOptions.type === "recentWorkouts") {
+                if (this.chartOptions.chartType === "recentWorkouts") {
                     this.cardTitle = "Recent Workouts";
-                } else if (this.chartOptions.type === "exercise") {
+                } else if (this.chartOptions.chartType === "exercise") {
                     this.cardTitle = data.data.exerciseName
                 }
     
@@ -560,7 +560,7 @@ export default {
 
             let chartType = "bar";
 
-            if (this.chartOptions.type === "exercise") {
+            if (this.chartOptions.chartType === "exercise") {
                 chartType = "line";
             }
 
@@ -780,7 +780,7 @@ export default {
             }
 
             // Set data object.
-            if (this.newChartOptions.type === "exercise") {
+            if (this.newChartOptions.chartType === "exercise") {
                 this.newChartOptions.data = this.newChartData;
             } else {
                 this.newChartOptions.data = {};

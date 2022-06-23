@@ -30,8 +30,10 @@
     </b-toast>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
     name: "WorkoutToast",
     data() {
         return {
@@ -41,14 +43,14 @@ export default {
     computed: {
         workoutToast: {
             get() {
-                return this.$store.state.activeWorkout.displayToast;
+                return this.$accessor.activeWorkout.displayToast;
             },
-            set(value) {
-                this.$store.commit("activeWorkout/setDisplayToast", value);
+            set(value: boolean) {
+                this.$accessor.activeWorkout.SET_DISPLAY_TOAST(value);
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

@@ -98,8 +98,9 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { TemplateReference, QueryTemplateInit } from "@/types/template";
 
 import TemplateFeed from "@/components/Template/TemplateFeed.vue";
 
@@ -107,7 +108,20 @@ import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 
-export default {
+type TemplateFollowedData = {
+    isLoading: boolean;
+    templateExists: boolean;
+    templates: TemplateReference[];
+    selectedMgs: string[];
+    selectedTags: string[];
+    isLoadingMore: boolean;
+    moreToLoad: boolean;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         TemplateFeed,
@@ -115,7 +129,7 @@ export default {
         MuscleGroupSelector,
         TagSelector
     },
-    data() {
+    data(): TemplateFollowedData {
         return {
             isLoading: true,
             templateExists: false,
@@ -128,21 +142,20 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedTemplate: null,
 
             // Errror handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
 
     async mounted() {
-        if (this.$route.query.muscleGroups) {
+        if (this.$route.query.muscleGroups && typeof this.$route.query.muscleGroups === "string") {
             this.selectedMgs = this.$route.query.muscleGroups.split(",");
         }
 
-        if (this.$route.query.tags) {
+        if (this.$route.query.tags && typeof this.$route.query.tags === "string") {
             this.selectedTags = this.$route.query.tags.split(",");
         }
 
@@ -153,101 +166,69 @@ export default {
         async downloadTemplates() {
             try {
                 this.isLoading = true;
-                this.templates = [];
-
-                const path = "/template";
-                let myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        loadAmount: 5,
-                        user: true
-                    }
-                };
-
-                if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                }
-
-                if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                }
-
-                const response = await API.get(this.$store.state.apiName, path, myInit);
-
-                if (!response) {
-                    throw new Error("No response");
-                }
-
-                if (!response.success) {
-                    throw new Error("Unsuccessful: " + response.errorMessage);
-                }
-
-                response.data.forEach(template => {
-                    let temp = template;
-                    temp.loaded = false;
-                    this.templates.push(temp);
-                })
-
-                this.isLoadingMore = false;
-            } catch (err) {
+                await this.queryTemplates();
+            } catch (err: any) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
 
                 this.moreToLoad = false;
-            } finally {
+            } 
+            finally {
                 this.isLoading = false;
+                this.isLoadingMore = false;
             }
         },
 
         async loadMoreTemplates() {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
-                    const path = "/template";
-                    let myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
-                        queryStringParameters: {
-                            loadAmount: 5,
-                            user: true,
-                            startAt: this.templates[this.templates.length - 1].templateId
-                        }
-                    };
-    
-                    if (this.selectedMgs.length > 0) {
-                        myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                    }
-    
-                    if (this.selectedTags.length > 0) {
-                        myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                    }
-    
-                    const response = await API.get(this.$store.state.apiName, path, myInit);
-    
-                    response.data.forEach(template => {
-                        let temp = template;
-                        temp.loaded = false;
-                        this.templates.push(temp);
-                    })
-    
-                    if (response.data.length < 5) {
-                        this.moreToLoad = false;
-                    }
+                    this.isLoadingMore = true;
+                    await this.queryTemplates(this.templates[this.templates.length - 1].templateId)
                 }
-                catch (err) {
+                catch (err: any) {
                     if (err.response && err.response.status !== 404) {
                         this.displayError(err);
                     }
 
                     this.moreToLoad = false;
                 }
+                finally {
+                    this.isLoadingMore = false;
+                }
             }
         },
 
-        displayError(err) {
+        async queryTemplates(startAt?: string) {
+            let init: QueryTemplateInit = {
+                queryStringParameters: {
+                    loadAmount: 5,
+                    user: true
+                }
+            };
+
+            if (startAt && init.queryStringParameters) {
+                init.queryStringParameters.startAt = startAt;
+            }
+
+            if (this.selectedMgs.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            }
+
+            if (this.selectedTags.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
+            const references = await this.$accessor.api.queryTemplate({ init });
+
+
+            references.forEach(reference => {
+                reference.loaded = false;
+                this.templates.push(reference);
+            })
+        },
+
+        displayError(err: any) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -257,16 +238,16 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]) {
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -281,17 +262,17 @@ export default {
             if (isFiltered) {
                 this.$router.replace({ path: "/templates/followed", query: query });
             } else {
-                this.$router.replace({ path: "/templates/followed", query: null });
+                this.$router.replace({ path: "/templates/followed", query: undefined });
             }
 
             this.downloadTemplates();
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]) {
             this.selectedTags = tags;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -306,12 +287,12 @@ export default {
             if (isFiltered) {
                 this.$router.replace({ path: "/templates/followed", query: query });
             } else {
-                this.$router.replace({ path: "/templates/followed", query: null });
+                this.$router.replace({ path: "/templates/followed", query: undefined });
             }
             this.downloadTemplates();
         }
     }
-};
+});
 </script>
 
 <style scoped>

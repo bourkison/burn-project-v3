@@ -105,15 +105,28 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
-import ExerciseFeed from "@/components/Exercise/ExerciseFeed";
+<script lang="ts">
+import Vue from "vue";
+import { ExerciseReference, QueryExerciseInit } from "@/types/exercise";
 
+import ExerciseFeed from "@/components/Exercise/ExerciseFeed.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 import UsernameFilter from "@/components/Utility/UsernameFilter.vue";
 
-export default {
+interface ExerciseDiscoverData {
+    isLoading: boolean;
+    exercises: ExerciseReference[];
+    selectedMgs: string[];
+    selectedTags: string[];
+    isLoadingMore: boolean;
+    moreToLoad: boolean;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         ExerciseFeed,
@@ -127,7 +140,7 @@ export default {
         }
     },
 
-    data() {
+    data(): ExerciseDiscoverData {
         return {
             isLoading: true,
             exercises: [], // Exercises from user doc.
@@ -139,21 +152,20 @@ export default {
             // Lazy loading:
             isLoadingMore: true,
             moreToLoad: true,
-            lastLoadedExercise: null,
 
             // Error handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
 
     mounted() {
-        if (this.$route.query.muscleGroups) {
+        if (this.$route.query.muscleGroups && typeof this.$route.query.muscleGroups === "string") {
             this.selectedMgs = this.$route.query.muscleGroups.split(",");
         }
 
-        if (this.$route.query.tags) {
+        if (this.$route.query.tags && typeof this.$route.query.tags === "string") {
             this.selectedTags = this.$route.query.tags.split(",");
         }
 
@@ -161,91 +173,31 @@ export default {
     },
 
     methods: {
-        async downloadExercises() {
+        async downloadExercises(): Promise<void> {
             try {
                 this.isLoading = true;
-                this.exercises = [];
-
-                const path = "/exercise";
-                let myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        loadAmount: 5,
-                        user: false
-                    }
-                };
-
-                if (this.selectedMgs.length > 0) {
-                    myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                }
-
-                if (this.selectedTags.length > 0) {
-                    myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                }
-
-                const response = await API.get(this.$store.state.apiName, path, myInit);
-
-                response.data.forEach(exercise => {
-                    let temp = exercise;
-                    temp.loaded = false;
-                    this.exercises.push(temp);
-                });
-
-                if (response.data.length < 5) {
-                    this.moreToLoad = false;
-                }
-            } catch (err) {
+                await this.queryExercises();
+            }
+            catch (err: any) {
                 if (err.response && err.response.status !== 404) {
                     this.displayError(err);
                 }
 
                 this.moreToLoad = false;
-            } finally {
+            }
+            finally {
                 this.isLoading = false;
                 this.isLoadingMore = false;
             }
         },
 
-        async loadMoreExercises() {
+        async loadMoreExercises(): Promise<void> {
             if (!this.isLoadingMore && this.moreToLoad) {
                 try {
                     this.isLoadingMore = true;
-    
-                    const path = "/exercise";
-                    let myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
-                        queryStringParameters: {
-                            loadAmount: 5,
-                            user: false,
-                            startAt: this.exercises[this.exercises.length - 1]._id
-                        }
-                    };
-    
-                    if (this.selectedMgs.length > 0) {
-                        myInit.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
-                    }
-    
-                    if (this.selectedTags.length > 0) {
-                        myInit.queryStringParameters.tags = this.selectedTags.join(",");
-                    }
-    
-                    const response = await API.get(this.$store.state.apiName, path, myInit);
-    
-                    response.data.forEach(exercise => {
-                        let temp = exercise;
-                        temp.loaded = false;
-                        this.exercises.push(temp);
-                    })
-    
-                    if (response.data.length < 5) {
-                        this.moreToLoad = false;
-                    }
+                    await this.queryExercises(this.exercises[this.exercises.length - 1].exerciseId);
                 }
-                catch (err) {
+                catch (err: any) {
                     if (err.response && err.response.status !== 404) {
                         this.displayError(err);
                     }
@@ -258,11 +210,42 @@ export default {
             }
         },
 
-        updateMuscleGroups(muscleGroups) {
+        async queryExercises(startAt?: string): Promise<void> {
+            let init: QueryExerciseInit = {
+                queryStringParameters:  {
+                    loadAmount: 5,
+                    user: false
+                }
+            };
+
+            if (startAt && init.queryStringParameters) {
+                init.queryStringParameters.startAt = startAt;
+            }
+
+            if (this.selectedMgs.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.muscleGroups = this.selectedMgs.join(",");
+            }
+
+            if (this.selectedTags.length > 0 && init.queryStringParameters) {
+                init.queryStringParameters.tags = this.selectedTags.join(",");
+            }
+
+            const references = await this.$accessor.api.queryExercise({ init });
+            references.forEach((reference: ExerciseReference) => {
+                reference.loaded = false;
+                this.exercises.push(reference);
+            })
+
+            if (references.length < 5) {
+                this.$nextTick(() => { this.moreToLoad = false });
+            }
+        },
+
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.selectedMgs = muscleGroups;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -282,18 +265,18 @@ export default {
             } else {
                 this.$router.replace({
                     path: "/exercises",
-                    query: null
+                    query: undefined
                 });
             }
 
             this.downloadExercises();
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             this.selectedTags = tags;
             let isFiltered = false;
 
-            let query = {};
+            let query: { muscleGroups?: string, tags?: string } = {};
 
             if (this.selectedMgs.length > 0) {
                 isFiltered = true;
@@ -313,13 +296,13 @@ export default {
             } else {
                 this.$router.replace({
                     path: "/exercises",
-                    query: null
+                    query: undefined
                 });
             }
             this.downloadExercises();
         },
 
-        displayError(err) {
+        displayError(err: any): void {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -329,12 +312,12 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>

@@ -101,18 +101,32 @@
     </b-container>
 </template>
 
-<script>
-import { API, Storage } from "aws-amplify";
-import { v4 as uuidv4 } from "uuid"
+<script lang="ts">
+import Vue from "vue";
+import { MetaInfo } from "vue-meta";
+import { ImageToUpload } from "@/types";
+import { CreateExercise } from "@/types/exercise";
 
-import ImageUploader from "@/components/Utility/ImageUploader.vue";
+import { Storage } from "aws-amplify";
+import { v4 as uuid } from "uuid"
+
+import ImageUploader from "~/components/Image/ImageUploader.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
 
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-export default {
+interface ExerciseEditData {
+    oldExerciseData: CreateExercise;
+    newExerciseData: CreateExercise;
+    initImages: ImageToUpload[];
+    imagesToUpload: ImageToUpload[];
+    imagesToDelete: string[];
+    isUpdating: boolean;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         DifficultySelector,
@@ -121,10 +135,26 @@ export default {
         TagSelector,
         DescriptionEditor
     },
-    data() {
+    data(): ExerciseEditData {
         return {
-            oldExerciseData: null,
-            newExerciseData: null,
+            oldExerciseData: {
+                name: "",
+                description: "",
+                muscleGroups: [],
+                difficulty: 1,
+                filePaths: [],
+                measureBy: "repsWeight",
+                tags: []
+            },
+            newExerciseData: {
+                name: "",
+                description: "",
+                muscleGroups: [],
+                difficulty: 1,
+                filePaths: [],
+                measureBy: "repsWeight",
+                tags: []
+            },
 
             initImages: [],
             // Images to upload includes init images (but we skip over when uploading as we already have path)
@@ -133,36 +163,45 @@ export default {
             isUpdating: false
         };
     },
+    head(): MetaInfo {
+        return {
+            title: this.oldExerciseData ? "Burn · Edit " + this.oldExerciseData.name : "Burn · Edit Exercise",
+            meta: [
+                {
+                    hid: "description",
+                    name: "description",
+                    content: this.$route.params.exerciseId + " tutorial"
+                }
+            ]
+        }
+    },
 
-    async asyncData({ params, store, req, redirect, error }) {
-        let oldExerciseData = null;
-        let newExerciseData = null;
-        let initImages = [];
+    async asyncData({ params, app: { $accessor }, req, redirect, error }) {
+        let oldExerciseData: CreateExercise | null = null;
+        let newExerciseData: CreateExercise | null = null;
+        let initImages: ImageToUpload[] = [];
 
         try {
-            const path = "/exercise/" + params.exerciseId;
-            const myInit = {
-                headers: {
-                    Authorization: await store.dispatch("fetchJwtToken", { req })
-                }
-            };
+            const response = await $accessor.api.getExercise({ req, exerciseId: params.exerciseId, init: {} })
+            newExerciseData = JSON.parse(JSON.stringify(response));
+            oldExerciseData = JSON.parse(JSON.stringify(response));
 
-            const response = await API.get(store.state.apiName, path, myInit);
-            newExerciseData = response.data;
-            oldExerciseData = response.data;
+            if (!oldExerciseData || !newExerciseData) {
+                throw new Error("No exercise data");
+            } 
 
-            if (oldExerciseData.createdBy.username !== store.state.userProfile.docData.username) {
+            if (!oldExerciseData.createdBy || !$accessor.userProfile || !$accessor.userProfile.docData || oldExerciseData.createdBy.username !== $accessor.userProfile.docData.username) {
                 console.warn("Unauthorized");
                 redirect("/exercises/" + params.exerciseId);
             }
 
             if (newExerciseData) {
-                let urlPromises = [];
+                let urlPromises: Promise<string>[] = [];
 
                 newExerciseData.filePaths.forEach(path => {
-                    if (path.type === "video") {
+                    if (path.fileType === "video") {
                         console.log("EDITING VIDEO");
-                    } else if (path.type === "image") {
+                    } else if (path.fileType === "image") {
                         urlPromises.push(Storage.get(path.key));
                     }
                 });
@@ -174,11 +213,11 @@ export default {
                         id: i,
                         url: url,
                         editable: false,
-                        path: oldExerciseData.filePaths[i],
+                        path: oldExerciseData ? oldExerciseData.filePaths[i] : null,
                     });
                 });
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
             error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
@@ -192,7 +231,7 @@ export default {
     },
 
     methods: {
-        async updateExercise() {
+        async updateExercise(): Promise<void> {
             console.log("Update", this.newExerciseData, this.imagesToUpload, this.imagesToDelete);
             console.log("JSON:", JSON.stringify(this.newExerciseData));
 
@@ -206,7 +245,11 @@ export default {
                     const imagePaths = await Promise.all(
                         this.imagesToUpload.map(async (image, i) => {
                             if (!image.path) {
-                                const imageName = this.$store.state.userProfile.docData.username + "/" + uuidv4();
+                                if (!this.$accessor.userProfile || !this.$accessor.userProfile.docData) {
+                                    throw new Error("Not logged in");
+                                }
+
+                                const imageName = this.$accessor.userProfile.docData.username + "/" + uuid();
 
                                 const imageData = await fetch(image.url);
                                 const blob = await imageData.blob();
@@ -233,71 +276,54 @@ export default {
                     );
 
                     imagePaths.forEach(path => {
-                        this.newExerciseData.filePaths.push({ key: path.key, type: "image" });
+                        this.newExerciseData.filePaths.push({ key: path.key, fileType: "image" });
                     });
                 } catch (err) {
                     console.error("Error uploading image(s):", err);
                 } finally {
                     // Now update exercise document.
-                    const path = "/exercise/" + this.$route.params.exerciseid;
-                    const myInit = {
-                        headers: {
-                            Authorization: await this.$store.dispatch("fetchJwtToken")
-                        },
+                    const init = {
                         body: {
                             exerciseForm: this.newExerciseData,
                             imagesToDelete: this.imagesToDelete
                         }
                     };
 
-                    const response = await API.put(this.$store.state.apiName, path, myInit);
-
-                    this.$router.push("/exercises/" + response.data._id);
+                    const _id = await this.$accessor.api.editExercise({ init, exerciseId: this.$route.params.exerciseId })
+                    this.$router.push("/exercises/" + _id);
                 }
             } catch (err) {
                 console.error("Error updating exercise:", err);
             } finally {
-                this.isUpadting = false;
+                this.isUpdating = false;
             }
         },
 
-        updateDescription(md) {
+        updateDescription(md: string): void {
             this.newExerciseData.description = md;
         },
 
-        updateImages(images) {
+        updateImages(images: ImageToUpload[]): void {
             this.imagesToUpload = images;
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             this.newExerciseData.tags = tags;
         },
 
-        updateMuscleGroups(muscleGroups) {
+        updateMuscleGroups(muscleGroups: string[]): void {
             this.newExerciseData.muscleGroups = muscleGroups;
         },
 
-        updateDifficulty(difficulty) {
+        updateDifficulty(difficulty: number): void {
             this.newExerciseData.difficulty = difficulty;
         },
 
-        deleteInitImage(path) {
+        deleteInitImage(path: string): void {
             this.imagesToDelete.push(path);
-        },
-
-        dataURLtoBlob(dataurl) {
-            var arr = dataurl.split(","),
-                mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]),
-                n = bstr.length,
-                u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], { type: mime });
         }
     }
-};
+});
 </script>
 
 <style scoped>

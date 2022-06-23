@@ -27,7 +27,7 @@
                     </div>
                     <DescriptionViewer :value="templateData.description" />
 
-                    <div class="text-center" v-if="!$store.state.activeWorkout.workoutCommenced">
+                    <div class="text-center" v-if="!$accessor.activeWorkout.workoutCommenced">
                         <b-button
                             variant="outline-success"
                             size="sm"
@@ -69,125 +69,86 @@
     </b-card>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { Template } from "@/types/template";
 
 import CommentSection from "@/components/Comment/CommentSection.vue";
 import ExerciseExpandable from "@/components/Exercise/ExerciseExpandable.vue";
 import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
-export default {
+type TemplateComponentData = {
+    isLoading: boolean;
+    templateData: Template | undefined;
+    loadedSuccessfully: boolean;
+}
+
+export default Vue.extend({
     name: "TemplateComponent",
     components: { CommentSection, ExerciseExpandable, DescriptionViewer },
     props: {
         templateId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         skeletonAmount: {
-            type: Number,
+            type: Number as PropType<number>,
             required: true
         },
         skeletonWidth: {
-            type: Array,
+            type: Array as PropType<string[]>,
             required: true
         }
     },
 
-    data() {
+    data(): TemplateComponentData {
         return {
             isLoading: true,
-            templateData: {},
-
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
-
-            isLiked: false,
-            isFollowed: false,
-            isFollowable: false,
+            templateData: undefined,
 
             // Error handling
             loadedSuccessfully: false
         };
     },
 
-    created: async function() {
+    async created() {
         try {
-            const path = "/template/" + this.$props.templateId;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
-                queryStringParameters: {
-                    counters: true
-                }
-            };
-
-            const response = await API.get(this.$store.state.apiName, path, myInit).catch(err => {
-                console.error(err);
-                throw new Error("Template promise catch:" + this.$props.templateId + " | " + err);
-            });
-
-            if (!response) {
-                throw new Error("Template no response:" + this.$props.templateId);
-            }
-
-            if (!response.success) {
-                throw new Error("Template " + this.$props.templateId + " " + response.errorMessage);
-            }
-
-            this.loadedSuccessfully = true;
-            this.templateData = {
-                _id: response.data._id,
-                createdBy: response.data.createdBy,
-                description: response.data.description,
-                difficulty: response.data.difficulty,
-                exerciseReferences: response.data.exerciseReferences,
-                muscleGroups: response.data.muscleGroups,
-                name: response.data.name,
-                tags: response.data.tags
-            };
-
-            this.likeCount = response.data.likeCount;
-            this.commentCount = response.data.commentCount;
-            this.followCount = response.data.followCount;
-            this.isLiked = response.data.isLiked;
-            this.isFollowed = response.data.isFollowed;
-            this.isFollowable = response.data.isFollowable;
-        } catch (err) {
+            this.templateData = await this.$accessor.getTemplate({ templateId: this.templateId });
+        } 
+        catch (err) {
             this.displayError(err);
-        } finally {
+        } 
+        finally {
             this.isLoading = false;
         }
     },
 
     methods: {
-        displayError(err) {
+        displayError(err: any) {
             console.error(err);
         },
 
-        handleLike(x) {
-            if (x > 0) {
-                this.likeCount++;
-                this.isLiked = true;
-            } else {
-                this.likeCount--;
-                this.isLiked = false;
+        handleLike(x: number) {
+            if (x > 0 && this.templateData) {
+                this.templateData.likeCount++;
+                this.templateData.isLiked = true;
+            } else if (this.templateData) {
+                this.templateData.likeCount--;
+                this.templateData.isLiked = false;
             }
         },
 
-        handleFollow(x) {
-            if (x > 0) {
-                this.followCount++;
-                this.isFollowed = true;
-            } else {
-                this.followCount--;
-                this.isFollowed = false;
+        handleFollow(x: number) {
+            if (x > 0 && this.templateData) {
+                this.templateData.followCount++;
+                this.templateData.isFollowed = true;
+            } else if (this.templateData) {
+                this.templateData.followCount--;
+                this.templateData.isFollowed = false;
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

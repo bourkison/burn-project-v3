@@ -56,34 +56,31 @@
     </div>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { ExerciseReference } from "@/types/exercise";
 
-export default {
+export default Vue.extend({
     name: "ExerciseSearch",
     data() {
         return {
             isLoading: true,
             searchText: "",
-            createdExercises: [],
-            followedExercises: []
+            createdExercises: [] as ExerciseReference[],
+            followedExercises: [] as ExerciseReference[]
         };
     },
 
-    created: async function() {
+    async created() {
         try {
-            const path = "/exercise";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
+            const init = {
                 queryStringParameters: {
                     loadAmount: 25,
                     user: true
                 }
             };
 
-            const exerciseResults = (await API.get(this.$store.state.apiName, path, myInit)).data;
+            const exerciseResults = await this.$accessor.api.queryExercise({ init });
 
             exerciseResults.forEach(exercise => {
                 if (exercise.isFollow) {
@@ -92,7 +89,7 @@ export default {
                     this.createdExercises.push(exercise);
                 }
             });
-        } catch (err) {
+        } catch (err: any) {
             if (err.response && err.response.status === 404) {
                 console.error("No exercises");
             } else {
@@ -104,7 +101,7 @@ export default {
     },
 
     computed: {
-        filteredCreatedExercises: function() {
+        filteredCreatedExercises(): ExerciseReference[] {
             if (this.searchText) {
                 return this.createdExercises.filter(createdExercise => {
                     return createdExercise.name
@@ -116,7 +113,7 @@ export default {
             }
         },
 
-        filteredFollowedExercises: function() {
+        filteredFollowedExercises(): ExerciseReference[] {
             if (this.searchText) {
                 return this.followedExercises.filter(followedExercise => {
                     return followedExercise.name
@@ -130,9 +127,9 @@ export default {
     },
 
     methods: {
-        selectExercise: function(exercise) {
+        selectExercise(exercise: ExerciseReference) {
             this.$emit("selectExercise", exercise);
         }
     }
-};
+});
 </script>

@@ -89,7 +89,8 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import { Auth } from "aws-amplify";
 
 import SignInForm from "@/components/Auth/SignInForm.vue";
@@ -97,7 +98,7 @@ import SignUpForm from "@/components/Auth/SignUpForm.vue";
 import MainSearch from "@/components/Search/MainSearch.vue";
 import WorkoutToast from "@/components/Workout/WorkoutToast.vue";
 
-export default {
+export default Vue.extend({
     components: { MainSearch, SignInForm, SignUpForm, WorkoutToast },
     data() {
         return {
@@ -118,7 +119,7 @@ export default {
             this.$router.push("/");
         }
     }
-}
+})
 </script>
 
 <style>

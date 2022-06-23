@@ -149,10 +149,11 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import { Auth } from "aws-amplify";
 
-export default {
+export default Vue.extend({
     name: "SignIn",
     data() {
         return {
@@ -181,7 +182,7 @@ export default {
     },
 
     methods: {
-        signIn: async function() {
+        async signIn() {
             this.isLoading = true;
 
             const user = await Auth.signIn(
@@ -201,7 +202,7 @@ export default {
             }
         },
 
-        sendPasswordReset: async function() {
+        async sendPasswordReset() {
             this.isLoading = true;
             const response = await Auth.forgotPassword(this.resetPasswordForm.username).catch(
                 err => {
@@ -216,7 +217,7 @@ export default {
             }
         },
 
-        resetPassword: async function() {
+        async resetPassword() {
             if (this.resetPasswordForm.password === this.resetPasswordForm.confPassword) {
                 const response = await Auth.forgotPasswordSubmit(
                     this.resetPasswordForm.username,
@@ -230,15 +231,15 @@ export default {
             }
         },
 
-        displayError: function(message) {
+        displayError: function(message: string) {
             this.errorMessage = message;
             this.alertCountdown = this.dismissSecs;
             this.isLoading = false;
         },
 
-        alertCountdownChanged: function(alertCountdown) {
+        alertCountdownChanged: function(alertCountdown: number) {
             this.alertCountdown = alertCountdown;
         }
     }
-};
+});
 </script>

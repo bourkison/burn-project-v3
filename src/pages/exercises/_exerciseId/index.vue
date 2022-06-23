@@ -79,17 +79,17 @@
                                 :docId="exerciseData._id"
                                 coll="exercise"
                                 :followableComponent="true"
-                                :likeCount="likeCount"
-                                :commentCount="commentCount"
-                                :followCount="followCount"
-                                :isLiked="isLiked"
-                                :isFollowed="isFollowed"
-                                :isFollowable="isFollowable"
+                                :likeCount="exerciseData.likeCount"
+                                :commentCount="exerciseData.commentCount"
+                                :followCount="exerciseData.followCount"
+                                :isLiked="exerciseData.isLiked"
+                                :isFollowed="exerciseData.isFollowed"
+                                :isFollowable="exerciseData.isFollowable"
                                 @like="handleLike(1)"
                                 @unlike="handleLike(-1)"
                                 @follow="handleFollow(1)"
                                 @unfollow="handleFollow(-1)"
-                                @addComment="commentCount++"
+                                @addComment="exerciseData.commentCount++"
                             />
                         </client-only>
                     </b-card>
@@ -187,7 +187,12 @@
     </b-container>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { Chart as TChart } from "@/types";
+import { Exercise } from "@/types/exercise";
+import { MetaInfo } from "vue-meta";
+
 import { API, graphqlOperation, Storage } from "aws-amplify";
 import { getVideoObject } from "@/graphql/queries";
 import awsvideoconfig from "@/aws-video-exports";
@@ -198,9 +203,25 @@ import Chart from "@/components/Charts/Chart.vue";
 import VideoPlayer from "@/components/Video/VideoPlayer.vue";
 import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
-export default {
+interface ExerciseViewData {
+    isDeleting: boolean;
+    exerciseData: Exercise | null;
+    imageUrls: string[];
+    video: {
+        id: string;
+        url: string;
+        token: string;
+        options: object
+    };
+    chartOptions: TChart | {};
+    carouselModel: number;
+    variants: string[];
+    modalIsDeleting: boolean;
+}
+
+export default Vue.extend({
     components: { CommentSection, MuscleGroup, Chart, VideoPlayer, DescriptionViewer },
-    data() {
+    data(): ExerciseViewData {
         return {
             isDeleting: false,
 
@@ -213,14 +234,6 @@ export default {
                 options: {}
             },
 
-            likeCount: 0,
-            commentCount: 0,
-            followCount: 0,
-
-            isLiked: false,
-            isFollowed: false,
-            isFollowable: false,
-
             // Chart
             chartOptions: {},
 
@@ -230,7 +243,7 @@ export default {
             modalIsDeleting: false
         };
     },
-    head() {
+    head(): MetaInfo {
         return {
             title: this.exerciseData ? "Burn · " + this.exerciseData.name : "Burn · Exercise",
             meta: [
@@ -243,10 +256,10 @@ export default {
         }
     },
 
-    async asyncData({ params, error, store, req }) {
-        let exerciseData = null;
-        let chartOptions = {
-            type: "exercise",
+    async asyncData({ params, error, app: { $accessor }, req }) {
+        let exerciseData: Exercise;
+        let chartOptions: TChart = {
+            chartType: "exercise",
             startDate: {
                 unit: "month",
                 amount: 3,
@@ -258,7 +271,18 @@ export default {
                 date: null
             },
             data: {
-                exerciseId: "",
+                exercise: {
+                    exerciseId: "",
+                    createdBy: {
+                        username: "",
+                        userId: "",
+                        profilePhoto: ""
+                    },
+                    name: "",
+                    tags: [],
+                    muscleGroups: [],
+                    createdAt: new Date()
+                },
                 preferenceIndex: 0,
                 dataToPull: "orm"
             },
@@ -268,189 +292,144 @@ export default {
             pointBackgroundColor: "#007bff"
         };
 
-        let likeCount = 0;
-        let commentCount = 0;
-        let followCount = 0;
-        let isLiked = false;
-        let isFollowed = false;
-        let isFollowable = false;
-
         try {
-            let response;
-            if (store.state.userProfile && store.state.userProfile.loggedIn) {
-                const path = "/exercise/" + params.exerciseId;
-                const myInit = {
-                    headers: {
-                        Authorization: await store.dispatch("fetchJwtToken", { req })
-                    },
-                    queryStringParameters: {
-                        counters: true
-                    }
-                };
-
-                response = (await API.get(store.state.apiName, path, myInit));
-
-                likeCount = response.data.likeCount;
-                commentCount = response.data.commentCount;
-                followCount = response.data.followCount;
-                isLiked = response.data.isLiked;
-                isFollowed = response.data.isFollowed;
-                isFollowable = response.data.isFollowable;
-            } else {
-                response = await API.get(store.state.apiName, "/public/exercise/" + params.exerciseId, {});
-            }
-
-            if (response.data && response.data._id) {
-                response = response.data;
-            } else {
-                error({ message: "Exercise not found", statusCode: 404 });
-            }
-
-            exerciseData = {
-                _id: response._id,
-                createdBy: response.createdBy,
-                description: response.description,
-                difficulty: response.difficulty,
-                filePaths: response.filePaths,
-                measureBy: response.measureBy,
-                muscleGroups: response.muscleGroups,
-                name: response.name,
-                tags: response.tags
+            const init = {
+                queryStringParameters: {
+                    counters: true
+                }
             };
 
+            if ($accessor.userProfile && $accessor.userProfile.loggedIn) {
+                exerciseData = await $accessor.api.getExercise({ req, init, exerciseId: params.exerciseId });
+            } else {
+                exerciseData = await $accessor.api.getExercisePublic({ req, init, exerciseId: params.exerciseId });
+            }
+
+            chartOptions.data = chartOptions.data || {};
             chartOptions.data.exercise = {
-                exerciseId: response._id,
-                createdBy: response.createdBy,
-                name: response.name,
-                filePaths: response.filePaths,
-                tags: response.tags,
-                muscleGroups: response.muscleGroups
+                exerciseId: exerciseData._id,
+                createdBy: exerciseData.createdBy,
+                name: exerciseData.name,
+                tags: exerciseData.tags,
+                muscleGroups: exerciseData.muscleGroups,
+                createdAt: exerciseData.createdAt
             };
-            chartOptions.exerciseId = response._id;
 
             return {
                 exerciseData,
-                chartOptions,
-                likeCount,
-                commentCount,
-                followCount,
-                isLiked,
-                isFollowed,
-                isFollowable
+                chartOptions
             }
         }
-        catch (err) {
+        catch (err: any) {
             console.error(err);
             error({ message: err.message, statusCode: (err.response && err.response.status) });
         }
     },
 
     mounted() {
-        if (this.$store.state.userProfile && this.$store.state.userProfile.loggedIn) {
+        if (this.$accessor.state.userProfile && this.$accessor.state.userProfile.loggedIn) {
             this.loadImages();
         }
     },
 
     methods: {
-        confirmDeleteExercise() {
+        confirmDeleteExercise(): void {
             this.modalIsDeleting = true;
         },
 
-        async deleteExercise(e) {
+        async deleteExercise(e: Event): Promise<void> {
             e.preventDefault();
 
             this.isDeleting = true;
-
-            const path = "/exercise/" + this.$route.params.exerciseid;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                }
-            };
-
-            const response = await API.del(this.$store.state.apiName, path, myInit);
-            console.log("Deletion success!", response);
+            
+            await this.$accessor.api.deleteExercise({ exerciseId: this.$route.params.exerciseId, init: {} })
 
             this.isDeleting = false;
             this.modalIsDeleting = false;
             this.$router.push("/exercises");
         },
 
-        handleLike(x) {
-            if (x > 0) {
-                this.likeCount++;
-                this.isLiked = true;
-            } else {
-                this.likeCount--;
-                this.isLiked = false;
+        handleLike(x: number): void {
+            if (this.exerciseData) {
+                if (x > 0) {
+                    this.exerciseData.likeCount++;
+                    this.exerciseData.isLiked = true;
+                } else {
+                    this.exerciseData.likeCount--;
+                    this.exerciseData.isLiked = false;
+                }
             }
         },
 
-        handleFollow(x) {
-            if (x > 0) {
-                this.followCount++;
-                this.isFollowed = true;
-            } else {
-                this.followCount--;
-                this.isFollowed = false;
+        handleFollow(x: number): void {
+            if (this.exerciseData) {
+                if (x > 0) {
+                    this.exerciseData.followCount++;
+                    this.exerciseData.isFollowed = true;
+                } else {
+                    this.exerciseData.followCount--;
+                    this.exerciseData.isFollowed = false;
+                }
             }
         },
 
-        async loadImages() {
+        async loadImages(): Promise<void> {
             try {
-                let urlPromises = [];
+                let urlPromises: Promise<string>[] = [];
 
-                this.exerciseData.filePaths.forEach(async path => {
-                    if (path.type === "video") {
-                        const videoObject = {
-                            id: path.key
-                        };
-
-                        const response = await API.graphql(
-                            graphqlOperation(getVideoObject, videoObject)
-                        );
-
-                        this.video.token = response.data.getVideoObject.token;
-                        this.video.id = path.key;
-                        const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
-                        this.video.url =
-                            "https://" +
-                            awsvideoconfig.awsOutputVideo +
-                            "/" +
-                            this.video.id +
-                            "/" +
-                            uniqueId +
-                            ".m3u8";
-
-                        this.video.options = {
-                            autoplay: true,
-                            controls: true,
-                            sources: [
-                                {
-                                    src: this.video.url
-                                }
-                            ]
-                        };
-                    } else if (path.type === "image") {
-                        urlPromises.push(Storage.get(path.key));
-                    }
-                });
-
-                const imageUrls = await Promise.all(urlPromises);
-
-                imageUrls.forEach(url => {
-                    this.imageUrls.push(url);
-                });
+                if (this.exerciseData) {
+                    this.exerciseData.filePaths.forEach(async path => {
+                        if (path.fileType === "video") {
+                            const videoObject = {
+                                id: path.key
+                            };
+    
+                            const response = (await API.graphql(
+                                graphqlOperation(getVideoObject, videoObject)
+                            ) as any);
+    
+                            this.video.token = response.data.getVideoObject.token;
+                            this.video.id = path.key;
+                            const uniqueId = path.key.split("/")[path.key.split("/").length - 1];
+                            this.video.url =
+                                "https://" +
+                                awsvideoconfig.awsOutputVideo +
+                                "/" +
+                                this.video.id +
+                                "/" +
+                                uniqueId +
+                                ".m3u8";
+    
+                            this.video.options = {
+                                autoplay: true,
+                                controls: true,
+                                sources: [
+                                    {
+                                        src: this.video.url
+                                    }
+                                ]
+                            };
+                        } else if (path.fileType === "image") {
+                            urlPromises.push(Storage.get(path.key));
+                        }
+                    });
+    
+                    const imageUrls = await Promise.all(urlPromises);
+    
+                    imageUrls.forEach(url => {
+                        this.imageUrls.push(url);
+                    });
+                }
             } catch (err) {
                 console.error("Error getting image URLs:", err);
             }
         },
 
-        updateChart(options) {
+        updateChart(options: TChart): void {
             this.chartOptions = options;
         }
     }
-}
+})
 </script>
 
 <style scoped>

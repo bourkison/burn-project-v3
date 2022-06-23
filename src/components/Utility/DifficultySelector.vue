@@ -48,17 +48,30 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue";
+
+interface Star {
+    variant: string;
+    icon: string;
+    hover: boolean;
+    clicked: boolean;
+}
+
+interface DifficultySelectorData {
+    stars: [Star, Star, Star, Star, Star]
+}
+
+export default Vue.extend({
     name: "DifficultySelector",
     props: {
         initDifficulty: {
-            type: Number,
+            type: Number as PropType<number>,
             required: false
         }
     },
 
-    data() {
+    data(): DifficultySelectorData {
         return {
             stars: [
                 {
@@ -76,13 +89,13 @@ export default {
     },
 
     mounted() {
-        if (this.$props.initDifficulty) {
+        if (this.initDifficulty) {
             this.starClick(this.$props.initDifficulty - 1);
         }
     },
 
     methods: {
-        starHover(hover, star) {
+        starHover(hover: boolean, star: number): void {
             if (hover) {
                 for (let i = 0; i <= star; i++) {
                     this.stars[i].icon = "star-fill";
@@ -96,7 +109,7 @@ export default {
             }
         },
 
-        starClick(star) {
+        starClick(star: number): void {
             for (let i = 0; i <= star; i++) {
                 this.stars[i].icon = "star-fill";
                 this.stars[i].variant = "warning";
@@ -109,11 +122,17 @@ export default {
                 this.stars[i].clicked = false;
             }
 
-            document.activeElement.blur();
+            try {
+                (document.activeElement as HTMLElement).blur();
+            }
+            catch {
+                console.warn("Either no active element or active element is not HTMLElement");
+            }
+
             this.$emit("updateDifficulty", star + 1);
         }
     }
-};
+});
 </script>
 
 <style scoped>

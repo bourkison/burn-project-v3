@@ -163,16 +163,19 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { RecordedExercise } from "@/types/workout";
+
+export default Vue.extend({
     name: "ExerciseRecorder",
     props: {
         exercise: {
-            type: Object,
+            type: Object as PropType<RecordedExercise>,
             required: true
         },
         previousExercise: {
-            type: Object,
+            type: Object as PropType<RecordedExercise>,
             required: false
         }
     },
@@ -199,40 +202,49 @@ export default {
             // Card Flip
             cardHeight: "229px",
             cardBodyHeight: "200px",
-            expandingInterval: null,
+            expandingInterval: undefined as number | undefined,
         };
     },
 
-    created: function() {
+    created() {
         // Store previous exercise so if order changed it isnt changed too (as its based off index).
-        if (this.$props.previousExercise) {
-            this.previousExerciseStored = JSON.parse(JSON.stringify(this.$props.previousExercise));
+        if (this.previousExercise) {
+            this.previousExerciseStored = JSON.parse(JSON.stringify(this.previousExercise));
         }
 
-        if (!this.$props.exercise.options) {
-            this.$emit("updateExerciseOptions", this.$props.exercise.uid, { weightUnit: "kg", measureBy: "repsWeight" })
-        } else if (!this.$props.exercise.options.weightUnit) {
-            this.$emit("updateExerciseOptions", this.$props.exercise.uid, { weightUnit: "kg" })
-        } else if (!this.$props.exercise.options.measureBy) {
-            this.$emit("updateExerciseOptions", this.$props.exercise.uid, { measureBy: "repsWeight" })
+        if (!this.exercise.options) {
+            this.$emit("updateExerciseOptions", this.exercise.uid, { weightUnit: "kg", measureBy: "repsWeight" })
+        } else if (!this.exercise.options.weightUnit) {
+            this.$emit("updateExerciseOptions", this.exercise.uid, { weightUnit: "kg" })
+        } else if (!this.exercise.options.measureBy) {
+            this.$emit("updateExerciseOptions", this.exercise.uid, { measureBy: "repsWeight" })
         }
 
-        this.newExerciseOptions = this.$props.exercise.options;
+        this.newExerciseOptions = this.exercise.options;
     },
 
-    mounted: function() {
+    mounted() {
         // Set height of card.
-        this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
-        this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+        if (this.$refs.frontCard && this.$refs.frontCardBody) {
+            this.cardHeight = (this.$refs.frontCard as HTMLElement).offsetHeight + "px";
+            this.cardBodyHeight = (this.$refs.frontCardBody as HTMLElement).offsetHeight + "px";
+        } else {
+            console.warn("Front card and front card body ref not found. No heights set.");
+        }
 
-        this.$refs.cardFlip.addEventListener("transitionend", () => {
-            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".frontCardBody")) {
-                this.$el.querySelector(".frontCardBody").style.display = "none";
-            }
-        })
+        if (this.$refs.cardFlip) {
+            (this.$refs.cardFlip as HTMLElement).addEventListener("transitionend", () => {
+                if ((this.$refs.cardFlip as HTMLElement).classList.contains("flipped") && this.$el.querySelector(".frontCardBody")) {
+                    const el = this.$el.querySelector(".frontCardBody");
+                    if (el) (el as HTMLElement).style.display = "none";
+                }
+            })
+        } else {
+            console.warn("CardFlip ref not found. No transition event set.")
+        }
     },
 
-    beforeRouteLeave: function(to, from, next) {
+    beforeRouteLeave(to, from, next) {
         if (this.expandingInterval) {
             window.clearInterval(this.expandingInterval);
         }
@@ -241,10 +253,10 @@ export default {
     },
 
     computed: {
-        notesPlaceholder: function() {
-            if (this.$props.previousExercise) {
-                if (this.$props.previousExercise.notes.length > 0) {
-                    return this.$props.previousExercise.notes;
+        notesPlaceholder(): string {
+            if (this.previousExercise) {
+                if (this.previousExercise.notes.length > 0) {
+                    return this.previousExercise.notes;
                 }
             }
 
@@ -253,7 +265,7 @@ export default {
     },
 
     methods: {
-        addSet: function() {
+        addSet(): void {
             let d;
 
             if (this.exercise.sets.length > 0) {
@@ -262,26 +274,31 @@ export default {
                 d = { weightAmount: 0, measureAmount: 0 };
             }
 
-            this.$emit("addSet", this.$props.exercise.uid, d);
+            this.$emit("addSet", this.exercise.uid, d);
             this.$nextTick(() => { 
-                this.cardHeight = this.$refs.frontCard.offsetHeight + "px"; 
-                this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+                if (this.$refs.frontCard && this.$refs.frontCardBody) {
+                    this.cardHeight = (this.$refs.frontCard as HTMLElement).offsetHeight + "px"; 
+                    this.cardBodyHeight = (this.$refs.frontCardBody as HTMLElement).offsetHeight + "px";
+                }
             })
         },
 
-        removeSet: function() {
-            this.$emit("removeSet", this.$props.exercise.uid);
+        removeSet() {
+            this.$emit("removeSet", this.exercise.uid);
             this.$nextTick(() => { 
-                this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
-                this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+                if (this.$refs.frontCard && this.$refs.frontCardBody) {
+                    this.cardHeight = (this.$refs.frontCard as HTMLElement).offsetHeight + "px"; 
+                    this.cardBodyHeight = (this.$refs.frontCardBody as HTMLElement).offsetHeight + "px";
+                }
             })
         },
 
-        setSetValue: function(index, key, e) {
-            this.$emit("setSetValue", this.$props.exercise.uid, index, key, e);
+        setSetValue(index: number, key: string, e: Event) {
+            this.$emit("setSetValue", this.exercise.uid, index, key, e);
         },
 
-        removeExercise: function() {
+        removeExercise() {
+            // @ts-ignore
             this.$bvModal.msgBoxConfirm("Are you sure you want to remove this exercise?", {
                 title: "Remove Exercise?",
                 buttonSize: "sm",
@@ -292,46 +309,52 @@ export default {
                 centered: true,
                 size: "sm"
             })
-            .then(value => {
+            .then((value: boolean) => {
                 if (value) {
-                    this.$emit("removeExercise", this.$props.exercise.uid);
+                    this.$emit("removeExercise", this.exercise.uid);
                 }
             })
         },
 
-        flipCard: function() {
-            if (this.$refs.cardFlip.classList.contains("flipped") && this.$el.querySelector(".frontCardBody")) {
-                this.$el.querySelector(".frontCardBody").style.display = "block";
-            }
+        flipCard() {
+            if (this.$refs.cardFlip) {
+                const el = this.$el.querySelector(".frontCardBody")
 
-            this.$refs.cardFlip.classList.toggle("flipped");
+                if ((this.$refs.cardFlip as HTMLElement).classList.contains("flipped") && el) {
+                    (el as HTMLElement).style.display = "block";
+                }
+    
+                (this.$refs.cardFlip as HTMLElement).classList.toggle("flipped");
+            }
         },
 
-        startExpanding: function() {
+        startExpanding() {
             this.expandingInterval = window.setInterval(() => {
-                this.cardHeight = this.$refs.frontCard.offsetHeight + "px";
-                this.cardBodyHeight = this.$refs.frontCardBody.offsetHeight + "px";
+                if (this.$refs.frontCard && this.$refs.frontCardBody) {
+                    this.cardHeight = (this.$refs.frontCard as HTMLElement).offsetHeight + "px";
+                    this.cardBodyHeight = (this.$refs.frontCardBody as HTMLElement).offsetHeight + "px";
+                }
             }, 10)
         },
 
-        stopExpanding: function() {
+        stopExpanding() {
             window.clearInterval(this.expandingInterval);
         },
 
-        updateExerciseSettings: function() {
-            this.$emit("updateExerciseOptions", this.$props.exercise.uid, this.newExerciseOptions)
+        updateExerciseSettings() {
+            this.$emit("updateExerciseOptions", this.exercise.uid, this.newExerciseOptions)
             this.flipCard();
         },
 
-        addChart: function() {
-            this.$emit("pushChart", this.$props.exercise.exerciseReference)
+        addChart() {
+            this.$emit("pushChart", this.exercise.exerciseReference)
         },
 
-        preventLetters: function(value) {
+        preventLetters(value: string) {
             return value.replace(/[^.\d]/g, '');
         }
     }
-};
+});
 </script>
 
 <style scoped>

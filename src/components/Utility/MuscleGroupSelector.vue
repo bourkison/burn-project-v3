@@ -35,19 +35,29 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { HTMLElementEvent } from "@/types";
+
 import MuscleGroup from "@/components/Utility/MuscleGroup.vue";
 
-export default {
+interface MuscleGroupSelectData {
+    inputText: string;
+    allMuscleGroups: string[];
+    availableMuscleGroups: string[];
+    selectedMuscleGroups: string[];
+}
+
+export default Vue.extend({
     name: "MuscleGroupSelect",
     components: { MuscleGroup },
     props: {
         initMgs: {
-            type: Array,
+            type: Array as PropType<string[]>,
             required: false
         }
     },
-    data() {
+    data(): MuscleGroupSelectData {
         return {
             inputText: "",
             // Selected Muscle Groups is all selected.
@@ -77,10 +87,10 @@ export default {
     mounted: function() {
         this.availableMuscleGroups = this.allMuscleGroups;
 
-        if (this.$props.initMgs) {
-            this.selectedMuscleGroups = this.$props.initMgs;
+        if (this.initMgs) {
+            this.selectedMuscleGroups = this.initMgs;
 
-            this.$props.initMgs.forEach(mg => {
+            this.initMgs.forEach(mg => {
                 // Remove from available.
                 this.availableMuscleGroups = this.availableMuscleGroups.filter(x => x !== mg);
             });
@@ -88,7 +98,7 @@ export default {
     },
 
     methods: {
-        datalistAdd: function(e) {
+        datalistAdd: function(e: HTMLElementEvent<HTMLTextAreaElement>): void {
             if (
                 this.inputText.trim() !== "" &&
                 this.availableMuscleGroups.includes(this.inputText)
@@ -106,17 +116,16 @@ export default {
             }
 
             this.inputText = "";
-            // document.activeElement.blur();
         },
 
-        pillRemove: function(mg) {
+        pillRemove: function(mg: string): void {
             this.selectedMuscleGroups = this.selectedMuscleGroups.filter(x => x !== mg);
             this.availableMuscleGroups.push(mg);
 
             this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         },
 
-        muscleGroupClickHandler: function(id) {
+        muscleGroupClickHandler: function(id: string): void {
             if (!this.selectedMuscleGroups.includes(id)) {
                 // Add to selected.
                 this.selectedMuscleGroups.push(id);
@@ -135,7 +144,7 @@ export default {
             this.$emit("updateMuscleGroups", this.selectedMuscleGroups);
         }
     }
-};
+});
 </script>
 
 <style scoped>

@@ -38,22 +38,24 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-export default {
+export default Vue.extend({
     name: "QuickStart",
-    created: async function() {
+    created() {
         dayjs.extend(relativeTime);
     },
 
     methods: {
-        createdAtText: function(date) {
+        createdAtText(date: string): string {
             return dayjs(date).fromNow();
         }
     }
-};
+});
 </script>
 
 <style scoped>

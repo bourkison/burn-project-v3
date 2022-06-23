@@ -52,49 +52,45 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { Workout } from "@/types/workout";
 
-export default {
+export default Vue.extend({
     name: "WorkoutShare",
     props: {
         workoutId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         username: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         }
     },
     data() {
         return {
             isLoading: true,
-            workout: {}
+            workout: null as Workout | null
         };
     },
 
-    created: function() {
+    created() {
         this.downloadWorkout();
     },
 
     methods: {
-        downloadWorkout: async function() {
+        async downloadWorkout() {
             try {
-                const path = "/workout/" + this.$props.workoutId;
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     queryStringParameters: {
                         username: this.$props.username
                     }
                 }
     
-                const response = (await API.get(this.$store.state.apiName, path, myInit)).data;
-                this.workout = response;
+                this.workout = await this.$accessor.api.getWorkout({ workoutId: this.workoutId, init });
             }
-            catch (err) {
+            catch (err: any) {
                 if (err.response && err.response.status === 404) {
                     console.error("Workout not found")
                 } else {
@@ -109,11 +105,11 @@ export default {
     },
 
     watch: {
-        workoutId: function() {
+        workoutId() {
             this.downloadWorkout();
         }
     }
-};
+});
 </script>
 
 <style scoped>

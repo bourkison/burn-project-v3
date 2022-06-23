@@ -39,19 +39,20 @@
     </div>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { PostReference } from "@/types/post";
 
 import PostNew from "@/components/Post/PostNew.vue";
 import PostFeed from "@/components/Post/PostFeed.vue";
 
-export default {
+export default Vue.extend({
     name: "PostFeedHome",
     components: { PostFeed, PostNew },
     data() {
         return {
             isLoading: true,
-            posts: [],
+            posts: [] as PostReference[],
 
             // Lazy loading:
             isLoadingMore: true,
@@ -68,18 +69,13 @@ export default {
             this.isLoading = true;
             this.isLoadingMore = true;
     
-            const path = "/post";
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                },
+            const init = {
                 queryStringParameters: {
                     loadAmount: 5
                 }
             };
-    
-            const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
-    
+
+            const postResult = await this.$accessor.api.queryPost({ init });
             postResult.forEach(post => {
                 let temp = post;
                 temp.loaded = false;
@@ -93,7 +89,7 @@ export default {
             this.isLoading = false;
             this.isLoadingMore = false;
         }
-        catch (err) {
+        catch (err: any) {
             console.error(err.message || JSON.stringify(err));
             this.moreToLoad = false;
         }
@@ -103,33 +99,29 @@ export default {
     },
 
     methods: {
-        addPost(post) {
+        addPost(post: PostReference): void {
             this.posts.unshift(post);
             this.amountToUpload = 0;
             this.amountUploaded = 0;
         },
 
-        postLoaded(index) {
+        postLoaded(index: number): void {
             this.posts[index].loaded = true;
         },
 
-        async loadMorePosts() {
+        async loadMorePosts(): Promise<void> {
             if (!this.isLoadingMore && this.moreToLoad) {
                 console.log("LOADING MORE!");
                 this.isLoadingMore = true;
 
-                const path = "/post";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     queryStringParameters: {
                         loadAmount: 5,
                         startAt: this.posts[this.posts.length - 1]._id
                     }
                 }
 
-                const postResult = (await API.get(this.$store.state.apiName, path, myInit)).data;
+                const postResult = await this.$accessor.api.queryPost({ init })
 
                 postResult.forEach(post => {
                     let temp = post;
@@ -145,12 +137,12 @@ export default {
             }
         },
 
-        uploadProgression(uploaded, total) {
+        uploadProgression(uploaded: number, total: number): void {
             this.amountUploaded = uploaded;
             this.amountToUpload = total;
         }
     }
-};
+});
 </script>
 
 <style scoped>

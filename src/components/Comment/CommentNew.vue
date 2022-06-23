@@ -1,26 +1,30 @@
 <template>
     <b-form @submit.prevent="addComment">
         <b-form-group>
-            <CommentEditor v-model="commentForm.content" @addComment="addComment" />
+            <CommentEditor ref="editor" v-model="commentForm.content" @addComment="addComment" :replyingTo="replyingTo" />
         </b-form-group>
     </b-form>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue, { PropType } from "vue"
 import CommentEditor from "@/components/TextEditor/CommentEditor.vue";
 
-export default {
+export default Vue.extend({
     name: "CommentNew",
     components: { CommentEditor },
     props: {
         coll: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         docId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
+        },
+        replyingTo: {
+            type: String as PropType<string>,
+            required: false
         }
     },
     data() {
@@ -28,49 +32,49 @@ export default {
             commentForm: {
                 content: ""
             },
-
-            numShards: 10
         };
     },
 
     methods: {
-        addComment: async function() {
+        async addComment() {
             if (this.commentForm.content.trim() !== "") {
-                let payload = this.commentForm;
-                this.commentForm = { content: "" };
+                try {
+                    let payload = this.commentForm;
+                    this.commentForm = { content: "" };
+    
+                    const init = {
+                        queryStringParameters: {
+                            docId: this.$props.docId,
+                            coll: this.$props.coll
+                        },
+                        body: {
+                            content: payload.content
+                        }
+                    };
+    
+                    const commentResponse = await this.$accessor.api.createComment({ init });
+                    this.$emit("addComment", commentResponse);
+                }
+                catch (err) {
+                    console.error("Error adding comment:", err);
+                }
+            }
+        }
+    },
 
-                const path = "/comment";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
-                    queryStringParameters: {
-                        docId: this.$props.docId,
-                        coll: this.$props.coll
-                    },
-                    body: {
-                        content: payload.content
-                    }
-                };
+    watch: {
+        replyingTo(n) {
+            if (n !== "") {
+                const reply = `<span data-type="mention" class="user-mention" data-id="${n}">@${n}</span>`;
+                if (this.commentForm.content.substr(0, 3) === "<p>") {
+                    this.commentForm.content = "<p>" + reply + " " + this.commentForm.content.substr(3);
+                } else {
+                    this.commentForm.content = "<p>" + reply + "</p>";
+                }
 
-                await API.post(this.$store.state.apiName, path, myInit)
-                    .then(commentResponse => {
-                        payload._id = commentResponse.data._id;
-                        payload.createdAt = new Date();
-                        payload.likeCount = 0;
-                        payload.likes = [];
-                        payload.createdBy = {
-                            username: this.$store.state.userProfile.docData.username,
-                            _id: this.$store.state.userProfile.docData._id
-                        };
-
-                        this.$emit("addComment", payload);
-                    })
-                    .catch(err => {
-                        console.error("Error adding comment", err);
-                    });
+                this.$nextTick(() => { this.$emit("replied") });
             }
         }
     }
-};
+});
 </script>

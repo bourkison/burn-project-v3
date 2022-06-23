@@ -21,15 +21,15 @@
         >
             <div v-if="!isLoading && searchText && hasResults">
                 <div
-                    v-if="userResponses.length > 0"
+                    v-if="userResults.length > 0"
                     :class="
-                        templateResponses.length > 0 || exerciseResponses.length > 0 ? 'mb-2' : ''
+                        templateResults.length > 0 || exerciseResults.length > 0 ? 'mb-2' : ''
                     "
                 >
                     <h6>Users</h6>
                     <b-list-group>
                         <b-list-group-item
-                            v-for="user in userResponses"
+                            v-for="user in userResults"
                             :key="user._id"
                             :to="'/' + user.username"
                             class="p-2"
@@ -41,13 +41,13 @@
                 </div>
 
                 <div
-                    v-if="exerciseResponses.length > 0"
-                    :class="templateResponses.length > 0 ? 'mb-2' : ''"
+                    v-if="exerciseResults.length > 0"
+                    :class="templateResults.length > 0 ? 'mb-2' : ''"
                 >
                     <h6>Exercises</h6>
                     <b-list-group>
                         <b-list-group-item
-                            v-for="exercise in exerciseResponses"
+                            v-for="exercise in exerciseResults"
                             :key="exercise._id"
                             :to="'/exercises/' + exercise._id"
                         >
@@ -56,11 +56,11 @@
                     </b-list-group>
                 </div>
 
-                <div v-if="templateResponses.length > 0">
+                <div v-if="templateResults.length > 0">
                     <h6>Templates</h6>
                     <b-list-group>
                         <b-list-group-item
-                            v-for="template in templateResponses"
+                            v-for="template in templateResults"
                             :key="template._id"
                             :to="'/templates/' + template._id"
                         >
@@ -84,20 +84,30 @@
     </b-nav-form>
 </template>
 
-<script>
-import { API } from "aws-amplify"
+<script lang="ts">
+import Vue from "vue";
 
-export default {
+type MainSearchData = {
+    isLoading: boolean;
+    searchText: string;
+    hasResults: boolean;
+    userResults: { _id: string, username: string }[];
+    exerciseResults: { _id: string, name: string }[];
+    templateResults: { _id: string, name: string }[];
+    displayPopover: boolean;
+}
+
+export default Vue.extend({
     name: "MainSearch",
-    data() {
+    data(): MainSearchData {
         return {
             isLoading: false,
             searchText: "",
             hasResults: true,
 
-            userResponses: [],
-            exerciseResponses: [],
-            templateResponses: [],
+            userResults: [],
+            exerciseResults: [],
+            templateResults: [],
 
             // Bootstrap:
             displayPopover: false,
@@ -105,83 +115,89 @@ export default {
     },
 
     methods: {
-        showPopover() {
+        showPopover(): void {
             this.displayPopover = true;
         },
 
-        hidePopover() {
+        hidePopover(): void {
             this.$nextTick(() => {
                 this.displayPopover = false;
             });
         },
 
-        searchPage() {
+        searchPage(): void {
             const encodedSearch = encodeURIComponent(this.searchText.trim());
             this.displayPopover = false;
-            document.activeElement.blur();
+            try {
+                (document.activeElement as HTMLElement).blur();
+            }
+            catch {
+                console.warn("Either no active element or active element is not HTMLElement");
+            }
 
             this.$router.push("/search?q=" + encodedSearch);
         }
     },
 
     watch: {
-        async searchText() {
+        async searchText(): Promise<void> {
             this.isLoading = true;
             this.hasResults = true;
 
             if (this.searchText.trim()) {
-                const path = "/search"
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     queryStringParameters: {
                         q: this.searchText,
                         collections: "exercise,template,user"
                     }
                 }
 
-                const response = await API.get(this.$store.state.apiName, path, myInit);
+                const response = await this.$accessor.api.getSearch({ init });
 
-                this.userResponses = [];
-                this.exerciseResponses = [];
-                this.templateResponses = [];
+                this.userResults = [];
+                this.exerciseResults = [];
+                this.templateResults = [];
 
-                const keys = Object.keys(response.data);
-                const values = Object.values(response.data);
+                const keys = Object.keys(response);
+                const values = Object.values(response);
 
                 values.forEach((responses, index) => {
-                    if (keys[index] === "user") {
-                        responses.forEach(userResponse => {
-                            this.userResponses.push(userResponse);
-                        })
-                    }
-                    else if (keys[index] === "exercise") {
-                        responses.forEach(exerciseResponse => {
-                            this.exerciseResponses.push(exerciseResponse);
-                        })
-                    }
-                    else if (keys[index] === "template") {
-                        responses.forEach(templateResponse => {
-                            this.templateResponses.push(templateResponse);
-                        })
+                    if (responses) {
+                        if (keys[index] === "user") {
+                            responses.forEach(userResponse => {
+                                // @ts-ignore
+                                this.userResults.push(userResponse);
+                            })
+                        }
+                        else if (keys[index] === "exercise") {
+                            responses.forEach(exerciseResponse => {
+                                // @ts-ignore
+                                this.exerciseResults.push(exerciseResponse);
+                            })
+                        }
+                        else if (keys[index] === "template") {
+                            responses.forEach(templateResponse => {
+                                // @ts-ignore
+                                this.templateResults.push(templateResponse);
+                            })
+                        }
                     }
                 })
 
-                if (!this.userResponses.length && !this.exerciseResponses.length && !this.templateResponses.length) {
+                if (!this.userResults.length && !this.exerciseResults.length && !this.templateResults.length) {
                     this.hasResults = false;
                 }
 
                 this.isLoading = false;
             } else {
-                this.userResponses = [];
-                this.exerciseResponses = [];
-                this.templateResponses = [];
+                this.userResults = [];
+                this.exerciseResults = [];
+                this.templateResults = [];
                 this.isLoading = false;
             }
         }
     }
-};
+});
 </script>
 
 <style scoped></style>

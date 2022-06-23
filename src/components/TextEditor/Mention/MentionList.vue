@@ -23,8 +23,10 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
     name: "MentionList",
     props: {
         items: {
@@ -48,7 +50,7 @@ export default {
     },
 
     methods: {
-        onKeyDown({ event }) {
+        onKeyDown({ event }: any): boolean {
             if (event.key === "ArrowUp") {
                 this.upHandler();
                 return true;
@@ -67,19 +69,19 @@ export default {
             return false;
         },
 
-        upHandler() {
+        upHandler(): void {
             this.selectedIndex = (this.selectedIndex + this.items.length - 1) % this.items.length;
         },
 
-        downHandler() {
+        downHandler(): void {
             this.selectedIndex = (this.selectedIndex + 1) % this.items.length;
         },
 
-        enterHandler() {
+        enterHandler(): void {
             this.selectItem(this.selectedIndex);
         },
 
-        selectItem(index) {
+        selectItem(index: number): void {
             const item = this.items[index];
 
             if (item && !this.selected) {
@@ -100,5 +102,5 @@ export default {
             this.selectedIndex = 0;
         },
     },
-};
+});
 </script>

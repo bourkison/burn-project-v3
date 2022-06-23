@@ -94,17 +94,26 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
+<script lang="ts">
+import Vue from "vue";
+import { CreateTemplate } from "@/types/template";
+import { ExerciseReference } from "@/types/exercise";
 
 import TemplateBuilder from "@/components/Template/TemplateBuilder.vue";
 import DifficultySelector from "@/components/Utility/DifficultySelector.vue";
 import MuscleGroupSelector from "@/components/Utility/MuscleGroupSelector.vue";
 import TagSelector from "@/components/Utility/TagSelector.vue";
-
 import DescriptionEditor from "@/components/TextEditor/DescriptionEditor.vue";
 
-export default {
+interface TemplateNewData {
+    isCreating: boolean;
+    templateForm: CreateTemplate;
+    errorCountdown: number;
+    errorMessage: string;
+    errorInterval: number | undefined;
+}
+
+export default Vue.extend({
     middleware: ["requiresAuth"],
     components: {
         DescriptionEditor,
@@ -113,119 +122,72 @@ export default {
         TemplateBuilder,
         MuscleGroupSelector
     },
-    data() {
+    data(): TemplateNewData {
         return {
-            isLoading: true,
             isCreating: false,
             templateForm: {
                 name: "",
                 description: "",
-                exercises: [],
+                exerciseReferences: [],
                 difficulty: 1,
                 muscleGroups: [],
                 tags: []
             },
 
-            // Editor:
-            editorOptions: {
-                minHeight: "300px",
-                language: "en-US",
-                hideModeSwitch: true,
-                usageStatistics: false,
-                toolbarItems: [
-                    "heading",
-                    "bold",
-                    "italic",
-                    "divider",
-                    "link",
-                    "ul",
-                    "ol",
-                    "quote",
-                    "divider",
-                    "indent",
-                    "outdent",
-                    "hr"
-                ]
-            },
-
             // Error handling:
             errorCountdown: 0,
             errorMessage: "",
-            errorInterval: null
+            errorInterval: undefined
         };
     },
 
     methods: {
-        async createTemplate() {
+        async createTemplate(): Promise<void> {
             try {
                 this.isCreating = true;
 
                 console.log(JSON.stringify(JSON.stringify({ templateForm: this.templateForm })));
-
-                const path = "/template";
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     body: {
                         templateForm: this.templateForm
                     }
                 };
 
-                const response = await API.post(this.$store.state.apiName, path, myInit);
-
-                if (!response.data) {
-                    if (response.message) {
-                        throw new Error("API Error in response: " + response.errorMessage);
-                    } else {
-                        throw new Error("No response");
-                    }
-                }
-
-                console.log("RESPONSE:", response);
-
-                this.$router.push("/templates/" + response._id);
-            } catch (err) {
+                const _id = await this.$accessor.api.createTemplate({ init })
+                this.$router.push("/templates/" + _id);
+            } catch (err: any) {
                 this.displayError(err);
             } finally {
                 this.isCreating = false;
             }
         },
 
-        updateDescription(md) {
-            this.templateForm.description = md;
+        updateDescription(description: string): void {
+            this.templateForm.description = description;
         },
 
-        updateDifficulty(difficulty) {
+        updateDifficulty(difficulty: number): void {
             this.templateForm.difficulty = difficulty;
         },
 
-        updateTags(tags) {
+        updateTags(tags: string[]): void {
             this.templateForm.tags = tags;
         },
 
-        updateMuscleGroups(mgs) {
+        updateMuscleGroups(mgs: string[]): void {
             this.templateForm.muscleGroups = mgs;
         },
 
-        updateExercises(exercises) {
-            let temp = [];
-            exercises.forEach(exercise => {
-                temp.push({
-                    exerciseId: exercise._id,
-                    name: exercise.name,
-                    muscleGroups: exercise.muscleGroups,
-                    tags: exercise.tags,
-                    isFollow: exercise.isFollow,
-                    createdAt: exercise.createdAt,
-                    createdBy: exercise.createdBy
-                });
+        updateExercises(exercises: ExerciseReference[]): void {
+            let temp: ExerciseReference[] = [];
+            exercises.forEach((exercise: ExerciseReference) => {
+                temp.push(exercise);
             });
 
-            this.templateForm.exercises = temp;
+            this.templateForm.exerciseReferences = temp;
         },
 
-        displayError(err) {
+        displayError(err: any) {
             this.errorCountdown = 30;
             console.error(err);
             this.errorMessage = "Oops, an error has occured... Please try again later.";
@@ -235,12 +197,12 @@ export default {
                     this.errorCountdown -= 1;
                 } else {
                     window.clearInterval(this.errorInterval);
-                    this.errorInterval = null;
+                    this.errorInterval = undefined;
                 }
             }, 1000);
         }
     }
-};
+});
 </script>
 
 <style scoped>

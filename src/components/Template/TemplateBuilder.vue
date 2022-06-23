@@ -8,10 +8,10 @@
                         class="d-flex"
                         align-v="center"
                         v-for="exercise in createdExercises"
-                        :key="exercise._id"
+                        :key="exercise.exerciseId"
                         @click="addExercise(exercise)"
                         href="#"
-                        :id="'exercise-' + exercise._id"
+                        :id="'exercise-' + exercise.exerciseId"
                     >
                         <span>{{ exercise.name }}</span>
                         <b-icon-plus font-scale="1.2" class="ml-auto" />
@@ -25,10 +25,10 @@
                         class="d-flex"
                         align-v="center"
                         v-for="exercise in followedExercises"
-                        :key="exercise._id"
+                        :key="exercise.exerciseId"
                         @click="addExercise(exercise)"
                         href="#"
-                        :id="'exercise-' + exercise._id"
+                        :id="'exercise-' + exercise.exerciseId"
                     >
                         <span>{{ exercise.name }}</span>
                         <b-icon-plus font-scale="1.2" class="ml-auto" />
@@ -42,7 +42,7 @@
                         class="d-flex"
                         align-v="center"
                         v-for="exercise in selectedExercises"
-                        :key="exercise._id"
+                        :key="exercise.exerciseId"
                     >
                         <span>{{ exercise.name }}</span>
                         <span class="ml-auto" />
@@ -66,19 +66,30 @@
     </div>
 </template>
 
-<script>
-import { API } from "aws-amplify";
-import Sortable from "sortablejs";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { ExerciseReference } from "@/types/exercise";
 
-export default {
+import Sortable, { SortableOptions, SortableEvent } from "sortablejs";
+
+interface TemplateBuilderData {
+    isLoading: boolean;
+    createdExercises: ExerciseReference[];
+    followedExercises: ExerciseReference[];
+    selectedExercises: ExerciseReference[];
+    sortable: Sortable | undefined;
+    sortableOptions: SortableOptions | undefined;
+}
+
+export default Vue.extend({
     name: "TemplateBuilder",
     props: {
         initExercises: {
-            type: Array,
+            type: Array as PropType<ExerciseReference[]>,
             required: false
         }
     },
-    data() {
+    data(): TemplateBuilderData {
         return {
             isLoading: true,
 
@@ -86,35 +97,31 @@ export default {
             followedExercises: [],
             selectedExercises: [],
 
-            sortable: null,
+            sortable: undefined,
             sortableOptions: {
                 handle: ".sortableHandle",
                 animation: 300,
-                onEnd: this.changeOrder
             }
         };
     },
 
     async mounted() {
-        let path = "/exercise";
-        let myInit = {
-            headers: {
-                Authorization: await this.$store.dispatch("fetchJwtToken")
-            },
-            queryStringParameters: {
-                loadAmount: 99
+        if (this.sortableOptions) {
+            this.sortableOptions.onEnd = (e: SortableEvent): void => {
+                console.log(e);
+                if (e.newIndex && e.oldIndex && e.newIndex !== e.oldIndex) {
+                    this.selectedExercises.splice(
+                        e.newIndex,
+                        0,
+                        this.selectedExercises.splice(e.oldIndex, 1)[0]
+                    );
+                }
             }
-        };
+        }
 
-        const exerciseReferenceResponse = (await API.get(this.$store.state.apiName, path, myInit))
-            .data;
+        const exerciseReferenceResponse: ExerciseReference[] = await this.$accessor.api.queryExercise({ init: { queryStringParameters: { loadAmount: 99, user: true }}})
 
         exerciseReferenceResponse.forEach(exerciseReference => {
-            path = "/exercise/" + exerciseReference.exerciseId;
-            myInit = {
-                headers: myInit.headers
-            };
-
             if (exerciseReference.isFollow) {
                 this.followedExercises.push(exerciseReference);
             } else {
@@ -123,27 +130,34 @@ export default {
         });
 
         // Once exercises are downloaded, check for initExercises.
-        if (this.$props.initExercises) {
-            let initExercisePromises = [];
+        if (this.initExercises) {
+            let initExercisePromises: Promise<ExerciseReference>[] = [];
 
-            this.$props.initExercises.forEach(exercise => {
+            this.initExercises.forEach(exercise => {
                 // Check we haven't downloaded already (i.e. in followed or created exercises)
-                let cIndex, fIndex;
+                let cIndex: number, fIndex: number;
 
-                cIndex = this.createdExercises.findIndex(x => x._id === exercise.exerciseId);
+                cIndex = this.createdExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
 
                 if (cIndex < 0) {
-                    fIndex = this.followedExercises.findIndex(x => x._id === exercise.exerciseId);
+                    fIndex = this.followedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
+                } else {
+                    fIndex = -1;
                 }
 
                 // If not, download.
                 if (cIndex < 0 && fIndex < 0) {
-                    path = "/exercise/" + exercise.exerciseId;
-                    initExercisePromises.push(
-                        API.get(this.$store.state.apiName, path, myInit).then(result => {
-                            return result.data;
+                    initExercisePromises.push(new Promise(async (resolve) => {
+                        const e = await this.$accessor.api.getExercise({ exerciseId: exercise.exerciseId, init: {} });
+                        resolve({
+                            exerciseId: e._id,
+                            name: e.name,
+                            muscleGroups: e.muscleGroups,
+                            tags: e.tags,
+                            createdBy: e.createdBy,
+                            createdAt: e.createdAt
                         })
-                    );
+                    }));
                 } else if (cIndex >= 0) {
                     initExercisePromises.push(
                         new Promise(resolve => {
@@ -165,21 +179,24 @@ export default {
                 exercises.forEach(exercise => {
                     this.selectedExercises.push(exercise);
                     this.$nextTick(() => {
-                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
+                        const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
+                        if (exerciseEl) exerciseEl.classList.add("active")
                     });
                 });
             }
 
             this.$nextTick(() => {
-                this.sortable = new Sortable(
-                    document.querySelector("#selectedContainer"),
-                    this.sortableOptions
-                );
-                this.$props.initExercises.forEach(exercise => {
-                    if (document.querySelector("#exercise-" + exercise._id)) {
-                        document.querySelector("#exercise-" + exercise._id).classList.add("active");
-                    }
-                });
+                const cont = document.getElementById("selectedContainer");
+                if (cont && this.sortableOptions) {
+                    this.sortable = new Sortable(
+                        cont,
+                        this.sortableOptions
+                    );
+                    this.initExercises.forEach(exercise => {
+                        const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
+                        if (exerciseEl) exerciseEl.classList.add("active");
+                    });
+                }
             });
         }
 
@@ -187,51 +204,49 @@ export default {
     },
 
     methods: {
-        addExercise(exercise) {
-            if (this.selectedExercises.findIndex(x => x._id === exercise._id) < 0) {
-                document.querySelector("#exercise-" + exercise._id).classList.add("active");
+        addExercise(exercise: ExerciseReference): void {
+            if (this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId) < 0) {
+                const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
+                console.log("ADDED:", exerciseEl);
+                if (exerciseEl) exerciseEl.classList.add("active");
                 this.selectedExercises.push(exercise);
             } else {
                 this.removeExercise(exercise);
             }
         },
 
-        removeExercise(exercise) {
-            let index = this.selectedExercises.findIndex(x => x._id === exercise._id);
-            this.selectedExercises.splice(index, 1);
-
-            document.querySelector("#exercise-" + exercise._id).classList.remove("active");
-        },
-
-        changeOrder(e) {
-            console.log(e);
-            if (e.newIndex !== e.oldIndex) {
-                this.selectedExercises.splice(
-                    e.newIndex,
-                    0,
-                    this.selectedExercises.splice(e.oldIndex, 1)[0]
-                );
+        removeExercise(exercise: ExerciseReference): void {
+            let index = this.selectedExercises.findIndex(x => x.exerciseId === exercise.exerciseId);
+            if (index) {
+                this.selectedExercises.splice(index, 1);
+                const exerciseEl = document.getElementById("exercise-" + exercise.exerciseId);
+                if (exerciseEl) exerciseEl.classList.remove("active");
+            } else {
+                console.warn("Exercise index not found");
             }
-        }
+        },
     },
 
     watch: {
-        selectedExercises(n) {
+        selectedExercises(n: ExerciseReference[]) {
             if (n.length > 0 && !this.sortable && !this.isLoading) {
                 this.$nextTick(() => {
-                    this.sortable = new Sortable(
-                        document.querySelector("#selectedContainer"),
-                        this.sortableOptions
-                    );
+                    const cont = document.getElementById("selectedContainer");
+                    if (cont && this.sortableOptions) {
+                        this.sortable = new Sortable(
+                            cont,
+                            this.sortableOptions
+                        );
+                    }
                 });
             } else if (n.length == 0 && this.sortable) {
-                this.sortable = null;
+                this.sortable = undefined;
             }
 
             this.$emit("updateExercises", this.selectedExercises);
         }
     }
-};
+});
 </script>
 
 <style scoped>

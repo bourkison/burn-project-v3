@@ -10,7 +10,7 @@
                 </div>
             </div>
 
-            <b-card-text class="mt-3">
+            <div class="mt-3">
                 <b-row class="text-center font-weight-bold">
                     <b-col cols="1">#</b-col>
                     <b-col cols="5">Exercise Name</b-col>
@@ -68,20 +68,23 @@
                         <b-icon-play />
                     </b-button>
                 </div>
-            </b-card-text>
+            </div>
         </b-card-body>
     </b-card>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { PropType } from "vue"
+import { Workout } from "@/types/workout";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-export default {
+export default Vue.extend({
     name: "WorkoutComponent",
     props: {
         workout: {
-            type: Object,
+            type: Object as PropType<Workout>,
             required: true
         }
     },
@@ -95,20 +98,20 @@ export default {
     created() {
         dayjs.extend(relativeTime);
 
-        this.createdAtText = dayjs(dayjs(this.$props.workout.createdAt)).fromNow();
+        this.createdAtText = dayjs(dayjs(this.workout.createdAt)).fromNow();
 
         // Duration text:
         let hours = Math.floor(
-            (this.$props.workout.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
+            (this.workout.duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 24)
         );
         let minutes = Math.floor(
-            (this.$props.workout.duration % (1000 * 60 * 60)) / (1000 * 60)
+            (this.workout.duration % (1000 * 60 * 60)) / (1000 * 60)
         ).toLocaleString("en-US", {
             minimumIntegerDigits: 2,
             useGrouping: false
         });
         let seconds = Math.floor(
-            (this.$props.workout.duration % (1000 * 60)) / 1000
+            (this.workout.duration % (1000 * 60)) / 1000
         ).toLocaleString("en-US", {
             minimumIntegerDigits: 2,
             useGrouping: false
@@ -120,7 +123,7 @@ export default {
             this.durationText = hours + ":" + minutes + ":" + seconds;
         }
     }
-};
+});
 </script>
 
 <style scoped>

@@ -302,7 +302,9 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
+import { HTMLElementEvent } from "@/types";
 import { Auth, Storage, API } from "aws-amplify";
 
 import dayjs from "dayjs";
@@ -310,7 +312,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import AvatarEditor from "@/components/Utility/AvatarEditor.vue";
 
-export default {
+export default Vue.extend({
     name: "SignUpForm",
     components: { AvatarEditor },
     data() {
@@ -320,13 +322,13 @@ export default {
             isFinalising: false,
             isResending: false,
 
-            imageURL: null,
+            imageURL: null as string | null,
             fileInput: null,
 
             signUpForm: {
                 username: "",
                 email: "",
-                pasword: "",
+                password: "",
                 confPassword: "",
                 firstName: "",
                 surname: "",
@@ -617,31 +619,31 @@ export default {
     },
 
     computed: {
-        usernameWatcherHandler: function() {
+        usernameWatcherHandler(): string {
             return this.signUpForm.username;
         }
     },
 
     methods: {
-        handleFileUpload: function(e) {
+        handleFileUpload(e: any) {
             this.fileInput = e.target.files[0];
             this.$nextTick(() => {
                 this.editingImage = true;
             });
         },
 
-        addImage: function(image) {
+        addImage(image: string) {
             this.imageURL = image;
             this.editingImage = false;
             this.fileInput = null;
         },
 
-        cancelImageEdit: function() {
+        cancelImageEdit() {
             this.editingImage = false;
             this.fileInput = null;
         },
 
-        signUp: async function() {
+        async signUp() {
             try {
                 this.isCreating = true;
 
@@ -659,7 +661,7 @@ export default {
                     }
                 });
 
-                this.cognitoUsername = user.user.username;
+                this.cognitoUsername = user.user.getUsername();
                 this.isCreating = false;
                 this.progressAmount = 50;
             } catch (err) {
@@ -667,7 +669,7 @@ export default {
             }
         },
 
-        verifyEmail: async function() {
+        async verifyEmail() {
             this.isVerifying = true;
 
             await Auth.confirmSignUp(this.cognitoUsername, this.verificationCode);
@@ -677,29 +679,36 @@ export default {
             this.progressAmount = 86;
         },
 
-        finaliseSignUp: async function() {
+        async finaliseSignUp() {
             try {
                 // Try upload profilePhoto.
                 // TODO: Image doesn't get uploaded.
                 this.isFinalising = true;
-                this.finalSignUpForm.profilePhoto = await this.uploadProfilePhoto(
-                    this.imageURL,
-                    this.signUpForm.username
-                );
+                if (this.imageURL) {
+                    this.finalSignUpForm.profilePhoto = await this.uploadProfilePhoto(
+                        this.imageURL,
+                        this.signUpForm.username
+                    );
+                }
 
-                const path = "/user/" + this.$store.state.userProfile.docData.username;
-                const myInit = {
-                    headers: {
-                        Authorization: await this.$store.dispatch("fetchJwtToken")
-                    },
+                const init = {
                     body: {
-                        userForm: this.finalSignUpForm
+                        userForm: {
+                            profilePhoto: this.finalSignUpForm.profilePhoto,
+                            weight: Number(this.finalSignUpForm.weight),
+                            height: Number(this.finalSignUpForm.height),
+                            metric: this.finalSignUpForm.metric
+                        }
                     }
                 };
 
-                await API.put(this.$store.state.apiName, path, myInit);
-                // Fetch user data again.
-                await this.$store.dispatch("fetchUser", this.$store.state.userProfile.data);
+                if (this.$accessor.userProfile && this.$accessor.userProfile.docData) {
+                    await this.$accessor.api.updateUserProfile({ init, username: this.$accessor.userProfile.docData.username })
+                    // Fetch user data again.
+                    await this.$accessor.fetchUser({ user: await Auth.currentSession() });
+                } else {
+                    console.warn("No logged in user.");
+                }
 
                 this.isFinalising = false;
                 this.$emit("closeSignUpModal");
@@ -708,7 +717,7 @@ export default {
             }
         },
 
-        uploadProfilePhoto: async function(image, username) {
+        async uploadProfilePhoto(image: string, username: string): Promise<string> {
             if (!image) {
                 return "";
             }
@@ -723,7 +732,7 @@ export default {
             const result = await Storage.put(imageName, blob, {
                 level: "protected",
                 contentType: blob.type,
-                progressCallback: function(progress) {
+                progressCallback(progress) {
                     console.log(
                         "IMAGE UPLOAD PROGRESS:",
                         progress.loaded,
@@ -739,7 +748,7 @@ export default {
             return result.key;
         },
 
-        resendVerification: function() {
+        resendVerification() {
             this.isResending = true;
 
             Auth.resendSignUp(this.cognitoUsername)
@@ -752,13 +761,13 @@ export default {
                 });
         },
 
-        selectCountry: function(country) {
+        selectCountry(country: string) {
             this.signUpForm.country = country;
         }
     },
 
     watch: {
-        usernameWatcherHandler: function() {
+        usernameWatcherHandler() {
             if (this.signUpForm.username.trim() !== "") {
                 this.checkingUsername = true;
 
@@ -782,7 +791,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <style scoped>

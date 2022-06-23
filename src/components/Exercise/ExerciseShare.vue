@@ -30,46 +30,40 @@
     </b-container>
 </template>
 
-<script>
-import { API } from "aws-amplify";
-import DescriptionViewer from "@/components/TextEditor/DescriptionViewer";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { Exercise } from "@/types/exercise";
+import DescriptionViewer from "@/components/TextEditor/DescriptionViewer.vue";
 
-export default {
+export default Vue.extend({
     name: "ExerciseShare",
     components: { DescriptionViewer },
     props: {
         exerciseId: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         }
     },
     data() {
         return {
             isLoading: true,
-            exercise: {},
+            exercise: null as Exercise | null,
 
             // Bootstrap:
             isVisible: false
         };
     },
 
-    created: function() {
+    created() {
         this.downloadExercise();
     },
 
     methods: {
-        downloadExercise: async function() {
+        async downloadExercise(): Promise<void> {
             this.isLoading = true;
 
-            const path = "/exercise/" + this.$props.exerciseId;
-            const myInit = {
-                headers: {
-                    Authorization: await this.$store.dispatch("fetchJwtToken")
-                }
-            };
-
             try {
-                this.exercise = (await API.get(this.$store.state.apiName, path, myInit)).data;
+                this.exercise = await this.$accessor.api.getExercise({ exerciseId: this.exerciseId, init: {} });
             } catch (err) {
                 console.error(err);
             } finally {
@@ -79,9 +73,9 @@ export default {
     },
 
     watch: {
-        exerciseId: function() {
+        exerciseId() {
             this.downloadExercise();
         }
     }
-};
+});
 </script>

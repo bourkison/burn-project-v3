@@ -1,3 +1,5 @@
+// import { Configuration as WebpackConfiguration } from 'webpack';
+
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -22,8 +24,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: "~/plugins/amplify.js" },
-    { src: "~/plugins/helpers.js" }
+    { src: "~/plugins/amplify.ts" },
+    { src: "~/plugins/helpers.ts" }
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -32,7 +34,8 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/typescript
-    '@nuxt/typescript-build'
+    '@nuxt/typescript-build',
+    'nuxt-typed-vuex'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
